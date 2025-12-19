@@ -19,6 +19,9 @@ public partial class PokerGame : Node2D
 		
 		// Test dealing cards
 		TestDealCards();
+		
+		// Evaluate and determine winner
+		EvaluateWinner();
 	}
 	
 	private void TestDealCards()
@@ -55,5 +58,37 @@ public partial class PokerGame : Node2D
 		GD.Print($"River: {communityCards[4]}");
 		
 		GD.Print($"\nCards remaining in deck: {deck.CardsRemaining()}");
+	}
+	
+	private void EvaluateWinner()
+	{
+		GD.Print("\n=== Showdown ===");
+		
+		// Evaluate both hands using the HandEvaluator
+		int playerRank = HandEvaluator.EvaluateHand(playerHand, communityCards);
+		int opponentRank = HandEvaluator.EvaluateHand(opponentHand, communityCards);
+		
+		// Get readable hand names
+		string playerHandName = HandEvaluator.GetHandName(playerRank);
+		string opponentHandName = HandEvaluator.GetHandName(opponentRank);
+		
+		GD.Print($"Player: {playerHandName} (rank: {playerRank})");
+		GD.Print($"Opponent: {opponentHandName} (rank: {opponentRank})");
+		
+		// Determine winner (lower rank = better)
+		int result = HandEvaluator.CompareHands(playerRank, opponentRank);
+		
+		if (result > 0)
+		{
+			GD.Print("\n🎉 PLAYER WINS! 🎉");
+		}
+		else if (result < 0)
+		{
+			GD.Print("\n😞 OPPONENT WINS! 😞");
+		}
+		else
+		{
+			GD.Print("\n🤝 TIE! SPLIT POT! 🤝");
+		}
 	}
 }
