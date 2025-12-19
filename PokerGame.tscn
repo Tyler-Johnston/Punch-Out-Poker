@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://b5sq1675fwcio"]
+
+[ext_resource type="Script" uid="uid://8k6pqsmgt5pe" path="res://PokerGame.cs" id="1_rwx4p"]
+
+[node name="Node2D" type="Node2D"]
+script = ExtResource("1_rwx4p")
