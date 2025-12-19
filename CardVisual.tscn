@@ -1,0 +1,55 @@
+[gd_scene load_steps=6 format=3 uid="uid://dm1t1olfbu82u"]
+
+[ext_resource type="Script" uid="uid://bqpvv0263uywg" path="res://CardVisual.cs" id="1_svlf2"]
+
+[sub_resource type="FontVariation" id="FontVariation_ultfy"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_svlf2"]
+font = SubResource("FontVariation_ultfy")
+font_size = 32
+font_color = Color(0, 0, 0, 1)
+shadow_offset = Vector2(0, 10)
+
+[sub_resource type="FontVariation" id="FontVariation_xq0vi"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_tfs76"]
+font = SubResource("FontVariation_xq0vi")
+font_size = 48
+font_color = Color(0, 0, 0, 1)
+
+[node name="CardVisual" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = -1138.0
+offset_bottom = -528.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_svlf2")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="RankLabel" type="Label" parent="."]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 45.0
+text = "A"
+label_settings = SubResource("LabelSettings_svlf2")
+horizontal_alignment = 1
+
+[node name="SuitLabel" type="Label" parent="."]
+layout_mode = 0
+offset_left = 94.0
+offset_top = 120.0
+offset_right = 134.0
+offset_bottom = 187.0
+text = "♠"
+label_settings = SubResource("LabelSettings_tfs76")
+horizontal_alignment = 1

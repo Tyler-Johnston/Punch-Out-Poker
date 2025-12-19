@@ -3,53 +3,69 @@
 [ext_resource type="Script" uid="uid://8k6pqsmgt5pe" path="res://PokerGame.cs" id="1_rwx4p"]
 
 [node name="PokerGame" type="Node2D"]
+scale = Vector2(3, 3)
 script = ExtResource("1_rwx4p")
 
-[node name="ColorRect" type="ColorRect" parent="."]
-offset_right = 40.0
-offset_bottom = 40.0
-
 [node name="OpponentArea" type="Node2D" parent="."]
+position = Vector2(221.66667, 12.666667)
 
 [node name="OpponentPortrait" type="Sprite2D" parent="OpponentArea"]
-
-[node name="OpponentCards" type="Node2D" parent="OpponentArea"]
 
 [node name="OpponentChips" type="Label" parent="OpponentArea"]
 offset_right = 40.0
 offset_bottom = 23.0
 
-[node name="CommunityCards" type="Node2D" parent="."]
+[node name="OpponentCard1" type="Node2D" parent="OpponentArea"]
+position = Vector2(-18.666672, 32.999996)
 
-[node name="Flop1" type="Sprite2D" parent="CommunityCards"]
+[node name="OpponentCard2" type="Node2D" parent="OpponentArea"]
+position = Vector2(19.666672, 34.333332)
 
-[node name="Flop2" type="Sprite2D" parent="CommunityCards"]
+[node name="CommunityCardsArea" type="Node2D" parent="."]
+position = Vector2(20.666674, 19.999989)
 
-[node name="Flop3" type="Sprite2D" parent="CommunityCards"]
+[node name="Flop1" type="Sprite2D" parent="CommunityCardsArea"]
+position = Vector2(58.666656, 110.000015)
 
-[node name="Turn" type="Sprite2D" parent="CommunityCards"]
+[node name="Flop2" type="Sprite2D" parent="CommunityCardsArea"]
+position = Vector2(116.99999, 109.66668)
 
-[node name="River" type="Sprite2D" parent="CommunityCards"]
+[node name="Flop3" type="Sprite2D" parent="CommunityCardsArea"]
+position = Vector2(192.33334, 110.66668)
+
+[node name="Turn" type="Sprite2D" parent="CommunityCardsArea"]
+position = Vector2(276.33334, 109.66668)
+
+[node name="River" type="Sprite2D" parent="CommunityCardsArea"]
+position = Vector2(353.33334, 109.000015)
 
 [node name="Pot" type="Node2D" parent="."]
+position = Vector2(297.33334, 87)
 
 [node name="PotLabel" type="Label" parent="Pot"]
 offset_right = 40.0
 offset_bottom = 23.0
 
 [node name="PlayerArea" type="Node2D" parent="."]
-
-[node name="PlayerCards" type="Node2D" parent="PlayerArea"]
+position = Vector2(219.66667, 216.33334)
 
 [node name="PlayerChips" type="Label" parent="PlayerArea"]
 offset_right = 40.0
 offset_bottom = 23.0
 
+[node name="PlayerCard1" type="Node2D" parent="PlayerArea"]
+position = Vector2(-28.333328, -11.3333435)
+
+[node name="PlayerCard2" type="Node2D" parent="PlayerArea"]
+position = Vector2(31.333328, -11.666672)
+
 [node name="Control" type="Control" parent="."]
 layout_mode = 3
 anchors_preset = 0
-offset_right = 40.0
-offset_bottom = 40.0
+offset_left = 205.0
+offset_top = 92.66667
+offset_right = 245.0
+offset_bottom = 132.66667
 
 [node name="CheckButton" type="Button" parent="Control"]
 layout_mode = 0

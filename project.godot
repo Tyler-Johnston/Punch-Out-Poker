@@ -15,6 +15,15 @@ run/main_scene="uid://bidpqx2rau884"
 config/features=PackedStringArray("4.5", "C#", "Forward Plus")
 config/icon="res://icon.svg"
 
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=720
+
 [dotnet]
 
 project/assembly_name="Punch Out Poker"
+
+[rendering]
+
+environment/defaults/default_clear_color=Color(0.20910805, 0.435824, 0.36213738, 1)
