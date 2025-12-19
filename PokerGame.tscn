@@ -2,5 +2,71 @@
 
 [ext_resource type="Script" uid="uid://8k6pqsmgt5pe" path="res://PokerGame.cs" id="1_rwx4p"]
 
-[node name="Node2D" type="Node2D"]
+[node name="PokerGame" type="Node2D"]
 script = ExtResource("1_rwx4p")
+
+[node name="ColorRect" type="ColorRect" parent="."]
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="OpponentArea" type="Node2D" parent="."]
+
+[node name="OpponentPortrait" type="Sprite2D" parent="OpponentArea"]
+
+[node name="OpponentCards" type="Node2D" parent="OpponentArea"]
+
+[node name="OpponentChips" type="Label" parent="OpponentArea"]
+offset_right = 40.0
+offset_bottom = 23.0
+
+[node name="CommunityCards" type="Node2D" parent="."]
+
+[node name="Flop1" type="Sprite2D" parent="CommunityCards"]
+
+[node name="Flop2" type="Sprite2D" parent="CommunityCards"]
+
+[node name="Flop3" type="Sprite2D" parent="CommunityCards"]
+
+[node name="Turn" type="Sprite2D" parent="CommunityCards"]
+
+[node name="River" type="Sprite2D" parent="CommunityCards"]
+
+[node name="Pot" type="Node2D" parent="."]
+
+[node name="PotLabel" type="Label" parent="Pot"]
+offset_right = 40.0
+offset_bottom = 23.0
+
+[node name="PlayerArea" type="Node2D" parent="."]
+
+[node name="PlayerCards" type="Node2D" parent="PlayerArea"]
+
+[node name="PlayerChips" type="Label" parent="PlayerArea"]
+offset_right = 40.0
+offset_bottom = 23.0
+
+[node name="Control" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="CheckButton" type="Button" parent="Control"]
+layout_mode = 0
+offset_right = 8.0
+offset_bottom = 8.0
+
+[node name="BetButton" type="Button" parent="Control"]
+layout_mode = 0
+offset_right = 8.0
+offset_bottom = 8.0
+
+[node name="CallButton" type="Button" parent="Control"]
+layout_mode = 0
+offset_right = 8.0
+offset_bottom = 8.0
+
+[node name="FoldButton" type="Button" parent="Control"]
+layout_mode = 0
+offset_right = 8.0
+offset_bottom = 8.0
