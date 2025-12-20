@@ -22,6 +22,10 @@ public partial class PokerGame : Node2D
 	private CardVisual turnCard;
 	private CardVisual riverCard;
 	
+	private Button foldButton;
+	private Button checkCallButton;
+	private Button betRaiseButton;
+	
 	private enum Street
 	{
 		Flop,
@@ -49,6 +53,16 @@ public partial class PokerGame : Node2D
 		flop3 = communityCardsArea.GetNode<CardVisual>("Flop3");
 		turnCard = communityCardsArea.GetNode<CardVisual>("Turn");
 		riverCard = communityCardsArea.GetNode<CardVisual>("River");
+		
+		Control actionButtons = GetNode<Control>("CanvasLayer/Control/ActionButtons");
+		
+		foldButton = actionButtons.GetNode<Button>("FoldButton");
+		checkCallButton = actionButtons.GetNode<Button>("CheckCallButton");
+		betRaiseButton = actionButtons.GetNode<Button>("BetRaiseButton");
+		
+		foldButton.Pressed += OnFoldPressed;
+		checkCallButton.Pressed += OnCheckCallPressed;
+		betRaiseButton.Pressed += OnBetRaisePressed;
 		
 		deck = new Deck();
 		deck.Shuffle();
@@ -107,14 +121,12 @@ public partial class PokerGame : Node2D
 			case Street.Turn:
 				communityCards.Add(deck.Deal());
 				GD.Print($"Turn: {communityCards[3]}");
-
 				turnCard.ShowBack();
 				break;
 
 			case Street.River:
 				communityCards.Add(deck.Deal());
 				GD.Print($"River: {communityCards[4]}");
-
 				riverCard.ShowBack();
 				break;
 		}
@@ -139,6 +151,21 @@ public partial class PokerGame : Node2D
 				riverCard.ShowCard(communityCards[4]);
 				break;
 		}
+	}
+	
+	private void OnFoldPressed()
+	{
+		GD.Print("Player folds");
+	}
+
+	private void OnCheckCallPressed()
+	{
+		GD.Print($"Check/Call");
+	}
+
+	private void OnBetRaisePressed()
+	{
+		GD.Print($"Bet/Raise");
 	}
 	
 	private void EvaluateWinner()
