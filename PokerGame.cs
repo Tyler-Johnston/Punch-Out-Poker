@@ -26,7 +26,7 @@ public partial class PokerGame : Node2D
 		
 		// Get references to position areas
 		opponentArea = GetNode<Node2D>("OpponentArea");
-		//communityCardsArea = GetNode<Node2D>("CommunityCardsArea");
+		communityCardsArea = GetNode<Node2D>("CommunityCardsArea");
 		playerArea = GetNode<Node2D>("PlayerArea");
 		
 		
@@ -83,6 +83,20 @@ public partial class PokerGame : Node2D
 		// River (1 card)
 		communityCards.Add(deck.Deal());
 		GD.Print($"River: {communityCards[4]}");
+		
+		// Display community cards
+		var flop1 = communityCardsArea.GetNode<CardVisual>("Flop1");
+		var flop2 = communityCardsArea.GetNode<CardVisual>("Flop2");
+		var flop3 = communityCardsArea.GetNode<CardVisual>("Flop3");
+		var turn = communityCardsArea.GetNode<CardVisual>("Turn");
+		var river = communityCardsArea.GetNode<CardVisual>("River");
+
+		flop1.SetCard(communityCards[0]);
+		flop2.SetCard(communityCards[1]);
+		flop3.SetCard(communityCards[2]);
+		turn.SetCard(communityCards[3]);
+		river.SetCard(communityCards[4]);
+
 		
 		GD.Print($"\nCards remaining in deck: {deck.CardsRemaining()}");
 	}

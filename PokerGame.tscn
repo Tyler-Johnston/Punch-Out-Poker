@@ -78,3 +78,62 @@ offset_right = -25.0
 offset_bottom = -15.666653
 grow_horizontal = 1
 grow_vertical = 1
+
+[node name="CommunityCardsArea" type="Node2D" parent="."]
+position = Vector2(116.66668, 124.66668)
+scale = Vector2(1.5, 1.5)
+
+[node name="Flop1" parent="CommunityCardsArea" instance=ExtResource("2_eibjp")]
+anchors_preset = 0
+anchor_right = 0.0
+anchor_bottom = 0.0
+offset_left = 4.0000024
+offset_top = -15.777778
+offset_right = 4.0000024
+offset_bottom = -15.777778
+grow_horizontal = 1
+grow_vertical = 1
+
+[node name="Flop2" parent="CommunityCardsArea" instance=ExtResource("2_eibjp")]
+anchors_preset = 0
+anchor_right = 0.0
+anchor_bottom = 0.0
+offset_left = 30.88889
+offset_top = -16.0
+offset_right = 30.88889
+offset_bottom = -16.0
+grow_horizontal = 1
+grow_vertical = 1
+
+[node name="Flop3" parent="CommunityCardsArea" instance=ExtResource("2_eibjp")]
+anchors_preset = 0
+anchor_right = 0.0
+anchor_bottom = 0.0
+offset_left = 58.444447
+offset_top = -16.444445
+offset_right = 58.444447
+offset_bottom = -16.444445
+grow_horizontal = 1
+grow_vertical = 1
+
+[node name="Turn" parent="CommunityCardsArea" instance=ExtResource("2_eibjp")]
+anchors_preset = 0
+anchor_right = 0.0
+anchor_bottom = 0.0
+offset_left = 84.66667
+offset_top = -16.222223
+offset_right = 84.66667
+offset_bottom = -16.222223
+grow_horizontal = 1
+grow_vertical = 1
+
+[node name="River" parent="CommunityCardsArea" instance=ExtResource("2_eibjp")]
+anchors_preset = 0
+anchor_right = 0.0
+anchor_bottom = 0.0
+offset_left = 112.22221
+offset_top = -16.0
+offset_right = 112.22221
+offset_bottom = -16.0
+grow_horizontal = 1
+grow_vertical = 1
