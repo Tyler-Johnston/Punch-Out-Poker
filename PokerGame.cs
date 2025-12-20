@@ -84,14 +84,40 @@ public partial class PokerGame : Node2D
 		checkCallButton.Pressed += OnCheckCallPressed;
 		betRaiseButton.Pressed += OnBetRaisePressed;
 		
+		UpdateHud();
+  		StartNewHand();
+	}
+	
+	private void StartNewHand()
+	{
+		GD.Print("\n=== New Hand ===");
+
 		deck = new Deck();
 		deck.Shuffle();
+
 		pot = 0;
-		UpdateHud();
-		
+
+		// Clear hands and community
+		playerHand.Clear();
+		opponentHand.Clear();
+		communityCards.Clear();
+
+		// Reset card visuals to backs
+		playerCard1.ShowBack();
+		playerCard2.ShowBack();
+		opponentCard1.ShowBack();
+		opponentCard2.ShowBack();
+		flop1.ShowBack();
+		flop2.ShowBack();
+		flop3.ShowBack();
+		turnCard.ShowBack();
+		riverCard.ShowBack();
+
 		DealInitialHands();
 		currentStreet = Street.Preflop;
 		handInProgress = true;
+
+		UpdateHud();
 	}
 	
 	private void DealInitialHands()
@@ -182,8 +208,8 @@ public partial class PokerGame : Node2D
 		GD.Print($"Stacks -> Player: {playerChips}, Opponent: {opponentChips}");
 
 		handInProgress = false;
+		StartNewHand();
 	}
-
 
 	private void OnCheckCallPressed()
 	{
@@ -294,6 +320,7 @@ public partial class PokerGame : Node2D
 		UpdateHud();
 
 		handInProgress = false;
+		StartNewHand();
 	}
 
 }
