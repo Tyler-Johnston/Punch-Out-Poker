@@ -7,6 +7,7 @@ public partial class PokerGame : Node2D
 	
 	private enum Street
 	{
+		Preflop,
 		Flop,
 		Turn,
 		River
@@ -71,8 +72,7 @@ public partial class PokerGame : Node2D
 		deck.Shuffle();
 		
 		DealInitialHands();
-		DealCommunityCards(Street.Flop);
-		currentStreet = Street.Flop;
+		currentStreet = Street.Preflop;
 		handInProgress = true;
 	}
 	
@@ -176,6 +176,10 @@ public partial class PokerGame : Node2D
 	{
 		switch (currentStreet)
 		{
+			case Street.Preflop:
+				DealCommunityCards(Street.Flop);
+				currentStreet = Street.Flop;
+				break;
 			case Street.Flop:
 				RevealCommunityCards(Street.Flop);
 				DealCommunityCards(Street.Turn);
