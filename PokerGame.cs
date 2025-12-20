@@ -5,6 +5,13 @@ using System.Collections.Generic;
 public partial class PokerGame : Node2D
 {
 	
+	private enum Street
+	{
+		Flop,
+		Turn,
+		River
+	}
+	
 	private PackedScene cardVisualScene;
 	
 	private Deck deck;
@@ -26,12 +33,8 @@ public partial class PokerGame : Node2D
 	private Button checkCallButton;
 	private Button betRaiseButton;
 	
-	private enum Street
-	{
-		Flop,
-		Turn,
-		River
-	}
+	private Street currentStreet = Street.Flop;
+	private bool handInProgress = false;
 
 	public override void _Ready()
 	{
@@ -69,12 +72,8 @@ public partial class PokerGame : Node2D
 		
 		DealInitialHands();
 		DealCommunityCards(Street.Flop);
-		//RevealCommunityCards(Street.Flop);
-		DealCommunityCards(Street.Turn);
-		//RevealCommunityCards(Street.Turn);
-		DealCommunityCards(Street.River);
-		//RevealCommunityCards(Street.River);
-		EvaluateWinner();
+		currentStreet = Street.Flop;
+		handInProgress = true;
 	}
 	
 	private void DealInitialHands()
@@ -155,32 +154,55 @@ public partial class PokerGame : Node2D
 	
 	private void OnFoldPressed()
 	{
+		if (!handInProgress) return;
 		GD.Print("Player folds");
 	}
 
 	private void OnCheckCallPressed()
 	{
+		if (!handInProgress) return;
 		GD.Print($"Check/Call");
+		AdvanceStreet();
 	}
 
 	private void OnBetRaisePressed()
 	{
+		if (!handInProgress) return;
 		GD.Print($"Bet/Raise");
+		AdvanceStreet();
 	}
 	
-	private void EvaluateWinner()
+	private void AdvanceStreet()
+	{
+		switch (currentStreet)
+		{
+			case Street.Flop:
+				RevealCommunityCards(Street.Flop);
+				DealCommunityCards(Street.Turn);
+				currentStreet = Street.Turn;
+				break;
+			case Street.Turn:
+				RevealCommunityCards(Street.Turn);
+				DealCommunityCards(Street.River);
+				currentStreet = Street.River;
+				break;
+			case Street.River:
+				RevealCommunityCards(Street.River);
+				ShowDown();
+				break;
+		}
+	}
+	
+	private void ShowDown()
 	{
 		GD.Print("\n=== Showdown ===");
 		
+		opponentCard1.ShowCard(opponentHand[0]);
+		opponentCard2.ShowCard(opponentHand[1]);
+	
 		int playerRank = HandEvaluator.EvaluateHand(playerHand, communityCards);
 		int opponentRank = HandEvaluator.EvaluateHand(opponentHand, communityCards);
 		
-		string playerHandName = HandEvaluator.GetHandName(playerRank);
-		string opponentHandName = HandEvaluator.GetHandName(opponentRank);
-		
-		GD.Print($"Player: {playerHandName} (rank: {playerRank})");
-		GD.Print($"Opponent: {opponentHandName} (rank: {opponentRank})");
-	
 		int result = HandEvaluator.CompareHands(playerRank, opponentRank);
 		
 		if (result > 0)
@@ -195,5 +217,7 @@ public partial class PokerGame : Node2D
 		{
 			GD.Print("\n🤝 TIE! SPLIT POT! 🤝");
 		}
+		
+		handInProgress = false;
 	}
 }

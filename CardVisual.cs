@@ -23,7 +23,7 @@ public partial class CardVisual : Control
 		rankLabel.Text = card.GetRankSymbol();
 		suitLabel.Text = card.GetSuitSymbol();
 		
-		//// Color based on suit
+		// Color based on suit
 		//Color cardColor = (card.Suit == Suit.Hearts || card.Suit == Suit.Diamonds) 
 			//? Colors.Red 
 			//: Colors.Black;
@@ -34,7 +34,6 @@ public partial class CardVisual : Control
 
 	public void ShowBack()
 	{
-		GD.Print("In SetFaceDown");
 		cardBack.Visible = true;
 	}
 }

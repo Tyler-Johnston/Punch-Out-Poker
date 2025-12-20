@@ -3,6 +3,9 @@
 [ext_resource type="Script" uid="uid://bqpvv0263uywg" path="res://CardVisual.cs" id="1_svlf2"]
 
 [sub_resource type="FontFile" id="FontFile_svlf2"]
+subpixel_positioning = 0
+msdf_pixel_range = 14
+msdf_size = 128
 cache/0/16/0/ascent = 0.0
 cache/0/16/0/descent = 0.0
 cache/0/16/0/underline_position = 0.0
@@ -28,6 +31,9 @@ font_size = 48
 font_color = Color(0, 0, 0, 1)
 
 [sub_resource type="FontFile" id="FontFile_xq0vi"]
+subpixel_positioning = 0
+msdf_pixel_range = 14
+msdf_size = 128
 cache/0/16/0/ascent = 0.0
 cache/0/16/0/descent = 0.0
 cache/0/16/0/underline_position = 0.0
