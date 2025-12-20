@@ -53,9 +53,8 @@ public partial class PokerGame : Node2D
 		
 		var playerCard1 = playerArea.GetNode<CardVisual>("PlayerCard1");
 		var playerCard2 = playerArea.GetNode<CardVisual>("PlayerCard2");
-		playerCard1.SetCard(playerHand[0]);
-		playerCard2.SetCard(playerHand[1]);
-		
+		playerCard1.ShowCard(playerHand[0]);
+		playerCard2.ShowCard(playerHand[1]);
 		
 		// Deal 2 cards to opponent
 		opponentHand.Add(deck.Deal());
@@ -65,8 +64,9 @@ public partial class PokerGame : Node2D
 		
 		var opponentCard1 = opponentArea.GetNode<CardVisual>("OpponentCard1");
 		var opponentCard2 = opponentArea.GetNode<CardVisual>("OpponentCard2");
-		opponentCard1.SetCard(opponentHand[0]);
-		opponentCard2.SetCard(opponentHand[1]);
+		opponentCard1.ShowBack();
+		opponentCard2.ShowBack();
+
 		// Deal 5 community cards (flop, turn, river)
 		GD.Print("\n=== Community Cards ===");
 		
@@ -91,12 +91,17 @@ public partial class PokerGame : Node2D
 		var turn = communityCardsArea.GetNode<CardVisual>("Turn");
 		var river = communityCardsArea.GetNode<CardVisual>("River");
 
-		flop1.SetCard(communityCards[0]);
-		flop2.SetCard(communityCards[1]);
-		flop3.SetCard(communityCards[2]);
-		turn.SetCard(communityCards[3]);
-		river.SetCard(communityCards[4]);
-
+		//flop1.ShowCard(communityCards[0]);
+		//flop2.ShowCard(communityCards[1]);
+		//flop3.ShowCard(communityCards[2]);
+		//turn.ShowCard(communityCards[3]);
+		//river.ShowCard(communityCards[4]);
+		
+		flop1.ShowBack();
+		flop2.ShowBack();
+		flop3.ShowBack();
+		turn.ShowBack();
+		river.ShowBack();
 		
 		GD.Print($"\nCards remaining in deck: {deck.CardsRemaining()}");
 	}

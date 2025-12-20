@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3 uid="uid://dm1t1olfbu82u"]
+[gd_scene load_steps=10 format=3 uid="uid://dm1t1olfbu82u"]
 
 [ext_resource type="Script" uid="uid://bqpvv0263uywg" path="res://CardVisual.cs" id="1_svlf2"]
 
@@ -27,7 +27,18 @@ font = SubResource("FontVariation_xq0vi")
 font_size = 48
 font_color = Color(0, 0, 0, 1)
 
+[sub_resource type="FontFile" id="FontFile_xq0vi"]
+cache/0/16/0/ascent = 0.0
+cache/0/16/0/descent = 0.0
+cache/0/16/0/underline_position = 0.0
+cache/0/16/0/underline_thickness = 0.0
+cache/0/16/0/scale = 1.0
+
+[sub_resource type="Theme" id="Theme_tfs76"]
+default_font = SubResource("FontFile_xq0vi")
+
 [node name="CardVisual" type="Control"]
+custom_minimum_size = Vector2(142, 192)
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -39,7 +50,7 @@ grow_vertical = 2
 scale = Vector2(0.15, 0.15)
 script = ExtResource("1_svlf2")
 
-[node name="Background" type="ColorRect" parent="."]
+[node name="CardFront" type="ColorRect" parent="."]
 layout_mode = 1
 offset_right = 142.0
 offset_bottom = 192.0
@@ -64,3 +75,10 @@ offset_bottom = 187.0
 text = "♠"
 label_settings = SubResource("LabelSettings_tfs76")
 horizontal_alignment = 1
+
+[node name="CardBack" type="ColorRect" parent="."]
+layout_mode = 1
+offset_right = 142.0
+offset_bottom = 192.0
+theme = SubResource("Theme_tfs76")
+color = Color(0, 0.37137234, 0.37285852, 1)
