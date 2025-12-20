@@ -34,6 +34,12 @@ public partial class PokerGame : Node2D
 	private Button checkCallButton;
 	private Button betRaiseButton;
 	
+	private int playerChips = 50;
+	private int opponentChips = 50;
+	private int pot = 0;
+
+	private int betAmount = 5;
+	
 	private Street currentStreet = Street.Flop;
 	private bool handInProgress = false;
 
@@ -70,6 +76,7 @@ public partial class PokerGame : Node2D
 		
 		deck = new Deck();
 		deck.Shuffle();
+		pot = 0;
 		
 		DealInitialHands();
 		currentStreet = Street.Preflop;
@@ -156,22 +163,55 @@ public partial class PokerGame : Node2D
 	{
 		if (!handInProgress) return;
 		GD.Print("Player folds");
+
+		opponentChips += pot;
+		pot = 0;
+
+		GD.Print($"Stacks -> Player: {playerChips}, Opponent: {opponentChips}");
+
+		handInProgress = false;
 	}
+
 
 	private void OnCheckCallPressed()
 	{
 		if (!handInProgress) return;
-		GD.Print($"Check/Call");
+		 GD.Print($"Check/Call on {currentStreet}");
+		
+		int toBet = Math.Min(betAmount, playerChips);
+		playerChips -= toBet;
+		pot += toBet;
+		
+		GD.Print($"Player bets {toBet}, Player stack: {playerChips}, Pot: {pot}");
+		OpponentAutoCall();
+	
 		AdvanceStreet();
 	}
 
 	private void OnBetRaisePressed()
 	{
 		if (!handInProgress) return;
-		GD.Print($"Bet/Raise");
+		GD.Print($"Bet/Raise on {currentStreet}");
+		
+		int toBet = Math.Min(betAmount * 2, playerChips);
+		playerChips -= toBet;
+		pot += toBet;
+
+		GD.Print($"Player raises {toBet}, Player stack: {playerChips}, Pot: {pot}");
+		OpponentAutoCall();
+	
 		AdvanceStreet();
 	}
 	
+	private void OpponentAutoCall()
+	{
+		int toCall = Math.Min(betAmount, opponentChips);
+		opponentChips -= toCall;
+		pot += toCall;
+
+		GD.Print($"Opponent calls {toCall}, Opponent stack: {opponentChips}, Pot: {pot}");
+	}
+
 	private void AdvanceStreet()
 	{
 		switch (currentStreet)
@@ -200,28 +240,37 @@ public partial class PokerGame : Node2D
 	private void ShowDown()
 	{
 		GD.Print("\n=== Showdown ===");
-		
+
 		opponentCard1.ShowCard(opponentHand[0]);
 		opponentCard2.ShowCard(opponentHand[1]);
-	
+
 		int playerRank = HandEvaluator.EvaluateHand(playerHand, communityCards);
 		int opponentRank = HandEvaluator.EvaluateHand(opponentHand, communityCards);
-		
+
 		int result = HandEvaluator.CompareHands(playerRank, opponentRank);
-		
+
 		if (result > 0)
 		{
 			GD.Print("\n🎉 PLAYER WINS! 🎉");
+			playerChips += pot;
 		}
 		else if (result < 0)
 		{
 			GD.Print("\n😞 OPPONENT WINS! 😞");
+			opponentChips += pot;
 		}
 		else
 		{
 			GD.Print("\n🤝 TIE! SPLIT POT! 🤝");
+			int split = pot / 2;
+			playerChips += split;
+			opponentChips += pot - split;
 		}
-		
+
+		GD.Print($"Stacks -> Player: {playerChips}, Opponent: {opponentChips}");
+		pot = 0;
+
 		handInProgress = false;
 	}
+
 }
