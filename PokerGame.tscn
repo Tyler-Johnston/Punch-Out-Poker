@@ -83,6 +83,32 @@ offset_bottom = 394.0
 text = "100"
 label_settings = SubResource("LabelSettings_l4y0v")
 
+[node name="GameStateLabel" type="Label" parent="CanvasLayer/Control"]
+layout_mode = 0
+offset_left = 593.0
+offset_top = 218.0
+offset_right = 648.0
+offset_bottom = 263.0
+label_settings = SubResource("LabelSettings_l4y0v")
+
+[node name="PlayerHandType" type="Label" parent="CanvasLayer/Control"]
+layout_mode = 0
+offset_left = 1040.0
+offset_top = 518.0
+offset_right = 1162.0
+offset_bottom = 563.0
+text = "Straight"
+label_settings = SubResource("LabelSettings_l4y0v")
+
+[node name="OpponentHandType" type="Label" parent="CanvasLayer/Control"]
+layout_mode = 0
+offset_left = 27.0
+offset_top = 167.0
+offset_right = 202.0
+offset_bottom = 212.0
+text = "Royal Flush"
+label_settings = SubResource("LabelSettings_l4y0v")
+
 [node name="PlayerArea" type="Node2D" parent="."]
 position = Vector2(385.66666, 215.66669)
 scale = Vector2(1.5, 1.5)

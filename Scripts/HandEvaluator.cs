@@ -5,32 +5,32 @@ using pheval;
 
 public static class HandEvaluator
 {
-    // Convert your Card to pheval Card format
-    private static pheval.Card ToPhevalCard(Card card)
-    {
-        // pheval uses: rank (0-12) * 4 + suit (0-3)
-        byte id = (byte)card.ToEvaluatorFormat();
-        return new pheval.Card(id);
-    }
-    
-    // Evaluate a 7-card hand (2 hole + 5 community)
-    public static int EvaluateHand(List<Card> holeCards, List<Card> communityCards)
-    {
-        var allCards = holeCards.Concat(communityCards).ToList();
-        
-        if (allCards.Count != 7)
-        {
-            GD.PrintErr($"Invalid hand size: {allCards.Count}. Need exactly 7 cards.");
-            return int.MaxValue;
-        }
-        
-        // Convert to pheval cards
-        pheval.Card[] phevalCards = allCards.Select(c => ToPhevalCard(c)).ToArray();
-        
-        // Use Eval7Cards to evaluate the 7-card hand
-        return Eval.Eval7Cards(phevalCards);
-    }
-    
+	// Convert your Card to pheval Card format
+	private static pheval.Card ToPhevalCard(Card card)
+	{
+		// pheval uses: rank (0-12) * 4 + suit (0-3)
+		byte id = (byte)card.ToEvaluatorFormat();
+		return new pheval.Card(id);
+	}
+	
+	// Evaluate a 7-card hand (2 hole + 5 community)
+	public static int EvaluateHand(List<Card> holeCards, List<Card> communityCards)
+	{
+		var allCards = holeCards.Concat(communityCards).ToList();
+		
+		if (allCards.Count != 7)
+		{
+			GD.PrintErr($"Invalid hand size: {allCards.Count}. Need exactly 7 cards.");
+			return int.MaxValue;
+		}
+		
+		// Convert to pheval cards
+		pheval.Card[] phevalCards = allCards.Select(c => ToPhevalCard(c)).ToArray();
+		
+		// Use Eval7Cards to evaluate the 7-card hand
+		return Eval.Eval7Cards(phevalCards);
+	}
+	
 	// Get hand name from rank (using our own logic)
 	public static string GetHandName(int rank)
 	{
@@ -45,11 +45,11 @@ public static class HandEvaluator
 		return "Straight Flush";                    // 10 straight-flushes
 	}
 
-    // Compare hands (lower rank = better in this library)
-    public static int CompareHands(int playerRank, int opponentRank)
-    {
-        if (playerRank < opponentRank) return 1;  // Player wins
-        if (playerRank > opponentRank) return -1; // Opponent wins
-        return 0; // Tie
-    }
+	// Compare hands (lower rank = better in this library)
+	public static int CompareHands(int playerRank, int opponentRank)
+	{
+		if (playerRank < opponentRank) return 1;  // Player wins
+		if (playerRank > opponentRank) return -1; // Opponent wins
+		return 0; // Tie
+	}
 }

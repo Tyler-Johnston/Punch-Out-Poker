@@ -42,7 +42,10 @@ public partial class PokerGame : Node2D
 	private Label playerStackLabel;
 	private Label opponentStackLabel;
 	private Label potLabel;
-
+	private Label gameStateLabel;
+	
+	private Label playerHandType;
+	private Label opponentHandType;
 	
 	private Street currentStreet = Street.Preflop;
 	private bool handInProgress = false;
@@ -79,6 +82,10 @@ public partial class PokerGame : Node2D
 		playerStackLabel = hudControl.GetNode<Label>("PlayerStackLabel");
 		opponentStackLabel = hudControl.GetNode<Label>("OpponentStackLabel");
 		potLabel = hudControl.GetNode<Label>("PotLabel");
+		gameStateLabel = hudControl.GetNode<Label>("GameStateLabel");
+		
+		playerHandType = hudControl.GetNode<Label>("PlayerHandType");
+		opponentHandType = hudControl.GetNode<Label>("OpponentHandType");
 		
 		foldButton.Pressed += OnFoldPressed;
 		checkCallButton.Pressed += OnCheckCallPressed;
@@ -90,7 +97,14 @@ public partial class PokerGame : Node2D
 	
 	private void StartNewHand()
 	{
+	
 		GD.Print("\n=== New Hand ===");
+		ShowMessage("");
+		
+		foldButton.Visible = true;
+		betRaiseButton.Visible = true;
+		playerHandType.Text = "";
+		opponentHandType.Text = "";
 
 		deck = new Deck();
 		deck.Shuffle();
@@ -213,7 +227,14 @@ public partial class PokerGame : Node2D
 
 	private void OnCheckCallPressed()
 	{
-		if (!handInProgress) return;
+		
+		if (!handInProgress)
+		{
+			checkCallButton.Text = "Check";
+			StartNewHand();
+			return;
+		}
+
 		 GD.Print($"Check/Call on {currentStreet}");
 		
 		int toBet = Math.Min(betAmount, playerChips);
@@ -245,9 +266,22 @@ public partial class PokerGame : Node2D
 	
 	private void UpdateHud()
 	{
+		if (!handInProgress)
+		{
+			checkCallButton.Text = "Next Hand";
+			foldButton.Visible = false;
+			betRaiseButton.Visible = false;
+			playerHandType.Text = "Test1";
+			opponentHandType.Text = "Test2";
+		}
 		playerStackLabel.Text = $"You: {playerChips}";
 		opponentStackLabel.Text = $"Opp: {opponentChips}";
 		potLabel.Text = $"Pot: {pot}";
+	}
+	
+	private void ShowMessage(string text)
+	{
+		gameStateLabel.Text = text;
 	}
 
 	private void OpponentAutoCall()
@@ -294,22 +328,28 @@ public partial class PokerGame : Node2D
 
 		int playerRank = HandEvaluator.EvaluateHand(playerHand, communityCards);
 		int opponentRank = HandEvaluator.EvaluateHand(opponentHand, communityCards);
+		
+		String playerHandName = HandEvaluator.GetHandName(playerRank);
+		String opponentHandName = HandEvaluator.GetHandName(opponentRank);
 
 		int result = HandEvaluator.CompareHands(playerRank, opponentRank);
 
 		if (result > 0)
 		{
 			GD.Print("\n🎉 PLAYER WINS! 🎉");
+			ShowMessage("PLAYER WINS!");
 			playerChips += pot;
 		}
 		else if (result < 0)
 		{
 			GD.Print("\n😞 OPPONENT WINS! 😞");
+			ShowMessage("OPPONENT WINS!");
 			opponentChips += pot;
 		}
 		else
 		{
 			GD.Print("\n🤝 TIE! SPLIT POT! 🤝");
+			ShowMessage("TIE! SPLIT POT!");
 			int split = pot / 2;
 			playerChips += split;
 			opponentChips += pot - split;
@@ -317,10 +357,11 @@ public partial class PokerGame : Node2D
 
 		GD.Print($"Stacks -> Player: {playerChips}, Opponent: {opponentChips}");
 		pot = 0;
-		UpdateHud();
-
 		handInProgress = false;
-		StartNewHand();
+		UpdateHud();
+		playerHandType.Text = playerHandName;
+		opponentHandType.Text = opponentHandName;
+		
 	}
 
 }
