@@ -1,7 +1,16 @@
-[gd_scene load_steps=3 format=3 uid="uid://b5sq1675fwcio"]
+[gd_scene load_steps=6 format=3 uid="uid://b5sq1675fwcio"]
 
 [ext_resource type="Script" uid="uid://8k6pqsmgt5pe" path="res://PokerGame.cs" id="1_rwx4p"]
 [ext_resource type="PackedScene" uid="uid://dm1t1olfbu82u" path="res://CardVisual.tscn" id="2_eibjp"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_eibjp"]
+font_size = 32
+
+[sub_resource type="LabelSettings" id="LabelSettings_o1p3i"]
+font_size = 32
+
+[sub_resource type="LabelSettings" id="LabelSettings_l4y0v"]
+font_size = 32
 
 [node name="PokerGame" type="Node2D"]
 scale = Vector2(3, 3)
@@ -46,6 +55,33 @@ text = "Check"
 [node name="BetRaiseButton" type="Button" parent="CanvasLayer/Control/ActionButtons"]
 layout_mode = 2
 text = "Bet"
+
+[node name="PlayerStackLabel" type="Label" parent="CanvasLayer/Control"]
+layout_mode = 0
+offset_left = 927.0
+offset_top = 623.0
+offset_right = 967.0
+offset_bottom = 668.0
+text = "0"
+label_settings = SubResource("LabelSettings_eibjp")
+
+[node name="OpponentStackLabel" type="Label" parent="CanvasLayer/Control"]
+layout_mode = 0
+offset_left = 263.0
+offset_top = 72.0
+offset_right = 303.0
+offset_bottom = 117.0
+text = "0"
+label_settings = SubResource("LabelSettings_o1p3i")
+
+[node name="PotLabel" type="Label" parent="CanvasLayer/Control"]
+layout_mode = 0
+offset_left = 111.0
+offset_top = 349.0
+offset_right = 166.0
+offset_bottom = 394.0
+text = "100"
+label_settings = SubResource("LabelSettings_l4y0v")
 
 [node name="PlayerArea" type="Node2D" parent="."]
 position = Vector2(385.66666, 215.66669)

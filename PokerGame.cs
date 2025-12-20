@@ -37,16 +37,22 @@ public partial class PokerGame : Node2D
 	private int playerChips = 50;
 	private int opponentChips = 50;
 	private int pot = 0;
-
 	private int betAmount = 5;
 	
-	private Street currentStreet = Street.Flop;
+	private Label playerStackLabel;
+	private Label opponentStackLabel;
+	private Label potLabel;
+
+	
+	private Street currentStreet = Street.Preflop;
 	private bool handInProgress = false;
 
 	public override void _Ready()
 	{
 		GD.Print("=== Poker Game Started ===");
-	
+		
+		Control hudControl = GetNode<Control>("CanvasLayer/Control");
+
 		cardVisualScene = GD.Load<PackedScene>("res://CardVisual.tscn");
 		
 		Node2D opponentArea = GetNode<Node2D>("OpponentArea");
@@ -64,11 +70,15 @@ public partial class PokerGame : Node2D
 		turnCard = communityCardsArea.GetNode<CardVisual>("Turn");
 		riverCard = communityCardsArea.GetNode<CardVisual>("River");
 		
-		Control actionButtons = GetNode<Control>("CanvasLayer/Control/ActionButtons");
+		Control actionButtons = hudControl.GetNode<Control>("ActionButtons");
 		
 		foldButton = actionButtons.GetNode<Button>("FoldButton");
 		checkCallButton = actionButtons.GetNode<Button>("CheckCallButton");
 		betRaiseButton = actionButtons.GetNode<Button>("BetRaiseButton");
+		
+		playerStackLabel = hudControl.GetNode<Label>("PlayerStackLabel");
+		opponentStackLabel = hudControl.GetNode<Label>("OpponentStackLabel");
+		potLabel = hudControl.GetNode<Label>("PotLabel");
 		
 		foldButton.Pressed += OnFoldPressed;
 		checkCallButton.Pressed += OnCheckCallPressed;
@@ -77,6 +87,7 @@ public partial class PokerGame : Node2D
 		deck = new Deck();
 		deck.Shuffle();
 		pot = 0;
+		UpdateHud();
 		
 		DealInitialHands();
 		currentStreet = Street.Preflop;
@@ -166,6 +177,7 @@ public partial class PokerGame : Node2D
 
 		opponentChips += pot;
 		pot = 0;
+		UpdateHud();
 
 		GD.Print($"Stacks -> Player: {playerChips}, Opponent: {opponentChips}");
 
@@ -181,6 +193,7 @@ public partial class PokerGame : Node2D
 		int toBet = Math.Min(betAmount, playerChips);
 		playerChips -= toBet;
 		pot += toBet;
+		UpdateHud();
 		
 		GD.Print($"Player bets {toBet}, Player stack: {playerChips}, Pot: {pot}");
 		OpponentAutoCall();
@@ -196,18 +209,27 @@ public partial class PokerGame : Node2D
 		int toBet = Math.Min(betAmount * 2, playerChips);
 		playerChips -= toBet;
 		pot += toBet;
-
+		UpdateHud();
+		
 		GD.Print($"Player raises {toBet}, Player stack: {playerChips}, Pot: {pot}");
 		OpponentAutoCall();
 	
 		AdvanceStreet();
 	}
 	
+	private void UpdateHud()
+	{
+		playerStackLabel.Text = $"You: {playerChips}";
+		opponentStackLabel.Text = $"Opp: {opponentChips}";
+		potLabel.Text = $"Pot: {pot}";
+	}
+
 	private void OpponentAutoCall()
 	{
 		int toCall = Math.Min(betAmount, opponentChips);
 		opponentChips -= toCall;
 		pot += toCall;
+		UpdateHud();
 
 		GD.Print($"Opponent calls {toCall}, Opponent stack: {opponentChips}, Pot: {pot}");
 	}
@@ -269,6 +291,7 @@ public partial class PokerGame : Node2D
 
 		GD.Print($"Stacks -> Player: {playerChips}, Opponent: {opponentChips}");
 		pot = 0;
+		UpdateHud();
 
 		handInProgress = false;
 	}
