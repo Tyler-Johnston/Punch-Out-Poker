@@ -38,6 +38,10 @@ public partial class PokerGame : Node2D
 	private int opponentChips = 50;
 	private int pot = 0;
 	private int betAmount = 5;
+	private int currentBet = 0;
+
+	private int smallBlind = 5;
+	private int bigBlind = 10;
 	
 	private Label playerStackLabel;
 	private Label opponentStackLabel;
@@ -49,6 +53,9 @@ public partial class PokerGame : Node2D
 	
 	private Street currentStreet = Street.Preflop;
 	private bool handInProgress = false;
+	private bool waitingForNextGame = false;
+	
+	
 
 	public override void _Ready()
 	{
@@ -130,6 +137,12 @@ public partial class PokerGame : Node2D
 		DealInitialHands();
 		currentStreet = Street.Preflop;
 		handInProgress = true;
+		
+		// player pays the small blind
+		playerChips -= smallBlind;
+		opponentChips -= bigBlind;
+		pot += smallBlind + bigBlind;
+		GD.Print($"Blinds posted: Player {smallBlind}, Opponent {bigBlind}, Pot: {pot}");
 
 		UpdateHud();
 	}
@@ -266,13 +279,12 @@ public partial class PokerGame : Node2D
 	
 	private void UpdateHud()
 	{
-		if (!handInProgress)
+		if (waitingForNextGame)
 		{
-			checkCallButton.Text = "Next Hand";
+			checkCallButton.Text = $"Next Hand: {smallBlind} chips";
 			foldButton.Visible = false;
 			betRaiseButton.Visible = false;
-			playerHandType.Text = "Test1";
-			opponentHandType.Text = "Test2";
+			waitingForNextGame = false;
 		}
 		playerStackLabel.Text = $"You: {playerChips}";
 		opponentStackLabel.Text = $"Opp: {opponentChips}";
@@ -358,6 +370,7 @@ public partial class PokerGame : Node2D
 		GD.Print($"Stacks -> Player: {playerChips}, Opponent: {opponentChips}");
 		pot = 0;
 		handInProgress = false;
+		waitingForNextGame = true;
 		UpdateHud();
 		playerHandType.Text = playerHandName;
 		opponentHandType.Text = opponentHandName;
