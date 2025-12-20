@@ -1,6 +1,16 @@
-[gd_scene load_steps=6 format=3 uid="uid://dm1t1olfbu82u"]
+[gd_scene load_steps=8 format=3 uid="uid://dm1t1olfbu82u"]
 
 [ext_resource type="Script" uid="uid://bqpvv0263uywg" path="res://CardVisual.cs" id="1_svlf2"]
+
+[sub_resource type="FontFile" id="FontFile_svlf2"]
+cache/0/16/0/ascent = 0.0
+cache/0/16/0/descent = 0.0
+cache/0/16/0/underline_position = 0.0
+cache/0/16/0/underline_thickness = 0.0
+cache/0/16/0/scale = 1.0
+
+[sub_resource type="Theme" id="Theme_xq0vi"]
+default_font = SubResource("FontFile_svlf2")
 
 [sub_resource type="FontVariation" id="FontVariation_ultfy"]
 
@@ -26,15 +36,16 @@ offset_right = -1138.0
 offset_bottom = -528.0
 grow_horizontal = 2
 grow_vertical = 2
+scale = Vector2(0.15, 0.15)
 script = ExtResource("1_svlf2")
 
 [node name="Background" type="ColorRect" parent="."]
 layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
+offset_right = 142.0
+offset_bottom = 192.0
+mouse_filter = 2
+theme = SubResource("Theme_xq0vi")
+color = Color(0.59854925, 0.0034842812, 0.9209087, 1)
 
 [node name="RankLabel" type="Label" parent="."]
 layout_mode = 0
