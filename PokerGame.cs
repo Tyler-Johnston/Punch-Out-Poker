@@ -26,8 +26,9 @@ public partial class PokerGame : Node2D
 		
 		// Get references to position areas
 		opponentArea = GetNode<Node2D>("OpponentArea");
-		communityCardsArea = GetNode<Node2D>("CommunityCardsArea");
+		//communityCardsArea = GetNode<Node2D>("CommunityCardsArea");
 		playerArea = GetNode<Node2D>("PlayerArea");
+		
 		
 		// Create and shuffle deck
 		deck = new Deck();
@@ -35,9 +36,6 @@ public partial class PokerGame : Node2D
 		
 		// Deal cards
 		TestDealCards();
-		
-		// Display cards on screen
-		DisplayCards();
 		
 		// Evaluate and determine winner
 		EvaluateWinner();
@@ -53,12 +51,22 @@ public partial class PokerGame : Node2D
 		
 		GD.Print($"Player hand: {playerHand[0]}, {playerHand[1]}");
 		
+		var playerCard1 = playerArea.GetNode<CardVisual>("PlayerCard1");
+		var playerCard2 = playerArea.GetNode<CardVisual>("PlayerCard2");
+		playerCard1.SetCard(playerHand[0]);
+		playerCard2.SetCard(playerHand[1]);
+		
+		
 		// Deal 2 cards to opponent
 		opponentHand.Add(deck.Deal());
 		opponentHand.Add(deck.Deal());
 		
 		GD.Print($"Opponent hand: {opponentHand[0]}, {opponentHand[1]}");
 		
+		var opponentCard1 = opponentArea.GetNode<CardVisual>("OpponentCard1");
+		var opponentCard2 = opponentArea.GetNode<CardVisual>("OpponentCard2");
+		opponentCard1.SetCard(opponentHand[0]);
+		opponentCard2.SetCard(opponentHand[1]);
 		// Deal 5 community cards (flop, turn, river)
 		GD.Print("\n=== Community Cards ===");
 		
@@ -77,58 +85,6 @@ public partial class PokerGame : Node2D
 		GD.Print($"River: {communityCards[4]}");
 		
 		GD.Print($"\nCards remaining in deck: {deck.CardsRemaining()}");
-	}
-	
-	private void DisplayCards()
-	{
-		GD.Print("\n=== Displaying Cards ===");
-		
-		// Display player cards (face up)
-		SpawnCard(playerHand[0], playerArea.GetNode<Node2D>("PlayerCard1").Position, playerArea);
-		SpawnCard(playerHand[1], playerArea.GetNode<Node2D>("PlayerCard2").Position, playerArea);
-		
-		// Display opponent cards (face down)
-		SpawnCardFaceDown(opponentArea.GetNode<Node2D>("OpponentCard1").Position, opponentArea);
-		SpawnCardFaceDown(opponentArea.GetNode<Node2D>("OpponentCard2").Position, opponentArea);
-		
-		// Display community cards
-		SpawnCard(communityCards[0], communityCardsArea.GetNode<Node2D>("Flop1").Position, communityCardsArea);
-		SpawnCard(communityCards[1], communityCardsArea.GetNode<Node2D>("Flop2").Position, communityCardsArea);
-		SpawnCard(communityCards[2], communityCardsArea.GetNode<Node2D>("Flop3").Position, communityCardsArea);
-		SpawnCard(communityCards[3], communityCardsArea.GetNode<Node2D>("Turn").Position, communityCardsArea);
-		SpawnCard(communityCards[4], communityCardsArea.GetNode<Node2D>("River").Position, communityCardsArea);
-		
-		GD.Print("Cards displayed!");
-	}
-	
-	private void SpawnCard(Card card, Vector2 position, Node2D parent)
-	{
-		// Instantiate a CardVisual
-		var cardVisual = cardVisualScene.Instantiate<CardVisual>();
-		
-		// Set its position
-		cardVisual.Position = position;
-		
-		// Set the card data
-		cardVisual.SetCard(card);
-		
-		// Add to the scene
-		parent.AddChild(cardVisual);
-	}
-	
-	private void SpawnCardFaceDown(Vector2 position, Node2D parent)
-	{
-		// Instantiate a CardVisual
-		var cardVisual = cardVisualScene.Instantiate<CardVisual>();
-		
-		// Set its position
-		cardVisual.Position = position;
-		
-		// Set it face down
-		cardVisual.SetFaceDown();
-		
-		// Add to the scene
-		parent.AddChild(cardVisual);
 	}
 	
 	private void EvaluateWinner()

@@ -1,17 +1,7 @@
-[gd_scene load_steps=4 format=3 uid="uid://b5sq1675fwcio"]
+[gd_scene load_steps=3 format=3 uid="uid://b5sq1675fwcio"]
 
 [ext_resource type="Script" uid="uid://8k6pqsmgt5pe" path="res://PokerGame.cs" id="1_rwx4p"]
-
-[sub_resource type="FontFile" id="FontFile_rwx4p"]
-cache/0/16/0/ascent = 0.0
-cache/0/16/0/descent = 0.0
-cache/0/16/0/underline_position = 0.0
-cache/0/16/0/underline_thickness = 0.0
-cache/0/16/0/scale = 1.0
-
-[sub_resource type="LabelSettings" id="LabelSettings_eibjp"]
-font = SubResource("FontFile_rwx4p")
-font_color = Color(0, 0, 0, 1)
+[ext_resource type="PackedScene" uid="uid://dm1t1olfbu82u" path="res://CardVisual.tscn" id="2_eibjp"]
 
 [node name="PokerGame" type="Node2D"]
 scale = Vector2(3, 3)
@@ -37,94 +27,54 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.41617727, 0.73874, 0.81575465, 1)
 
-[node name="Label" type="Label" parent="CanvasLayer/Control"]
-layout_mode = 0
-offset_right = 40.0
-offset_bottom = 23.0
-text = "TEST"
-label_settings = SubResource("LabelSettings_eibjp")
+[node name="PlayerArea" type="Node2D" parent="."]
+position = Vector2(385.66666, 215.66669)
+scale = Vector2(1.5, 1.5)
+
+[node name="PlayerCard1" parent="PlayerArea" instance=ExtResource("2_eibjp")]
+anchors_preset = 0
+anchor_right = 0.0
+anchor_bottom = 0.0
+offset_left = 2.6666677
+offset_top = -15.666653
+offset_right = 2.6666677
+offset_bottom = -15.666653
+grow_horizontal = 1
+grow_vertical = 1
+
+[node name="PlayerCard2" parent="PlayerArea" instance=ExtResource("2_eibjp")]
+anchors_preset = 0
+anchor_right = 0.0
+anchor_bottom = 0.0
+offset_left = -25.0
+offset_top = -15.666653
+offset_right = -25.0
+offset_bottom = -15.666653
+grow_horizontal = 1
+grow_vertical = 1
 
 [node name="OpponentArea" type="Node2D" parent="."]
-position = Vector2(202, 32.333336)
+position = Vector2(41.666656, 28.666687)
+scale = Vector2(1.5, 1.5)
 
-[node name="OpponentPortrait" type="Sprite2D" parent="OpponentArea"]
-
-[node name="OpponentChips" type="Label" parent="OpponentArea"]
-offset_left = -0.33333334
-offset_top = 0.33333334
-offset_right = 39.666668
-offset_bottom = 23.333334
-
-[node name="OpponentCard1" type="Node2D" parent="OpponentArea"]
-position = Vector2(-56.66667, 37.333336)
-
-[node name="OpponentCard2" type="Node2D" parent="OpponentArea"]
-position = Vector2(41.66667, 40)
-
-[node name="CommunityCardsArea" type="Node2D" parent="."]
-position = Vector2(20.666674, 19.999989)
-
-[node name="Flop1" type="Sprite2D" parent="CommunityCardsArea"]
-position = Vector2(58.666656, 110.000015)
-
-[node name="Flop2" type="Sprite2D" parent="CommunityCardsArea"]
-position = Vector2(116.99999, 109.66668)
-
-[node name="Flop3" type="Sprite2D" parent="CommunityCardsArea"]
-position = Vector2(192.33334, 110.66668)
-
-[node name="Turn" type="Sprite2D" parent="CommunityCardsArea"]
-position = Vector2(276.33334, 109.66668)
-
-[node name="River" type="Sprite2D" parent="CommunityCardsArea"]
-position = Vector2(353.33334, 109.000015)
-
-[node name="Pot" type="Node2D" parent="."]
-position = Vector2(297.33334, 87)
-
-[node name="PotLabel" type="Label" parent="Pot"]
-offset_right = 40.0
-offset_bottom = 23.0
-
-[node name="PlayerArea" type="Node2D" parent="."]
-position = Vector2(364.66666, 203.33333)
-
-[node name="PlayerChips" type="Label" parent="PlayerArea"]
-offset_left = 113.666664
-offset_top = -13.33334
-offset_right = 206.66669
-offset_bottom = 23.333332
-
-[node name="PlayerCard1" type="Node2D" parent="PlayerArea"]
-position = Vector2(0, 5.999961)
-
-[node name="PlayerCard2" type="Node2D" parent="PlayerArea"]
-position = Vector2(35.33332, 6.0000153)
-
-[node name="PlayerButtonUI" type="Control" parent="."]
-layout_mode = 3
+[node name="OpponentCard1" parent="OpponentArea" instance=ExtResource("2_eibjp")]
 anchors_preset = 0
-offset_left = 205.0
-offset_top = 92.66667
-offset_right = 245.0
-offset_bottom = 132.66667
+anchor_right = 0.0
+anchor_bottom = 0.0
+offset_left = 2.6666677
+offset_top = -15.666653
+offset_right = 2.6666677
+offset_bottom = -15.666653
+grow_horizontal = 1
+grow_vertical = 1
 
-[node name="CheckButton" type="Button" parent="PlayerButtonUI"]
-layout_mode = 0
-offset_right = 8.0
-offset_bottom = 8.0
-
-[node name="BetButton" type="Button" parent="PlayerButtonUI"]
-layout_mode = 0
-offset_right = 8.0
-offset_bottom = 8.0
-
-[node name="CallButton" type="Button" parent="PlayerButtonUI"]
-layout_mode = 0
-offset_right = 8.0
-offset_bottom = 8.0
-
-[node name="FoldButton" type="Button" parent="PlayerButtonUI"]
-layout_mode = 0
-offset_right = 8.0
-offset_bottom = 8.0
+[node name="OpponentCard2" parent="OpponentArea" instance=ExtResource("2_eibjp")]
+anchors_preset = 0
+anchor_right = 0.0
+anchor_bottom = 0.0
+offset_left = -25.0
+offset_top = -15.666653
+offset_right = -25.0
+offset_bottom = -15.666653
+grow_horizontal = 1
+grow_vertical = 1

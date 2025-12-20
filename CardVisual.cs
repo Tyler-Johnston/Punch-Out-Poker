@@ -7,7 +7,6 @@ public partial class CardVisual : Control
 	private Label suitLabel;
 	private ColorRect background;
 	
-	// Lazy initialization - get nodes when first needed
 	private void EnsureNodesReady()
 	{
 		if (rankLabel == null)
