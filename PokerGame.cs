@@ -4,124 +4,156 @@ using System.Collections.Generic;
 
 public partial class PokerGame : Node2D
 {
-	// Load the CardVisual scene
+	
 	private PackedScene cardVisualScene;
 	
 	private Deck deck;
 	private List<Card> playerHand = new List<Card>();
 	private List<Card> opponentHand = new List<Card>();
 	private List<Card> communityCards = new List<Card>();
+
+	private CardVisual playerCard1;
+	private CardVisual playerCard2;
+	private CardVisual opponentCard1;
+	private CardVisual opponentCard2;
+	private CardVisual flop1;
+	private CardVisual flop2;
+	private CardVisual flop3;
+	private CardVisual turnCard;
+	private CardVisual riverCard;
 	
-	// References to card position areas
-	private Node2D opponentArea;
-	private Node2D communityCardsArea;
-	private Node2D playerArea;
+	private enum Street
+	{
+		Flop,
+		Turn,
+		River
+	}
 
 	public override void _Ready()
 	{
 		GD.Print("=== Poker Game Started ===");
-		
-		// Load the CardVisual scene
+	
 		cardVisualScene = GD.Load<PackedScene>("res://CardVisual.tscn");
 		
-		// Get references to position areas
-		opponentArea = GetNode<Node2D>("OpponentArea");
-		communityCardsArea = GetNode<Node2D>("CommunityCardsArea");
-		playerArea = GetNode<Node2D>("PlayerArea");
+		Node2D opponentArea = GetNode<Node2D>("OpponentArea");
+		Node2D communityCardsArea = GetNode<Node2D>("CommunityCardsArea");
+		Node2D playerArea = GetNode<Node2D>("PlayerArea");
 		
+		playerCard1 = playerArea.GetNode<CardVisual>("PlayerCard1");
+		playerCard2 = playerArea.GetNode<CardVisual>("PlayerCard2");
+		opponentCard1 = opponentArea.GetNode<CardVisual>("OpponentCard1");
+		opponentCard2 = opponentArea.GetNode<CardVisual>("OpponentCard2");
+
+		flop1 = communityCardsArea.GetNode<CardVisual>("Flop1");
+		flop2 = communityCardsArea.GetNode<CardVisual>("Flop2");
+		flop3 = communityCardsArea.GetNode<CardVisual>("Flop3");
+		turnCard = communityCardsArea.GetNode<CardVisual>("Turn");
+		riverCard = communityCardsArea.GetNode<CardVisual>("River");
 		
-		// Create and shuffle deck
 		deck = new Deck();
 		deck.Shuffle();
 		
-		// Deal cards
-		TestDealCards();
-		
-		// Evaluate and determine winner
+		DealInitialHands();
+		DealCommunityCards(Street.Flop);
+		//RevealCommunityCards(Street.Flop);
+		DealCommunityCards(Street.Turn);
+		//RevealCommunityCards(Street.Turn);
+		DealCommunityCards(Street.River);
+		//RevealCommunityCards(Street.River);
 		EvaluateWinner();
 	}
 	
-	private void TestDealCards()
+	private void DealInitialHands()
 	{
-		GD.Print("\n=== Dealing Cards ===");
-		
-		// Deal 2 cards to player
+		GD.Print("\n=== Dealing Initial Hands ===");
+
+		playerHand.Clear();
+		opponentHand.Clear();
+		communityCards.Clear();
+
 		playerHand.Add(deck.Deal());
 		playerHand.Add(deck.Deal());
-		
+		opponentHand.Add(deck.Deal());
+		opponentHand.Add(deck.Deal());
+
 		GD.Print($"Player hand: {playerHand[0]}, {playerHand[1]}");
+		GD.Print($"Opponent hand: {opponentHand[0]}, {opponentHand[1]}");
 		
-		var playerCard1 = playerArea.GetNode<CardVisual>("PlayerCard1");
-		var playerCard2 = playerArea.GetNode<CardVisual>("PlayerCard2");
 		playerCard1.ShowCard(playerHand[0]);
 		playerCard2.ShowCard(playerHand[1]);
 		
-		// Deal 2 cards to opponent
-		opponentHand.Add(deck.Deal());
-		opponentHand.Add(deck.Deal());
-		
-		GD.Print($"Opponent hand: {opponentHand[0]}, {opponentHand[1]}");
-		
-		var opponentCard1 = opponentArea.GetNode<CardVisual>("OpponentCard1");
-		var opponentCard2 = opponentArea.GetNode<CardVisual>("OpponentCard2");
 		opponentCard1.ShowBack();
 		opponentCard2.ShowBack();
+	}
 
-		// Deal 5 community cards (flop, turn, river)
-		GD.Print("\n=== Community Cards ===");
-		
-		// Flop (3 cards)
-		communityCards.Add(deck.Deal());
-		communityCards.Add(deck.Deal());
-		communityCards.Add(deck.Deal());
-		GD.Print($"Flop: {communityCards[0]}, {communityCards[1]}, {communityCards[2]}");
-		
-		// Turn (1 card)
-		communityCards.Add(deck.Deal());
-		GD.Print($"Turn: {communityCards[3]}");
-		
-		// River (1 card)
-		communityCards.Add(deck.Deal());
-		GD.Print($"River: {communityCards[4]}");
-		
-		// Display community cards
-		var flop1 = communityCardsArea.GetNode<CardVisual>("Flop1");
-		var flop2 = communityCardsArea.GetNode<CardVisual>("Flop2");
-		var flop3 = communityCardsArea.GetNode<CardVisual>("Flop3");
-		var turn = communityCardsArea.GetNode<CardVisual>("Turn");
-		var river = communityCardsArea.GetNode<CardVisual>("River");
+	private void DealCommunityCards(Street street)
+	{
+		GD.Print($"\n=== Community Cards: {street} ===");
 
-		//flop1.ShowCard(communityCards[0]);
-		//flop2.ShowCard(communityCards[1]);
-		//flop3.ShowCard(communityCards[2]);
-		//turn.ShowCard(communityCards[3]);
-		//river.ShowCard(communityCards[4]);
-		
-		flop1.ShowBack();
-		flop2.ShowBack();
-		flop3.ShowBack();
-		turn.ShowBack();
-		river.ShowBack();
-		
-		GD.Print($"\nCards remaining in deck: {deck.CardsRemaining()}");
+		switch (street)
+		{
+			case Street.Flop:
+				communityCards.Add(deck.Deal());
+				communityCards.Add(deck.Deal());
+				communityCards.Add(deck.Deal());
+
+				GD.Print($"Flop: {communityCards[0]}, {communityCards[1]}, {communityCards[2]}");
+
+				flop1.ShowBack();
+				flop2.ShowBack();
+				flop3.ShowBack();
+				break;
+
+			case Street.Turn:
+				communityCards.Add(deck.Deal());
+				GD.Print($"Turn: {communityCards[3]}");
+
+				turnCard.ShowBack();
+				break;
+
+			case Street.River:
+				communityCards.Add(deck.Deal());
+				GD.Print($"River: {communityCards[4]}");
+
+				riverCard.ShowBack();
+				break;
+		}
+	}
+	
+	private void RevealCommunityCards(Street street)
+	{
+		GD.Print($"\n=== Reveal Community Cards: {street} ===");
+		switch (street)
+		{
+			case Street.Flop:
+				flop1.ShowCard(communityCards[0]);
+				flop2.ShowCard(communityCards[1]);
+				flop3.ShowCard(communityCards[2]);
+				break;
+
+			case Street.Turn:
+				turnCard.ShowCard(communityCards[3]);
+				break;
+
+			case Street.River:
+				riverCard.ShowCard(communityCards[4]);
+				break;
+		}
 	}
 	
 	private void EvaluateWinner()
 	{
 		GD.Print("\n=== Showdown ===");
 		
-		// Evaluate both hands using the HandEvaluator
 		int playerRank = HandEvaluator.EvaluateHand(playerHand, communityCards);
 		int opponentRank = HandEvaluator.EvaluateHand(opponentHand, communityCards);
 		
-		// Get readable hand names
 		string playerHandName = HandEvaluator.GetHandName(playerRank);
 		string opponentHandName = HandEvaluator.GetHandName(opponentRank);
 		
 		GD.Print($"Player: {playerHandName} (rank: {playerRank})");
 		GD.Print($"Opponent: {opponentHandName} (rank: {opponentRank})");
-		
-		// Determine winner (lower rank = better)
+	
 		int result = HandEvaluator.CompareHands(playerRank, opponentRank);
 		
 		if (result > 0)
