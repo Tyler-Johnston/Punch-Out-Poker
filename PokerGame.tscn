@@ -58,10 +58,10 @@ text = "Bet"
 
 [node name="PlayerStackLabel" type="Label" parent="CanvasLayer/Control"]
 layout_mode = 0
-offset_left = 927.0
-offset_top = 623.0
-offset_right = 967.0
-offset_bottom = 668.0
+offset_left = 863.0
+offset_top = 620.0
+offset_right = 903.0
+offset_bottom = 665.0
 text = "0"
 label_settings = SubResource("LabelSettings_eibjp")
 
