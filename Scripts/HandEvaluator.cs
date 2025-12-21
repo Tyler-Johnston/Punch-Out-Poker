@@ -13,22 +13,93 @@ public static class HandEvaluator
 		return new pheval.Card(id);
 	}
 	
-	// Evaluate a 7-card hand (2 hole + 5 community)
+	// Evaluate a hand with flexible card count (5, 6, or 7 cards)
 	public static int EvaluateHand(List<Card> holeCards, List<Card> communityCards)
 	{
 		var allCards = holeCards.Concat(communityCards).ToList();
 		
-		if (allCards.Count != 7)
+		int cardCount = allCards.Count;
+		
+		if (cardCount < 5 || cardCount > 7)
 		{
-			GD.PrintErr($"Invalid hand size: {allCards.Count}. Need exactly 7 cards.");
+			GD.PrintErr($"Invalid hand size: {cardCount}. Need 5, 6, or 7 cards.");
 			return int.MaxValue;
 		}
 		
 		// Convert to pheval cards
 		pheval.Card[] phevalCards = allCards.Select(c => ToPhevalCard(c)).ToArray();
 		
-		// Use Eval7Cards to evaluate the 7-card hand
+		// Use appropriate evaluation method based on card count
+		switch (cardCount)
+		{
+			case 5:
+				return Eval.Eval5Cards(phevalCards);
+			case 6:
+				return Eval.Eval6Cards(phevalCards);
+			case 7:
+				return Eval.Eval7Cards(phevalCards);
+			default:
+				GD.PrintErr($"Unexpected hand size: {cardCount}");
+				return int.MaxValue;
+		}
+	}
+	
+	// Evaluate exactly 5 cards
+	public static int Evaluate5Cards(List<Card> cards)
+	{
+		if (cards.Count != 5)
+		{
+			GD.PrintErr($"Invalid hand size: {cards.Count}. Need exactly 5 cards.");
+			return int.MaxValue;
+		}
+		
+		pheval.Card[] phevalCards = cards.Select(c => ToPhevalCard(c)).ToArray();
+		return Eval.Eval5Cards(phevalCards);
+	}
+	
+	// Evaluate exactly 6 cards
+	public static int Evaluate6Cards(List<Card> cards)
+	{
+		if (cards.Count != 6)
+		{
+			GD.PrintErr($"Invalid hand size: {cards.Count}. Need exactly 6 cards.");
+			return int.MaxValue;
+		}
+		
+		pheval.Card[] phevalCards = cards.Select(c => ToPhevalCard(c)).ToArray();
+		return Eval.Eval6Cards(phevalCards);
+	}
+	
+	// Evaluate exactly 7 cards
+	public static int Evaluate7Cards(List<Card> cards)
+	{
+		if (cards.Count != 7)
+		{
+			GD.PrintErr($"Invalid hand size: {cards.Count}. Need exactly 7 cards.");
+			return int.MaxValue;
+		}
+		
+		pheval.Card[] phevalCards = cards.Select(c => ToPhevalCard(c)).ToArray();
 		return Eval.Eval7Cards(phevalCards);
+	}
+	
+	// Overload: Evaluate with separate hole and community cards
+	public static int Evaluate5Cards(List<Card> holeCards, List<Card> communityCards)
+	{
+		var allCards = holeCards.Concat(communityCards).ToList();
+		return Evaluate5Cards(allCards);
+	}
+	
+	public static int Evaluate6Cards(List<Card> holeCards, List<Card> communityCards)
+	{
+		var allCards = holeCards.Concat(communityCards).ToList();
+		return Evaluate6Cards(allCards);
+	}
+	
+	public static int Evaluate7Cards(List<Card> holeCards, List<Card> communityCards)
+	{
+		var allCards = holeCards.Concat(communityCards).ToList();
+		return Evaluate7Cards(allCards);
 	}
 	
 	// Get hand name from rank (using our own logic)
