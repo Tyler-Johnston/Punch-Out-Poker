@@ -22,14 +22,6 @@ public partial class CardVisual : Control
 		
 		rankLabel.Text = card.GetRankSymbol();
 		suitLabel.Text = card.GetSuitSymbol();
-		
-		// Color based on suit
-		//Color cardColor = (card.Suit == Suit.Hearts || card.Suit == Suit.Diamonds) 
-			//? Colors.Red 
-			//: Colors.Black;
-			//
-		//rankLabel.AddThemeColorOverride("font_color", cardColor);
-		//suitLabel.AddThemeColorOverride("font_color", cardColor);
 	}
 
 	public void ShowBack()

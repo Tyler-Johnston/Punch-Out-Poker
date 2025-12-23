@@ -1,6 +1,11 @@
-[gd_scene load_steps=2 format=3 uid="uid://bidpqx2rau884"]
+[gd_scene load_steps=4 format=3 uid="uid://bidpqx2rau884"]
 
 [ext_resource type="Script" uid="uid://baaqcq462wkko" path="res://Interfaces/MainMenu/MainMenu.cs" id="1_qb50w"]
+[ext_resource type="FontFile" uid="uid://dmret52s833gh" path="res://Assets/Jersey_10/Jersey10-Regular.ttf" id="2_l0vmy"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_lit4x"]
+font = ExtResource("2_l0vmy")
+font_size = 48
 
 [node name="Control" type="Control"]
 layout_mode = 3
@@ -45,10 +50,11 @@ text = "Quit"
 
 [node name="Label" type="Label" parent="."]
 layout_mode = 0
-offset_left = 397.0
-offset_top = 89.0
-offset_right = 643.5
-offset_bottom = 138.0
+offset_left = 370.0
+offset_top = 93.0
+offset_right = 656.0
+offset_bottom = 145.0
 scale = Vector2(2, 2)
 text = "Punch Out Poker!"
+label_settings = SubResource("LabelSettings_lit4x")
 horizontal_alignment = 1

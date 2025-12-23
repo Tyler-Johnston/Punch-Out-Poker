@@ -1,16 +1,20 @@
-[gd_scene load_steps=6 format=3 uid="uid://b5sq1675fwcio"]
+[gd_scene load_steps=7 format=3 uid="uid://b5sq1675fwcio"]
 
 [ext_resource type="Script" uid="uid://8k6pqsmgt5pe" path="res://PokerGame.cs" id="1_rwx4p"]
 [ext_resource type="PackedScene" uid="uid://dm1t1olfbu82u" path="res://CardVisual.tscn" id="2_eibjp"]
+[ext_resource type="FontFile" uid="uid://dmret52s833gh" path="res://Assets/Jersey_10/Jersey10-Regular.ttf" id="2_o1p3i"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_eibjp"]
-font_size = 32
+font = ExtResource("2_o1p3i")
+font_size = 48
 
 [sub_resource type="LabelSettings" id="LabelSettings_o1p3i"]
-font_size = 32
+font = ExtResource("2_o1p3i")
+font_size = 48
 
 [sub_resource type="LabelSettings" id="LabelSettings_l4y0v"]
-font_size = 32
+font = ExtResource("2_o1p3i")
+font_size = 48
 
 [node name="PokerGame" type="Node2D"]
 scale = Vector2(3, 3)

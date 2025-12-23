@@ -4,22 +4,6 @@ using System.Collections.Generic;
 
 public partial class PokerGame : Node2D
 {
-	private enum Street
-	{
-		Preflop,
-		Flop,
-		Turn,
-		River
-	}
-
-	private enum AIAction
-	{
-		Fold,
-		Check,
-		Call,
-		Bet,
-		Raise
-	}
 
 	private PackedScene cardVisualScene;
 	private Deck deck;
@@ -80,47 +64,6 @@ public partial class PokerGame : Node2D
 	private const int MAX_RAISES_PER_STREET = 4;
 
 	// Define Circuit A opponents with distinct personalities
-	private OpponentProfile[] circuitAOpponents = new OpponentProfile[]
-	{
-		// Opponent 1: "Timid Tom" - Passive, scared money
-		new OpponentProfile
-		{
-			Name = "Timid Tom",
-			BuyIn = 10,
-			Aggression = 0.25f,      // Very passive
-			Looseness = 0.3f,       // Tight hand selection
-			Bluffiness = 0.0f,      // Never bluffs
-			Adaptability = 0.1f,    // Doesn't adjust
-			PreflopAggression = 0.8f,  // Even more passive preflop
-			PostflopAggression = 1.0f
-		},
-
-		// Opponent 2: "Calling Carl" - Passive calling station
-		new OpponentProfile
-		{
-			Name = "Calling Carl",
-			BuyIn = 15,
-			Aggression = 0.3f,      // Passive
-			Looseness = 0.7f,       // Plays lots of hands
-			Bluffiness = 0.1f,      // Rarely bluffs
-			Adaptability = 0.2f,    // Slight adjustment
-			PreflopAggression = 1.2f,  // Slightly more aggressive preflop
-			PostflopAggression = 0.8f  // Passive postflop (calls too much)
-		},
-
-		// Opponent 3: "Wild Willie" - Aggressive maniac
-		new OpponentProfile
-		{
-			Name = "Wild Willie",
-			BuyIn = 20,
-			Aggression = 0.85f,     // Very aggressive
-			Looseness = 0.8f,       // Plays almost any hand
-			Bluffiness = 0.7f,      // Bluffs frequently
-			Adaptability = 0.4f,    // Adjusts somewhat
-			PreflopAggression = 1.3f,  // Extra aggressive preflop
-			PostflopAggression = 1.1f  // Extra aggressive postflop
-		}
-	};
 
 	public override void _Ready()
 	{
@@ -159,8 +102,7 @@ public partial class PokerGame : Node2D
 		checkCallButton.Pressed += OnCheckCallPressed;
 		betRaiseButton.Pressed += OnBetRaisePressed;
 
-		// Load opponent profile (for now, use index 0 - can be set from opponent select screen)
-		// TODO: Set selectedOpponentIndex from opponent selection screen
+		OpponentProfile[] circuitAOpponents = OpponentProfiles.CircuitAOpponents();
 		currentOpponent = circuitAOpponents[selectedOpponentIndex];
 		GD.Print($"=== Opponent: {currentOpponent.Name} ===");
 		GD.Print($"Aggression: {currentOpponent.Aggression:F2}");
