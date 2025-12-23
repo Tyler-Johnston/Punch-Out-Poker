@@ -2,32 +2,6 @@ using Godot;
 using System;
 using System.Collections.Generic;
 
-// Data-driven opponent profile system
-public class OpponentProfile
-{
-	public string Name;
-	public int BuyIn;
-
-	// Personality traits (0.0-1.0)
-	public float Aggression;        // How often bets/raises vs checks/calls
-	public float Looseness;         // How wide a hand range they play
-	public float Bluffiness;        // Bluff frequency
-	public float Adaptability;      // How much they adjust to player
-
-	// Street-specific modifiers
-	public float PreflopAggression = 1.0f;
-	public float PostflopAggression = 1.0f;
-
-	// Decision thresholds (calculated from traits)
-	public float FoldThreshold => 0.15f - (Looseness * 0.08f);
-	public float CallThreshold => 0.35f - (Aggression * 0.15f);
-	public float RaiseThreshold => 0.60f - (Aggression * 0.20f);
-	public float BluffChance => Bluffiness * 0.5f;
-
-	// Bet sizing
-	public float BetSizeFactor => 0.4f + (Aggression * 0.6f);
-}
-
 public partial class PokerGame : Node2D
 {
 	private enum Street
@@ -113,11 +87,11 @@ public partial class PokerGame : Node2D
 		{
 			Name = "Timid Tom",
 			BuyIn = 10,
-			Aggression = 0.2f,      // Very passive
+			Aggression = 0.25f,      // Very passive
 			Looseness = 0.3f,       // Tight hand selection
 			Bluffiness = 0.0f,      // Never bluffs
 			Adaptability = 0.1f,    // Doesn't adjust
-			PreflopAggression = 0.5f,  // Even more passive preflop
+			PreflopAggression = 0.8f,  // Even more passive preflop
 			PostflopAggression = 1.0f
 		},
 
