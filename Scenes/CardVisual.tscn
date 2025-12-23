@@ -1,6 +1,7 @@
-[gd_scene load_steps=10 format=3 uid="uid://dm1t1olfbu82u"]
+[gd_scene load_steps=9 format=3 uid="uid://dm1t1olfbu82u"]
 
 [ext_resource type="Script" uid="uid://bqpvv0263uywg" path="res://Scripts/Data Structures/CardVisual.cs" id="1_svlf2"]
+[ext_resource type="FontFile" uid="uid://dmret52s833gh" path="res://Assets/Jersey_10/Jersey10-Regular.ttf" id="2_vqtv4"]
 
 [sub_resource type="FontFile" id="FontFile_svlf2"]
 subpixel_positioning = 0
@@ -15,19 +16,14 @@ cache/0/16/0/scale = 1.0
 [sub_resource type="Theme" id="Theme_xq0vi"]
 default_font = SubResource("FontFile_svlf2")
 
-[sub_resource type="FontVariation" id="FontVariation_ultfy"]
-
-[sub_resource type="LabelSettings" id="LabelSettings_svlf2"]
-font = SubResource("FontVariation_ultfy")
-font_size = 32
-font_color = Color(0, 0, 0, 1)
-shadow_offset = Vector2(0, 10)
-
-[sub_resource type="FontVariation" id="FontVariation_xq0vi"]
-
-[sub_resource type="LabelSettings" id="LabelSettings_tfs76"]
-font = SubResource("FontVariation_xq0vi")
+[sub_resource type="LabelSettings" id="LabelSettings_ppfsh"]
+font = ExtResource("2_vqtv4")
 font_size = 48
+font_color = Color(0, 0, 0, 1)
+
+[sub_resource type="LabelSettings" id="LabelSettings_uypal"]
+font = ExtResource("2_vqtv4")
+font_size = 60
 font_color = Color(0, 0, 0, 1)
 
 [sub_resource type="FontFile" id="FontFile_xq0vi"]
@@ -62,27 +58,39 @@ offset_right = 142.0
 offset_bottom = 192.0
 mouse_filter = 2
 theme = SubResource("Theme_xq0vi")
-color = Color(0.59854925, 0.0034842812, 0.9209087, 1)
+color = Color(0.9146625, 0.84261745, 0.99999374, 1)
 
 [node name="RankLabel" type="Label" parent="."]
 layout_mode = 0
 offset_right = 40.0
 offset_bottom = 45.0
 text = "A"
-label_settings = SubResource("LabelSettings_svlf2")
+label_settings = SubResource("LabelSettings_ppfsh")
+horizontal_alignment = 1
+
+[node name="RankLabel2" type="Label" parent="."]
+layout_mode = 0
+offset_left = 139.99998
+offset_top = 200.0
+offset_right = 179.99998
+offset_bottom = 252.0
+rotation = 3.1415927
+text = "A"
+label_settings = SubResource("LabelSettings_ppfsh")
 horizontal_alignment = 1
 
 [node name="SuitLabel" type="Label" parent="."]
 layout_mode = 0
-offset_left = 94.0
-offset_top = 120.0
-offset_right = 134.0
-offset_bottom = 187.0
+offset_left = 40.0
+offset_top = 66.666664
+offset_right = 93.33333
+offset_bottom = 132.66666
 text = "♠"
-label_settings = SubResource("LabelSettings_tfs76")
+label_settings = SubResource("LabelSettings_uypal")
 horizontal_alignment = 1
 
 [node name="CardBack" type="ColorRect" parent="."]
+visible = false
 layout_mode = 1
 offset_right = 142.0
 offset_bottom = 192.0
