@@ -85,10 +85,11 @@ label_settings = SubResource("LabelSettings_l4y0v")
 
 [node name="GameStateLabel" type="Label" parent="CanvasLayer/Control"]
 layout_mode = 0
-offset_left = 593.0
-offset_top = 218.0
-offset_right = 648.0
-offset_bottom = 263.0
+offset_left = 365.0
+offset_top = 220.0
+offset_right = 636.0
+offset_bottom = 265.0
+text = "Game State Label"
 label_settings = SubResource("LabelSettings_l4y0v")
 
 [node name="PlayerHandType" type="Label" parent="CanvasLayer/Control"]
