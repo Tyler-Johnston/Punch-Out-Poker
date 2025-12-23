@@ -1,6 +1,6 @@
 [gd_scene load_steps=7 format=3 uid="uid://b5sq1675fwcio"]
 
-[ext_resource type="Script" uid="uid://8k6pqsmgt5pe" path="res://PokerGame.cs" id="1_rwx4p"]
+[ext_resource type="Script" uid="uid://8k6pqsmgt5pe" path="res://Scripts/Game/PokerGame.cs" id="1_rwx4p"]
 [ext_resource type="PackedScene" uid="uid://dm1t1olfbu82u" path="res://CardVisual.tscn" id="2_eibjp"]
 [ext_resource type="FontFile" uid="uid://dmret52s833gh" path="res://Assets/Jersey_10/Jersey10-Regular.ttf" id="2_o1p3i"]
 
@@ -113,6 +113,13 @@ offset_right = 202.0
 offset_bottom = 212.0
 text = "Royal Flush"
 label_settings = SubResource("LabelSettings_l4y0v")
+
+[node name="BetSlider" type="HSlider" parent="CanvasLayer/Control"]
+layout_mode = 0
+offset_left = 17.0
+offset_top = 621.0
+offset_right = 201.0
+offset_bottom = 637.0
 
 [node name="PlayerArea" type="Node2D" parent="."]
 position = Vector2(385.66666, 215.66669)
