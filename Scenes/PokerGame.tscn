@@ -84,7 +84,7 @@ offset_left = 111.0
 offset_top = 349.0
 offset_right = 166.0
 offset_bottom = 394.0
-text = "100"
+text = "Pot: 100"
 label_settings = SubResource("LabelSettings_l4y0v")
 
 [node name="GameStateLabel" type="Label" parent="CanvasLayer/Control"]
@@ -102,7 +102,7 @@ offset_left = 1040.0
 offset_top = 518.0
 offset_right = 1162.0
 offset_bottom = 563.0
-text = "Straight"
+text = "PlayerHandType"
 label_settings = SubResource("LabelSettings_l4y0v")
 
 [node name="OpponentHandType" type="Label" parent="CanvasLayer/Control"]
@@ -111,7 +111,7 @@ offset_left = 27.0
 offset_top = 167.0
 offset_right = 202.0
 offset_bottom = 212.0
-text = "Royal Flush"
+text = "OpponentHandType"
 label_settings = SubResource("LabelSettings_l4y0v")
 
 [node name="BetSlider" type="HSlider" parent="CanvasLayer/Control"]

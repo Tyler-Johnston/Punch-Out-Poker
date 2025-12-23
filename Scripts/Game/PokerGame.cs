@@ -24,6 +24,8 @@ public partial class PokerGame : Node2D
 	private CardVisual riverCard;
 
 	// UI
+	private HSlider betSlider;
+	
 	private Button foldButton;
 	private Button checkCallButton;
 	private Button betRaiseButton;
@@ -34,7 +36,7 @@ public partial class PokerGame : Node2D
 	private Label gameStateLabel;
 	private Label playerHandType;
 	private Label opponentHandType;
-
+	
 	// Game flow
 	private Street currentStreet = Street.Preflop;
 
@@ -74,10 +76,12 @@ public partial class PokerGame : Node2D
 		gameStateLabel = hudControl.GetNode<Label>("GameStateLabel");
 		playerHandType = hudControl.GetNode<Label>("PlayerHandType");
 		opponentHandType = hudControl.GetNode<Label>("OpponentHandType");
-
+		betSlider = hudControl.GetNode<HSlider>("BetSlider");
+		
 		foldButton.Pressed += OnFoldPressed;
 		checkCallButton.Pressed += OnCheckCallPressed;
 		betRaiseButton.Pressed += OnBetRaisePressed;
+		betSlider.ValueChanged += OnBetSliderValueChanged;
 
 		OpponentProfile[] circuitAOpponents = OpponentProfiles.CircuitAOpponents();
 		currentOpponent = circuitAOpponents[selectedOpponentIndex];
@@ -159,4 +163,5 @@ public partial class PokerGame : Node2D
 				break;
 		}
 	}
+	
 }

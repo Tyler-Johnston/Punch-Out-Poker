@@ -115,6 +115,7 @@ public partial class PokerGame
 		isPlayerTurn = true;
 		UpdateHud();
 		UpdateButtonLabels();
+		RefreshBetSlider();
 	}
 
 	private void OnFoldPressed()
@@ -131,6 +132,7 @@ public partial class PokerGame
 		handInProgress = false;
 		waitingForNextGame = true;
 		UpdateHud();
+		RefreshBetSlider();
 	}
 
 	private void OnCheckCallPressed()
@@ -175,6 +177,7 @@ public partial class PokerGame
 
 		isPlayerTurn = false;
 		UpdateHud();
+		RefreshBetSlider();
 
 		// Delay AI action slightly
 		GetTree().CreateTimer(0.8).Timeout += ProcessAIAction;
@@ -195,6 +198,9 @@ public partial class PokerGame
 		}
 
 		playerHasActedThisStreet = true;
+
+		// Final safety clamp in case slider/state was stale
+		betAmount = Math.Clamp(betAmount, 1, playerChips);
 
 		int raiseAmount = betAmount;
 		int totalBet = currentBet + raiseAmount;
@@ -235,6 +241,7 @@ public partial class PokerGame
 
 		isPlayerTurn = false;
 		UpdateHud();
+		RefreshBetSlider();
 
 		// Delay AI action
 		GetTree().CreateTimer(0.8).Timeout += ProcessAIAction;
@@ -271,25 +278,47 @@ public partial class PokerGame
 			isPlayerTurn = true;
 			UpdateHud();
 			UpdateButtonLabels();
+			RefreshBetSlider();
 		}
 	}
 
 	private void UpdateButtonLabels()
 	{
 		int toCall = currentBet - playerBet;
+		var (minBet, maxBet) = GetLegalBetRange();
+
+		bool allInOnly = (minBet == maxBet && maxBet == playerChips);
+		bool sliderAllIn = (maxBet == playerChips && betAmount == maxBet);
 
 		if (toCall == 0)
 		{
 			checkCallButton.Text = "Check";
-			betRaiseButton.Text = $"Bet {betAmount}";
+
+			if (allInOnly || sliderAllIn)
+			{
+				// Max slider => ALL IN for current stack
+				betRaiseButton.Text = $"ALL IN ({maxBet})";
+			}
+			else
+			{
+				betRaiseButton.Text = $"Bet {betAmount}";
+			}
 		}
 		else
 		{
-			checkCallButton.Text = $"Call {toCall}";
-			// Calculate actual raise amount (call + raise increment)
+			checkCallButton.Text = $"Call {Math.Min(toCall, playerChips)}";
+
 			int raiseTotal = currentBet + betAmount;
 			int toAddForRaise = raiseTotal - playerBet;
-			betRaiseButton.Text = $"Raise {toAddForRaise}";
+
+			if (allInOnly || sliderAllIn)
+			{
+				betRaiseButton.Text = $"ALL IN ({maxBet})";
+			}
+			else
+			{
+				betRaiseButton.Text = $"Raise {toAddForRaise}";
+			}
 		}
 
 		// Disable raise button if max raises reached
@@ -299,6 +328,7 @@ public partial class PokerGame
 			betRaiseButton.Text = "Max raises";
 		}
 	}
+
 
 	private void UpdateHud()
 	{
@@ -396,6 +426,80 @@ public partial class PokerGame
 
 		UpdateHud();
 		UpdateButtonLabels();
+		RefreshBetSlider();
+	}
+
+	private (int minBet, int maxBet) GetLegalBetRange()
+	{
+		// Stack cap: slider must never go above this
+		int maxBet = playerChips;
+		if (maxBet <= 0)
+			return (0, 0);
+
+		bool opening = currentBet == 0;
+		int minBet;
+
+		if (opening)
+		{
+			// Opening the betting: at least big blind, but you can always go all‑in if shorter
+			minBet = Math.Min(Math.Max(bigBlind, 1), maxBet);
+		}
+		else
+		{
+			// There is an existing bet (currentBet)
+			int toCall = currentBet - playerBet;
+
+			// Minimum legal *raise* size approximation: +big blind over currentBet
+			int minRaiseSize = bigBlind;
+			int minTotalBet = currentBet + minRaiseSize; // target total bet size
+			int minToAdd = minTotalBet - playerBet;      // chips you must put in to make that
+
+			// Base minimum: at least call, or a full raise if stack allows
+			int fullMin = Math.Max(toCall, minToAdd);
+
+			if (fullMin <= maxBet)
+			{
+				// You have enough to make a full legal raise
+				minBet = fullMin;
+			}
+			else
+			{
+				// Short stack: you can only go all‑in as a raise, or call if you can afford it
+				// From slider perspective, this is effectively "ALL IN"
+				minBet = maxBet;
+			}
+		}
+
+		// Final safety clamp
+		if (minBet > maxBet)
+			minBet = maxBet;
+
+		return (minBet, maxBet);
+	}
+
+	private void RefreshBetSlider()
+	{
+		if (betSlider == null)
+			return;
+
+		var (minBet, maxBet) = GetLegalBetRange();
+
+		if (maxBet <= 0)
+		{
+			betSlider.MinValue = 0;
+			betSlider.MaxValue = 0;
+			betSlider.Value = 0;
+			betSlider.Editable = false;
+			return;
+		}
+
+		betSlider.Editable = true;
+		betSlider.MinValue = minBet;
+		betSlider.MaxValue = maxBet;
+
+		// Clamp betAmount explicitly
+		betAmount = Math.Clamp(betAmount, minBet, maxBet);
+		betSlider.Value = betAmount;
 	}
 
 	private void ShowDown()
@@ -456,6 +560,40 @@ public partial class PokerGame
 		pot = 0;
 		handInProgress = false;
 		waitingForNextGame = true;
+
+		// Immediate bust-out detection
+		if (opponentChips <= 0)
+		{
+			ShowMessage("YOU WIN - Opponent ran out of chips!");
+			GD.Print("GAME OVER - Opponent has no chips");
+			checkCallButton.Text = "GAME OVER";
+			checkCallButton.Disabled = true;
+			foldButton.Visible = false;
+			betRaiseButton.Visible = false;
+		}
+		else if (playerChips <= 0)
+		{
+			ShowMessage("GAME OVER - You ran out of chips!");
+			GD.Print("GAME OVER - Player has no chips");
+			checkCallButton.Text = "GAME OVER";
+			checkCallButton.Disabled = true;
+			foldButton.Visible = false;
+			betRaiseButton.Visible = false;
+		}
+
 		UpdateHud();
+		RefreshBetSlider();
+	}
+
+	private void OnBetSliderValueChanged(double value)
+	{
+		int sliderValue = (int)Math.Round(value);
+
+		var (minBet, maxBet) = GetLegalBetRange();
+		sliderValue = Math.Clamp(sliderValue, minBet, maxBet);
+
+		betAmount = sliderValue;
+		betSlider.Value = betAmount; // snap back if user dragged outside
+		UpdateButtonLabels();
 	}
 }
