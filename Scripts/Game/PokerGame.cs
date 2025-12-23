@@ -46,7 +46,7 @@ public partial class PokerGame : Node2D
 	{
 		GD.Print("=== Poker Game Started ===");
 		Control hudControl = GetNode<Control>("CanvasLayer/Control");
-		cardVisualScene = GD.Load<PackedScene>("res://CardVisual.tscn");
+		cardVisualScene = GD.Load<PackedScene>("res://Scenes/CardVisual.tscn");
 
 		Node2D opponentArea = GetNode<Node2D>("OpponentArea");
 		Node2D communityCardsArea = GetNode<Node2D>("CommunityCardsArea");

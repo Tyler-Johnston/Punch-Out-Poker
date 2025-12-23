@@ -1,24 +1,24 @@
 [gd_scene load_steps=7 format=3 uid="uid://b5sq1675fwcio"]
 
-[ext_resource type="Script" uid="uid://8k6pqsmgt5pe" path="res://Scripts/Game/PokerGame.cs" id="1_rwx4p"]
-[ext_resource type="PackedScene" uid="uid://dm1t1olfbu82u" path="res://CardVisual.tscn" id="2_eibjp"]
-[ext_resource type="FontFile" uid="uid://dmret52s833gh" path="res://Assets/Jersey_10/Jersey10-Regular.ttf" id="2_o1p3i"]
+[ext_resource type="Script" uid="uid://8k6pqsmgt5pe" path="res://Scripts/Game/PokerGame.cs" id="1_8w0ed"]
+[ext_resource type="FontFile" uid="uid://dmret52s833gh" path="res://Assets/Jersey_10/Jersey10-Regular.ttf" id="2_j8upv"]
+[ext_resource type="PackedScene" uid="uid://dm1t1olfbu82u" path="res://Scenes/CardVisual.tscn" id="3_c6vvi"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_eibjp"]
-font = ExtResource("2_o1p3i")
+font = ExtResource("2_j8upv")
 font_size = 48
 
 [sub_resource type="LabelSettings" id="LabelSettings_o1p3i"]
-font = ExtResource("2_o1p3i")
+font = ExtResource("2_j8upv")
 font_size = 48
 
 [sub_resource type="LabelSettings" id="LabelSettings_l4y0v"]
-font = ExtResource("2_o1p3i")
+font = ExtResource("2_j8upv")
 font_size = 48
 
 [node name="PokerGame" type="Node2D"]
 scale = Vector2(3, 3)
-script = ExtResource("1_rwx4p")
+script = ExtResource("1_8w0ed")
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 layer = -1
@@ -125,7 +125,7 @@ offset_bottom = 637.0
 position = Vector2(385.66666, 215.66669)
 scale = Vector2(1.5, 1.5)
 
-[node name="PlayerCard1" parent="PlayerArea" instance=ExtResource("2_eibjp")]
+[node name="PlayerCard1" parent="PlayerArea" instance=ExtResource("3_c6vvi")]
 anchors_preset = 0
 anchor_right = 0.0
 anchor_bottom = 0.0
@@ -136,7 +136,7 @@ offset_bottom = -15.666653
 grow_horizontal = 1
 grow_vertical = 1
 
-[node name="PlayerCard2" parent="PlayerArea" instance=ExtResource("2_eibjp")]
+[node name="PlayerCard2" parent="PlayerArea" instance=ExtResource("3_c6vvi")]
 anchors_preset = 0
 anchor_right = 0.0
 anchor_bottom = 0.0
@@ -151,7 +151,7 @@ grow_vertical = 1
 position = Vector2(41.666656, 28.666687)
 scale = Vector2(1.5, 1.5)
 
-[node name="OpponentCard1" parent="OpponentArea" instance=ExtResource("2_eibjp")]
+[node name="OpponentCard1" parent="OpponentArea" instance=ExtResource("3_c6vvi")]
 anchors_preset = 0
 anchor_right = 0.0
 anchor_bottom = 0.0
@@ -162,7 +162,7 @@ offset_bottom = -15.666653
 grow_horizontal = 1
 grow_vertical = 1
 
-[node name="OpponentCard2" parent="OpponentArea" instance=ExtResource("2_eibjp")]
+[node name="OpponentCard2" parent="OpponentArea" instance=ExtResource("3_c6vvi")]
 anchors_preset = 0
 anchor_right = 0.0
 anchor_bottom = 0.0
@@ -177,7 +177,7 @@ grow_vertical = 1
 position = Vector2(116.66668, 124.66668)
 scale = Vector2(1.5, 1.5)
 
-[node name="Flop1" parent="CommunityCardsArea" instance=ExtResource("2_eibjp")]
+[node name="Flop1" parent="CommunityCardsArea" instance=ExtResource("3_c6vvi")]
 anchors_preset = 0
 anchor_right = 0.0
 anchor_bottom = 0.0
@@ -188,7 +188,7 @@ offset_bottom = -15.777778
 grow_horizontal = 1
 grow_vertical = 1
 
-[node name="Flop2" parent="CommunityCardsArea" instance=ExtResource("2_eibjp")]
+[node name="Flop2" parent="CommunityCardsArea" instance=ExtResource("3_c6vvi")]
 anchors_preset = 0
 anchor_right = 0.0
 anchor_bottom = 0.0
@@ -199,7 +199,7 @@ offset_bottom = -16.0
 grow_horizontal = 1
 grow_vertical = 1
 
-[node name="Flop3" parent="CommunityCardsArea" instance=ExtResource("2_eibjp")]
+[node name="Flop3" parent="CommunityCardsArea" instance=ExtResource("3_c6vvi")]
 anchors_preset = 0
 anchor_right = 0.0
 anchor_bottom = 0.0
@@ -210,7 +210,7 @@ offset_bottom = -16.444445
 grow_horizontal = 1
 grow_vertical = 1
 
-[node name="Turn" parent="CommunityCardsArea" instance=ExtResource("2_eibjp")]
+[node name="Turn" parent="CommunityCardsArea" instance=ExtResource("3_c6vvi")]
 anchors_preset = 0
 anchor_right = 0.0
 anchor_bottom = 0.0
@@ -221,7 +221,7 @@ offset_bottom = -16.222223
 grow_horizontal = 1
 grow_vertical = 1
 
-[node name="River" parent="CommunityCardsArea" instance=ExtResource("2_eibjp")]
+[node name="River" parent="CommunityCardsArea" instance=ExtResource("3_c6vvi")]
 anchors_preset = 0
 anchor_right = 0.0
 anchor_bottom = 0.0

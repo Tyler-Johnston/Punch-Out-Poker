@@ -1,6 +1,6 @@
 [gd_scene load_steps=10 format=3 uid="uid://dm1t1olfbu82u"]
 
-[ext_resource type="Script" uid="uid://bqpvv0263uywg" path="res://CardVisual.cs" id="1_svlf2"]
+[ext_resource type="Script" uid="uid://bqpvv0263uywg" path="res://Scripts/Data Structures/CardVisual.cs" id="1_svlf2"]
 
 [sub_resource type="FontFile" id="FontFile_svlf2"]
 subpixel_positioning = 0

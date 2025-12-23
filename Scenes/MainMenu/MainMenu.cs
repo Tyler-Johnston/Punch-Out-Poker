@@ -14,7 +14,7 @@ public partial class MainMenu : Control
 
 	private void OnStartPressed()
 	{
-		GetTree().ChangeSceneToFile("res://PokerGame.tscn");
+		GetTree().ChangeSceneToFile("res://Scenes/PokerGame.tscn");
 	}
 
 	private void OnQuitPressed()
