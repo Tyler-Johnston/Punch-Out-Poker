@@ -38,7 +38,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.41617727, 0.73874, 0.81575465, 1)
+color = Color(0.21239081, 0.59275866, 0.53473496, 1)
 
 [node name="ActionButtons" type="HBoxContainer" parent="CanvasLayer/Control"]
 layout_mode = 0
