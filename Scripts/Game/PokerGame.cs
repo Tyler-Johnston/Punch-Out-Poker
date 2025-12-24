@@ -48,7 +48,6 @@ public partial class PokerGame : Node2D
 	private AudioStreamPlayer deckDealAudioPlayer;
 	private AudioStreamPlayer chipsAudioPlayer;
 
-
 	public override void _Ready()
 	{
 		GD.Print("=== Poker Game Started ===");
