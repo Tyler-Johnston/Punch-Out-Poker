@@ -43,6 +43,11 @@ public partial class PokerGame : Node2D
 	// AI
 	private OpponentProfile currentOpponent;
 	private int selectedOpponentIndex = 0;
+	
+	// Audio
+	private AudioStreamPlayer deckDealAudioPlayer;
+	private AudioStreamPlayer chipsAudioPlayer;
+
 
 	public override void _Ready()
 	{
@@ -77,6 +82,9 @@ public partial class PokerGame : Node2D
 		playerHandType = hudControl.GetNode<Label>("PlayerHandType");
 		opponentHandType = hudControl.GetNode<Label>("OpponentHandType");
 		betSlider = hudControl.GetNode<HSlider>("BetSlider");
+		
+		deckDealAudioPlayer = GetNode<AudioStreamPlayer>("DeckDealAudioPlayer");
+		chipsAudioPlayer = GetNode<AudioStreamPlayer>("ChipsAudioPlayer");  
 		
 		foldButton.Pressed += OnFoldPressed;
 		checkCallButton.Pressed += OnCheckCallPressed;

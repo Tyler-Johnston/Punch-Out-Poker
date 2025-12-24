@@ -62,6 +62,7 @@ public partial class PokerGame
 
 		deck = new Deck();
 		deck.Shuffle();
+		deckDealAudioPlayer.Play();
 
 		pot = 0;
 		currentBet = bigBlind;
@@ -173,6 +174,7 @@ public partial class PokerGame
 				ShowMessage($"You call {actualCall} chips");
 				GD.Print($"Player calls {actualCall}, Player stack: {playerChips}, Pot: {pot}");
 			}
+			chipsAudioPlayer.Play();
 		}
 
 		isPlayerTurn = false;
@@ -238,6 +240,7 @@ public partial class PokerGame
 			ShowMessage($"You bet {actualBet} chips");
 			GD.Print($"Player bets {actualBet}");
 		}
+		chipsAudioPlayer.Play();
 
 		isPlayerTurn = false;
 		UpdateHud();
@@ -268,7 +271,6 @@ public partial class PokerGame
 		if ((betsAreEqual && bothPlayersActed) || someoneAllIn)
 		{
 			GD.Print($"Betting round complete: betsEqual={betsAreEqual}, bothActed={bothPlayersActed}, allIn={someoneAllIn}");
-			// Add delay before advancing street for better UX
 			GetTree().CreateTimer(1.0).Timeout += AdvanceStreet;
 		}
 		else
@@ -378,14 +380,13 @@ public partial class PokerGame
 
 	private void AdvanceStreet()
 	{
-		// Reset bets, action tracking, AND bluff flag for new street
 		playerBet = 0;
 		opponentBet = 0;
 		currentBet = 0;
 		raisesThisStreet = 0;
 		playerHasActedThisStreet = false;
 		opponentHasActedThisStreet = false;
-		aiBluffedThisHand = false; // Reset bluff flag each street
+		aiBluffedThisHand = false;
 		isPlayerTurn = true;
 
 		switch (currentStreet)
@@ -407,7 +408,7 @@ public partial class PokerGame
 				break;
 			case Street.River:
 				ShowDown();
-				return; // Don't update HUD/buttons, showdown handles it
+				return;
 		}
 
 		// If both players are all-in, just keep dealing to showdown
