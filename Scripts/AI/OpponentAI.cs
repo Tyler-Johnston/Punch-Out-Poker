@@ -31,7 +31,12 @@ public partial class PokerGame
 			: currentOpponent.PostflopAggression;
 
 		// Adjust aggression-based thresholds by street modifier
-		raiseThreshold /= streetMod;
+		// Low aggression increases threshold (harder to raise)
+		// High aggression decreases threshold (easier to raise)
+		raiseThreshold *= (2.0f - streetMod);
+		
+		// Clamp to prevent negative or excessive values
+		raiseThreshold = Math.Clamp(raiseThreshold, 0.0f, 1.0f);
 
 		GD.Print($"Thresholds - Fold: {foldThreshold:F2}, Call: {callThreshold:F2}, Raise: {raiseThreshold:F2}, Bluff: {bluffChance:F2}");
 
@@ -43,6 +48,7 @@ public partial class PokerGame
 		{
 			foldThreshold += 0.08f;
 			raiseThreshold += 0.1f;
+			raiseThreshold = Math.Clamp(raiseThreshold, 0.0f, 1.0f);
 		}
 
 		// Adjust based on bet size (pot odds consideration)
@@ -58,6 +64,9 @@ public partial class PokerGame
 			{
 				foldThreshold -= 0.05f;
 			}
+			
+			// Ensure fold threshold doesn't exceed call threshold
+			foldThreshold = Math.Clamp(foldThreshold, 0.0f, callThreshold);
 		}
 
 		// Prevent infinite raising
