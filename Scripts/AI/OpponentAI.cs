@@ -44,10 +44,12 @@ public partial class PokerGame
 		float playerStrength = EstimatePlayerStrength();
 		GD.Print($"Estimated Player Strength: {playerStrength:F2}");
 
-		if (playerStrength > 0.7f)
+		// UPDATED: Only adjust thresholds if player is very aggressive AND we have weak hand
+		if (playerStrength > 0.75f && handStrength < 0.55f)
 		{
-			foldThreshold += 0.08f;
-			raiseThreshold += 0.1f;
+			// Only become more cautious with weak/medium hands
+			foldThreshold += 0.05f;  // Reduced from 0.08
+			raiseThreshold += 0.07f; // Reduced from 0.10
 			raiseThreshold = Math.Clamp(raiseThreshold, 0.0f, 1.0f);
 		}
 
@@ -55,19 +57,31 @@ public partial class PokerGame
 		if (facingBet && pot > 0)
 		{
 			float potOdds = (float)toCall / (pot + toCall);
-			if (potOdds > 0.5f) // Large bet - getting bad pot odds
+			
+			if (potOdds < 0.25f)
 			{
-				foldThreshold += 0.1f;
-				callThreshold += 0.08f;
+				// Cheap to call; be more willing
+				foldThreshold -= 0.08f;
+				callThreshold -= 0.05f;
 			}
-			else if (potOdds < 0.25f) // Small bet - getting good pot odds
+			else if (potOdds >= 0.40f)  // Changed from 0.45
 			{
-				foldThreshold -= 0.05f;
+				// Very expensive; need stronger hand
+				foldThreshold += 0.20f;  // Increased from 0.12
+				callThreshold += 0.15f;  // Increased from 0.10
+				
+				// Extra penalty if pot odds significantly exceed hand strength
+				if (potOdds > handStrength + 0.10f)
+				{
+					foldThreshold += 0.10f;
+					callThreshold += 0.10f;
+				}
 			}
 			
 			// Ensure fold threshold doesn't exceed call threshold
 			foldThreshold = Math.Clamp(foldThreshold, 0.0f, callThreshold);
 		}
+
 
 		// Prevent infinite raising
 		if (raisesThisStreet >= MAX_RAISES_PER_STREET)
@@ -118,7 +132,7 @@ public partial class PokerGame
 		}
 		else
 		{
-			// No bet to face - decide check/bet
+			// UPDATED: No bet to face - improved betting logic
 			if (handStrength < callThreshold)
 			{
 				// Weak hand - mostly check, sometimes bluff
@@ -131,13 +145,15 @@ public partial class PokerGame
 			}
 			else if (handStrength < raiseThreshold)
 			{
-				// Medium hand - mix of check and bet
-				return GD.Randf() < 0.5f ? AIAction.Bet : AIAction.Check;
+				// Medium hand - bet frequency scales with strength
+				float betFrequency = (handStrength - callThreshold) / (raiseThreshold - callThreshold);
+				betFrequency = Math.Clamp(betFrequency, 0.2f, 0.7f);
+				return GD.Randf() < betFrequency ? AIAction.Bet : AIAction.Check;
 			}
 			else
 			{
-				// Strong hand - usually bet
-				return GD.Randf() < 0.8f ? AIAction.Bet : AIAction.Check;
+				// Strong hand - usually bet (increased from 0.8 to 0.85)
+				return GD.Randf() < 0.85f ? AIAction.Bet : AIAction.Check;
 			}
 		}
 	}
@@ -252,40 +268,40 @@ public partial class PokerGame
 		int maxBet = Math.Max(minBet, opponentChips);
 		return Math.Min(betSize, maxBet);
 	}
-
-	// Player strength estimation, used as an input into the AI thresholds
+	
+	// UPDATED: Player strength estimation with softer adjustments and capped values
 	private float EstimatePlayerStrength()
 	{
 		float strength = 0.5f;
 
-		// Count betting streets
 		int bettingStreets = 0;
 		foreach (var kvp in playerBetOnStreet)
-		{
 			if (kvp.Value) bettingStreets++;
-		}
 
-		// Multi-street betting indicates strength
-		strength += bettingStreets * 0.12f;
+		// Softer multi-street bonus (was 0.12)
+		strength += bettingStreets * 0.08f;
 
-		// Calculate ratio against pot BEFORE the bet was added
 		if (playerBetOnStreet.ContainsKey(currentStreet) &&
 			playerBetOnStreet[currentStreet] &&
 			playerBetSizeOnStreet.ContainsKey(currentStreet))
 		{
 			int betSize = playerBetSizeOnStreet[currentStreet];
-			// Approximate pot before betting round by removing current street bets
 			int potBeforeBet = pot - playerBet - opponentBet;
 
 			if (potBeforeBet > 0)
 			{
 				float betRatio = (float)betSize / potBeforeBet;
-				if (betRatio > 1.0f) strength += 0.25f;      // Overbet = very strong
-				else if (betRatio > 0.66f) strength += 0.15f; // Large bet
-				else if (betRatio < 0.33f) strength -= 0.08f; // Small bet
+
+				// Reduced bonuses to account for bluff possibility
+				if (betRatio > 1.0f) strength += 0.15f;       // Was 0.25
+				else if (betRatio > 0.66f) strength += 0.10f; // Was 0.15
+				else if (betRatio < 0.33f) strength -= 0.05f; // Was -0.08
 			}
 		}
 
-		return Math.Clamp(strength, 0.1f, 1.0f);
+		// Add randomness to prevent perfect exploitation
+		strength += (GD.Randf() - 0.5f) * 0.1f; // ±0.05 variance
+
+		return Math.Clamp(strength, 0.2f, 0.80f); // Cap at 0.80, not 1.0
 	}
 }

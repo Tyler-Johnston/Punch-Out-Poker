@@ -64,7 +64,27 @@ public partial class PokerGame
 		UpdateHud();
 		RefreshBetSlider();
 
-		GetTree().CreateTimer(0.8).Timeout += ProcessAIAction;
+		// FIXED: Complete all-in handling
+		bool betsAreEqual = (playerBet == opponentBet);
+		bool bothPlayersActed = playerHasActedThisStreet && opponentHasActedThisStreet;
+		bool bothAllIn = playerIsAllIn && opponentIsAllIn;
+		
+		if ((betsAreEqual && bothPlayersActed) || (opponentIsAllIn && betsAreEqual) || bothAllIn)
+		{
+			GD.Print($"Betting round complete after player action: betsEqual={betsAreEqual}, bothActed={bothPlayersActed}, bothAllIn={bothAllIn}");
+			GetTree().CreateTimer(0.8).Timeout += AdvanceStreet;
+		}
+		else if (opponentIsAllIn && !betsAreEqual)
+		{
+			// Opponent is all-in, cannot match player's larger bet
+			GD.Print($"Betting round complete: Opponent all-in, cannot match player bet");
+			GetTree().CreateTimer(0.8).Timeout += AdvanceStreet;
+		}
+		else
+		{
+			// Betting continues - AI needs to act
+			GetTree().CreateTimer(0.8).Timeout += ProcessAIAction;
+		}
 	}
 
 	private void OnBetRaisePressed()
@@ -127,7 +147,27 @@ public partial class PokerGame
 		UpdateHud();
 		RefreshBetSlider();
 
-		GetTree().CreateTimer(0.8).Timeout += ProcessAIAction;
+		// FIXED: Complete all-in handling
+		bool betsAreEqual = (playerBet == opponentBet);
+		bool bothPlayersActed = playerHasActedThisStreet && opponentHasActedThisStreet;
+		bool bothAllIn = playerIsAllIn && opponentIsAllIn;
+
+		if ((betsAreEqual && bothPlayersActed) || (opponentIsAllIn && betsAreEqual) || bothAllIn)
+		{
+			GD.Print($"Betting round complete after player action: betsEqual={betsAreEqual}, bothActed={bothPlayersActed}, bothAllIn={bothAllIn}");
+			GetTree().CreateTimer(0.8).Timeout += AdvanceStreet;
+		}
+		else if (opponentIsAllIn && !betsAreEqual)
+		{
+			// Opponent is all-in, cannot match player's larger bet
+			GD.Print($"Betting round complete: Opponent all-in, cannot match player bet");
+			GetTree().CreateTimer(0.8).Timeout += AdvanceStreet;
+		}
+		else
+		{
+			// Normal case: player bet/raised, AI needs to respond
+			GetTree().CreateTimer(0.8).Timeout += ProcessAIAction;
+		}
 	}
 
 	private void OnBetSliderValueChanged(double value)
@@ -154,15 +194,20 @@ public partial class PokerGame
 		// Check if hand ended (AI folded or won)
 		if (!handInProgress) return;
 
-		// Proper betting round completion logic
+		// FIXED: Complete all-in handling
 		bool betsAreEqual = (playerBet == opponentBet);
 		bool bothPlayersActed = playerHasActedThisStreet && opponentHasActedThisStreet;
-		bool someoneAllIn = playerIsAllIn || opponentIsAllIn;
-
-		// Round is complete when bets match AND both have acted, OR someone is all-in
-		if ((betsAreEqual && bothPlayersActed) || someoneAllIn)
+		bool bothAllIn = playerIsAllIn && opponentIsAllIn;
+		
+		if ((betsAreEqual && bothPlayersActed) || (playerIsAllIn && betsAreEqual) || bothAllIn)
 		{
-			GD.Print($"Betting round complete: betsEqual={betsAreEqual}, bothActed={bothPlayersActed}, allIn={someoneAllIn}");
+			GD.Print($"Betting round complete: betsEqual={betsAreEqual}, bothActed={bothPlayersActed}, bothAllIn={bothAllIn}");
+			GetTree().CreateTimer(1.0).Timeout += AdvanceStreet;
+		}
+		else if (playerIsAllIn && !betsAreEqual)
+		{
+			// Player is all-in, AI raised over it - player cannot act
+			GD.Print($"Betting round complete: Player all-in, cannot match AI raise");
 			GetTree().CreateTimer(1.0).Timeout += AdvanceStreet;
 		}
 		else
