@@ -44,16 +44,16 @@ public partial class PokerGame
 		float playerStrength = EstimatePlayerStrength();
 		GD.Print($"Estimated Player Strength: {playerStrength:F2}");
 
-		// UPDATED: Only adjust thresholds if player is very aggressive AND we have weak hand
+		// UPDATED: Only adjust if player is very aggressive AND we have weak hand
 		if (playerStrength > 0.75f && handStrength < 0.55f)
 		{
 			// Only become more cautious with weak/medium hands
-			foldThreshold += 0.05f;  // Reduced from 0.08
-			raiseThreshold += 0.07f; // Reduced from 0.10
+			foldThreshold += 0.05f;
+			raiseThreshold += 0.07f;
 			raiseThreshold = Math.Clamp(raiseThreshold, 0.0f, 1.0f);
 		}
 
-		// Adjust based on bet size (pot odds consideration)
+		// UPDATED: Improved pot odds consideration
 		if (facingBet && pot > 0)
 		{
 			float potOdds = (float)toCall / (pot + toCall);
@@ -64,11 +64,11 @@ public partial class PokerGame
 				foldThreshold -= 0.08f;
 				callThreshold -= 0.05f;
 			}
-			else if (potOdds >= 0.40f)  // Changed from 0.45
+			else if (potOdds >= 0.40f)
 			{
 				// Very expensive; need stronger hand
-				foldThreshold += 0.20f;  // Increased from 0.12
-				callThreshold += 0.15f;  // Increased from 0.10
+				foldThreshold += 0.20f;
+				callThreshold += 0.15f;
 				
 				// Extra penalty if pot odds significantly exceed hand strength
 				if (potOdds > handStrength + 0.10f)
@@ -81,7 +81,6 @@ public partial class PokerGame
 			// Ensure fold threshold doesn't exceed call threshold
 			foldThreshold = Math.Clamp(foldThreshold, 0.0f, callThreshold);
 		}
-
 
 		// Prevent infinite raising
 		if (raisesThisStreet >= MAX_RAISES_PER_STREET)
@@ -123,11 +122,30 @@ public partial class PokerGame
 			}
 			else
 			{
-				// Strong hand - usually raise for value
-				if (GD.Randf() < 0.7f && raisesThisStreet < MAX_RAISES_PER_STREET)
-					return AIAction.Raise;
+				// UPDATED: Strong hand - raise frequency based on strength
+				float raiseChance;
+				
+				if (handStrength >= 0.85f)
+				{
+					raiseChance = 1.0f; // Always raise with near-nuts (full house, quads, straight flush)
+				}
+				else if (handStrength >= 0.70f)
+				{
+					raiseChance = 0.85f; // Usually raise with very strong hands (trips, strong two pair)
+				}
 				else
-					return AIAction.Call; // Slowplay occasionally
+				{
+					raiseChance = 0.70f; // Often raise with strong hands (two pair, weaker trips)
+				}
+				
+				if (GD.Randf() < raiseChance && raisesThisStreet < MAX_RAISES_PER_STREET)
+				{
+					return AIAction.Raise;
+				}
+				else
+				{
+					return AIAction.Call; // Slowplay occasionally with medium-strong hands
+				}
 			}
 		}
 		else
@@ -152,11 +170,27 @@ public partial class PokerGame
 			}
 			else
 			{
-				// Strong hand - usually bet (increased from 0.8 to 0.85)
-				return GD.Randf() < 0.85f ? AIAction.Bet : AIAction.Check;
+				// UPDATED: Strong hand betting - scale with hand strength
+				float betChance;
+				
+				if (handStrength >= 0.85f)
+				{
+					betChance = 0.95f; // Almost always bet with monsters
+				}
+				else if (handStrength >= 0.70f)
+				{
+					betChance = 0.90f; // Usually bet with very strong hands
+				}
+				else
+				{
+					betChance = 0.85f; // Often bet with strong hands
+				}
+				
+				return GD.Randf() < betChance ? AIAction.Bet : AIAction.Check;
 			}
 		}
 	}
+
 
 	private void ExecuteAIAction(AIAction action)
 	{
@@ -252,8 +286,26 @@ public partial class PokerGame
 		float handStrength = EvaluateAIHandStrength();
 		int minBet = bigBlind;
 
-		// Use opponent's bet sizing factor from profile
+		// Use opponent's bet sizing factor from profile as BASE
 		float sizeFactor = currentOpponent.BetSizeFactor;
+
+		// UPDATED: Scale up bet size with hand strength
+		if (handStrength >= 0.85f)
+		{
+			// Monster hands: bet 80-100% of pot regardless of profile
+			sizeFactor = Math.Max(sizeFactor, 0.8f);
+		}
+		else if (handStrength >= 0.70f)
+		{
+			// Very strong hands: bet 60-80% of pot
+			sizeFactor = Math.Max(sizeFactor, 0.6f);
+		}
+		else if (handStrength >= 0.55f)
+		{
+			// Strong hands: bet at least 50% of pot
+			sizeFactor = Math.Max(sizeFactor, 0.5f);
+		}
+		// Otherwise use profile's natural sizing
 
 		// Reduce bluff sizes
 		if (aiBluffedThisHand && handStrength < 0.4f)
@@ -268,8 +320,7 @@ public partial class PokerGame
 		int maxBet = Math.Max(minBet, opponentChips);
 		return Math.Min(betSize, maxBet);
 	}
-	
-	// UPDATED: Player strength estimation with softer adjustments and capped values
+
 	private float EstimatePlayerStrength()
 	{
 		float strength = 0.5f;
