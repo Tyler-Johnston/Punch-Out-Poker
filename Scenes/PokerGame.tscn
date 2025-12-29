@@ -1,14 +1,15 @@
-[gd_scene load_steps=15 format=3 uid="uid://b5sq1675fwcio"]
+[gd_scene load_steps=16 format=3 uid="uid://b5sq1675fwcio"]
 
 [ext_resource type="Script" uid="uid://8k6pqsmgt5pe" path="res://Scripts/Game/PokerGame.cs" id="1_8w0ed"]
-[ext_resource type="FontFile" uid="uid://dmret52s833gh" path="res://Assets/Jersey_10/Jersey10-Regular.ttf" id="2_j8upv"]
+[ext_resource type="FontFile" uid="uid://dmret52s833gh" path="res://Assets/Fonts/Jersey_10/Jersey10-Regular.ttf" id="2_j8upv"]
 [ext_resource type="PackedScene" uid="uid://dm1t1olfbu82u" path="res://Scenes/CardVisual.tscn" id="3_c6vvi"]
-[ext_resource type="AudioStream" uid="uid://b3h8kitkwugq8" path="res://Assets/CardAudio/DeckDeal/DeckDeal1.wav" id="4_5ejkc"]
-[ext_resource type="AudioStream" uid="uid://ctdqqmnk4qhfp" path="res://Assets/CardAudio/DeckDeal/DeckDeal2.wav" id="5_34q52"]
-[ext_resource type="AudioStream" uid="uid://yfg63qsfbhia" path="res://Assets/CardAudio/DeckDeal/DeckDeal3.wav" id="6_h5gdr"]
-[ext_resource type="AudioStream" uid="uid://bc6f5w4ndgos4" path="res://Assets/CardAudio/DeckDeal/DeckDeal4.wav" id="7_47o1s"]
-[ext_resource type="AudioStream" uid="uid://bmi2q5pbu5irv" path="res://Assets/CardAudio/Chips/Chips1.wav" id="8_h5gdr"]
-[ext_resource type="AudioStream" uid="uid://dctkppswnoupo" path="res://Assets/CardAudio/Chips/Chips2.wav" id="9_47o1s"]
+[ext_resource type="AudioStream" uid="uid://b3h8kitkwugq8" path="res://Assets/SFX/CardAudio/DeckDeal/DeckDeal1.wav" id="4_5ejkc"]
+[ext_resource type="AudioStream" uid="uid://ctdqqmnk4qhfp" path="res://Assets/SFX/CardAudio/DeckDeal/DeckDeal2.wav" id="5_34q52"]
+[ext_resource type="AudioStream" uid="uid://yfg63qsfbhia" path="res://Assets/SFX/CardAudio/DeckDeal/DeckDeal3.wav" id="6_h5gdr"]
+[ext_resource type="AudioStream" uid="uid://bc6f5w4ndgos4" path="res://Assets/SFX/CardAudio/DeckDeal/DeckDeal4.wav" id="7_47o1s"]
+[ext_resource type="AudioStream" uid="uid://bmi2q5pbu5irv" path="res://Assets/SFX/CardAudio/Chips/Chips1.wav" id="8_h5gdr"]
+[ext_resource type="AudioStream" uid="uid://dctkppswnoupo" path="res://Assets/SFX/CardAudio/Chips/Chips2.wav" id="9_47o1s"]
+[ext_resource type="AudioStream" uid="uid://dss833xi3m8t5" path="res://Assets/Music/regrowth wip.wav" id="10_47o1s"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_eibjp"]
 font = ExtResource("2_j8upv")
@@ -255,3 +256,6 @@ stream = SubResource("AudioStreamRandomizer_xxe2x")
 
 [node name="ChipsAudioPlayer" type="AudioStreamPlayer" parent="."]
 stream = SubResource("AudioStreamRandomizer_u1fmj")
+
+[node name="MusicPlayer" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("10_47o1s")

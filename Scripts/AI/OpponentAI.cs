@@ -5,7 +5,6 @@ using System.Collections.Generic;
 
 public partial class PokerGame
 {
-	// AI System Variables (continued / completed here)
 	private bool aiBluffedThisHand = false;
 	private Dictionary<Street, bool> playerBetOnStreet = new Dictionary<Street, bool>();
 	private Dictionary<Street, int> playerBetSizeOnStreet = new Dictionary<Street, int>();
@@ -121,7 +120,6 @@ public partial class PokerGame
 			}
 			else
 			{
-				// UPDATED: Strong hand - raise frequency based on strength
 				float raiseChance;
 				
 				if (handStrength >= 0.85f)
@@ -149,7 +147,6 @@ public partial class PokerGame
 		}
 		else
 		{
-			// UPDATED: No bet to face - improved betting logic
 			if (handStrength < callThreshold)
 			{
 				// Weak hand - mostly check, sometimes bluff
@@ -169,7 +166,6 @@ public partial class PokerGame
 			}
 			else
 			{
-				// UPDATED: Strong hand betting - scale with hand strength
 				float betChance;
 				
 				if (handStrength >= 0.85f)

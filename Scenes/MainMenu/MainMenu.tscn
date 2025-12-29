@@ -1,7 +1,7 @@
 [gd_scene load_steps=4 format=3 uid="uid://bidpqx2rau884"]
 
 [ext_resource type="Script" uid="uid://baaqcq462wkko" path="res://Scenes/MainMenu/MainMenu.cs" id="1_qb50w"]
-[ext_resource type="FontFile" uid="uid://dmret52s833gh" path="res://Assets/Jersey_10/Jersey10-Regular.ttf" id="2_l0vmy"]
+[ext_resource type="FontFile" uid="uid://dmret52s833gh" path="res://Assets/Fonts/Jersey_10/Jersey10-Regular.ttf" id="2_l0vmy"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_lit4x"]
 font = ExtResource("2_l0vmy")

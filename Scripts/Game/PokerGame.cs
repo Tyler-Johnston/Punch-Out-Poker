@@ -47,6 +47,7 @@ public partial class PokerGame : Node2D
 	// Audio
 	private AudioStreamPlayer deckDealAudioPlayer;
 	private AudioStreamPlayer chipsAudioPlayer;
+	private AudioStreamPlayer musicPlayer;
 
 	public override void _Ready()
 	{
@@ -84,6 +85,7 @@ public partial class PokerGame : Node2D
 		
 		deckDealAudioPlayer = GetNode<AudioStreamPlayer>("DeckDealAudioPlayer");
 		chipsAudioPlayer = GetNode<AudioStreamPlayer>("ChipsAudioPlayer");  
+		musicPlayer = GetNode<AudioStreamPlayer>("MusicPlayer");  
 		
 		foldButton.Pressed += OnFoldPressed;
 		checkCallButton.Pressed += OnCheckCallPressed;
@@ -97,6 +99,7 @@ public partial class PokerGame : Node2D
 		GD.Print($"Looseness: {currentOpponent.Looseness:F2}");
 		GD.Print($"Bluffiness: {currentOpponent.Bluffiness:F2}");
 
+		musicPlayer.Play();
 		UpdateHud();
 		StartNewHand();
 	}

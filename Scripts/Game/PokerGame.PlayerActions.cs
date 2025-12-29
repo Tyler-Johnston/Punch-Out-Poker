@@ -64,7 +64,6 @@ public partial class PokerGame
 		UpdateHud();
 		RefreshBetSlider();
 
-		// FIXED: Complete all-in handling
 		bool betsAreEqual = (playerBet == opponentBet);
 		bool bothPlayersActed = playerHasActedThisStreet && opponentHasActedThisStreet;
 		bool bothAllIn = playerIsAllIn && opponentIsAllIn;
