@@ -53,7 +53,6 @@ public partial class PokerGame
 			raiseThreshold = Math.Clamp(raiseThreshold, 0.0f, 1.0f);
 		}
 
-		// UPDATED: Improved pot odds consideration
 		if (facingBet && pot > 0)
 		{
 			float potOdds = (float)toCall / (pot + toCall);
@@ -64,23 +63,23 @@ public partial class PokerGame
 				foldThreshold -= 0.08f;
 				callThreshold -= 0.05f;
 			}
-			else if (potOdds >= 0.40f)
+			else if (potOdds >= 0.45f)  // Increased from 0.40 to 0.45
 			{
 				// Very expensive; need stronger hand
-				foldThreshold += 0.20f;
-				callThreshold += 0.15f;
+				foldThreshold += 0.18f;  // Reduced from 0.20
+				callThreshold += 0.13f;  // Reduced from 0.15
 				
-				// Extra penalty if pot odds significantly exceed hand strength
-				if (potOdds > handStrength + 0.10f)
+				// UPDATED: Only apply extra penalty if pot odds are EXTREME
+				if (potOdds > 0.60f && potOdds > handStrength + 0.15f)  // Stricter conditions
 				{
-					foldThreshold += 0.10f;
-					callThreshold += 0.10f;
+					foldThreshold += 0.08f;  // Reduced from 0.10
+					callThreshold += 0.08f;
 				}
 			}
 			
-			// Ensure fold threshold doesn't exceed call threshold
 			foldThreshold = Math.Clamp(foldThreshold, 0.0f, callThreshold);
 		}
+
 
 		// Prevent infinite raising
 		if (raisesThisStreet >= MAX_RAISES_PER_STREET)
