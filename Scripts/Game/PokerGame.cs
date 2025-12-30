@@ -26,9 +26,9 @@ public partial class PokerGame : Node2D
 	// UI
 	private HSlider betSlider;
 	
-	private TextureButton foldButton;
-	private TextureButton checkCallButton;
-	private TextureButton betRaiseButton;
+	private Button foldButton;
+	private Button checkCallButton;
+	private Button betRaiseButton;
 
 	private Label playerStackLabel;
 	private Label opponentStackLabel;
@@ -84,9 +84,9 @@ public partial class PokerGame : Node2D
 
 		// action buttons
 		Control actionButtons = hudControl.GetNode<Control>("ActionButtons");
-		foldButton = actionButtons.GetNode<TextureButton>("FoldButton");
-		checkCallButton = actionButtons.GetNode<TextureButton>("CheckCallButton");
-		betRaiseButton = actionButtons.GetNode<TextureButton>("BetRaiseButton");
+		foldButton = actionButtons.GetNode<Button>("FoldButton");
+		checkCallButton = actionButtons.GetNode<Button>("CheckCallButton");
+		betRaiseButton = actionButtons.GetNode<Button>("BetRaiseButton");
 
 		// labels
 		playerStackLabel = hudControl.GetNode<Label>("PlayerStackLabel");
@@ -95,8 +95,6 @@ public partial class PokerGame : Node2D
 		gameStateLabel = hudControl.GetNode<Label>("GameStateLabel");
 		playerHandType = hudControl.GetNode<Label>("PlayerHandType");
 		opponentHandType = hudControl.GetNode<Label>("OpponentHandType");
-		betRaiseLabel = GetNode<Label>("CanvasLayer/Control/ActionLabels/BetRaiseLabel");
-		checkCallLabel = GetNode<Label>("CanvasLayer/Control/ActionLabels/CheckCallLabel");
 		
 		// slider
 		betSlider = hudControl.GetNode<HSlider>("BetSlider");
@@ -105,13 +103,6 @@ public partial class PokerGame : Node2D
 		deckDealAudioPlayer = GetNode<AudioStreamPlayer>("DeckDealAudioPlayer");
 		chipsAudioPlayer = GetNode<AudioStreamPlayer>("ChipsAudioPlayer");  
 		musicPlayer = GetNode<AudioStreamPlayer>("MusicPlayer");  
-		
-		// cache action button images
-		foldBtnImg = GD.Load<Texture2D>("res://Assets/Textures/action_btns/fold_btn.png");
-		checkBtnImg = GD.Load<Texture2D>("res://Assets/Textures/action_btns/check_btn.png");
-		callBtnImg = GD.Load<Texture2D>("res://Assets/Textures/action_btns/call_btn.png");
-		betBtnImg = GD.Load<Texture2D>("res://Assets/Textures/action_btns/bet_btn.png");
-		raiseBtnImg = GD.Load<Texture2D>("res://Assets/Textures/action_btns/raise_btn.png");
 		
 		// set on-press handlers
 		foldButton.Pressed += OnFoldPressed;

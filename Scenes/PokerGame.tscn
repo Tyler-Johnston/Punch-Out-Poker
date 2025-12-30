@@ -1,12 +1,9 @@
-[gd_scene load_steps=23 format=3 uid="uid://b5sq1675fwcio"]
+[gd_scene load_steps=30 format=3 uid="uid://b5sq1675fwcio"]
 
 [ext_resource type="Script" uid="uid://8k6pqsmgt5pe" path="res://Scripts/Game/PokerGame.cs" id="1_8w0ed"]
 [ext_resource type="FontFile" uid="uid://dmret52s833gh" path="res://Assets/Fonts/Jersey_10/Jersey10-Regular.ttf" id="2_j8upv"]
-[ext_resource type="Texture2D" uid="uid://dmkjhq6es6oyx" path="res://Assets/Textures/action_btns/fold_btn.png" id="2_u5b2p"]
 [ext_resource type="PackedScene" uid="uid://dm1t1olfbu82u" path="res://Scenes/CardVisual.tscn" id="3_c6vvi"]
-[ext_resource type="Texture2D" uid="uid://b2k5uby16750a" path="res://Assets/Textures/action_btns/check_btn.png" id="3_vtryj"]
 [ext_resource type="AudioStream" uid="uid://b3h8kitkwugq8" path="res://Assets/SFX/CardAudio/DeckDeal/DeckDeal1.wav" id="4_5ejkc"]
-[ext_resource type="Texture2D" uid="uid://ba6cwowo4533a" path="res://Assets/Textures/action_btns/bet_btn.png" id="4_m5pa5"]
 [ext_resource type="AudioStream" uid="uid://ctdqqmnk4qhfp" path="res://Assets/SFX/CardAudio/DeckDeal/DeckDeal2.wav" id="5_34q52"]
 [ext_resource type="AudioStream" uid="uid://yfg63qsfbhia" path="res://Assets/SFX/CardAudio/DeckDeal/DeckDeal3.wav" id="6_h5gdr"]
 [ext_resource type="AudioStream" uid="uid://bc6f5w4ndgos4" path="res://Assets/SFX/CardAudio/DeckDeal/DeckDeal4.wav" id="7_47o1s"]
@@ -24,6 +21,150 @@ fill = 1
 fill_from = Vector2(0.5, 0.5)
 fill_to = Vector2(1, 0.5)
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_47o1s"]
+bg_color = Color(0.6784314, 0, 0.15686275, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.84705883, 0.84705883, 0.84705883, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_u5b2p"]
+bg_color = Color(0.6331879, 0, 0.14385304, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.84705883, 0.84705883, 0.84705883, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_vtryj"]
+bg_color = Color(0.8283891, 9.50101e-05, 0.20019525, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.84705883, 0.84705883, 0.84705883, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_m5pa5"]
+bg_color = Color(0.6117647, 0.6117647, 0.6117647, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.84705883, 0.84705883, 0.84705883, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_xxe2x"]
+bg_color = Color(0.18431373, 0.34509805, 0.7764706, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.84705883, 0.84705883, 0.84705883, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_6gitu"]
+bg_color = Color(0.13769913, 0.27821404, 0.6658435, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.84705883, 0.84705883, 0.84705883, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_mhpyu"]
+bg_color = Color(0.24937052, 0.4229884, 0.8669834, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.84705883, 0.84705883, 0.84705883, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_crlcv"]
+bg_color = Color(0.6117647, 0.6117647, 0.6117647, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.84705883, 0.84705883, 0.84705883, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_u1fmj"]
+bg_color = Color(0.7137255, 0.4627451, 0.2901961, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.84705883, 0.84705883, 0.84705883, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_epj03"]
+bg_color = Color(0.6251021, 0.3965849, 0.23819709, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.84705883, 0.84705883, 0.84705883, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_p0x7j"]
+bg_color = Color(0.85093796, 0.5918597, 0.41853422, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.84705883, 0.84705883, 0.84705883, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bvnvu"]
+bg_color = Color(0.6117647, 0.6117647, 0.6117647, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.84705883, 0.84705883, 0.84705883, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
 [sub_resource type="LabelSettings" id="LabelSettings_eibjp"]
 font = ExtResource("2_j8upv")
 font_size = 48
@@ -33,14 +174,6 @@ font = ExtResource("2_j8upv")
 font_size = 48
 
 [sub_resource type="LabelSettings" id="LabelSettings_l4y0v"]
-font = ExtResource("2_j8upv")
-font_size = 48
-
-[sub_resource type="LabelSettings" id="LabelSettings_vtryj"]
-font = ExtResource("2_j8upv")
-font_size = 48
-
-[sub_resource type="LabelSettings" id="LabelSettings_u5b2p"]
 font = ExtResource("2_j8upv")
 font_size = 48
 
@@ -82,23 +215,44 @@ texture = SubResource("GradientTexture2D_vtryj")
 
 [node name="ActionButtons" type="HBoxContainer" parent="CanvasLayer/Control"]
 layout_mode = 0
-offset_left = 17.0
-offset_top = 643.0
-offset_right = 289.0
-offset_bottom = 674.0
-scale = Vector2(1.75, 1.75)
+offset_left = 20.000002
+offset_top = 630.0
+offset_right = 183.59999
+offset_bottom = 661.0
+scale = Vector2(2.5, 2.5)
 
-[node name="FoldButton" type="TextureButton" parent="CanvasLayer/Control/ActionButtons"]
+[node name="FoldButton" type="Button" parent="CanvasLayer/Control/ActionButtons"]
+custom_minimum_size = Vector2(50, 20)
 layout_mode = 2
-texture_normal = ExtResource("2_u5b2p")
+focus_mode = 0
+theme_override_fonts/font = ExtResource("2_j8upv")
+theme_override_styles/normal = SubResource("StyleBoxFlat_47o1s")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_u5b2p")
+theme_override_styles/hover = SubResource("StyleBoxFlat_vtryj")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_m5pa5")
+text = "Fold"
 
-[node name="CheckCallButton" type="TextureButton" parent="CanvasLayer/Control/ActionButtons"]
+[node name="CheckCallButton" type="Button" parent="CanvasLayer/Control/ActionButtons"]
+custom_minimum_size = Vector2(50, 0)
 layout_mode = 2
-texture_normal = ExtResource("3_vtryj")
+focus_mode = 0
+theme_override_fonts/font = ExtResource("2_j8upv")
+theme_override_styles/normal = SubResource("StyleBoxFlat_xxe2x")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_6gitu")
+theme_override_styles/hover = SubResource("StyleBoxFlat_mhpyu")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_crlcv")
+text = "Check"
 
-[node name="BetRaiseButton" type="TextureButton" parent="CanvasLayer/Control/ActionButtons"]
+[node name="BetRaiseButton" type="Button" parent="CanvasLayer/Control/ActionButtons"]
+custom_minimum_size = Vector2(50, 0)
 layout_mode = 2
-texture_normal = ExtResource("4_m5pa5")
+focus_mode = 0
+theme_override_fonts/font = ExtResource("2_j8upv")
+theme_override_styles/normal = SubResource("StyleBoxFlat_u1fmj")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_epj03")
+theme_override_styles/hover = SubResource("StyleBoxFlat_p0x7j")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_bvnvu")
+text = "Bet"
 
 [node name="PlayerStackLabel" type="Label" parent="CanvasLayer/Control"]
 layout_mode = 0
@@ -156,27 +310,10 @@ label_settings = SubResource("LabelSettings_l4y0v")
 
 [node name="BetSlider" type="HSlider" parent="CanvasLayer/Control"]
 layout_mode = 0
-offset_left = 330.0
-offset_top = 598.0
-offset_right = 486.0
-offset_bottom = 614.0
-
-[node name="ActionLabels" type="VBoxContainer" parent="CanvasLayer/Control"]
-layout_mode = 0
-offset_left = 20.0
-offset_top = 523.0
-offset_right = 322.0
-offset_bottom = 631.0
-
-[node name="CheckCallLabel" type="Label" parent="CanvasLayer/Control/ActionLabels"]
-layout_mode = 2
-text = "checkCallLabel      "
-label_settings = SubResource("LabelSettings_vtryj")
-
-[node name="BetRaiseLabel" type="Label" parent="CanvasLayer/Control/ActionLabels"]
-layout_mode = 2
-text = "betRaiseLabel"
-label_settings = SubResource("LabelSettings_u5b2p")
+offset_left = 142.0
+offset_top = 602.0
+offset_right = 298.0
+offset_bottom = 618.0
 
 [node name="PlayerArea" type="Node2D" parent="."]
 position = Vector2(385.66666, 215.66669)

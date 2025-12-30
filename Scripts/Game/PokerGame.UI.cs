@@ -14,35 +14,31 @@ public partial class PokerGame
 
 		if (toCall == 0)
 		{
-			checkCallButton.TextureNormal = checkBtnImg;
-			betRaiseButton.TextureNormal = betBtnImg;
-			checkCallLabel.Text = "";
+			checkCallButton.Text = "Check";
 
 			if (allInOnly || sliderAllIn)
 			{
-				betRaiseLabel.Text = $"ALL IN: {maxBet}";
+				betRaiseButton.Text = $"ALL IN: {maxBet}";
 			}
 			else
 			{
-				betRaiseLabel.Text = $"Bet: {betAmount}";
+				betRaiseButton.Text = $"Bet: {betAmount}";
 			}
 		}
 		else
 		{
-			checkCallLabel.Text = $"Call: {Math.Max(0, Math.Min(toCall, playerChips))}";
-		  	checkCallButton.TextureNormal = callBtnImg;
-			betRaiseButton.TextureNormal = raiseBtnImg;
+			checkCallButton.Text = $"Call: {Math.Max(0, Math.Min(toCall, playerChips))}";
 
 			int raiseTotal = currentBet + betAmount;
 			int toAddForRaise = raiseTotal - playerBet;
 
 			if (allInOnly || sliderAllIn)
 			{
-				betRaiseLabel.Text = $"ALL IN ({maxBet})";
+				betRaiseButton.Text = $"ALL IN ({maxBet})";
 			}
 			else
 			{
-				betRaiseLabel.Text = $"Raise: {toAddForRaise}";
+				betRaiseButton.Text = $"Raise: {toAddForRaise}";
 			}
 		}
 
@@ -62,14 +58,13 @@ public partial class PokerGame
 			}
 			else
 			{
+				checkCallButton.Text = "Next Hand";
 				checkCallButton.Disabled = false;
 			}
 
 			foldButton.Visible = false;
 			betRaiseButton.Visible = false;
 			betSlider.Visible = false;
-			checkCallLabel.Visible = false;
-			betRaiseLabel.Visible = false;
 		}
 		else
 		{

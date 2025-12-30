@@ -25,10 +25,7 @@ public partial class PokerGame
 	{
 		if (!handInProgress)
 		{
-			//checkCallButton.Text = "Check";
-			checkCallButton.TextureNormal = checkBtnImg;
-			checkCallLabel.Text = "";
-			
+			checkCallButton.Text = "Check";		
 			StartNewHand();
 			return;
 		}
