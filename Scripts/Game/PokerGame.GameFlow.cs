@@ -34,7 +34,7 @@ public partial class PokerGame
 
 		handInProgress = false;
 		waitingForNextGame = true;
-		checkCallButton.Text = "GAME OVER";
+		//checkCallButton.Text = "GAME OVER";
 		checkCallButton.Disabled = true;
 		foldButton.Visible = false;
 		betRaiseButton.Visible = false;
@@ -52,8 +52,11 @@ public partial class PokerGame
 		GD.Print("\n=== New Hand ===");
 		ShowMessage("New hand starting...");
 
+		betSlider.Visible = true;
 		foldButton.Visible = true;
 		betRaiseButton.Visible = true;
+		checkCallLabel.Visible = true;
+		betRaiseLabel.Visible = true;
 		playerHandType.Text = "";
 		opponentHandType.Text = "";
 
@@ -224,5 +227,8 @@ public partial class PokerGame
 			UpdateHud();
 			RefreshBetSlider();
 		}
+		//betSlider.Visible = false;
+		//checkCallLabel.Visible = false;
+		//betRaiseLabel.Visible = false;
 	}
 }

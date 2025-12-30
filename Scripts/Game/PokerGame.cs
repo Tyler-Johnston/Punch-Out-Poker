@@ -26,9 +26,9 @@ public partial class PokerGame : Node2D
 	// UI
 	private HSlider betSlider;
 	
-	private Button foldButton;
-	private Button checkCallButton;
-	private Button betRaiseButton;
+	private TextureButton foldButton;
+	private TextureButton checkCallButton;
+	private TextureButton betRaiseButton;
 
 	private Label playerStackLabel;
 	private Label opponentStackLabel;
@@ -36,6 +36,15 @@ public partial class PokerGame : Node2D
 	private Label gameStateLabel;
 	private Label playerHandType;
 	private Label opponentHandType;
+	
+	private Label checkCallLabel;
+	private Label betRaiseLabel;
+	
+	private Texture2D foldBtnImg;
+	private Texture2D checkBtnImg;
+	private Texture2D callBtnImg;
+	private Texture2D betBtnImg;
+	private Texture2D raiseBtnImg;
 	
 	// Game flow
 	private Street currentStreet = Street.Preflop;
@@ -71,9 +80,9 @@ public partial class PokerGame : Node2D
 		riverCard = communityCardsArea.GetNode<CardVisual>("River");
 
 		Control actionButtons = hudControl.GetNode<Control>("ActionButtons");
-		foldButton = actionButtons.GetNode<Button>("FoldButton");
-		checkCallButton = actionButtons.GetNode<Button>("CheckCallButton");
-		betRaiseButton = actionButtons.GetNode<Button>("BetRaiseButton");
+		foldButton = actionButtons.GetNode<TextureButton>("FoldButton");
+		checkCallButton = actionButtons.GetNode<TextureButton>("CheckCallButton");
+		betRaiseButton = actionButtons.GetNode<TextureButton>("BetRaiseButton");
 
 		playerStackLabel = hudControl.GetNode<Label>("PlayerStackLabel");
 		opponentStackLabel = hudControl.GetNode<Label>("OpponentStackLabel");
@@ -81,11 +90,20 @@ public partial class PokerGame : Node2D
 		gameStateLabel = hudControl.GetNode<Label>("GameStateLabel");
 		playerHandType = hudControl.GetNode<Label>("PlayerHandType");
 		opponentHandType = hudControl.GetNode<Label>("OpponentHandType");
+		
+		betRaiseLabel = GetNode<Label>("CanvasLayer/Control/ActionLabels/BetRaiseLabel");
+		checkCallLabel = GetNode<Label>("CanvasLayer/Control/ActionLabels/CheckCallLabel");
 		betSlider = hudControl.GetNode<HSlider>("BetSlider");
 		
 		deckDealAudioPlayer = GetNode<AudioStreamPlayer>("DeckDealAudioPlayer");
 		chipsAudioPlayer = GetNode<AudioStreamPlayer>("ChipsAudioPlayer");  
 		musicPlayer = GetNode<AudioStreamPlayer>("MusicPlayer");  
+		
+		foldBtnImg = GD.Load<Texture2D>("res://Assets/Textures/action_btns/fold_btn.png");
+		checkBtnImg = GD.Load<Texture2D>("res://Assets/Textures/action_btns/check_btn.png");
+		callBtnImg = GD.Load<Texture2D>("res://Assets/Textures/action_btns/call_btn.png");
+		betBtnImg = GD.Load<Texture2D>("res://Assets/Textures/action_btns/bet_btn.png");
+		raiseBtnImg = GD.Load<Texture2D>("res://Assets/Textures/action_btns/raise_btn.png");
 		
 		foldButton.Pressed += OnFoldPressed;
 		checkCallButton.Pressed += OnCheckCallPressed;

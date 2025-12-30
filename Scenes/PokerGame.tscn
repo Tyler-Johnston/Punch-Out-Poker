@@ -1,9 +1,12 @@
-[gd_scene load_steps=16 format=3 uid="uid://b5sq1675fwcio"]
+[gd_scene load_steps=21 format=3 uid="uid://b5sq1675fwcio"]
 
 [ext_resource type="Script" uid="uid://8k6pqsmgt5pe" path="res://Scripts/Game/PokerGame.cs" id="1_8w0ed"]
 [ext_resource type="FontFile" uid="uid://dmret52s833gh" path="res://Assets/Fonts/Jersey_10/Jersey10-Regular.ttf" id="2_j8upv"]
+[ext_resource type="Texture2D" uid="uid://dmkjhq6es6oyx" path="res://Assets/Textures/action_btns/fold_btn.png" id="2_u5b2p"]
 [ext_resource type="PackedScene" uid="uid://dm1t1olfbu82u" path="res://Scenes/CardVisual.tscn" id="3_c6vvi"]
+[ext_resource type="Texture2D" uid="uid://b2k5uby16750a" path="res://Assets/Textures/action_btns/check_btn.png" id="3_vtryj"]
 [ext_resource type="AudioStream" uid="uid://b3h8kitkwugq8" path="res://Assets/SFX/CardAudio/DeckDeal/DeckDeal1.wav" id="4_5ejkc"]
+[ext_resource type="Texture2D" uid="uid://ba6cwowo4533a" path="res://Assets/Textures/action_btns/bet_btn.png" id="4_m5pa5"]
 [ext_resource type="AudioStream" uid="uid://ctdqqmnk4qhfp" path="res://Assets/SFX/CardAudio/DeckDeal/DeckDeal2.wav" id="5_34q52"]
 [ext_resource type="AudioStream" uid="uid://yfg63qsfbhia" path="res://Assets/SFX/CardAudio/DeckDeal/DeckDeal3.wav" id="6_h5gdr"]
 [ext_resource type="AudioStream" uid="uid://bc6f5w4ndgos4" path="res://Assets/SFX/CardAudio/DeckDeal/DeckDeal4.wav" id="7_47o1s"]
@@ -20,6 +23,14 @@ font = ExtResource("2_j8upv")
 font_size = 48
 
 [sub_resource type="LabelSettings" id="LabelSettings_l4y0v"]
+font = ExtResource("2_j8upv")
+font_size = 48
+
+[sub_resource type="LabelSettings" id="LabelSettings_vtryj"]
+font = ExtResource("2_j8upv")
+font_size = 48
+
+[sub_resource type="LabelSettings" id="LabelSettings_u5b2p"]
 font = ExtResource("2_j8upv")
 font_size = 48
 
@@ -57,27 +68,27 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.21239081, 0.59275866, 0.53473496, 1)
+color = Color(0.2509804, 0.5372549, 0.40392157, 1)
 
 [node name="ActionButtons" type="HBoxContainer" parent="CanvasLayer/Control"]
 layout_mode = 0
-offset_left = 7.0000005
-offset_top = 656.0
-offset_right = 146.0
-offset_bottom = 696.0
-scale = Vector2(1.5, 1.5)
+offset_left = 17.0
+offset_top = 643.0
+offset_right = 289.0
+offset_bottom = 674.0
+scale = Vector2(1.75, 1.75)
 
-[node name="FoldButton" type="Button" parent="CanvasLayer/Control/ActionButtons"]
+[node name="FoldButton" type="TextureButton" parent="CanvasLayer/Control/ActionButtons"]
 layout_mode = 2
-text = "Fold"
+texture_normal = ExtResource("2_u5b2p")
 
-[node name="CheckCallButton" type="Button" parent="CanvasLayer/Control/ActionButtons"]
+[node name="CheckCallButton" type="TextureButton" parent="CanvasLayer/Control/ActionButtons"]
 layout_mode = 2
-text = "Check"
+texture_normal = ExtResource("3_vtryj")
 
-[node name="BetRaiseButton" type="Button" parent="CanvasLayer/Control/ActionButtons"]
+[node name="BetRaiseButton" type="TextureButton" parent="CanvasLayer/Control/ActionButtons"]
 layout_mode = 2
-text = "Bet"
+texture_normal = ExtResource("4_m5pa5")
 
 [node name="PlayerStackLabel" type="Label" parent="CanvasLayer/Control"]
 layout_mode = 0
@@ -135,10 +146,27 @@ label_settings = SubResource("LabelSettings_l4y0v")
 
 [node name="BetSlider" type="HSlider" parent="CanvasLayer/Control"]
 layout_mode = 0
-offset_left = 17.0
-offset_top = 621.0
-offset_right = 201.0
-offset_bottom = 637.0
+offset_left = 330.0
+offset_top = 598.0
+offset_right = 486.0
+offset_bottom = 614.0
+
+[node name="ActionLabels" type="VBoxContainer" parent="CanvasLayer/Control"]
+layout_mode = 0
+offset_left = 20.0
+offset_top = 523.0
+offset_right = 322.0
+offset_bottom = 631.0
+
+[node name="CheckCallLabel" type="Label" parent="CanvasLayer/Control/ActionLabels"]
+layout_mode = 2
+text = "checkCallLabel      "
+label_settings = SubResource("LabelSettings_vtryj")
+
+[node name="BetRaiseLabel" type="Label" parent="CanvasLayer/Control/ActionLabels"]
+layout_mode = 2
+text = "betRaiseLabel"
+label_settings = SubResource("LabelSettings_u5b2p")
 
 [node name="PlayerArea" type="Node2D" parent="."]
 position = Vector2(385.66666, 215.66669)

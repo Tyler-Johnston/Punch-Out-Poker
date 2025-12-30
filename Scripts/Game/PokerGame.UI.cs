@@ -14,32 +14,42 @@ public partial class PokerGame
 
 		if (toCall == 0)
 		{
-			checkCallButton.Text = "Check";
+			//checkCallButton.Text = "Check";
+			checkCallButton.TextureNormal = checkBtnImg;
+			betRaiseButton.TextureNormal = betBtnImg;
+			checkCallLabel.Text = "";
 
 			if (allInOnly || sliderAllIn)
 			{
 				// Max slider => ALL IN for current stack
-				betRaiseButton.Text = $"ALL IN ({maxBet})";
+				//betRaiseButton.Text = $"ALL IN ({maxBet})";
+				betRaiseLabel.Text = $"ALL IN: {maxBet}";
 			}
 			else
 			{
-				betRaiseButton.Text = $"Bet {betAmount}";
+				//betRaiseButton.Text = $"Bet {betAmount}";
+				betRaiseLabel.Text = $"Bet: {betAmount}";
 			}
 		}
 		else
 		{
-			checkCallButton.Text = $"Call {Math.Min(toCall, playerChips)}";
+			//checkCallButton.Text = $"Call {Math.Min(toCall, playerChips)}";
+			checkCallLabel.Text = $"Call: {Math.Max(0, Math.Min(toCall, playerChips))}";
+		  	checkCallButton.TextureNormal = callBtnImg;
+			betRaiseButton.TextureNormal = raiseBtnImg;
 
 			int raiseTotal = currentBet + betAmount;
 			int toAddForRaise = raiseTotal - playerBet;
 
 			if (allInOnly || sliderAllIn)
 			{
-				betRaiseButton.Text = $"ALL IN ({maxBet})";
+				//betRaiseButton.Text = $"ALL IN ({maxBet})";
+				betRaiseLabel.Text = $"ALL IN ({maxBet})";
 			}
 			else
 			{
-				betRaiseButton.Text = $"Raise {toAddForRaise}";
+				//betRaiseButton.Text = $"Raise {toAddForRaise}";
+				betRaiseLabel.Text = $"Raise: {toAddForRaise}";
 			}
 		}
 
@@ -47,7 +57,7 @@ public partial class PokerGame
 		if (raisesThisStreet >= MAX_RAISES_PER_STREET && !waitingForNextGame)
 		{
 			betRaiseButton.Disabled = true;
-			betRaiseButton.Text = "Max raises";
+			//betRaiseButton.Text = "Max raises";
 		}
 	}
 
@@ -57,17 +67,20 @@ public partial class PokerGame
 		{
 			if (IsGameOver())
 			{
-				checkCallButton.Text = "GAME OVER";
+				//checkCallButton.Text = "GAME OVER";
 				checkCallButton.Disabled = true;
 			}
 			else
 			{
-				checkCallButton.Text = "Next Hand";
+				//checkCallButton.Text = "Next Hand";
 				checkCallButton.Disabled = false;
 			}
 
 			foldButton.Visible = false;
 			betRaiseButton.Visible = false;
+			betSlider.Visible = false;
+			checkCallLabel.Visible = false;
+			betRaiseLabel.Visible = false;
 		}
 		else
 		{
