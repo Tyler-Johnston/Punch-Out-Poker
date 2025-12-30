@@ -318,10 +318,10 @@ label_settings = SubResource("LabelSettings_l4y0v")
 
 [node name="PlayerHandType" type="Label" parent="CanvasLayer/Control"]
 layout_mode = 0
-offset_left = 1040.0
-offset_top = 518.0
-offset_right = 1162.0
-offset_bottom = 563.0
+offset_left = 1014.0
+offset_top = 509.0
+offset_right = 1279.0
+offset_bottom = 561.0
 text = "PlayerHandType"
 label_settings = SubResource("LabelSettings_l4y0v")
 
@@ -375,7 +375,7 @@ offset_right = 79.0
 offset_bottom = 393.0
 
 [node name="PlayerArea" type="Node2D" parent="."]
-position = Vector2(385.66666, 215.66669)
+position = Vector2(382.66666, 209.66669)
 scale = Vector2(1.5, 1.5)
 
 [node name="PlayerCard1" parent="PlayerArea" instance=ExtResource("3_c6vvi")]
