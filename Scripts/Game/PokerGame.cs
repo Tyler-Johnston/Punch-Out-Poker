@@ -36,6 +36,7 @@ public partial class PokerGame : Node2D
 	private Label gameStateLabel;
 	private Label playerHandType;
 	private Label opponentHandType;
+	private Label betSliderLabel;
 	
 	private Label checkCallLabel;
 	private Label betRaiseLabel;
@@ -95,6 +96,7 @@ public partial class PokerGame : Node2D
 		gameStateLabel = hudControl.GetNode<Label>("GameStateLabel");
 		playerHandType = hudControl.GetNode<Label>("PlayerHandType");
 		opponentHandType = hudControl.GetNode<Label>("OpponentHandType");
+		betSliderLabel = hudControl.GetNode<Label>("BetSliderLabel");
 		
 		// slider
 		betSlider = hudControl.GetNode<HSlider>("BetSlider");

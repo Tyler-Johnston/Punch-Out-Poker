@@ -55,6 +55,7 @@ public partial class PokerGame
 		betSlider.Visible = true;
 		foldButton.Visible = true;
 		betRaiseButton.Visible = true;
+		betSliderLabel.Visible = true;
 		playerHandType.Text = "";
 		opponentHandType.Text = "";
 

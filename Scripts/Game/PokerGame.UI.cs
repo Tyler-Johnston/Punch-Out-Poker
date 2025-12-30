@@ -65,6 +65,7 @@ public partial class PokerGame
 			foldButton.Visible = false;
 			betRaiseButton.Visible = false;
 			betSlider.Visible = false;
+			betSliderLabel.Visible = false;
 		}
 		else
 		{
