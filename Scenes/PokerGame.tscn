@@ -1,4 +1,4 @@
-[gd_scene load_steps=30 format=3 uid="uid://b5sq1675fwcio"]
+[gd_scene load_steps=33 format=3 uid="uid://b5sq1675fwcio"]
 
 [ext_resource type="Script" uid="uid://8k6pqsmgt5pe" path="res://Scripts/Game/PokerGame.cs" id="1_8w0ed"]
 [ext_resource type="FontFile" uid="uid://dmret52s833gh" path="res://Assets/Fonts/Jersey_10/Jersey10-Regular.ttf" id="2_j8upv"]
@@ -177,6 +177,32 @@ font_size = 48
 font = ExtResource("2_j8upv")
 font_size = 48
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_vnib4"]
+bg_color = Color(0.84705883, 0.84705883, 0.84705883, 1)
+border_width_left = 100
+border_width_top = 5
+border_width_right = 5
+border_width_bottom = 5
+border_color = Color(0.6133902, 0.6133903, 0.61339, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+expand_margin_left = 100.0
+expand_margin_top = 8.0
+expand_margin_bottom = 8.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hkg01"]
+bg_color = Color(0.7137255, 0.4627451, 0.2901961, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="LabelSettings" id="LabelSettings_hkg01"]
+font = ExtResource("2_j8upv")
+font_size = 30
+
 [sub_resource type="AudioStreamRandomizer" id="AudioStreamRandomizer_xxe2x"]
 streams_count = 4
 stream_0/stream = ExtResource("4_5ejkc")
@@ -310,10 +336,22 @@ label_settings = SubResource("LabelSettings_l4y0v")
 
 [node name="BetSlider" type="HSlider" parent="CanvasLayer/Control"]
 layout_mode = 0
-offset_left = 24.0
-offset_top = 600.0
-offset_right = 180.0
-offset_bottom = 616.0
+offset_left = 128.0
+offset_top = 582.0
+offset_right = 399.0
+offset_bottom = 599.0
+theme_override_styles/slider = SubResource("StyleBoxFlat_vnib4")
+theme_override_styles/grabber_area = SubResource("StyleBoxFlat_hkg01")
+theme_override_styles/grabber_area_highlight = SubResource("StyleBoxFlat_hkg01")
+
+[node name="BetSliderLabel" type="Label" parent="CanvasLayer/Control"]
+layout_mode = 0
+offset_left = 43.0
+offset_top = 573.0
+offset_right = 122.0
+offset_bottom = 607.0
+text = "Amount"
+label_settings = SubResource("LabelSettings_hkg01")
 
 [node name="PlayerArea" type="Node2D" parent="."]
 position = Vector2(385.66666, 215.66669)
