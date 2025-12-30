@@ -309,10 +309,10 @@ label_settings = SubResource("LabelSettings_l4y0v")
 
 [node name="GameStateLabel" type="Label" parent="CanvasLayer/Control"]
 layout_mode = 0
-offset_left = 365.0
-offset_top = 220.0
-offset_right = 636.0
-offset_bottom = 265.0
+offset_left = 436.0
+offset_top = 233.0
+offset_right = 724.0
+offset_bottom = 285.0
 text = "Game State Label"
 label_settings = SubResource("LabelSettings_l4y0v")
 
@@ -375,7 +375,7 @@ offset_right = 79.0
 offset_bottom = 393.0
 
 [node name="PlayerArea" type="Node2D" parent="."]
-position = Vector2(382.66666, 209.66669)
+position = Vector2(376, 210.00002)
 scale = Vector2(1.5, 1.5)
 
 [node name="PlayerCard1" parent="PlayerArea" instance=ExtResource("3_c6vvi")]
