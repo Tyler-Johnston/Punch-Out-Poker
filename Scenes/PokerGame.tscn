@@ -1,4 +1,4 @@
-[gd_scene load_steps=21 format=3 uid="uid://b5sq1675fwcio"]
+[gd_scene load_steps=23 format=3 uid="uid://b5sq1675fwcio"]
 
 [ext_resource type="Script" uid="uid://8k6pqsmgt5pe" path="res://Scripts/Game/PokerGame.cs" id="1_8w0ed"]
 [ext_resource type="FontFile" uid="uid://dmret52s833gh" path="res://Assets/Fonts/Jersey_10/Jersey10-Regular.ttf" id="2_j8upv"]
@@ -13,6 +13,16 @@
 [ext_resource type="AudioStream" uid="uid://bmi2q5pbu5irv" path="res://Assets/SFX/CardAudio/Chips/Chips1.wav" id="8_h5gdr"]
 [ext_resource type="AudioStream" uid="uid://dctkppswnoupo" path="res://Assets/SFX/CardAudio/Chips/Chips2.wav" id="9_47o1s"]
 [ext_resource type="AudioStream" uid="uid://dss833xi3m8t5" path="res://Assets/Music/regrowth wip.wav" id="10_47o1s"]
+
+[sub_resource type="Gradient" id="Gradient_u5b2p"]
+offsets = PackedFloat32Array(0.013333334, 0.96)
+colors = PackedColorArray(0.32156864, 0.6509804, 0.49803922, 1, 0.1796309, 0.40264183, 0.30042112, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_vtryj"]
+gradient = SubResource("Gradient_u5b2p")
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+fill_to = Vector2(1, 0.5)
 
 [sub_resource type="LabelSettings" id="LabelSettings_eibjp"]
 font = ExtResource("2_j8upv")
@@ -61,14 +71,14 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="ColorRect" type="ColorRect" parent="CanvasLayer/Control"]
+[node name="ColorRect" type="TextureRect" parent="CanvasLayer/Control"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.2509804, 0.5372549, 0.40392157, 1)
+texture = SubResource("GradientTexture2D_vtryj")
 
 [node name="ActionButtons" type="HBoxContainer" parent="CanvasLayer/Control"]
 layout_mode = 0

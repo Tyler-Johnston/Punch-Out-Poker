@@ -64,54 +64,65 @@ public partial class PokerGame : Node2D
 		Control hudControl = GetNode<Control>("CanvasLayer/Control");
 		cardVisualScene = GD.Load<PackedScene>("res://Scenes/CardVisual.tscn");
 
+		// card areas
 		Node2D opponentArea = GetNode<Node2D>("OpponentArea");
 		Node2D communityCardsArea = GetNode<Node2D>("CommunityCardsArea");
 		Node2D playerArea = GetNode<Node2D>("PlayerArea");
 
+		// pocket cards
 		playerCard1 = playerArea.GetNode<CardVisual>("PlayerCard1");
 		playerCard2 = playerArea.GetNode<CardVisual>("PlayerCard2");
 		opponentCard1 = opponentArea.GetNode<CardVisual>("OpponentCard1");
 		opponentCard2 = opponentArea.GetNode<CardVisual>("OpponentCard2");
 
+		// community cards
 		flop1 = communityCardsArea.GetNode<CardVisual>("Flop1");
 		flop2 = communityCardsArea.GetNode<CardVisual>("Flop2");
 		flop3 = communityCardsArea.GetNode<CardVisual>("Flop3");
 		turnCard = communityCardsArea.GetNode<CardVisual>("Turn");
 		riverCard = communityCardsArea.GetNode<CardVisual>("River");
 
+		// action buttons
 		Control actionButtons = hudControl.GetNode<Control>("ActionButtons");
 		foldButton = actionButtons.GetNode<TextureButton>("FoldButton");
 		checkCallButton = actionButtons.GetNode<TextureButton>("CheckCallButton");
 		betRaiseButton = actionButtons.GetNode<TextureButton>("BetRaiseButton");
 
+		// labels
 		playerStackLabel = hudControl.GetNode<Label>("PlayerStackLabel");
 		opponentStackLabel = hudControl.GetNode<Label>("OpponentStackLabel");
 		potLabel = hudControl.GetNode<Label>("PotLabel");
 		gameStateLabel = hudControl.GetNode<Label>("GameStateLabel");
 		playerHandType = hudControl.GetNode<Label>("PlayerHandType");
 		opponentHandType = hudControl.GetNode<Label>("OpponentHandType");
-		
 		betRaiseLabel = GetNode<Label>("CanvasLayer/Control/ActionLabels/BetRaiseLabel");
 		checkCallLabel = GetNode<Label>("CanvasLayer/Control/ActionLabels/CheckCallLabel");
+		
+		// slider
 		betSlider = hudControl.GetNode<HSlider>("BetSlider");
 		
+		// audio players
 		deckDealAudioPlayer = GetNode<AudioStreamPlayer>("DeckDealAudioPlayer");
 		chipsAudioPlayer = GetNode<AudioStreamPlayer>("ChipsAudioPlayer");  
 		musicPlayer = GetNode<AudioStreamPlayer>("MusicPlayer");  
 		
+		// cache action button images
 		foldBtnImg = GD.Load<Texture2D>("res://Assets/Textures/action_btns/fold_btn.png");
 		checkBtnImg = GD.Load<Texture2D>("res://Assets/Textures/action_btns/check_btn.png");
 		callBtnImg = GD.Load<Texture2D>("res://Assets/Textures/action_btns/call_btn.png");
 		betBtnImg = GD.Load<Texture2D>("res://Assets/Textures/action_btns/bet_btn.png");
 		raiseBtnImg = GD.Load<Texture2D>("res://Assets/Textures/action_btns/raise_btn.png");
 		
+		// set on-press handlers
 		foldButton.Pressed += OnFoldPressed;
 		checkCallButton.Pressed += OnCheckCallPressed;
 		betRaiseButton.Pressed += OnBetRaisePressed;
 		betSlider.ValueChanged += OnBetSliderValueChanged;
 
+		// choose the opponent we will face
 		OpponentProfile[] circuitAOpponents = OpponentProfiles.CircuitAOpponents();
 		currentOpponent = circuitAOpponents[selectedOpponentIndex];
+		
 		GD.Print($"=== Opponent: {currentOpponent.Name} ===");
 		GD.Print($"Aggression: {currentOpponent.Aggression:F2}");
 		GD.Print($"Looseness: {currentOpponent.Looseness:F2}");

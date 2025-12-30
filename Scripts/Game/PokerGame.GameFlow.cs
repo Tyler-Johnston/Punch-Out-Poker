@@ -189,7 +189,7 @@ public partial class PokerGame
 			GD.Print("\nPLAYER WINS!");
 			message = $"You win with {playerHandName}!";
 			if (aiBluffedThisHand && opponentRank > 6185)
-				message += " Opponent was bluffing!";
+				GD.Print("Opponent was bluffing!");
 			playerChips += pot;
 		}
 		else if (result < 0)
@@ -197,9 +197,9 @@ public partial class PokerGame
 			GD.Print("\nOPPONENT WINS!");
 			message = $"Opponent wins with {opponentHandName}";
 			if (aiBluffedThisHand)
-				message += " (was bluffing with weak hand!)";
+				GD.Print("Opponent was bluffing with weak hand!");
 			else if (opponentRank < 1609)
-				message += " - Opponent had a strong hand!";
+				GD.Print("Opponent had a strong hand!");
 			opponentChips += pot;
 		}
 		else
@@ -227,8 +227,5 @@ public partial class PokerGame
 			UpdateHud();
 			RefreshBetSlider();
 		}
-		//betSlider.Visible = false;
-		//checkCallLabel.Visible = false;
-		//betRaiseLabel.Visible = false;
 	}
 }
