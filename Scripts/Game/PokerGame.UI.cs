@@ -66,6 +66,7 @@ public partial class PokerGame
 			betRaiseButton.Visible = false;
 			betSlider.Visible = false;
 			betSliderLabel.Visible = false;
+			potLabel.Visible = false;
 		}
 		else
 		{

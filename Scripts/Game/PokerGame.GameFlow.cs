@@ -6,8 +6,8 @@ using System.Collections.Generic;
 public partial class PokerGame
 {
 	// Game state fields
-	private int playerChips = 1000;
-	private int opponentChips = 1000;
+	//private int playerChips = 60;
+	//private int opponentChips = 60;
 	private bool handInProgress = false;
 	private bool waitingForNextGame = false;
 	private bool isPlayerTurn = true;
@@ -56,6 +56,7 @@ public partial class PokerGame
 		foldButton.Visible = true;
 		betRaiseButton.Visible = true;
 		betSliderLabel.Visible = true;
+		potLabel.Visible = true;
 		playerHandType.Text = "";
 		opponentHandType.Text = "";
 

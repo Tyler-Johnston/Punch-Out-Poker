@@ -6,7 +6,7 @@ public static class OpponentProfiles
 		new OpponentProfile
 		{
 			Name = "Timid Tom",
-			BuyIn = 10,
+			BuyIn = 50,
 			Aggression = 0.25f,      // Very passive
 			Looseness = 0.3f,       // Tight hand selection
 			Bluffiness = 0.0f,      // Never bluffs
@@ -19,7 +19,7 @@ public static class OpponentProfiles
 		new OpponentProfile
 		{
 			Name = "Calling Carl",
-			BuyIn = 15,
+			BuyIn = 100,
 			Aggression = 0.3f,      // Passive
 			Looseness = 0.7f,       // Plays lots of hands
 			Bluffiness = 0.1f,      // Rarely bluffs
@@ -32,7 +32,7 @@ public static class OpponentProfiles
 		new OpponentProfile
 		{
 			Name = "Wild Willie",
-			BuyIn = 20,
+			BuyIn = 200,
 			Aggression = 0.85f,     // Very aggressive
 			Looseness = 0.8f,       // Plays almost any hand
 			Bluffiness = 0.7f,      // Bluffs frequently

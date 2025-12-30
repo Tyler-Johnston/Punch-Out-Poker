@@ -49,10 +49,12 @@ public partial class PokerGame : Node2D
 	
 	// Game flow
 	private Street currentStreet = Street.Preflop;
+	private int playerChips = 100;
+	private int opponentChips = 100;
 
 	// AI
 	private OpponentProfile currentOpponent;
-	private int selectedOpponentIndex = 0;
+	private int selectedOpponentIndex = 1;
 	
 	// Audio
 	private AudioStreamPlayer deckDealAudioPlayer;
@@ -115,6 +117,10 @@ public partial class PokerGame : Node2D
 		// choose the opponent we will face
 		OpponentProfile[] circuitAOpponents = OpponentProfiles.CircuitAOpponents();
 		currentOpponent = circuitAOpponents[selectedOpponentIndex];
+		
+		// chip amount
+		playerChips = currentOpponent.BuyIn;
+		opponentChips = currentOpponent.BuyIn;
 		
 		GD.Print($"=== Opponent: {currentOpponent.Name} ===");
 		GD.Print($"Aggression: {currentOpponent.Aggression:F2}");
