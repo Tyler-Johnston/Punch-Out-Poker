@@ -310,10 +310,10 @@ label_settings = SubResource("LabelSettings_l4y0v")
 
 [node name="BetSlider" type="HSlider" parent="CanvasLayer/Control"]
 layout_mode = 0
-offset_left = 142.0
-offset_top = 602.0
-offset_right = 298.0
-offset_bottom = 618.0
+offset_left = 24.0
+offset_top = 600.0
+offset_right = 180.0
+offset_bottom = 616.0
 
 [node name="PlayerArea" type="Node2D" parent="."]
 position = Vector2(385.66666, 215.66669)

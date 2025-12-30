@@ -193,5 +193,4 @@ public partial class PokerGame : Node2D
 				break;
 		}
 	}
-	
 }
