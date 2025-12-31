@@ -1,4 +1,3 @@
-// PokerGame.GameFlow.cs
 using Godot;
 using System;
 using System.Collections.Generic;
@@ -11,7 +10,8 @@ public partial class PokerGame
 	private bool isPlayerTurn = true;
 	private bool playerIsAllIn = false;
 	private bool opponentIsAllIn = false;
-	private bool playerHasButton = false; // gets switched to true during new game initialization
+	private bool playerHasButton = false;
+	private bool isProcessingAIAction = false; // Prevent re-entry
 
 	private bool IsGameOver()
 	{
@@ -69,8 +69,8 @@ public partial class PokerGame
 		raisesThisStreet = 0;
 		playerIsAllIn = false;
 		opponentIsAllIn = false;
+		isProcessingAIAction = false; // Reset flag
 
-		// Reset action tracking
 		playerHasActedThisStreet = false;
 		opponentHasActedThisStreet = false;
 
@@ -100,12 +100,10 @@ public partial class PokerGame
 		handInProgress = true;
 		waitingForNextGame = false;
 
-		// Alternate button each hand
 		playerHasButton = !playerHasButton;
 
 		if (playerHasButton)
 		{
-			// Player has button = small blind
 			playerChips -= smallBlind;
 			opponentChips -= bigBlind;
 			pot += smallBlind + bigBlind;
@@ -113,14 +111,12 @@ public partial class PokerGame
 			opponentBet = bigBlind;
 			currentBet = bigBlind;
 
-			// Player acts first preflop when on button
 			isPlayerTurn = true;
 			ShowMessage($"Blinds: You {smallBlind}, Opponent {bigBlind}");
 			GD.Print($"Player has button - Blinds posted: Player {smallBlind}, Opponent {bigBlind}, Pot: {pot}");
 		}
 		else
 		{
-			// Opponent has button = player is big blind
 			playerChips -= bigBlind;
 			opponentChips -= smallBlind;
 			pot += smallBlind + bigBlind;
@@ -128,7 +124,6 @@ public partial class PokerGame
 			opponentBet = smallBlind;
 			currentBet = bigBlind;
 
-			// Opponent acts first preflop when on button
 			isPlayerTurn = false;
 			ShowMessage($"Blinds: You {bigBlind}, Opponent {smallBlind}");
 			GD.Print($"Opponent has button - Blinds posted: Player {bigBlind}, Opponent {smallBlind}, Pot: {pot}");
@@ -137,155 +132,153 @@ public partial class PokerGame
 		UpdateHud();
 		UpdateButtonLabels();
 		RefreshBetSlider();
-		GetTree().CreateTimer(2.0).Timeout += () => CheckAndProcessAITurn();
+		
+		// Single timer for AI turn
+		if (!isPlayerTurn)
+		{
+			GetTree().CreateTimer(2.0).Timeout += () => CheckAndProcessAITurn();
+		}
 	}
 
 	private void AdvanceStreet()
 	{
 		ResetBettingRound();
 		aiBluffedThisHand = false;
+		isProcessingAIAction = false; // Reset for new street
 
+		Street nextStreet;
+		
 		switch (currentStreet)
 		{
 			case Street.Preflop:
-				DealCommunityCards(Street.Flop);
-				RevealCommunityCards(Street.Flop);
-				currentStreet = Street.Flop;
+				nextStreet = Street.Flop;
 				break;
 			case Street.Flop:
-				DealCommunityCards(Street.Turn);
-				RevealCommunityCards(Street.Turn);
-				currentStreet = Street.Turn;
+				nextStreet = Street.Turn;
 				break;
 			case Street.Turn:
-				DealCommunityCards(Street.River);
-				RevealCommunityCards(Street.River);
-				currentStreet = Street.River;
+				nextStreet = Street.River;
 				break;
 			case Street.River:
 				ShowDown();
 				return;
+			default:
+				return;
 		}
 
-		// If both players are all-in, just keep dealing to showdown
+		// Deal and reveal cards with message
+		DealCommunityCards(nextStreet);
+		RevealCommunityCards(nextStreet);
+		currentStreet = nextStreet;
+
+		// All-in scenarios
 		if (playerIsAllIn && opponentIsAllIn)
 		{
-			GetTree().CreateTimer(1.5).Timeout += AdvanceStreet;
+			GetTree().CreateTimer(2.0).Timeout += () => {
+				GetTree().CreateTimer(1.5).Timeout += AdvanceStreet;
+			};
 			return;
 		}
 
-		// If one player is all-in, skip betting and advance
 		if (playerIsAllIn || opponentIsAllIn)
 		{
-			GetTree().CreateTimer(1.5).Timeout += AdvanceStreet;
+			GetTree().CreateTimer(2.0).Timeout += () => {
+				GetTree().CreateTimer(1.5).Timeout += AdvanceStreet;
+			};
 			return;
 		}
 
-		// Post-flop: non-button player acts first
-		if (playerHasButton)
+		// Post-flop: non-button acts first
+		isPlayerTurn = !playerHasButton;
+		
+		double waitTime = 0;
+		if (!isPlayerTurn)
 		{
-			isPlayerTurn = false; // Opponent acts first post-flop
-		}
-		else
-		{
-			isPlayerTurn = true; // Player acts first post-flop
+			waitTime = 2;
 		}
 
-		UpdateHud();
-		UpdateButtonLabels();
-		RefreshBetSlider();
-
-		// Trigger AI action if it's their turn
-		CheckAndProcessAITurn();
+		// Wait 2 seconds, then continue
+		GetTree().CreateTimer(waitTime).Timeout += () => {
+			UpdateHud();
+			UpdateButtonLabels();
+			RefreshBetSlider();
+			
+			// Only call AI if it's their turn
+			if (!isPlayerTurn)
+			{
+				CheckAndProcessAITurn();
+			}
+		};
 	}
 
 	private void CheckAndProcessAITurn()
 	{
-		if (!isPlayerTurn && handInProgress && !waitingForNextGame && !playerIsAllIn && !opponentIsAllIn)
+		GD.Print($"[CheckAndProcessAITurn] isProcessing={isProcessingAIAction}, isPlayerTurn={isPlayerTurn}, handInProgress={handInProgress}");
+		
+		if (isProcessingAIAction)
 		{
-			ShowMessage($"{currentOpponent.Name} is thinking...");
-					
-			float handStrength = EvaluateAIHandStrength();
-			int toCall = currentBet - opponentBet;
-			bool facingBet = toCall > 0;
-			
-			float baseThinkTime;
-			
-			// Strong hands (nuts, near-nuts) = quick decision
-			if (handStrength >= 0.85f)
-			{
-				baseThinkTime = GD.Randf() * 0.5f + 0.4f; // 0.4-0.9 seconds
-			}
-			// Very weak hands (obvious folds) = quick decision
-			else if (handStrength <= 0.15f && facingBet)
-			{
-				baseThinkTime = GD.Randf() * 0.6f + 0.5f; // 0.5-1.1 seconds
-			}
-			// Marginal/medium hands (difficult decisions) = longer think
-			else
-			{
-				baseThinkTime = GD.Randf() * 1.5f + 1.2f; // 1.2-2.7 seconds
-			}
-			
-			// Add extra time if facing a bet (more complex decision)
-			if (facingBet)
-			{
-				baseThinkTime += GD.Randf() * 0.4f + 0.2f; // +0.2-0.6 seconds
-			}
-			
-			// Bluffs take longer - pretending to have a difficult decision
-			// Check opponent's bluff tendency to see if they might bluff
-			float bluffChance = currentOpponent.Bluffiness;
-			bool mightBluff = handStrength < 0.4f && GD.Randf() < bluffChance;
-			
-			if (mightBluff)
-			{
-				// Bluffs take longer to look convincing
-				baseThinkTime += GD.Randf() * 0.8f + 0.5f; // +0.5-1.3 seconds extra
-			}
-			
+			GD.Print("⚠️ CheckAndProcessAITurn blocked: already processing");
+			return;
+		}
+		
+		if (!isPlayerTurn && handInProgress && !waitingForNextGame)
+		{
+			float baseThinkTime = 0.5f;
 			GetTree().CreateTimer(baseThinkTime).Timeout += () => ProcessOpponentTurn();
 		}
 	}
 
-
-
 	private void ProcessOpponentTurn()
 	{
-		// Make sure it's still the opponent's turn (in case game state changed)
-		if (isPlayerTurn || !handInProgress)
+		GD.Print($"[ProcessOpponentTurn] isProcessing={isProcessingAIAction}, isPlayerTurn={isPlayerTurn}");
+		
+		if (isProcessingAIAction)
+		{
+			GD.Print("⚠️ ProcessOpponentTurn blocked: already processing");
 			return;
+		}
+		
+		if (isPlayerTurn || !handInProgress || waitingForNextGame)
+		{
+			GD.Print("ProcessOpponentTurn aborted: invalid state");
+			return;
+		}
 
-		// Mark that opponent has acted this street
+		// Lock to prevent re-entry
+		isProcessingAIAction = true;
 		opponentHasActedThisStreet = true;
 
-		// Get AI decision using existing logic
 		AIAction action = DecideAIAction();
-
-		// Execute the action
 		ExecuteAIAction(action);
 
-		// Check if betting round is complete
-		if (action == AIAction.Fold)
+		if (action == AIAction.Fold || !handInProgress)
 		{
-			// Hand is over, player wins
+			isProcessingAIAction = false;
 			return;
 		}
 
 		bool betsEqual = (playerBet == opponentBet);
 		bool bothActed = playerHasActedThisStreet && opponentHasActedThisStreet;
+		bool bothAllIn = playerIsAllIn && opponentIsAllIn;
 
-		GD.Print($"Betting continues: betsEqual={betsEqual}, bothActed={bothActed}");
+		GD.Print($"After AI action: betsEqual={betsEqual}, bothActed={bothActed}, bothAllIn={bothAllIn}");
 
-		if (betsEqual && bothActed)
+		if ((betsEqual && bothActed) || bothAllIn || (playerIsAllIn && betsEqual))
 		{
-			// Betting round complete, advance to next street
-			GD.Print($"Betting round complete: betsEqual={betsEqual}, bothActed={bothActed}, bothAllIn={playerIsAllIn && opponentIsAllIn}");
-			AdvanceStreet();
+			GD.Print("Betting round complete after AI action");
+			isProcessingAIAction = false; // Unlock before advancing
+			GetTree().CreateTimer(0.8).Timeout += AdvanceStreet;
+		}
+		else if (playerIsAllIn && !betsEqual)
+		{
+			GD.Print("Betting round complete: Player all-in, cannot match AI raise");
+			isProcessingAIAction = false;
+			GetTree().CreateTimer(0.8).Timeout += AdvanceStreet;
 		}
 		else
 		{
-			// Action back to player
+			// Back to player
+			isProcessingAIAction = false;
 			isPlayerTurn = true;
 			UpdateHud();
 			UpdateButtonLabels();

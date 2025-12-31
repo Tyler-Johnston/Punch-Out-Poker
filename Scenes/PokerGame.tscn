@@ -300,18 +300,18 @@ label_settings = SubResource("LabelSettings_o1p3i")
 
 [node name="PotLabel" type="Label" parent="CanvasLayer/Control"]
 layout_mode = 0
-offset_left = 35.0
-offset_top = 509.0
-offset_right = 156.0
-offset_bottom = 561.0
+offset_left = 1110.0
+offset_top = 54.0
+offset_right = 1231.0
+offset_bottom = 106.0
 text = "Pot: 100"
 label_settings = SubResource("LabelSettings_l4y0v")
 
 [node name="GameStateLabel" type="Label" parent="CanvasLayer/Control"]
 layout_mode = 0
-offset_left = 436.0
+offset_left = 372.0
 offset_top = 233.0
-offset_right = 724.0
+offset_right = 660.0
 offset_bottom = 285.0
 text = "Game State Label"
 label_settings = SubResource("LabelSettings_l4y0v")
