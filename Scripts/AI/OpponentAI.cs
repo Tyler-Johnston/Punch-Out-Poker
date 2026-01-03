@@ -62,19 +62,25 @@ public partial class PokerGame
 				foldThreshold -= 0.08f;
 				callThreshold -= 0.05f;
 			}
-			else if (potOdds >= 0.45f)  // Increased from 0.40 to 0.45
+			// Change 0.45f to 0.35f to catch standard pot-sized bets and all-ins
+			else if (potOdds >= 0.35f) 
 			{
-				// Very expensive; need stronger hand
-				foldThreshold += 0.18f;  // Reduced from 0.20
-				callThreshold += 0.13f;  // Reduced from 0.15
+				// Expensive; need stronger hand
+				foldThreshold += 0.15f; 
+				callThreshold += 0.10f;
 				
+				// Gradient: If it's REALLY expensive (close to 0.50), add more
+				if (potOdds >= 0.45f) {
+					 foldThreshold += 0.10f; // Cumulative penalty
+				}
+
 				// UPDATED: Only apply extra penalty if pot odds are EXTREME
-				if (potOdds > 0.60f && potOdds > handStrength + 0.15f)  // Stricter conditions
+				if (potOdds > 0.60f && potOdds > handStrength + 0.15f)
 				{
-					foldThreshold += 0.08f;  // Reduced from 0.10
-					callThreshold += 0.08f;
+					 foldThreshold += 0.08f;
 				}
 			}
+
 			
 			foldThreshold = Math.Clamp(foldThreshold, 0.0f, callThreshold);
 		}
