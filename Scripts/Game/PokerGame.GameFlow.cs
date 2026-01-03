@@ -11,7 +11,7 @@ public partial class PokerGame
 	private bool playerIsAllIn = false;
 	private bool opponentIsAllIn = false;
 	private bool playerHasButton = false;
-	private bool isProcessingAIAction = false; // Prevent re-entry
+	private bool isProcessingAIAction = false;
 
 	private bool IsGameOver()
 	{
@@ -40,111 +40,11 @@ public partial class PokerGame
 		UpdateHud();
 	}
 
-	private void StartNewHand()
-	{
-		if (IsGameOver())
-		{
-			HandleGameOver();
-			return;
-		}
-
-		GD.Print("\n=== New Hand ===");
-		ShowMessage("New hand starting...");
-
-		betSlider.Visible = true;
-		foldButton.Visible = true;
-		betRaiseButton.Visible = true;
-		betSliderLabel.Visible = true;
-		potLabel.Visible = true;
-		playerHandType.Text = "";
-		opponentHandType.Text = "";
-
-		deck = new Deck();
-		deck.Shuffle();
-		deckDealAudioPlayer.Play();
-
-		pot = 0;
-		aiBluffedThisHand = false;
-		playerTotalBetsThisHand = 0;
-		raisesThisStreet = 0;
-		playerIsAllIn = false;
-		opponentIsAllIn = false;
-		isProcessingAIAction = false; // Reset flag
-
-		playerHasActedThisStreet = false;
-		opponentHasActedThisStreet = false;
-
-		playerBetOnStreet.Clear();
-		playerBetSizeOnStreet.Clear();
-		playerBetOnStreet[Street.Preflop] = false;
-		playerBetOnStreet[Street.Flop] = false;
-		playerBetOnStreet[Street.Turn] = false;
-		playerBetOnStreet[Street.River] = false;
-
-		playerHand.Clear();
-		opponentHand.Clear();
-		communityCards.Clear();
-
-		playerCard1.ShowBack();
-		playerCard2.ShowBack();
-		opponentCard1.ShowBack();
-		opponentCard2.ShowBack();
-		flop1.ShowBack();
-		flop2.ShowBack();
-		flop3.ShowBack();
-		turnCard.ShowBack();
-		riverCard.ShowBack();
-
-		DealInitialHands();
-		currentStreet = Street.Preflop;
-		handInProgress = true;
-		waitingForNextGame = false;
-
-		playerHasButton = !playerHasButton;
-
-		if (playerHasButton)
-		{
-			playerChips -= smallBlind;
-			opponentChips -= bigBlind;
-			pot += smallBlind + bigBlind;
-			playerBet = smallBlind;
-			opponentBet = bigBlind;
-			currentBet = bigBlind;
-
-			isPlayerTurn = true;
-			ShowMessage($"Blinds: You {smallBlind}, Opponent {bigBlind}");
-			GD.Print($"Player has button - Blinds posted: Player {smallBlind}, Opponent {bigBlind}, Pot: {pot}");
-		}
-		else
-		{
-			playerChips -= bigBlind;
-			opponentChips -= smallBlind;
-			pot += smallBlind + bigBlind;
-			playerBet = bigBlind;
-			opponentBet = smallBlind;
-			currentBet = bigBlind;
-
-			isPlayerTurn = false;
-			ShowMessage($"Blinds: You {bigBlind}, Opponent {smallBlind}");
-			GD.Print($"Opponent has button - Blinds posted: Player {bigBlind}, Opponent {smallBlind}, Pot: {pot}");
-		}
-
-		UpdateHud();
-		UpdateButtonLabels();
-		RefreshBetSlider();
-		
-		// Single timer for AI turn
-		if (!isPlayerTurn)
-		{
-			GetTree().CreateTimer(1.15).Timeout += () => CheckAndProcessAITurn();
-		}
-	}
-
 	private void AdvanceStreet()
 	{
 		ResetBettingRound();
 		aiBluffedThisHand = false;
-		isProcessingAIAction = false; // Reset for new street
+		isProcessingAIAction = false;
 
 		Street nextStreet;
 		
@@ -166,7 +66,6 @@ public partial class PokerGame
 				return;
 		}
 
-		// Deal and reveal cards with message
 		DealCommunityCards(nextStreet);
 		RevealCommunityCards(nextStreet);
 		currentStreet = nextStreet;
@@ -174,17 +73,13 @@ public partial class PokerGame
 		// All-in scenarios
 		if (playerIsAllIn && opponentIsAllIn)
 		{
-			//GetTree().CreateTimer(2.0).Timeout += () => {
 			GetTree().CreateTimer(1.5).Timeout += AdvanceStreet;
-			//};
 			return;
 		}
 
 		if (playerIsAllIn || opponentIsAllIn)
 		{
-			//GetTree().CreateTimer(2.0).Timeout += () => {
 			GetTree().CreateTimer(1.5).Timeout += AdvanceStreet;
-			//};
 			return;
 		}
 
@@ -197,7 +92,6 @@ public partial class PokerGame
 			waitTime = 1.15;
 		}
 
-		// Wait 2 seconds, then continue
 		GetTree().CreateTimer(waitTime).Timeout += () => {
 			UpdateHud();
 			UpdateButtonLabels();
@@ -217,7 +111,7 @@ public partial class PokerGame
 		
 		if (isProcessingAIAction)
 		{
-			GD.Print("⚠️ CheckAndProcessAITurn blocked: already processing");
+			GD.Print("CheckAndProcessAITurn blocked: already processing");
 			return;
 		}
 		
@@ -234,7 +128,7 @@ public partial class PokerGame
 		
 		if (isProcessingAIAction)
 		{
-			GD.Print("⚠️ ProcessOpponentTurn blocked: already processing");
+			GD.Print("ProcessOpponentTurn blocked: already processing");
 			return;
 		}
 		
@@ -277,7 +171,6 @@ public partial class PokerGame
 		}
 		else
 		{
-			// Back to player
 			isProcessingAIAction = false;
 			isPlayerTurn = true;
 			UpdateHud();

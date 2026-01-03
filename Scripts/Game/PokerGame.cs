@@ -122,7 +122,22 @@ public partial class PokerGame : Node2D
 		playerChips = currentOpponent.BuyIn;
 		opponentChips = currentOpponent.BuyIn;
 		
+		// --- NEW BLIND CALCULATION ---
+		// Target: We want the starting stack to be 50 Big Blinds (faster game) or 100 BB (deep game).
+		// Example: BuyIn 500 -> BB 10. BuyIn 50 -> BB 1.
+		
+		bigBlind = Math.Max(2, currentOpponent.BuyIn / 50); 
+		
+		// Make sure BB is always even so SB can be half of it integer-wise
+		if (bigBlind % 2 != 0) bigBlind++; 
+
+		smallBlind = bigBlind / 2;
+
+		// Update Bet Slider default
+		betAmount = bigBlind; 
+
 		GD.Print($"=== Opponent: {currentOpponent.Name} ===");
+		GD.Print($"Buy-In: {currentOpponent.BuyIn} | Blinds: {smallBlind}/{bigBlind}");
 		GD.Print($"Aggression: {currentOpponent.Aggression:F2}");
 		GD.Print($"Looseness: {currentOpponent.Looseness:F2}");
 		GD.Print($"Bluffiness: {currentOpponent.Bluffiness:F2}");
@@ -199,6 +214,127 @@ public partial class PokerGame : Node2D
 			case Street.River:
 				riverCard.ShowCard(communityCards[4]);
 				break;
+		}
+	}
+	
+	private void StartNewHand()
+	{
+		if (IsGameOver())
+		{
+			HandleGameOver();
+			return;
+		}
+
+		GD.Print("\n=== New Hand ===");
+		ShowMessage("New hand starting...");
+
+		betSlider.Visible = true;
+		foldButton.Visible = true;
+		betRaiseButton.Visible = true;
+		betSliderLabel.Visible = true;
+		potLabel.Visible = true;
+		playerHandType.Text = "";
+		opponentHandType.Text = "";
+
+		deck = new Deck();
+		deck.Shuffle();
+		deckDealAudioPlayer.Play();
+
+		pot = 0;
+		aiBluffedThisHand = false;
+		playerTotalBetsThisHand = 0;
+		raisesThisStreet = 0;
+		playerIsAllIn = false;
+		opponentIsAllIn = false;
+		isProcessingAIAction = false; // Reset flag
+
+		playerHasActedThisStreet = false;
+		opponentHasActedThisStreet = false;
+
+		playerBetOnStreet.Clear();
+		playerBetSizeOnStreet.Clear();
+		playerBetOnStreet[Street.Preflop] = false;
+		playerBetOnStreet[Street.Flop] = false;
+		playerBetOnStreet[Street.Turn] = false;
+		playerBetOnStreet[Street.River] = false;
+
+		playerHand.Clear();
+		opponentHand.Clear();
+		communityCards.Clear();
+
+		playerCard1.ShowBack();
+		playerCard2.ShowBack();
+		opponentCard1.ShowBack();
+		opponentCard2.ShowBack();
+		flop1.ShowBack();
+		flop2.ShowBack();
+		flop3.ShowBack();
+		turnCard.ShowBack();
+		riverCard.ShowBack();
+
+		DealInitialHands();
+		currentStreet = Street.Preflop;
+		handInProgress = true;
+		waitingForNextGame = false;
+
+		playerHasButton = !playerHasButton;
+
+		if (playerHasButton)
+		{
+			// 1. Handle Player (Small Blind)
+			int sbAmount = Math.Min(smallBlind, playerChips); // Clamp to stack
+			playerChips -= sbAmount;
+			pot += sbAmount;
+			playerBet = sbAmount;
+			if (playerChips == 0) playerIsAllIn = true;
+
+			// 2. Handle Opponent (Big Blind)
+			int bbAmount = Math.Min(bigBlind, opponentChips); // Clamp to stack
+			opponentChips -= bbAmount;
+			pot += bbAmount;
+			opponentBet = bbAmount;
+			currentBet = opponentBet; // The high bet is the BB
+			if (opponentChips == 0) opponentIsAllIn = true;
+
+			isPlayerTurn = true;
+			ShowMessage($"Blinds: You {sbAmount}, Opponent {bbAmount}");
+			GD.Print($"Player SB. Posted: {sbAmount} vs {bbAmount}. Pot: {pot}");
+		}
+		else
+		{
+			// 1. Handle Player (Big Blind)
+			int bbAmount = Math.Min(bigBlind, playerChips); // Clamp to stack 
+			playerChips -= bbAmount;
+			pot += bbAmount;
+			playerBet = bbAmount;
+			if (playerChips == 0) playerIsAllIn = true;
+
+			// 2. Handle Opponent (Small Blind)
+			int sbAmount = Math.Min(smallBlind, opponentChips); // Clamp to stack
+			opponentChips -= sbAmount;
+			pot += sbAmount;
+			opponentBet = sbAmount;
+			
+			// Important: Current bet is the higher of the two blinds
+			// Usually the BB, but if BB was all-in for 2 chips, and SB posted 5, the high bet is 5.
+			currentBet = Math.Max(playerBet, opponentBet);
+
+			if (opponentChips == 0) opponentIsAllIn = true;
+
+			isPlayerTurn = false;
+			ShowMessage($"Blinds: You {bbAmount}, Opponent {sbAmount}");
+			GD.Print($"Opponent SB. Posted: {sbAmount} vs {bbAmount}. Pot: {pot}");
+		}
+
+
+		UpdateHud();
+		UpdateButtonLabels();
+		RefreshBetSlider();
+		
+		// Single timer for AI turn
+		if (!isPlayerTurn)
+		{
+			GetTree().CreateTimer(1.15).Timeout += () => CheckAndProcessAITurn();
 		}
 	}
 	
