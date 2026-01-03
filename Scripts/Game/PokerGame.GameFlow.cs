@@ -136,7 +136,7 @@ public partial class PokerGame
 		// Single timer for AI turn
 		if (!isPlayerTurn)
 		{
-			GetTree().CreateTimer(2.0).Timeout += () => CheckAndProcessAITurn();
+			GetTree().CreateTimer(1.15).Timeout += () => CheckAndProcessAITurn();
 		}
 	}
 
@@ -174,17 +174,17 @@ public partial class PokerGame
 		// All-in scenarios
 		if (playerIsAllIn && opponentIsAllIn)
 		{
-			GetTree().CreateTimer(2.0).Timeout += () => {
-				GetTree().CreateTimer(1.5).Timeout += AdvanceStreet;
-			};
+			//GetTree().CreateTimer(2.0).Timeout += () => {
+			GetTree().CreateTimer(1.5).Timeout += AdvanceStreet;
+			//};
 			return;
 		}
 
 		if (playerIsAllIn || opponentIsAllIn)
 		{
-			GetTree().CreateTimer(2.0).Timeout += () => {
-				GetTree().CreateTimer(1.5).Timeout += AdvanceStreet;
-			};
+			//GetTree().CreateTimer(2.0).Timeout += () => {
+			GetTree().CreateTimer(1.5).Timeout += AdvanceStreet;
+			//};
 			return;
 		}
 
@@ -194,7 +194,7 @@ public partial class PokerGame
 		double waitTime = 0;
 		if (!isPlayerTurn)
 		{
-			waitTime = 2;
+			waitTime = 1.15;
 		}
 
 		// Wait 2 seconds, then continue
