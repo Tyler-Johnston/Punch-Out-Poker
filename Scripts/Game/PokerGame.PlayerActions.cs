@@ -15,10 +15,7 @@ public partial class PokerGame
 		opponentChips += pot;
 		pot = 0;
 		GD.Print($"Stacks -> Player: {playerChips}, Opponent: {opponentChips}");
-		handInProgress = false;
-		waitingForNextGame = true;
-		UpdateHud();
-		RefreshBetSlider();
+   		EndHand();
 	}
 
 	private void OnCheckCallPressed()

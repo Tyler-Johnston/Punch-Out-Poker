@@ -207,10 +207,7 @@ public partial class PokerGame
 				ShowMessage("Opponent folds");
 				GD.Print("Opponent folds");
 				playerChips += pot;
-				pot = 0;
-				handInProgress = false;
-				waitingForNextGame = true;
-				UpdateHud();
+				EndHand(); 
 				break;
 
 			case AIAction.Check:

@@ -201,4 +201,22 @@ public partial class PokerGame : Node2D
 				break;
 		}
 	}
+	
+	private void EndHand()
+	{
+		pot = 0;
+		handInProgress = false;
+		waitingForNextGame = true;
+
+		if (IsGameOver())
+		{
+			HandleGameOver();
+		}
+		else
+		{
+			UpdateHud(); 
+			RefreshBetSlider();
+		}
+	}
+
 }

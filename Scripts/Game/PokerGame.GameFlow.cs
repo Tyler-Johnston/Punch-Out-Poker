@@ -333,19 +333,6 @@ public partial class PokerGame
 
 		ShowMessage(message);
 		GD.Print($"Stacks -> Player: {playerChips}, Opponent: {opponentChips}");
-
-		pot = 0;
-		handInProgress = false;
-		waitingForNextGame = true;
-
-		if (IsGameOver())
-		{
-			HandleGameOver();
-		}
-		else
-		{
-			UpdateHud();
-			RefreshBetSlider();
-		}
+		EndHand();
 	}
 }
