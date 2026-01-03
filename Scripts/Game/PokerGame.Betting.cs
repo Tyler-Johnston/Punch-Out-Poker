@@ -23,45 +23,45 @@ public partial class PokerGame
 	private (int minBet, int maxBet) GetLegalBetRange()
 	{
 		int maxBet = playerChips;
-		if (maxBet <= 0)
-			return (0, 0);
+		if (maxBet <= 0) return (0, 0);
 
 		bool opening = currentBet == 0;
 		int minBet;
 
 		if (opening)
 		{
-			// Opening the betting: at least big blind, but you can always go all-in if shorter
-			minBet = Math.Min(Math.Max(bigBlind, 1), maxBet);
+			// Opening: Min bet is Big Blind (clamped to stack)
+			minBet = Math.Min(bigBlind, maxBet);
 		}
 		else
 		{
-			// There is an existing bet (currentBet)
-			int toCall = currentBet - playerBet;
+			// === THE FIX ===
+			// The minimum you must RAISE BY is the amount you are facing to call.
+			// Example: Opponent bet 28 total. You have 10 in.
+			// Amount to call = 18.
+			// Therefore, Min Raise Increment = 18.
+			
+			int amountToCall = currentBet - playerBet;
+			
+			// Standard Rule: Raise must match the previous bet/raise size.
+			// If checking (0 to call), we default to Big Blind.
+			int minRaiseIncrement = (amountToCall == 0) ? bigBlind : amountToCall;
+			
+			// Edge Case: Tiny bets must still be raised by at least 1 BB
+			minRaiseIncrement = Math.Max(minRaiseIncrement, bigBlind);
 
-			// Minimum legal *raise* size approximation: +big blind over currentBet
-			int minRaiseSize = bigBlind;
-			int minTotalBet = currentBet + minRaiseSize;
-			int minToAdd = minTotalBet - playerBet;
-
-			// Base minimum: at least call, or a full raise if stack allows
-			int fullMin = Math.Max(toCall, minToAdd);
-
-			if (fullMin <= maxBet)
+			// The Slider controls the "Raise Amount" (the amount ON TOP of the call)
+			minBet = minRaiseIncrement;
+			
+			// Cap at stack size
+			if (minBet > maxBet)
 			{
-				// You have enough to make a full legal raise
-				minBet = fullMin;
-			}
-			else
-			{
-				// Short stack: you can only go all-in as a raise, or call if you can afford it
-				// From slider perspective, this is effectively "ALL IN"
-				minBet = maxBet;
+				minBet = maxBet; 
 			}
 		}
 
-		if (minBet > maxBet)
-			minBet = maxBet;
+		// Safety clamp
+		if (minBet > maxBet) minBet = maxBet;
 
 		return (minBet, maxBet);
 	}

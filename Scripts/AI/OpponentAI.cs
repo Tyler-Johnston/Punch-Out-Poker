@@ -322,7 +322,7 @@ public partial class PokerGame
 		// Use opponent's bet sizing factor from profile as BASE
 		float sizeFactor = currentOpponent.BetSizeFactor;
 
-		// UPDATED: Scale up bet size with hand strength
+		//  Scale up bet size with hand strength
 		if (handStrength >= 0.85f)
 		{
 			// Monster hands: bet 80-100% of pot regardless of profile
@@ -338,8 +338,7 @@ public partial class PokerGame
 			// Strong hands: bet at least 50% of pot
 			sizeFactor = Math.Max(sizeFactor, 0.5f);
 		}
-		// Otherwise use profile's natural sizing
-
+		
 		// Reduce bluff sizes
 		if (aiBluffedThisHand && handStrength < 0.4f)
 			sizeFactor *= 0.65f;
