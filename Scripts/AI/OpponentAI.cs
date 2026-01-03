@@ -43,7 +43,7 @@ public partial class PokerGame
 		float playerStrength = EstimatePlayerStrength();
 		GD.Print($"Estimated Player Strength: {playerStrength:F2}");
 
-		// UPDATED: Only adjust if player is very aggressive AND we have weak hand
+		// Only adjust if player is very aggressive AND we have weak hand
 		if (playerStrength > 0.75f && handStrength < 0.55f)
 		{
 			// Only become more cautious with weak/medium hands
@@ -54,37 +54,42 @@ public partial class PokerGame
 
 		if (facingBet && pot > 0)
 		{
-			float potOdds = (float)toCall / (pot + toCall);
+			// FIX: Clamp 'toCall' to the actual chips we have. 
+			// Calling 1000 chips when we only have 10 is mathematically cheap (100% of our stack, but tiny vs pot).
+			int actualCallAmount = Math.Min(toCall, opponentChips);
+			float potOdds = (float)actualCallAmount / (pot + actualCallAmount);
 			
-			if (potOdds < 0.25f)
+			// Safety Check: Commitment
+			// If this call represents > 40% of our remaining stack (tournament life risk), treat it seriously
+			// regardless of the pot odds math (e.g., calling an all-in for 10 chips into a 5 pot is "expensive" for the stack)
+			float stackCommitment = (opponentChips > 0) ? (float)actualCallAmount / opponentChips : 1.0f;
+			
+			if (potOdds < 0.25f && stackCommitment < 0.30f)
 			{
-				// Cheap to call; be more willing
+				// Cheap to call AND not risking our life; be more willing
 				foldThreshold -= 0.08f;
 				callThreshold -= 0.05f;
 			}
-			// Change 0.45f to 0.35f to catch standard pot-sized bets and all-ins
-			else if (potOdds >= 0.35f) 
+			else if (potOdds >= 0.35f || stackCommitment > 0.40f) 
 			{
-				// Expensive; need stronger hand
+				// Expensive (bad odds OR risks >40% of stack); need stronger hand
 				foldThreshold += 0.15f; 
 				callThreshold += 0.10f;
 				
-				// Gradient: If it's REALLY expensive (close to 0.50), add more
-				if (potOdds >= 0.45f) {
+				// Gradient: If it's REALLY expensive (close to 0.50 odds or All-In), add more
+				if (potOdds >= 0.45f || stackCommitment > 0.80f) {
 					 foldThreshold += 0.10f; // Cumulative penalty
 				}
 
-				// UPDATED: Only apply extra penalty if pot odds are EXTREME
+				// Extreme penalty for terrible odds
 				if (potOdds > 0.60f && potOdds > handStrength + 0.15f)
 				{
 					 foldThreshold += 0.08f;
 				}
 			}
-
 			
 			foldThreshold = Math.Clamp(foldThreshold, 0.0f, callThreshold);
 		}
-
 
 		// Prevent infinite raising
 		if (raisesThisStreet >= MAX_RAISES_PER_STREET)
@@ -191,6 +196,7 @@ public partial class PokerGame
 			}
 		}
 	}
+
 
 
 	private void ExecuteAIAction(AIAction action)
