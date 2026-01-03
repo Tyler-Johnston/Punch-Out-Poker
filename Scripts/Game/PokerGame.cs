@@ -54,7 +54,7 @@ public partial class PokerGame : Node2D
 
 	// AI
 	private OpponentProfile currentOpponent;
-	private int selectedOpponentIndex = 1;
+	private int selectedOpponentIndex = 2;
 	
 	// Audio
 	private AudioStreamPlayer deckDealAudioPlayer;
@@ -122,10 +122,9 @@ public partial class PokerGame : Node2D
 		playerChips = currentOpponent.BuyIn;
 		opponentChips = currentOpponent.BuyIn;
 		
-		// --- NEW BLIND CALCULATION ---
+		// --- BLIND CALCULATION ---
 		// Target: We want the starting stack to be 50 Big Blinds (faster game) or 100 BB (deep game).
 		// Example: BuyIn 500 -> BB 10. BuyIn 50 -> BB 1.
-		
 		bigBlind = Math.Max(2, currentOpponent.BuyIn / 50); 
 		
 		// Make sure BB is always even so SB can be half of it integer-wise

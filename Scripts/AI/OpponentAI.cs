@@ -111,12 +111,27 @@ public partial class PokerGame
 			// Facing a bet - decide fold/call/raise
 			if (handStrength < foldThreshold)
 			{
-				// Check if we should bluff-raise instead
-				if (GD.Randf() < bluffChance * 0.5f && raisesThisStreet < MAX_RAISES_PER_STREET)
+				// === SMART BLUFF LOGIC ===
+				bool isBadSpotToBluff = false;
+
+				// 1. Don't bluff if the player looks terrified strong
+				if (playerStrength > 0.70f) isBadSpotToBluff = true;
+
+				// 2. Don't bluff if we have to call a massive overbet just to try it
+				// (e.g. Player bets 190 into 80)
+				float betRatio = (pot > 0) ? (float)toCall / pot : 0f;
+				if (betRatio > 1.2f) isBadSpotToBluff = true; 
+
+				// 3. The Logic
+				if (!isBadSpotToBluff && 
+					GD.Randf() < bluffChance * 0.5f && 
+					raisesThisStreet < MAX_RAISES_PER_STREET)
 				{
 					aiBluffedThisHand = true;
+					GD.Print("AI attempting bluff raise!"); 
 					return AIAction.Raise;
 				}
+				
 				return AIAction.Fold;
 			}
 			else if (handStrength < raiseThreshold)
@@ -160,7 +175,21 @@ public partial class PokerGame
 		{
 			if (handStrength < callThreshold)
 			{
-				// Weak hand - mostly check, sometimes bluff
+				// Weak hand (Air)
+				// === STAB LOGIC ===
+				// If I'm aggressive and checked to, sometimes bet just to steal
+				float aggressionFactor = (currentStreet == Street.Preflop) 
+					? currentOpponent.PreflopAggression 
+					: currentOpponent.PostflopAggression;
+
+				// If I'm aggressive (> 1.0) and random roll hits, BET anyway
+				if (aggressionFactor > 1.1f && GD.Randf() < 0.4f) 
+				{
+					aiBluffedThisHand = true;
+					return AIAction.Bet;
+				}
+
+				// Normal Bluff logic
 				if (GD.Randf() < bluffChance)
 				{
 					aiBluffedThisHand = true;
