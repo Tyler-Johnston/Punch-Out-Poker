@@ -27,7 +27,15 @@ public partial class PokerGame
 		}
 		else
 		{
-			checkCallButton.Text = $"Call: {Math.Max(0, Math.Min(toCall, playerChips))}";
+			// Check specifically for the negative call (Refund scenario)
+			if (toCall < 0)
+			{
+				checkCallButton.Text = $"Call (Take back {Math.Abs(toCall)})";
+			}
+			else
+			{
+				checkCallButton.Text = $"Call: {Math.Min(toCall, playerChips)}";
+			}
 
 			int raiseTotal = currentBet + betAmount;
 			int toAddForRaise = raiseTotal - playerBet;
@@ -70,7 +78,12 @@ public partial class PokerGame
 		}
 		else
 		{
+			// === THE FIX ===
+			// We MUST refresh the slider math BEFORE updating the button labels.
+			// This prevents the "Raise 28" vs "Raise 38" visual bug.
+			RefreshBetSlider();
 			UpdateButtonLabels();
+			
 			foldButton.Visible = true;
 			betRaiseButton.Visible = true;
 

@@ -52,9 +52,13 @@ public partial class PokerGame : Node2D
 	private int playerChips = 100;
 	private int opponentChips = 100;
 
+	// Side Pot / Contribution Tracking
+	private int playerContributed = 0;
+	private int opponentContributed = 0;
+
 	// AI
 	private OpponentProfile currentOpponent;
-	private int selectedOpponentIndex = 2;
+	private int selectedOpponentIndex = 2; // Default to Wild Willie
 	
 	// Audio
 	private AudioStreamPlayer deckDealAudioPlayer;
@@ -123,13 +127,8 @@ public partial class PokerGame : Node2D
 		opponentChips = currentOpponent.BuyIn;
 		
 		// --- BLIND CALCULATION ---
-		// Target: We want the starting stack to be 50 Big Blinds (faster game) or 100 BB (deep game).
-		// Example: BuyIn 500 -> BB 10. BuyIn 50 -> BB 1.
 		bigBlind = Math.Max(2, currentOpponent.BuyIn / 50); 
-		
-		// Make sure BB is always even so SB can be half of it integer-wise
 		if (bigBlind % 2 != 0) bigBlind++; 
-
 		smallBlind = bigBlind / 2;
 
 		// Update Bet Slider default
@@ -149,6 +148,41 @@ public partial class PokerGame : Node2D
 	private void ShowMessage(string text)
 	{
 		gameStateLabel.Text = text;
+	}
+
+	// Helper to track contributions accurately
+	public void AddToPot(bool isPlayer, int amount)
+	{
+		pot += amount;
+		if (isPlayer)
+			playerContributed += amount;
+		else
+			opponentContributed += amount;
+	}
+
+	// Returns any chips that weren't matched (Side Pot logic for Heads Up)
+	private void ReturnUncalledChips()
+	{
+		if (playerContributed > opponentContributed)
+		{
+			int refund = playerContributed - opponentContributed;
+			playerChips += refund;
+			pot -= refund;
+			playerContributed -= refund; // Adjust history
+			
+			GD.Print($"Side Pot: Returned {refund} uncalled chips to Player.");
+			ShowMessage($"Returned {refund} uncalled chips");
+		}
+		else if (opponentContributed > playerContributed)
+		{
+			int refund = opponentContributed - playerContributed;
+			opponentChips += refund;
+			pot -= refund;
+			opponentContributed -= refund;
+			
+			GD.Print($"Side Pot: Returned {refund} uncalled chips to Opponent.");
+			ShowMessage($"Returned {refund} uncalled chips");
+		}
 	}
 
 	private void DealInitialHands()
@@ -240,12 +274,15 @@ public partial class PokerGame : Node2D
 		deckDealAudioPlayer.Play();
 
 		pot = 0;
+		playerContributed = 0;
+		opponentContributed = 0;
+		
 		aiBluffedThisHand = false;
 		playerTotalBetsThisHand = 0;
 		raisesThisStreet = 0;
 		playerIsAllIn = false;
 		opponentIsAllIn = false;
-		isProcessingAIAction = false; // Reset flag
+		isProcessingAIAction = false; 
 
 		playerHasActedThisStreet = false;
 		opponentHasActedThisStreet = false;
@@ -281,18 +318,19 @@ public partial class PokerGame : Node2D
 		if (playerHasButton)
 		{
 			// 1. Handle Player (Small Blind)
-			int sbAmount = Math.Min(smallBlind, playerChips); // Clamp to stack
+			int sbAmount = Math.Min(smallBlind, playerChips); 
 			playerChips -= sbAmount;
-			pot += sbAmount;
+			// Use AddToPot instead of direct addition
+			AddToPot(true, sbAmount);
 			playerBet = sbAmount;
 			if (playerChips == 0) playerIsAllIn = true;
 
 			// 2. Handle Opponent (Big Blind)
-			int bbAmount = Math.Min(bigBlind, opponentChips); // Clamp to stack
+			int bbAmount = Math.Min(bigBlind, opponentChips); 
 			opponentChips -= bbAmount;
-			pot += bbAmount;
+			AddToPot(false, bbAmount);
 			opponentBet = bbAmount;
-			currentBet = opponentBet; // The high bet is the BB
+			currentBet = opponentBet; 
 			if (opponentChips == 0) opponentIsAllIn = true;
 
 			isPlayerTurn = true;
@@ -302,20 +340,18 @@ public partial class PokerGame : Node2D
 		else
 		{
 			// 1. Handle Player (Big Blind)
-			int bbAmount = Math.Min(bigBlind, playerChips); // Clamp to stack 
+			int bbAmount = Math.Min(bigBlind, playerChips); 
 			playerChips -= bbAmount;
-			pot += bbAmount;
+			AddToPot(true, bbAmount);
 			playerBet = bbAmount;
 			if (playerChips == 0) playerIsAllIn = true;
 
 			// 2. Handle Opponent (Small Blind)
-			int sbAmount = Math.Min(smallBlind, opponentChips); // Clamp to stack
+			int sbAmount = Math.Min(smallBlind, opponentChips); 
 			opponentChips -= sbAmount;
-			pot += sbAmount;
+			AddToPot(false, sbAmount);
 			opponentBet = sbAmount;
 			
-			// Important: Current bet is the higher of the two blinds
-			// Usually the BB, but if BB was all-in for 2 chips, and SB posted 5, the high bet is 5.
 			currentBet = Math.Max(playerBet, opponentBet);
 
 			if (opponentChips == 0) opponentIsAllIn = true;
@@ -330,7 +366,6 @@ public partial class PokerGame : Node2D
 		UpdateButtonLabels();
 		RefreshBetSlider();
 		
-		// Single timer for AI turn
 		if (!isPlayerTurn)
 		{
 			GetTree().CreateTimer(1.15).Timeout += () => CheckAndProcessAITurn();
@@ -353,5 +388,4 @@ public partial class PokerGame : Node2D
 			RefreshBetSlider();
 		}
 	}
-
 }

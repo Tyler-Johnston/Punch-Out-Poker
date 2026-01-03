@@ -1,3 +1,4 @@
+// PokerGame.GameFlow.cs
 using Godot;
 using System;
 using System.Collections.Generic;
@@ -15,6 +16,7 @@ public partial class PokerGame
 
 	private bool IsGameOver()
 	{
+		// Check if anyone is busted (below the minimum blind to play)
 		return playerChips < smallBlind || opponentChips < bigBlind;
 	}
 
@@ -182,6 +184,11 @@ public partial class PokerGame
 	private void ShowDown()
 	{
 		GD.Print("\n=== Showdown ===");
+
+		// IMPORTANT: Refund any uncalled chips before determining the winner!
+		// This handles the "All-in for 999 vs Call for 1" scenario.
+		ReturnUncalledChips();
+
 		opponentCard1.ShowCard(opponentHand[0]);
 		opponentCard2.ShowCard(opponentHand[1]);
 

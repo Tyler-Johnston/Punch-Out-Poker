@@ -22,7 +22,7 @@ public partial class PokerGame
 	{
 		if (!handInProgress)
 		{
-			checkCallButton.Text = "Check";		
+			checkCallButton.Text = "Check";
 			StartNewHand();
 			return;
 		}
@@ -36,12 +36,35 @@ public partial class PokerGame
 			ShowMessage("You check");
 			GD.Print($"Player checks on {currentStreet}");
 		}
+		else if (toCall < 0)
+		{
+			// === NEW: Handle the "Refund" Scenario ===
+			// This happens when we bet X, opponent went All-In for Y (where Y < X).
+			// We are clicking "Call" to accept the All-In, so we get the difference back.
+			
+			int refundAmount = Math.Abs(toCall);
+			
+			// Refund the chips
+			playerChips += refundAmount;
+			playerBet -= refundAmount; // Reduce our bet to match theirs
+			
+			// Remove from pot/contribution tracking (passing negative value)
+			AddToPot(true, -refundAmount);
+
+			playerIsAllIn = false; // We clearly have chips back now
+			
+			ShowMessage($"You take back {refundAmount} excess chips (Match All-In)");
+			GD.Print($"Player matched All-In. Refunded {refundAmount} chips.");
+			chipsAudioPlayer.Play();
+		}
 		else
 		{
+			// Normal Call Logic
 			int actualCall = Math.Min(toCall, playerChips);
 			playerChips -= actualCall;
 			playerBet += actualCall;
-			pot += actualCall;
+			
+			AddToPot(true, actualCall);
 
 			if (playerChips == 0)
 			{
@@ -72,16 +95,15 @@ public partial class PokerGame
 		}
 		else if (opponentIsAllIn && !betsAreEqual)
 		{
-			// Opponent is all-in, cannot match player's larger bet
 			GD.Print($"Betting round complete: Opponent all-in, cannot match player bet");
 			GetTree().CreateTimer(0.8).Timeout += AdvanceStreet;
 		}
 		else
 		{
-			// Betting continues - AI needs to act
 			GetTree().CreateTimer(1.2).Timeout += CheckAndProcessAITurn;
 		}
 	}
+
 
 	private void OnBetRaisePressed()
 	{
@@ -105,7 +127,10 @@ public partial class PokerGame
 
 		playerChips -= actualBet;
 		playerBet += actualBet;
-		pot += actualBet;
+		
+		// UPDATED: Use helper to track contributions for side pot logic
+		AddToPot(true, actualBet);
+		
 		currentBet = playerBet;
 
 		playerBetOnStreet[currentStreet] = true;

@@ -249,7 +249,9 @@ public partial class PokerGame
 				int actualCall = Math.Min(toCall, opponentChips);
 				opponentChips -= actualCall;
 				opponentBet += actualCall;
-				pot += actualCall;
+				
+				// UPDATED: Use helper to track contributions for side pot logic
+				AddToPot(false, actualCall);
 
 				if (opponentChips == 0)
 				{
@@ -269,7 +271,10 @@ public partial class PokerGame
 				int actualBet = Math.Min(betSize, opponentChips);
 				opponentChips -= actualBet;
 				opponentBet += actualBet;
-				pot += actualBet;
+				
+				// UPDATED: Use helper to track contributions for side pot logic
+				AddToPot(false, actualBet);
+				
 				currentBet = opponentBet;
 
 				// DON'T increment raisesThisStreet for initial bet
@@ -293,7 +298,10 @@ public partial class PokerGame
 				int actualRaise = Math.Min(toAdd, opponentChips);
 				opponentChips -= actualRaise;
 				opponentBet += actualRaise;
-				pot += actualRaise;
+				
+				// UPDATED: Use helper to track contributions for side pot logic
+				AddToPot(false, actualRaise);
+				
 				currentBet = opponentBet;
 				raisesThisStreet++; // Only increment on actual raise
 
@@ -322,7 +330,7 @@ public partial class PokerGame
 		// Use opponent's bet sizing factor from profile as BASE
 		float sizeFactor = currentOpponent.BetSizeFactor;
 
-		//  Scale up bet size with hand strength
+		// UPDATED: Scale up bet size with hand strength
 		if (handStrength >= 0.85f)
 		{
 			// Monster hands: bet 80-100% of pot regardless of profile
@@ -338,7 +346,8 @@ public partial class PokerGame
 			// Strong hands: bet at least 50% of pot
 			sizeFactor = Math.Max(sizeFactor, 0.5f);
 		}
-		
+		// Otherwise use profile's natural sizing
+
 		// Reduce bluff sizes
 		if (aiBluffedThisHand && handStrength < 0.4f)
 			sizeFactor *= 0.65f;
