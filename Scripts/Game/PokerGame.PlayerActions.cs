@@ -20,9 +20,12 @@ public partial class PokerGame
 
 	private void OnCheckCallPressed()
 	{
+		// FIX: Handle "Next Hand" click safely to prevent button rotation bug
 		if (!handInProgress)
 		{
-			checkCallButton.Text = "Check";
+			// Prevent double-clicking
+			checkCallButton.Disabled = true; 
+			checkCallButton.Text = "Check"; // Reset label visually
 			StartNewHand();
 			return;
 		}
@@ -38,15 +41,16 @@ public partial class PokerGame
 		}
 		else if (toCall < 0)
 		{
-			// === NEW: Handle the "Refund" Scenario ===
-			// This happens when we bet X, opponent went All-In for Y (where Y < X).
-			// We are clicking "Call" to accept the All-In, so we get the difference back.
+			// === Refund Scenario (Uncalled Bet Return) ===
+			// This happens when we bet X, but Opponent is All-In for Y (where Y < X).
+			// The game state treats this as us "calling" the all-in, but since we bet MORE,
+			// we technically get the difference back immediately.
 			
 			int refundAmount = Math.Abs(toCall);
 			
-			// Refund the chips
+			// Refund the chips to stack
 			playerChips += refundAmount;
-			playerBet -= refundAmount; // Reduce our bet to match theirs
+			playerBet -= refundAmount; // Reduce our active bet to match opponent's all-in
 			
 			// Remove from pot/contribution tracking (passing negative value)
 			AddToPot(true, -refundAmount);
@@ -84,10 +88,12 @@ public partial class PokerGame
 		UpdateHud();
 		RefreshBetSlider();
 
+		// Check for end of betting round
 		bool betsAreEqual = (playerBet == opponentBet);
 		bool bothPlayersActed = playerHasActedThisStreet && opponentHasActedThisStreet;
 		bool bothAllIn = playerIsAllIn && opponentIsAllIn;
 		
+		// If opponent is All-In, we don't need 'bothPlayersActed' to be true if we just matched them
 		if ((betsAreEqual && bothPlayersActed) || (opponentIsAllIn && betsAreEqual) || bothAllIn)
 		{
 			GD.Print($"Betting round complete after player action: betsEqual={betsAreEqual}, bothActed={bothPlayersActed}, bothAllIn={bothAllIn}");
@@ -95,15 +101,18 @@ public partial class PokerGame
 		}
 		else if (opponentIsAllIn && !betsAreEqual)
 		{
+			// Edge Case: Opponent All-In but we somehow still have a discrepancy?
+			// This block usually shouldn't be reached if the Refund logic above works,
+			// but good to keep as a failsafe for the engine.
 			GD.Print($"Betting round complete: Opponent all-in, cannot match player bet");
 			GetTree().CreateTimer(0.8).Timeout += AdvanceStreet;
 		}
 		else
 		{
+			// Standard play: we checked/called, now it's AI's turn
 			GetTree().CreateTimer(1.2).Timeout += CheckAndProcessAITurn;
 		}
 	}
-
 
 	private void OnBetRaisePressed()
 	{
@@ -118,17 +127,28 @@ public partial class PokerGame
 		}
 
 		playerHasActedThisStreet = true;
-		betAmount = Math.Clamp(betAmount, 1, playerChips);
+		
+		// Ensure bet amount is valid
+		var (minBet, maxBet) = GetLegalBetRange();
+		betAmount = Math.Clamp(betAmount, minBet, maxBet);
 
+		// Calculate the chips to put in
+		// If UI slider is "Raise To" (Total Bet):
+		// int totalBet = betAmount;
+		// int toAdd = totalBet - playerBet;
+		
+		// If UI slider is "Raise By" (Increment):
+		// This assumes your slider returns the INCREMENT amount.
 		int raiseAmount = betAmount;
 		int totalBet = currentBet + raiseAmount;
 		int toAdd = totalBet - playerBet;
+		
 		int actualBet = Math.Min(toAdd, playerChips);
 
 		playerChips -= actualBet;
 		playerBet += actualBet;
 		
-		// UPDATED: Use helper to track contributions for side pot logic
+		// Use helper to track contributions
 		AddToPot(true, actualBet);
 		
 		currentBet = playerBet;

@@ -133,6 +133,9 @@ public partial class PokerGame : Node2D
 
 		// Update Bet Slider default
 		betAmount = bigBlind; 
+		
+		// Set initial button state (Opponent has it "virtually" so it flips to Player on first hand)
+		playerHasButton = false; 
 
 		GD.Print($"=== Opponent: {currentOpponent.Name} ===");
 		GD.Print($"Buy-In: {currentOpponent.BuyIn} | Blinds: {smallBlind}/{bigBlind}");
@@ -161,7 +164,7 @@ public partial class PokerGame : Node2D
 	}
 
 	// Returns any chips that weren't matched (Side Pot logic for Heads Up)
-	private void ReturnUncalledChips()
+	private bool ReturnUncalledChips()
 	{
 		if (playerContributed > opponentContributed)
 		{
@@ -172,6 +175,7 @@ public partial class PokerGame : Node2D
 			
 			GD.Print($"Side Pot: Returned {refund} uncalled chips to Player.");
 			ShowMessage($"Returned {refund} uncalled chips");
+			return true;
 		}
 		else if (opponentContributed > playerContributed)
 		{
@@ -182,7 +186,9 @@ public partial class PokerGame : Node2D
 			
 			GD.Print($"Side Pot: Returned {refund} uncalled chips to Opponent.");
 			ShowMessage($"Returned {refund} uncalled chips");
+			return true;
 		}
+		return false;
 	}
 
 	private void DealInitialHands()
@@ -252,11 +258,17 @@ public partial class PokerGame : Node2D
 	
 	private void StartNewHand()
 	{
+		if (!waitingForNextGame && handInProgress) return; 
+		waitingForNextGame = false;
+
 		if (IsGameOver())
 		{
 			HandleGameOver();
 			return;
 		}
+
+		// Re-enable input button after state is safely locked
+		checkCallButton.Disabled = false;
 
 		GD.Print("\n=== New Hand ===");
 		ShowMessage("New hand starting...");
@@ -311,8 +323,8 @@ public partial class PokerGame : Node2D
 		DealInitialHands();
 		currentStreet = Street.Preflop;
 		handInProgress = true;
-		waitingForNextGame = false;
 
+		// Button Rotation: Toggles correctly now that state is locked
 		playerHasButton = !playerHasButton;
 
 		if (playerHasButton)
@@ -320,7 +332,6 @@ public partial class PokerGame : Node2D
 			// 1. Handle Player (Small Blind)
 			int sbAmount = Math.Min(smallBlind, playerChips); 
 			playerChips -= sbAmount;
-			// Use AddToPot instead of direct addition
 			AddToPot(true, sbAmount);
 			playerBet = sbAmount;
 			if (playerChips == 0) playerIsAllIn = true;
@@ -374,6 +385,7 @@ public partial class PokerGame : Node2D
 	
 	private void EndHand()
 	{
+		GD.Print("In the End Hand method");
 		pot = 0;
 		handInProgress = false;
 		waitingForNextGame = true;

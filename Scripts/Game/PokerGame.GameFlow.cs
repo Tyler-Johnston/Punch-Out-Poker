@@ -16,8 +16,7 @@ public partial class PokerGame
 
 	private bool IsGameOver()
 	{
-		// Check if anyone is busted (below the minimum blind to play)
-		return playerChips < smallBlind || opponentChips < bigBlind;
+		return playerChips <= 0 || opponentChips <= 0;
 	}
 
 	private void HandleGameOver()
@@ -181,13 +180,23 @@ public partial class PokerGame
 		}
 	}
 
-	private void ShowDown()
+	private async void ShowDown()
 	{
 		GD.Print("\n=== Showdown ===");
 
 		// IMPORTANT: Refund any uncalled chips before determining the winner!
 		// This handles the "All-in for 999 vs Call for 1" scenario.
-		ReturnUncalledChips();
+		//ReturnUncalledChips();
+		
+		// 1. Process Refunds First
+		bool refundOccurred = ReturnUncalledChips(); // Update this method to return a bool (see below)
+
+		// 2. IF a refund happened, wait so the player can see the message
+		if (refundOccurred)
+		{
+			// Wait 2.0 seconds to read the "Returned X chips" message
+			await ToSignal(GetTree().CreateTimer(1.5f), SceneTreeTimer.SignalName.Timeout);
+		}
 
 		opponentCard1.ShowCard(opponentHand[0]);
 		opponentCard2.ShowCard(opponentHand[1]);

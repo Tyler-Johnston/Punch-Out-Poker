@@ -6,6 +6,8 @@ public partial class PokerGame
 {
 	private void UpdateButtonLabels()
 	{
+		if (waitingForNextGame) return;
+		
 		int toCall = currentBet - playerBet;
 		var (minBet, maxBet) = GetLegalBetRange();
 
@@ -78,9 +80,6 @@ public partial class PokerGame
 		}
 		else
 		{
-			// === THE FIX ===
-			// We MUST refresh the slider math BEFORE updating the button labels.
-			// This prevents the "Raise 28" vs "Raise 38" visual bug.
 			RefreshBetSlider();
 			UpdateButtonLabels();
 			
