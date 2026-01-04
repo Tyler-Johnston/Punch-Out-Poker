@@ -11,12 +11,12 @@
 [ext_resource type="AudioStream" uid="uid://dctkppswnoupo" path="res://Assets/SFX/CardAudio/Chips/Chips2.wav" id="9_47o1s"]
 [ext_resource type="AudioStream" uid="uid://dss833xi3m8t5" path="res://Assets/Music/regrowth wip.wav" id="10_47o1s"]
 
-[sub_resource type="Gradient" id="Gradient_u5b2p"]
+[sub_resource type="Gradient" id="Gradient_47o1s"]
 offsets = PackedFloat32Array(0.013333334, 0.96)
 colors = PackedColorArray(0.32156864, 0.6509804, 0.49803922, 1, 0.1796309, 0.40264183, 0.30042112, 1)
 
 [sub_resource type="GradientTexture2D" id="GradientTexture2D_vtryj"]
-gradient = SubResource("Gradient_u5b2p")
+gradient = SubResource("Gradient_47o1s")
 fill = 1
 fill_from = Vector2(0.5, 0.5)
 fill_to = Vector2(1, 0.5)

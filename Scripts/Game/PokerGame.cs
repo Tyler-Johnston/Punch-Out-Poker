@@ -58,7 +58,7 @@ public partial class PokerGame : Node2D
 
 	// AI
 	private OpponentProfile currentOpponent;
-	private int selectedOpponentIndex = 2; // Default to Wild Willie
+	private int selectedOpponentIndex = 0;
 	
 	// Audio
 	private AudioStreamPlayer deckDealAudioPlayer;
@@ -119,8 +119,19 @@ public partial class PokerGame : Node2D
 		betSlider.ValueChanged += OnBetSliderValueChanged;
 
 		// choose the opponent we will face
-		OpponentProfile[] circuitAOpponents = OpponentProfiles.CircuitAOpponents();
-		currentOpponent = circuitAOpponents[selectedOpponentIndex];
+		currentOpponent = GameManager.Instance.SelectedOpponent;
+		if (currentOpponent != null)
+		{
+			GD.Print($"VS {currentOpponent.Name}");
+			
+			// Deduct buy-in example
+			GameManager.Instance.PlayerMoney -= currentOpponent.BuyIn;
+		}
+		else
+		{
+			OpponentProfile[] circuitAOpponents = OpponentProfiles.CircuitAOpponents();
+			currentOpponent = circuitAOpponents[selectedOpponentIndex];
+		}
 		
 		// chip amount
 		playerChips = currentOpponent.BuyIn;

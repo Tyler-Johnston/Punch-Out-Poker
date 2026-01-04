@@ -161,7 +161,7 @@ public partial class PokerGame
 		if ((betsEqual && bothActed) || bothAllIn || (playerIsAllIn && betsEqual))
 		{
 			GD.Print("Betting round complete after AI action");
-			isProcessingAIAction = false; // Unlock before advancing
+			isProcessingAIAction = false;
 			GetTree().CreateTimer(0.8).Timeout += AdvanceStreet;
 		}
 		else if (playerIsAllIn && !betsEqual)
@@ -183,18 +183,13 @@ public partial class PokerGame
 	private async void ShowDown()
 	{
 		GD.Print("\n=== Showdown ===");
-
-		// IMPORTANT: Refund any uncalled chips before determining the winner!
-		// This handles the "All-in for 999 vs Call for 1" scenario.
-		//ReturnUncalledChips();
 		
 		// 1. Process Refunds First
-		bool refundOccurred = ReturnUncalledChips(); // Update this method to return a bool (see below)
+		bool refundOccurred = ReturnUncalledChips();
 
-		// 2. IF a refund happened, wait so the player can see the message
 		if (refundOccurred)
 		{
-			// Wait 2.0 seconds to read the "Returned X chips" message
+			// Wait to read the "Returned X chips" message
 			await ToSignal(GetTree().CreateTimer(1.5f), SceneTreeTimer.SignalName.Timeout);
 		}
 
