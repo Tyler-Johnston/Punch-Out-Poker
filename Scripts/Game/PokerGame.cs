@@ -377,10 +377,21 @@ public partial class PokerGame : Node2D
 		UpdateButtonLabels();
 		RefreshBetSlider();
 		
-		if (!isPlayerTurn)
+		if (playerIsAllIn && opponentIsAllIn)
+		{
+			GetTree().CreateTimer(1.0).Timeout += AdvanceStreet;
+		}
+		else if (!isPlayerTurn && !opponentIsAllIn)
 		{
 			GetTree().CreateTimer(1.15).Timeout += () => CheckAndProcessAITurn();
 		}
+		else if (!isPlayerTurn && opponentIsAllIn)
+		{
+			isPlayerTurn = true;
+			ShowMessage("Opponent is All-In");
+			UpdateHud();
+		}
+
 	}
 	
 	private void EndHand()

@@ -43,8 +43,6 @@ public partial class PokerGame
 		{
 			// === Refund Scenario (Uncalled Bet Return) ===
 			// This happens when we bet X, but Opponent is All-In for Y (where Y < X).
-			// The game state treats this as us "calling" the all-in, but since we bet MORE,
-			// we technically get the difference back immediately.
 			
 			int refundAmount = Math.Abs(toCall);
 			
@@ -93,23 +91,34 @@ public partial class PokerGame
 		bool bothPlayersActed = playerHasActedThisStreet && opponentHasActedThisStreet;
 		bool bothAllIn = playerIsAllIn && opponentIsAllIn;
 		
-		// If opponent is All-In, we don't need 'bothPlayersActed' to be true if we just matched them
-		if ((betsAreEqual && bothPlayersActed) || (opponentIsAllIn && betsAreEqual) || bothAllIn)
+		// 1. Standard Round End (Equal bets) OR Both All-In
+		if ((betsAreEqual && bothPlayersActed) || bothAllIn)
 		{
-			GD.Print($"Betting round complete after player action: betsEqual={betsAreEqual}, bothActed={bothPlayersActed}, bothAllIn={bothAllIn}");
+			GD.Print($"Betting round complete: Standard/Equal. betsEqual={betsAreEqual}");
 			GetTree().CreateTimer(0.8).Timeout += AdvanceStreet;
 		}
-		else if (opponentIsAllIn && !betsAreEqual)
+		// 2. Player All-In AND Bets Equal (Standard Call All-In)
+		else if (playerIsAllIn && betsAreEqual)
 		{
-			// Edge Case: Opponent All-In but we somehow still have a discrepancy?
-			// This block usually shouldn't be reached if the Refund logic above works,
-			// but good to keep as a failsafe for the engine.
-			GD.Print($"Betting round complete: Opponent all-in, cannot match player bet");
+			GD.Print($"Betting round complete: Player All-In (Matched).");
 			GetTree().CreateTimer(0.8).Timeout += AdvanceStreet;
 		}
+		// 3. Player All-In (Short) - Calling for LESS than opponent bet
+		else if (playerIsAllIn && playerBet < opponentBet)
+		{
+			GD.Print($"Betting round complete: Player All-In (Short/Partial Call).");
+			GetTree().CreateTimer(0.8).Timeout += AdvanceStreet;
+		}
+		// 4. Opponent All-In (Short) - Calling for LESS than player bet
+		else if (opponentIsAllIn && opponentBet < playerBet)
+		{
+			GD.Print($"Betting round complete: Opponent All-In (Short).");
+			GetTree().CreateTimer(0.8).Timeout += AdvanceStreet;
+		}
+		// 5. CONTINUE BETTING (AI MUST ACT)
+		// Includes: Player Raise All-In (playerBet > opponentBet)
 		else
 		{
-			// Standard play: we checked/called, now it's AI's turn
 			GetTree().CreateTimer(1.2).Timeout += CheckAndProcessAITurn;
 		}
 	}
@@ -132,13 +141,6 @@ public partial class PokerGame
 		var (minBet, maxBet) = GetLegalBetRange();
 		betAmount = Math.Clamp(betAmount, minBet, maxBet);
 
-		// Calculate the chips to put in
-		// If UI slider is "Raise To" (Total Bet):
-		// int totalBet = betAmount;
-		// int toAdd = totalBet - playerBet;
-		
-		// If UI slider is "Raise By" (Increment):
-		// This assumes your slider returns the INCREMENT amount.
 		int raiseAmount = betAmount;
 		int totalBet = currentBet + raiseAmount;
 		int toAdd = totalBet - playerBet;
@@ -148,7 +150,6 @@ public partial class PokerGame
 		playerChips -= actualBet;
 		playerBet += actualBet;
 		
-		// Use helper to track contributions
 		AddToPot(true, actualBet);
 		
 		currentBet = playerBet;
@@ -188,20 +189,34 @@ public partial class PokerGame
 		bool bothPlayersActed = playerHasActedThisStreet && opponentHasActedThisStreet;
 		bool bothAllIn = playerIsAllIn && opponentIsAllIn;
 
-		if ((betsAreEqual && bothPlayersActed) || (opponentIsAllIn && betsAreEqual) || bothAllIn)
+		// 1. Standard Round End (Equal bets) OR Both All-In
+		if ((betsAreEqual && bothPlayersActed) || bothAllIn)
 		{
-			GD.Print($"Betting round complete after player action: betsEqual={betsAreEqual}, bothActed={bothPlayersActed}, bothAllIn={bothAllIn}");
+			GD.Print($"Betting round complete: Standard/Equal. betsEqual={betsAreEqual}");
 			GetTree().CreateTimer(0.8).Timeout += AdvanceStreet;
 		}
-		else if (opponentIsAllIn && !betsAreEqual)
+		// 2. Player All-In AND Bets Equal (Standard Call All-In)
+		else if (playerIsAllIn && betsAreEqual)
 		{
-			// Opponent is all-in, cannot match player's larger bet
-			GD.Print($"Betting round complete: Opponent all-in, cannot match player bet");
+			GD.Print($"Betting round complete: Player All-In (Matched).");
 			GetTree().CreateTimer(0.8).Timeout += AdvanceStreet;
 		}
+		// 3. Player All-In (Short) - Calling for LESS than opponent bet
+		else if (playerIsAllIn && playerBet < opponentBet)
+		{
+			GD.Print($"Betting round complete: Player All-In (Short/Partial Call).");
+			GetTree().CreateTimer(0.8).Timeout += AdvanceStreet;
+		}
+		// 4. Opponent All-In (Short) - Calling for LESS than player bet
+		else if (opponentIsAllIn && opponentBet < playerBet)
+		{
+			GD.Print($"Betting round complete: Opponent All-In (Short).");
+			GetTree().CreateTimer(0.8).Timeout += AdvanceStreet;
+		}
+		// 5. CONTINUE BETTING (AI MUST ACT)
+		// Includes: Player Raise All-In (playerBet > opponentBet)
 		else
 		{
-			// Normal case: player bet/raised, AI needs to respond
 			GetTree().CreateTimer(1.2).Timeout += CheckAndProcessAITurn;
 		}
 	}
