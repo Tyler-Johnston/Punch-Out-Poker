@@ -24,7 +24,18 @@ public partial class PokerGame
 			}
 			else
 			{
-				betRaiseButton.Text = $"Bet: {betAmount}";
+				// FIX: If currentBet > 0 (e.g. Big Blind option), it's technically a Raise
+				if (currentBet > 0)
+				{
+					// Calculate total like the raise block
+					int raiseTotal = currentBet + betAmount;
+					betRaiseButton.Text = $"Raise to: {raiseTotal}";
+				}
+				else
+				{
+					// True opening bet (0 in pot)
+					betRaiseButton.Text = $"Bet: {betAmount}";
+				}
 			}
 		}
 		else
@@ -48,7 +59,7 @@ public partial class PokerGame
 			}
 			else
 			{
-				betRaiseButton.Text = $"Raise: {toAddForRaise}";
+				betRaiseButton.Text = $"Raise to: {raiseTotal}";
 			}
 		}
 

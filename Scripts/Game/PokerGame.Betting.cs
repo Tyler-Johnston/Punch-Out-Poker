@@ -22,7 +22,11 @@ public partial class PokerGame
 
 	private (int minBet, int maxBet) GetLegalBetRange()
 	{
-		int maxBet = playerChips;
+		// FIX: Calculate Max Raise Increment correctly
+		// You can't raise with chips you need just to CALL!
+		int amountToCall = currentBet - playerBet;
+		int maxBet = playerChips - amountToCall; 
+		
 		if (maxBet <= 0) return (0, 0);
 
 		bool opening = currentBet == 0;
@@ -30,30 +34,19 @@ public partial class PokerGame
 
 		if (opening)
 		{
-			// Opening: Min bet is Big Blind (clamped to stack)
+			// Opening: Min bet is Big Blind
+			// But wait, if opening, amountToCall is 0, so maxBet is just playerChips. Correct.
 			minBet = Math.Min(bigBlind, maxBet);
 		}
 		else
 		{
-			// === THE FIX ===
-			// The minimum you must RAISE BY is the amount you are facing to call.
-			// Example: Opponent bet 28 total. You have 10 in.
-			// Amount to call = 18.
-			// Therefore, Min Raise Increment = 18.
-			
-			int amountToCall = currentBet - playerBet;
-			
-			// Standard Rule: Raise must match the previous bet/raise size.
-			// If checking (0 to call), we default to Big Blind.
+			// Min Raise Logic...
 			int minRaiseIncrement = (amountToCall == 0) ? bigBlind : amountToCall;
-			
-			// Edge Case: Tiny bets must still be raised by at least 1 BB
 			minRaiseIncrement = Math.Max(minRaiseIncrement, bigBlind);
 
-			// The Slider controls the "Raise Amount" (the amount ON TOP of the call)
 			minBet = minRaiseIncrement;
 			
-			// Cap at stack size
+			// Cap at calculated maxBet
 			if (minBet > maxBet)
 			{
 				minBet = maxBet; 
@@ -65,6 +58,7 @@ public partial class PokerGame
 
 		return (minBet, maxBet);
 	}
+
 
 	private void ResetBettingRound()
 	{
