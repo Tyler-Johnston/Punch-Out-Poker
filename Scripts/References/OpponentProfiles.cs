@@ -2,15 +2,15 @@ public static class OpponentProfiles
 {
 	 public static OpponentProfile[] CircuitAOpponents() => new[]
 	{
-		// Opponent 1: "Timid Tom" - Passive, scared money
+		// Opponent 1. Passive, scared money
 		new OpponentProfile
 		{
-			Name = "Timid Tom",
+			Name = "Vidro Boy",
 			BuyIn = 50,
 			Aggression = 0.25f,      // Very passive
-			Looseness = 0.3f,       // Tight hand selection
-			Bluffiness = 0.0f,      // Never bluffs
-			Adaptability = 0.1f,    // Doesn't adjust
+			Looseness = 0.4f,       // Tight hand selection
+			Bluffiness = 0.15f,      // Never bluffs
+			Adaptability = 0.15f,    // Doesn't adjust
 			PreflopAggression = 0.8f,  // Even more passive preflop
 			PostflopAggression = 1.0f
 		},
@@ -22,7 +22,7 @@ public static class OpponentProfiles
 			BuyIn = 150,
 			Aggression = 0.3f,      // Passive
 			Looseness = 0.7f,       // Plays lots of hands
-			Bluffiness = 0.1f,      // Rarely bluffs
+			Bluffiness = 0.20f,      // Rarely bluffs
 			Adaptability = 0.2f,    // Slight adjustment
 			PreflopAggression = 1.2f,  // Slightly more aggressive preflop
 			PostflopAggression = 0.8f  // Passive postflop (calls too much)

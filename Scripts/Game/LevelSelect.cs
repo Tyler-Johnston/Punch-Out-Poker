@@ -26,7 +26,6 @@ public partial class LevelSelect : Control
 				// Capture the specific opponent for this loop iteration
 				var opponent = opponents[i];
 
-				// Update Button Text (Optional, but helpful!)
 				btn.Text = $"{opponent.Name}\n${opponent.BuyIn}";
 
 				btn.Pressed += () => OnOpponentSelected(opponent);

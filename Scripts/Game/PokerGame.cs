@@ -277,6 +277,8 @@ public partial class PokerGame : Node2D
 			HandleGameOver();
 			return;
 		}
+		
+		StartNewHandTracking();
 
 		// Re-enable input button after state is safely locked
 		checkCallButton.Disabled = false;
