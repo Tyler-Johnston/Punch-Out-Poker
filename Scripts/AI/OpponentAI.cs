@@ -81,8 +81,9 @@ public partial class PokerGame
 		// ===== STAGE 4: Profile Adjustment (FIXED LOGIC) =====
 		// Tight opponents (low looseness) = we should call MORE (lower threshold)
 		// Loose opponents (high looseness) = we should call LESS (higher threshold)
-		float profileAdjustment = (currentOpponent.Looseness - 0.50f) * 0.40f;
-		gtoThreshold += profileAdjustment; // FIXED: Now tight opponents LOWER threshold
+		// Fixed (CORRECT for calling stations):
+		float profileAdjustment = (0.50f - currentOpponent.Looseness) * 0.40f;
+		gtoThreshold += profileAdjustment; // Makes Carl call MORE
 		GD.Print($"[PROFILE] {currentOpponent.Name} looseness {currentOpponent.Looseness:F2} -> Threshold {(profileAdjustment >= 0 ? "+" : "")}{profileAdjustment:F3}");
 
 		// ===== STAGE 5: Frequency Exploitation (ENHANCED - LOWER TRIGGER) =====
@@ -95,6 +96,29 @@ public partial class PokerGame
 			gtoThreshold -= exploit;
 			GD.Print($"[EXPLOIT] Player raises {raiseFrequency:P0} -> Threshold -{exploit:F3} (MANIAC DETECTED)");
 		}
+		
+		// ===== STAGE 5.5: Consecutive Aggression Detection =====
+		if (currentStreet == Street.Preflop && facingBet)
+		{
+			// Count player raises in last 5 hands
+			var recentHands = actionHistory
+				.Where(a => a.Street == Street.Preflop && 
+							a.HandNumber > currentHandNumber - 5 && 
+							a.HandNumber < currentHandNumber)
+				.ToList();
+			
+			int consecutiveRaises = recentHands.Count(a => a.ActionType == "Raise" || a.ActionType == "Bet");
+			
+			if (consecutiveRaises >= 3)
+			{
+				// Player is running a 3-bet blitz - widen calling range dramatically
+				float blitzExploit = Math.Min(consecutiveRaises * 0.07f, 0.25f); // Max -25%
+				gtoThreshold -= blitzExploit;
+				GD.Print($"[AGGRESSION BLITZ] {consecutiveRaises} raises in last 5 hands -> Threshold -{blitzExploit:F3}");
+				GD.Print($"[EXPLOITATION] Player likely overbluffing - widening defense range");
+			}
+		}
+
 
 		// ===== STAGE 6: Opponent Strength Adjustment =====
 		float playerStrength = EstimatePlayerStrengthV2();
