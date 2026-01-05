@@ -1,6 +1,4 @@
-// PokerGame.AI.cs - REFACTORED with Monte Carlo Equity, GTO Ranges, and Nash Equilibrium
-// FIXED: Preflop thresholds, profile adjustment logic, bluff control, maniac exploitation
-// ADDED: River shove range, value betting optimization, profile-based river adjustments
+// PokerGame.AI.cs
 using Godot;
 using System;
 using System.Collections.Generic;
@@ -8,13 +6,12 @@ using System.Linq;
 
 public partial class PokerGame
 {
-	// ========== EXISTING FIELDS (PRESERVED) ==========
 	private bool aiBluffedThisHand = false;
 	private Dictionary<Street, bool> playerBetOnStreet = new Dictionary<Street, bool>();
 	private Dictionary<Street, int> playerBetSizeOnStreet = new Dictionary<Street, int>();
 	private int playerTotalBetsThisHand = 0;
 
-	// ========== ACTION HISTORY & TRACKING (PRESERVED) ==========
+	// ========== ACTION HISTORY & TRACKING ==========
 	private List<PlayerAction> actionHistory = new List<PlayerAction>();
 	
 	private struct PlayerAction
@@ -29,18 +26,18 @@ public partial class PokerGame
 	
 	private int currentHandNumber = 0;
 	
-	// ========== FREQUENCY EXPLOITATION TRACKING (PRESERVED) ==========
+	// ========== FREQUENCY EXPLOITATION TRACKING ==========
 	private int handsPlayed = 0;
 	private int playerPreflopRaises = 0;
 	private int playerPreflopFolds = 0;
 
-	// ========== NEW: EQUITY CALCULATION SETTINGS ==========
+	// ==========  EQUITY CALCULATION SETTINGS ==========
 	private const int DEFAULT_SIMULATIONS = 1000;
 	private const int PREFLOP_SIMULATIONS = 500;  // Faster preflop
 	private const int CRITICAL_SIMULATIONS = 1500; // Deep analysis for all-ins
 
 	// ===========================================================================================
-	// MAIN DECISION METHOD - REFACTORED WITH EQUITY + GTO
+	// MAIN DECISION METHOD
 	// ===========================================================================================
 	
 	private AIAction DecideAIAction()
@@ -78,15 +75,12 @@ public partial class PokerGame
 		float gtoThreshold = GetGTOThreshold(currentStreet, facingBet, spr);
 		GD.Print($"[GTO] Base threshold: {gtoThreshold:P1} (SPR: {spr:F2})");
 
-		// ===== STAGE 4: Profile Adjustment (FIXED LOGIC) =====
-		// Tight opponents (low looseness) = we should call MORE (lower threshold)
-		// Loose opponents (high looseness) = we should call LESS (higher threshold)
-		// Fixed (CORRECT for calling stations):
+		// ===== STAGE 4: Profile Adjustment =====
 		float profileAdjustment = (0.50f - currentOpponent.Looseness) * 0.40f;
-		gtoThreshold += profileAdjustment; // Makes Carl call MORE
+		gtoThreshold += profileAdjustment;
 		GD.Print($"[PROFILE] {currentOpponent.Name} looseness {currentOpponent.Looseness:F2} -> Threshold {(profileAdjustment >= 0 ? "+" : "")}{profileAdjustment:F3}");
 
-		// ===== STAGE 5: Frequency Exploitation (ENHANCED - LOWER TRIGGER) =====
+		// ===== STAGE 5: Frequency Exploitation =====
 		float raiseFrequency = (handsPlayed > 5) ? (float)playerPreflopRaises / handsPlayed : 0.5f;
 		
 		// FIXED: Start exploiting at 65% instead of 70%, larger adjustment
@@ -119,9 +113,8 @@ public partial class PokerGame
 			}
 		}
 
-
 		// ===== STAGE 6: Opponent Strength Adjustment =====
-		float playerStrength = EstimatePlayerStrengthV2();
+		float playerStrength = EstimatePlayerStrength();
 		if (playerStrength > 0.75f && facingBet)
 		{
 			float strengthAdj = (playerStrength - 0.75f) * 0.40f;
@@ -289,134 +282,9 @@ public partial class PokerGame
 		return DEFAULT_SIMULATIONS;
 	}
 
-	// ===========================================================================================
-	// HAND RANGE SYSTEM (ENHANCED WITH RIVER SHOVE RANGE)
-	// ===========================================================================================
-	
-	private static class HandRanges
-	{
-		// ~85% of hands - ultra-wide maniac range
-		public static HashSet<string> ManiacRange = new HashSet<string>
-		{
-			// All pairs
-			"AA", "KK", "QQ", "JJ", "TT", "99", "88", "77", "66", "55", "44", "33", "22",
-			
-			// All suited hands
-			"AKs", "AQs", "AJs", "ATs", "A9s", "A8s", "A7s", "A6s", "A5s", "A4s", "A3s", "A2s",
-			"KQs", "KJs", "KTs", "K9s", "K8s", "K7s", "K6s", "K5s", "K4s", "K3s", "K2s",
-			"QJs", "QTs", "Q9s", "Q8s", "Q7s", "Q6s", "Q5s", "Q4s", "Q3s", "Q2s",
-			"JTs", "J9s", "J8s", "J7s", "J6s", "J5s", "J4s",
-			"T9s", "T8s", "T7s", "T6s", "T5s",
-			"98s", "97s", "96s", "95s",
-			"87s", "86s", "85s",
-			"76s", "75s", "74s",
-			"65s", "64s", "54s", "53s",
-			
-			// Most offsuit hands
-			"AKo", "AQo", "AJo", "ATo", "A9o", "A8o", "A7o", "A6o", "A5o", "A4o",
-			"KQo", "KJo", "KTo", "K9o", "K8o", "K7o", "K6o",
-			"QJo", "QTo", "Q9o", "Q8o", "Q7o",
-			"JTo", "J9o", "J8o", "J7o",
-			"T9o", "T8o", "T7o",
-			"98o", "97o", "87o", "86o", "76o"
-		};
-
-		// ~50% of hands - loose range
-		public static HashSet<string> LooseRange = new HashSet<string>
-		{
-			"AA", "KK", "QQ", "JJ", "TT", "99", "88", "77", "66", "55", "44", "33", "22",
-			"AKs", "AQs", "AJs", "ATs", "A9s", "A8s", "A7s", "A6s", "A5s", "A4s", "A3s", "A2s",
-			"KQs", "KJs", "KTs", "K9s", "K8s", "K7s", "K6s", "K5s",
-			"QJs", "QTs", "Q9s", "Q8s", "Q7s",
-			"JTs", "J9s", "J8s", "J7s",
-			"T9s", "T8s", "T7s",
-			"98s", "97s", "87s", "86s", "76s", "75s", "65s", "54s",
-			"AKo", "AQo", "AJo", "ATo", "A9o", "A8o", "A7o",
-			"KQo", "KJo", "KTo", "K9o",
-			"QJo", "QTo", "Q9o",
-			"JTo", "J9o", "T9o", "98o"
-		};
-
-		// ~35% of hands - balanced range
-		public static HashSet<string> BalancedRange = new HashSet<string>
-		{
-			"AA", "KK", "QQ", "JJ", "TT", "99", "88", "77", "66", "55", "44", "33", "22",
-			"AKs", "AQs", "AJs", "ATs", "A9s", "A8s", "A7s", "A6s", "A5s", "A4s", "A3s", "A2s",
-			"KQs", "KJs", "KTs", "K9s", "K8s",
-			"QJs", "QTs", "Q9s",
-			"JTs", "J9s", "T9s", "T8s",
-			"98s", "87s", "76s", "65s", "54s",
-			"AKo", "AQo", "AJo", "ATo", "A9o",
-			"KQo", "KJo", "KTo",
-			"QJo", "QTo", "JTo"
-		};
-
-		// ~15% of hands - tight range
-		public static HashSet<string> TightRange = new HashSet<string>
-		{
-			"AA", "KK", "QQ", "JJ", "TT", "99", "88", "77",
-			"AKs", "AQs", "AJs", "ATs", "A5s", "A4s",
-			"KQs", "KJs", "KTs",
-			"QJs", "QTs", "JTs",
-			"AKo", "AQo", "AJo", "ATo",
-			"KQo"
-		};
-
-		// Postflop ranges based on opponent strength
-		public static HashSet<string> StrongPostflopRange = new HashSet<string>
-		{
-			"AA", "KK", "QQ", "JJ", "TT", "99", "88", "77",
-			"AKs", "AQs", "AJs", "ATs", "A5s", "A4s",
-			"KQs", "KJs", "QJs", "JTs", "T9s", "98s", "87s", "76s",
-			"AKo", "AQo", "AJo"
-		};
-
-		public static HashSet<string> MediumPostflopRange = new HashSet<string>
-		{
-			"AA", "KK", "QQ", "JJ", "TT", "99", "88", "77", "66", "55", "44", "33", "22",
-			"AKs", "AQs", "AJs", "ATs", "A9s", "A8s", "A7s", "A6s", "A5s", "A4s", "A3s", "A2s",
-			"KQs", "KJs", "KTs", "K9s", "QJs", "QTs", "Q9s",
-			"JTs", "J9s", "T9s", "T8s", "98s", "87s", "76s", "65s", "54s",
-			"AKo", "AQo", "AJo", "ATo", "A9o",
-			"KQo", "KJo", "QJo"
-		};
-
-		public static HashSet<string> WeakPostflopRange = new HashSet<string>
-		{
-			"AA", "KK", "QQ", "JJ", "TT", "99", "88", "77", "66", "55", "44", "33", "22",
-			"AKs", "AQs", "AJs", "ATs", "A9s", "A8s", "A7s", "A6s", "A5s", "A4s", "A3s", "A2s",
-			"KQs", "KJs", "KTs", "K9s", "K8s", "K7s", "K6s", "K5s",
-			"QJs", "QTs", "Q9s", "Q8s", "Q7s", "Q6s",
-			"JTs", "J9s", "J8s", "J7s", "J6s",
-			"T9s", "T8s", "T7s", "T6s",
-			"98s", "97s", "96s", "87s", "86s", "76s", "75s", "65s", "64s", "54s", "53s",
-			"AKo", "AQo", "AJo", "ATo", "A9o", "A8o", "A7o", "A6o", "A5o",
-			"KQo", "KJo", "KTo", "K9o", "K8o", "K7o",
-			"QJo", "QTo", "Q9o", "Q8o",
-			"JTo", "J9o", "J8o", "T9o", "T8o", "98o", "87o"
-		};
-		
-		// NEW: Ultra-narrow range for river all-in shoves (~8-10% of hands)
-		// Only premium made hands and strong draws that got there
-		public static HashSet<string> RiverShoveRange = new HashSet<string>
-		{
-			// Premium pairs (for overpairs/sets)
-			"AA", "KK", "QQ", "JJ", "TT", "99", "88",
-			
-			// Premium broadway (for top pairs, two pairs, straights)
-			"AKs", "AQs", "AJs", "ATs",
-			"AKo", "AQo", "AJo",
-			
-			// Suited connectors (for made straights/flushes/two pairs)
-			"KQs", "KJs", "KTs",
-			"QJs", "QTs",
-			"JTs", "T9s", "98s", "87s", "76s", "65s"
-		};
-	}
-
 	private List<string> EstimateVillainRange()
 	{
-		float playerStrength = EstimatePlayerStrengthV2();
+		float playerStrength = EstimatePlayerStrength();
 		float raiseFreq = (handsPlayed > 5) ? (float)playerPreflopRaises / handsPlayed : 0.5f;
 		int toCall = currentBet - opponentBet;
 
@@ -445,7 +313,6 @@ public partial class PokerGame
 		}
 		else // Postflop
 		{
-			// FIXED: Check if PLAYER (not AI) is shoving river
 			bool isPlayerAllIn = (toCall >= playerChips); // Player has no chips left
 			bool isLargeRiverBet = (toCall >= pot * 0.75f); // Overbet or pot-sized river bet
 			bool isRiverShove = (currentStreet == Street.River && toCall > 0 && 
@@ -645,7 +512,7 @@ public partial class PokerGame
 	}
 
 	// ===========================================================================================
-	// GTO THRESHOLD SYSTEM (FIXED - REDUCED PREFLOP THRESHOLDS)
+	// GTO THRESHOLD SYSTEM 
 	// ===========================================================================================
 	
 	private float GetGTOThreshold(Street street, bool facingBet, float spr)
@@ -654,7 +521,6 @@ public partial class PokerGame
 		{
 			if (facingBet)
 			{
-				// FIXED: Reduced from 0.45, 0.52, 0.58 to more reasonable values
 				if (spr < 3.0f) return 0.42f; // Short stack: wider calls
 				if (spr < 7.0f) return 0.48f; // Medium stack (was 0.52 - MAJOR FIX)
 				return 0.52f; // Deep stack (was 0.58 - still disciplined but playable)
@@ -679,7 +545,7 @@ public partial class PokerGame
 	}
 
 	// ===========================================================================================
-	// DECISION LOGIC (ENHANCED WITH BETTER VALUE BETTING)
+	// DECISION LOGIC
 	// ===========================================================================================
 	
 	private AIAction DecideAllInCall(float equity, float threshold, float spr)
@@ -840,7 +706,7 @@ public partial class PokerGame
 	// OPPONENT MODELING (PRESERVED FROM ORIGINAL)
 	// ===========================================================================================
 	
-	private float EstimatePlayerStrengthV2()
+	private float EstimatePlayerStrength()
 	{
 		var currentHandActions = actionHistory.Where(a => a.HandNumber == currentHandNumber).ToList();
 		
