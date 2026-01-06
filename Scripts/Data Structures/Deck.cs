@@ -58,4 +58,30 @@ public class Deck
 	
 	// How many cards left?
 	public int CardsRemaining() => cards.Count;
+	
+	public static List<Card> CreateCardList()
+	{
+		List<Card> cards = new List<Card>();
+		
+		foreach (Suit suit in Enum.GetValues(typeof(Suit)))
+		{
+			foreach (Rank rank in Enum.GetValues(typeof(Rank)))
+			{
+				cards.Add(new Card(rank, suit));
+			}
+		}
+		
+		return cards;
+	}
+	
+	public static void RemoveCardsFromDeck(List<Card> deck, List<Card> cardsToRemove)
+	{
+		if (cardsToRemove == null) return;
+		
+		foreach (var card in cardsToRemove)
+		{
+			deck.RemoveAll(c => c.Suit == card.Suit && c.Rank == card.Rank);
+		}
+	}
+
 }

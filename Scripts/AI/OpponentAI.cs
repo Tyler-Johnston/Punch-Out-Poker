@@ -53,10 +53,10 @@ public partial class PokerGame
 		GD.Print($"Effective Stack: {effectiveBB:F1}BB, Pot: {pot}");
 
 		// ===== STAGE 1: Ultra-Short Stack Nash Equilibrium =====
-		if (effectiveBB <= 12f && currentStreet == Street.Preflop && facingBet)
+		if (NashEquilibrium.ShouldUseNash(effectiveBB, currentStreet == Street.Preflop, facingBet))
 		{
-			string handString = GetHandString(opponentHand);
-			if (nashPushThresholds.ContainsKey(handString))
+			string handString = HandNotation.GetHandString(opponentHand);
+			if (NashEquilibrium.HandExistsInTable(handString))
 			{
 				GD.Print($"[NASH MODE] Stack {effectiveBB:F1}BB ≤ 12BB - Using Nash equilibrium");
 				return DecideWithNash(effectiveBB, handString);
@@ -83,7 +83,6 @@ public partial class PokerGame
 		// ===== STAGE 5: Frequency Exploitation =====
 		float raiseFrequency = (handsPlayed > 5) ? (float)playerPreflopRaises / handsPlayed : 0.5f;
 		
-		// FIXED: Start exploiting at 65% instead of 70%, larger adjustment
 		if (raiseFrequency > 0.65f && currentStreet == Street.Preflop)
 		{
 			float exploit = (raiseFrequency - 0.65f) * 1.0f; // Max -35% for 100% raiser
@@ -166,58 +165,15 @@ public partial class PokerGame
 	// ===========================================================================================
 	// NASH EQUILIBRIUM PUSH/FOLD
 	// ===========================================================================================
-	
-	private static Dictionary<string, float> nashPushThresholds = new Dictionary<string, float>
-	{
-		// Premium pairs
-		{"AA", 50f}, {"KK", 50f}, {"QQ", 50f}, {"JJ", 50f}, {"TT", 50f},
-		{"99", 50f}, {"88", 50f}, {"77", 50f}, {"66", 11f}, {"55", 9f},
-		{"44", 7f}, {"33", 6f}, {"22", 5f},
-		
-		// Suited aces
-		{"AKs", 50f}, {"AQs", 50f}, {"AJs", 40f}, {"ATs", 50f}, {"A9s", 45f},
-		{"A8s", 37f}, {"A7s", 32f}, {"A6s", 28f}, {"A5s", 37f}, {"A4s", 28f},
-		{"A3s", 24f}, {"A2s", 24f},
-		
-		// Offsuit aces
-		{"AKo", 50f}, {"AQo", 50f}, {"AJo", 35f}, {"ATo", 28f}, {"A9o", 22f},
-		{"A8o", 18f}, {"A7o", 14f}, {"A6o", 11f}, {"A5o", 16f},
-		
-		// Suited kings
-		{"KQs", 50f}, {"KJs", 45f}, {"KTs", 38f}, {"K9s", 30f}, {"K8s", 24f},
-		{"K7s", 16f}, {"K6s", 14f}, {"K5s", 13f},
-		
-		// Offsuit kings
-		{"KQo", 35f}, {"KJo", 28f}, {"KTo", 22f}, {"K9o", 16f},
-		
-		// Other broadway
-		{"QJs", 45f}, {"QTs", 35f}, {"Q9s", 28f}, {"Q8s", 22f},
-		{"JTs", 38f}, {"J9s", 28f}, {"J8s", 22f},
-		{"T9s", 30f}, {"T8s", 24f},
-		{"QJo", 30f}, {"QTo", 24f}, {"JTo", 24f},
-		
-		// Suited connectors
-		{"98s", 24f}, {"87s", 20f}, {"76s", 18f}, {"65s", 16f}, {"54s", 14f}
-	};
 
 	private AIAction DecideWithNash(float effectiveBB, string handString)
 	{
-		float pushThreshold = nashPushThresholds[handString];
-		
-		if (effectiveBB <= pushThreshold)
-		{
-			GD.Print($"[NASH] ✓ CALL {handString} at {effectiveBB:F1}BB (threshold: {pushThreshold}BB)");
-			return AIAction.Call;
-		}
-		else
-		{
-			GD.Print($"[NASH] ✗ FOLD {handString} at {effectiveBB:F1}BB (needs ≤{pushThreshold}BB)");
-			return AIAction.Fold;
-		}
+		bool shouldCall = NashEquilibrium.ShouldCallPush(handString, effectiveBB);
+		return shouldCall ? AIAction.Call : AIAction.Fold;
 	}
 
 	// ===========================================================================================
-	// MONTE CARLO EQUITY CALCULATOR (USES YOUR HandEvaluator)
+	// MONTE CARLO EQUITY CALCULATOR
 	// ===========================================================================================
 	
 	private float CalculateEquity(List<Card> heroHand, List<Card> board, List<string> villainRange, int simulations)
@@ -235,15 +191,15 @@ public partial class PokerGame
 		for (int i = 0; i < simulations; i++)
 		{
 			// Create deck and remove known cards
-			List<Card> deck = CreateFullDeck();
-			RemoveCardsFromDeck(deck, heroHand);
-			RemoveCardsFromDeck(deck, board);
+			List<Card> deck = Deck.CreateCardList();
+			Deck.RemoveCardsFromDeck(deck, heroHand);
+			Deck.RemoveCardsFromDeck(deck, board);
 
-			// Sample villain hand from their range
-			List<Card> villainHand = SampleHandFromRange(deck, villainRange);
+			// Sample villain hand from their range using RangeSampler
+			List<Card> villainHand = RangeSampler.SampleHandFromRange(deck, villainRange);
 			if (villainHand == null || villainHand.Count != 2) continue;
 			
-			RemoveCardsFromDeck(deck, villainHand);
+			Deck.RemoveCardsFromDeck(deck, villainHand);
 
 			// Complete the board to 5 cards
 			List<Card> simulatedBoard = new List<Card>(board);
@@ -254,11 +210,11 @@ public partial class PokerGame
 				deck.RemoveAt(randomIndex);
 			}
 
-			// Evaluate both hands using YOUR HandEvaluator (lower = better)
+			// Evaluate both hands using HandEvaluator (lower = better)
 			int heroScore = HandEvaluator.Evaluate7Cards(heroHand, simulatedBoard);
 			int villainScore = HandEvaluator.Evaluate7Cards(villainHand, simulatedBoard);
 
-			// IMPORTANT: Lower rank = better hand in pheval
+			// Lower rank = better hand in pheval
 			if (heroScore < villainScore) wins++;
 			else if (heroScore == villainScore) ties++;
 			
@@ -278,7 +234,7 @@ public partial class PokerGame
 	private int GetSimulationCount(Street street, float effectiveBB, bool facingBet)
 	{
 		if (street == Street.Preflop) return PREFLOP_SIMULATIONS;
-		if (facingBet && effectiveBB < 10f) return CRITICAL_SIMULATIONS; // Critical spot
+		if (facingBet && effectiveBB < 10f) return CRITICAL_SIMULATIONS;
 		return DEFAULT_SIMULATIONS;
 	}
 
@@ -359,158 +315,6 @@ public partial class PokerGame
 		}
 	}
 
-
-	private List<Card> SampleHandFromRange(List<Card> availableDeck, List<string> range)
-	{
-		if (range.Count == 0) return null;
-
-		// Try up to 50 times to find a valid hand
-		for (int attempt = 0; attempt < 50; attempt++)
-		{
-			string handStr = range[(int)(GD.Randf() * range.Count)];
-			List<Card> hand = ConvertHandStringToCards(handStr, availableDeck);
-			
-			if (hand != null && hand.Count == 2)
-				return hand;
-		}
-
-		// Fallback: return any two random cards
-		if (availableDeck.Count >= 2)
-		{
-			return new List<Card> { availableDeck[0], availableDeck[1] };
-		}
-
-		return null;
-	}
-
-	private List<Card> ConvertHandStringToCards(string handStr, List<Card> availableDeck)
-	{
-		// Parse hand string like "AKs", "77", "Q9o"
-		if (handStr.Length < 2) return null;
-
-		char rank1Char = handStr[0];
-		char rank2Char = handStr[1];
-		bool isSuited = handStr.EndsWith("s");
-		bool isPair = rank1Char == rank2Char;
-
-		Rank rank1 = CharToRank(rank1Char);
-		Rank rank2 = CharToRank(rank2Char);
-
-		// Find matching cards in available deck
-		var card1Options = availableDeck.Where(c => c.Rank == rank1).ToList();
-		var card2Options = availableDeck.Where(c => c.Rank == rank2 && c != card1Options.FirstOrDefault()).ToList();
-
-		if (card1Options.Count == 0 || card2Options.Count == 0) return null;
-
-		Card card1;
-		Card card2;
-
-		if (isPair)
-		{
-			// Randomly pick 2 cards of same rank
-			if (card1Options.Count < 2) return null;
-			card1 = card1Options[(int)(GD.Randf() * card1Options.Count)];
-			card2Options = card1Options.Where(c => c != card1).ToList();
-			if (card2Options.Count == 0) return null;
-			card2 = card2Options[(int)(GD.Randf() * card2Options.Count)];
-		}
-		else if (isSuited)
-		{
-			// Must be same suit
-			foreach (var c1 in card1Options)
-			{
-				var matching = card2Options.Where(c2 => c2.Suit == c1.Suit).ToList();
-				if (matching.Count > 0)
-				{
-					card1 = c1;
-					card2 = matching[(int)(GD.Randf() * matching.Count)];
-					return new List<Card> { card1, card2 };
-				}
-			}
-			return null;
-		}
-		else // Offsuit
-		{
-			// Must be different suits
-			foreach (var c1 in card1Options)
-			{
-				var matching = card2Options.Where(c2 => c2.Suit != c1.Suit).ToList();
-				if (matching.Count > 0)
-				{
-					card1 = c1;
-					card2 = matching[(int)(GD.Randf() * matching.Count)];
-					return new List<Card> { card1, card2 };
-				}
-			}
-			return null;
-		}
-
-		return new List<Card> { card1, card2 };
-	}
-
-	private Rank CharToRank(char c)
-	{
-		switch (c)
-		{
-			case 'A': return Rank.Ace;
-			case 'K': return Rank.King;
-			case 'Q': return Rank.Queen;
-			case 'J': return Rank.Jack;
-			case 'T': return Rank.Ten;
-			case '9': return Rank.Nine;
-			case '8': return Rank.Eight;
-			case '7': return Rank.Seven;
-			case '6': return Rank.Six;
-			case '5': return Rank.Five;
-			case '4': return Rank.Four;
-			case '3': return Rank.Three;
-			case '2': return Rank.Two;
-			default: return Rank.Two;
-		}
-	}
-
-	private string GetHandString(List<Card> hand)
-	{
-		if (hand == null || hand.Count != 2) return "XX";
-
-		char rank1 = RankToChar(hand[0].Rank);
-		char rank2 = RankToChar(hand[1].Rank);
-
-		// Ensure higher rank comes first
-		if ((int)hand[1].Rank > (int)hand[0].Rank)
-		{
-			(rank1, rank2) = (rank2, rank1);
-		}
-
-		if (hand[0].Rank == hand[1].Rank)
-			return $"{rank1}{rank2}"; // Pair: "AA", "KK"
-		else if (hand[0].Suit == hand[1].Suit)
-			return $"{rank1}{rank2}s"; // Suited: "AKs"
-		else
-			return $"{rank1}{rank2}o"; // Offsuit: "AKo"
-	}
-
-	private char RankToChar(Rank rank)
-	{
-		switch (rank)
-		{
-			case Rank.Ace: return 'A';
-			case Rank.King: return 'K';
-			case Rank.Queen: return 'Q';
-			case Rank.Jack: return 'J';
-			case Rank.Ten: return 'T';
-			case Rank.Nine: return '9';
-			case Rank.Eight: return '8';
-			case Rank.Seven: return '7';
-			case Rank.Six: return '6';
-			case Rank.Five: return '5';
-			case Rank.Four: return '4';
-			case Rank.Three: return '3';
-			case Rank.Two: return '2';
-			default: return '?';
-		}
-	}
-
 	// ===========================================================================================
 	// GTO THRESHOLD SYSTEM 
 	// ===========================================================================================
@@ -522,8 +326,8 @@ public partial class PokerGame
 			if (facingBet)
 			{
 				if (spr < 3.0f) return 0.42f; // Short stack: wider calls
-				if (spr < 7.0f) return 0.48f; // Medium stack (was 0.52 - MAJOR FIX)
-				return 0.52f; // Deep stack (was 0.58 - still disciplined but playable)
+				if (spr < 7.0f) return 0.48f; // Medium stack
+				return 0.52f; // Deep stack
 			}
 			else
 			{
@@ -650,7 +454,6 @@ public partial class PokerGame
 			else
 			{
 				// Strong hand - bet frequently
-				// ENHANCED: Bet even more often when equity way above threshold
 				float equityMargin = equity - threshold;
 				float betChance;
 				
@@ -674,36 +477,7 @@ public partial class PokerGame
 	}
 
 	// ===========================================================================================
-	// DECK & CARD UTILITIES
-	// ===========================================================================================
-	
-	private List<Card> CreateFullDeck()
-	{
-		List<Card> deck = new List<Card>();
-		
-		foreach (Suit suit in Enum.GetValues(typeof(Suit)))
-		{
-			foreach (Rank rank in Enum.GetValues(typeof(Rank)))
-			{
-				deck.Add(new Card(rank, suit));
-			}
-		}
-		
-		return deck;
-	}
-
-	private void RemoveCardsFromDeck(List<Card> deck, List<Card> cardsToRemove)
-	{
-		if (cardsToRemove == null) return;
-		
-		foreach (var card in cardsToRemove)
-		{
-			deck.RemoveAll(c => c.Suit == card.Suit && c.Rank == card.Rank);
-		}
-	}
-
-	// ===========================================================================================
-	// OPPONENT MODELING (PRESERVED FROM ORIGINAL)
+	// OPPONENT MODELING
 	// ===========================================================================================
 	
 	private float EstimatePlayerStrength()
@@ -835,7 +609,7 @@ public partial class PokerGame
 	}
 
 	// ===========================================================================================
-	// EXECUTION & BET SIZING (PRESERVED FROM ORIGINAL)
+	// EXECUTION & BET SIZING
 	// ===========================================================================================
 	
 	private void ExecuteAIAction(AIAction action)
