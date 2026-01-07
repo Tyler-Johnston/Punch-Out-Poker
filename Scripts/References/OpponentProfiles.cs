@@ -5,7 +5,7 @@ public static class OpponentProfiles
 		// Opponent 1. Passive, scared money
 		new OpponentProfile
 		{
-			Name = "Vidro Boy",
+			Name = "Bro. Goldn",
 			BuyIn = 50,
 			Aggression = 0.25f,      // Very passive
 			Looseness = 0.4f,       // Tight hand selection
@@ -18,7 +18,7 @@ public static class OpponentProfiles
 		// Opponent 2: "Calling Carl" - Passive calling station
 		new OpponentProfile
 		{
-			Name = "Calling Carl",
+			Name = "Aryll",
 			BuyIn = 150,
 			Aggression = 0.3f,      // Passive
 			Looseness = 0.7f,       // Plays lots of hands
@@ -31,7 +31,7 @@ public static class OpponentProfiles
 		// Opponent 3: "Wild Willie" - Aggressive maniac
 		new OpponentProfile
 		{
-			Name = "Wild Willie",
+			Name = "Boy Wizard",
 			BuyIn = 500,
 			Aggression = 0.85f,     // Very aggressive
 			Looseness = 0.8f,       // Plays almost any hand
