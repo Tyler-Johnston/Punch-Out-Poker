@@ -2,16 +2,8 @@
 
 [ext_resource type="Script" uid="uid://c0wcmshheqq7r" path="res://Scenes/CharacterSelect.cs" id="1_8da4y"]
 [ext_resource type="FontFile" uid="uid://dmret52s833gh" path="res://Assets/Fonts/Jersey_10/Jersey10-Regular.ttf" id="2_8da4y"]
-
-[sub_resource type="Gradient" id="Gradient_8cwx3"]
-offsets = PackedFloat32Array(0.013333334, 0.96)
-colors = PackedColorArray(0.550372, 0.5152594, 0.48744535, 1, 0.32563442, 0.23243937, 0.26793703, 1)
-
-[sub_resource type="GradientTexture2D" id="GradientTexture2D_ydguf"]
-gradient = SubResource("Gradient_8cwx3")
-fill = 1
-fill_from = Vector2(0.5, 0.5)
-fill_to = Vector2(1, 0.5)
+[ext_resource type="Texture2D" uid="uid://bel6u82ftxd0e" path="res://Assets/Textures/backgrounds/poker_background.jpg" id="2_fxt7g"]
+[ext_resource type="Texture2D" uid="uid://dc0bthlddoqfc" path="res://Assets/Textures/Frames/card_background.png" id="3_i0prf"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_vfpf0"]
 font = ExtResource("2_8da4y")
@@ -23,7 +15,7 @@ font_size = 60
 
 [node name="CharacterSelect" type="Node2D"]
 
-[node name="CharacterSelect" type="Control" parent="." node_paths=PackedStringArray("CenterPortrait", "LeftPortrait", "RightPortrait", "CenterName", "CenterBuyIn", "LeftArrow", "RightArrow", "ConfirmButton")]
+[node name="CharacterSelect" type="Control" parent="." node_paths=PackedStringArray("CenterPortrait", "LeftPortrait", "RightPortrait", "CenterFrame", "LeftFrame", "RightFrame", "CenterName", "CenterBuyIn", "LeftArrow", "RightArrow", "ConfirmButton")]
 layout_mode = 3
 anchors_preset = 0
 offset_right = 1280.0
@@ -32,20 +24,46 @@ script = ExtResource("1_8da4y")
 CenterPortrait = NodePath("CenterPortrait")
 LeftPortrait = NodePath("LeftPortrait")
 RightPortrait = NodePath("RightPortrait")
+CenterFrame = NodePath("CenterFrame")
+LeftFrame = NodePath("LeftFrame")
+RightFrame = NodePath("RightFrame")
 CenterName = NodePath("CenterName")
 CenterBuyIn = NodePath("CenterBuyIn")
 LeftArrow = NodePath("HBoxContainer/LeftArrow")
 RightArrow = NodePath("HBoxContainer/RightArrow")
 ConfirmButton = NodePath("HBoxContainer/ConfirmButton")
 
-[node name="ColorRect" type="TextureRect" parent="CharacterSelect"]
+[node name="Background" type="TextureRect" parent="CharacterSelect"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -639.0
+offset_top = -4.0
+offset_right = 1.0
+offset_bottom = -4.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("2_fxt7g")
+expand_mode = 3
+
+[node name="BackgroundTint" type="ColorRect" parent="CharacterSelect"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-texture = SubResource("GradientTexture2D_ydguf")
+color = Color(0.22745098, 0.49019608, 0.36862746, 0.5921569)
+
+[node name="CenterFrame" type="TextureRect" parent="CharacterSelect"]
+layout_mode = 0
+offset_left = 420.0
+offset_top = 90.0
+offset_right = 860.0
+offset_bottom = 530.0
+texture = ExtResource("3_i0prf")
+expand_mode = 3
 
 [node name="CenterPortrait" type="TextureRect" parent="CharacterSelect"]
 layout_mode = 0
@@ -98,6 +116,16 @@ text = "Confirm"
 layout_mode = 2
 text = "                   ->                      "
 
+[node name="LeftFrame" type="TextureRect" parent="CharacterSelect"]
+modulate = Color(1, 1, 1, 0.5)
+layout_mode = 0
+offset_left = 100.0
+offset_top = 200.0
+offset_right = 320.0
+offset_bottom = 420.0
+texture = ExtResource("3_i0prf")
+expand_mode = 3
+
 [node name="LeftPortrait" type="TextureRect" parent="CharacterSelect"]
 layout_mode = 1
 anchors_preset = 8
@@ -112,6 +140,16 @@ offset_bottom = 120.0
 grow_horizontal = 2
 grow_vertical = 2
 expand_mode = 1
+
+[node name="RightFrame" type="TextureRect" parent="CharacterSelect"]
+modulate = Color(1, 1, 1, 0.5)
+layout_mode = 0
+offset_left = 952.0
+offset_top = 200.0
+offset_right = 1172.0
+offset_bottom = 420.0
+texture = ExtResource("3_i0prf")
+expand_mode = 3
 
 [node name="RightPortrait" type="TextureRect" parent="CharacterSelect"]
 layout_mode = 0

@@ -7,6 +7,10 @@ public partial class CharacterSelect : Control
 	[Export] public TextureRect LeftPortrait { get; set; }
 	[Export] public TextureRect RightPortrait { get; set; }
 	
+	[Export] public TextureRect CenterFrame { get; set; }
+	[Export] public TextureRect LeftFrame { get; set; }
+	[Export] public TextureRect RightFrame { get; set; }
+	
 	[Export] public Label CenterName { get; set; }
 	[Export] public Label CenterBuyIn { get; set; }
 	//[Export] public Label CenterDescription { get; set; }
@@ -23,8 +27,13 @@ public partial class CharacterSelect : Control
 	public override void _Ready()
 	{
 		CenterPortrait.Position = new Vector2(440, 110);
+		CenterFrame.Position = new Vector2(420, 90);
+		
 		LeftPortrait.Position = new Vector2(100, 170);
+		LeftFrame.Position = new Vector2(90, 160);
+		
 		RightPortrait.Position = new Vector2(980, 170);
+		RightFrame.Position = new Vector2(970, 160);
 	
 		// Load opponents from your existing profiles
 		_opponents = OpponentProfiles.CircuitAOpponents();
