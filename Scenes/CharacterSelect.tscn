@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3 uid="uid://cjjbjksmlvjca"]
+[gd_scene load_steps=7 format=3 uid="uid://cjjbjksmlvjca"]
 
 [ext_resource type="Script" uid="uid://c0wcmshheqq7r" path="res://Scenes/CharacterSelect.cs" id="1_8da4y"]
 [ext_resource type="FontFile" uid="uid://dmret52s833gh" path="res://Assets/Fonts/Jersey_10/Jersey10-Regular.ttf" id="2_8da4y"]
@@ -19,15 +19,11 @@ font_size = 76
 
 [sub_resource type="LabelSettings" id="LabelSettings_adlwc"]
 font = ExtResource("2_8da4y")
-font_size = 76
-
-[sub_resource type="LabelSettings" id="LabelSettings_2arlp"]
-font = ExtResource("2_8da4y")
 font_size = 60
 
 [node name="CharacterSelect" type="Node2D"]
 
-[node name="CharacterSelect" type="Control" parent="." node_paths=PackedStringArray("CenterPortrait", "LeftPortrait", "RightPortrait", "CenterName", "CenterBuyIn", "CenterDescription", "LeftArrow", "RightArrow", "ConfirmButton")]
+[node name="CharacterSelect" type="Control" parent="." node_paths=PackedStringArray("CenterPortrait", "LeftPortrait", "RightPortrait", "CenterName", "CenterBuyIn", "LeftArrow", "RightArrow", "ConfirmButton")]
 layout_mode = 3
 anchors_preset = 0
 offset_right = 1280.0
@@ -37,11 +33,10 @@ CenterPortrait = NodePath("CenterPortrait")
 LeftPortrait = NodePath("LeftPortrait")
 RightPortrait = NodePath("RightPortrait")
 CenterName = NodePath("CenterName")
-CenterBuyIn = NodePath("VBoxContainer/CenterBuyIn")
-CenterDescription = NodePath("VBoxContainer/CenterDescription")
-LeftArrow = NodePath("VBoxContainer/HBoxContainer/LeftArrow")
-RightArrow = NodePath("VBoxContainer/HBoxContainer/RightArrow")
-ConfirmButton = NodePath("VBoxContainer/HBoxContainer/ConfirmButton")
+CenterBuyIn = NodePath("CenterBuyIn")
+LeftArrow = NodePath("HBoxContainer/LeftArrow")
+RightArrow = NodePath("HBoxContainer/RightArrow")
+ConfirmButton = NodePath("HBoxContainer/ConfirmButton")
 
 [node name="ColorRect" type="TextureRect" parent="CharacterSelect"]
 layout_mode = 1
@@ -62,58 +57,60 @@ expand_mode = 1
 
 [node name="CenterName" type="Label" parent="CharacterSelect"]
 layout_mode = 0
-offset_left = 440.0
-offset_top = 60.0
-offset_right = 840.0
-offset_bottom = 143.0
+offset_left = 445.0
+offset_top = 19.0
+offset_right = 845.0
+offset_bottom = 102.0
 text = "BOY WIZARD"
 label_settings = SubResource("LabelSettings_vfpf0")
 horizontal_alignment = 1
 
-[node name="VBoxContainer" type="VBoxContainer" parent="CharacterSelect"]
+[node name="CenterBuyIn" type="Label" parent="CharacterSelect"]
 layout_mode = 0
-offset_left = 503.0
-offset_top = 547.0
-offset_right = 1020.0
-offset_bottom = 879.0
-scale = Vector2(0.5, 0.5)
-
-[node name="CenterBuyIn" type="Label" parent="CharacterSelect/VBoxContainer"]
-layout_mode = 2
+offset_left = 536.0
+offset_top = 520.0
+offset_right = 761.0
+offset_bottom = 586.0
 text = "Buy-In: $50"
 label_settings = SubResource("LabelSettings_adlwc")
 horizontal_alignment = 1
 
-[node name="CenterDescription" type="Label" parent="CharacterSelect/VBoxContainer"]
-layout_mode = 2
-text = "TEST TEST TEST TEST"
-label_settings = SubResource("LabelSettings_2arlp")
-horizontal_alignment = 1
-
-[node name="HBoxContainer" type="HBoxContainer" parent="CharacterSelect/VBoxContainer"]
+[node name="HBoxContainer" type="HBoxContainer" parent="CharacterSelect"]
 custom_minimum_size = Vector2(0, 175)
-layout_mode = 2
-theme_override_constants/separation = 30
+layout_mode = 0
+offset_left = 329.0
+offset_top = 596.0
+offset_right = 1286.0
+offset_bottom = 771.0
+scale = Vector2(0.65, 0.65)
+theme_override_constants/separation = 250
 alignment = 1
 
-[node name="LeftArrow" type="Button" parent="CharacterSelect/VBoxContainer/HBoxContainer"]
+[node name="LeftArrow" type="Button" parent="CharacterSelect/HBoxContainer"]
 layout_mode = 2
 text = "                   <-                      "
 
-[node name="ConfirmButton" type="Button" parent="CharacterSelect/VBoxContainer/HBoxContainer"]
+[node name="ConfirmButton" type="Button" parent="CharacterSelect/HBoxContainer"]
 layout_mode = 2
 text = "Confirm"
 
-[node name="RightArrow" type="Button" parent="CharacterSelect/VBoxContainer/HBoxContainer"]
+[node name="RightArrow" type="Button" parent="CharacterSelect/HBoxContainer"]
 layout_mode = 2
 text = "                   ->                      "
 
 [node name="LeftPortrait" type="TextureRect" parent="CharacterSelect"]
-layout_mode = 0
-offset_left = 100.0
-offset_top = 180.0
-offset_right = 380.0
-offset_bottom = 460.0
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -540.0
+offset_top = -160.0
+offset_right = -260.0
+offset_bottom = 120.0
+grow_horizontal = 2
+grow_vertical = 2
 expand_mode = 1
 
 [node name="RightPortrait" type="TextureRect" parent="CharacterSelect"]

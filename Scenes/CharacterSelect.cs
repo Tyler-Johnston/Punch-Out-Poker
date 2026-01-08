@@ -9,7 +9,7 @@ public partial class CharacterSelect : Control
 	
 	[Export] public Label CenterName { get; set; }
 	[Export] public Label CenterBuyIn { get; set; }
-	[Export] public Label CenterDescription { get; set; }
+	//[Export] public Label CenterDescription { get; set; }
 	
 	[Export] public Button LeftArrow { get; set; }
 	[Export] public Button RightArrow { get; set; }
@@ -22,6 +22,10 @@ public partial class CharacterSelect : Control
 	
 	public override void _Ready()
 	{
+		CenterPortrait.Position = new Vector2(440, 110);
+		LeftPortrait.Position = new Vector2(100, 170);
+		RightPortrait.Position = new Vector2(980, 170);
+	
 		// Load opponents from your existing profiles
 		_opponents = OpponentProfiles.CircuitAOpponents();
 		
@@ -57,7 +61,7 @@ public partial class CharacterSelect : Control
 		// Update center (main) opponent
 		CenterName.Text = current.Name;
 		CenterBuyIn.Text = $"Buy-In: ${current.BuyIn}";
-		CenterDescription.Text = LoremIpsum;
+		//CenterDescription.Text = LoremIpsum;
 		LoadPortrait(CenterPortrait, current.Name, 1.0f, new Vector2(1.0f, 1.0f));
 		
 		// Calculate left index (wrap around)

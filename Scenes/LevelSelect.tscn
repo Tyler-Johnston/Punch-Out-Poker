@@ -3,12 +3,12 @@
 [ext_resource type="FontFile" uid="uid://dmret52s833gh" path="res://Assets/Fonts/Jersey_10/Jersey10-Regular.ttf" id="1_chbko"]
 [ext_resource type="Script" uid="uid://b7ky1y3fveixj" path="res://Scripts/Game/LevelSelect.cs" id="2_fo23m"]
 
-[sub_resource type="Gradient" id="Gradient_47o1s"]
+[sub_resource type="Gradient" id="Gradient_fo23m"]
 offsets = PackedFloat32Array(0.013333334, 0.96)
 colors = PackedColorArray(0.39215687, 0.5294118, 0.72156864, 1, 0.1595361, 0.23722646, 0.26420403, 1)
 
 [sub_resource type="GradientTexture2D" id="GradientTexture2D_chbko"]
-gradient = SubResource("Gradient_47o1s")
+gradient = SubResource("Gradient_fo23m")
 fill = 1
 fill_from = Vector2(0.5, 0.5)
 fill_to = Vector2(1, 0.5)
