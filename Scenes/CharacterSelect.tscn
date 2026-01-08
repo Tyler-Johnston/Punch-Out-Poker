@@ -75,10 +75,10 @@ expand_mode = 1
 
 [node name="CenterName" type="Label" parent="CharacterSelect"]
 layout_mode = 0
-offset_left = 445.0
-offset_top = 19.0
-offset_right = 845.0
-offset_bottom = 102.0
+offset_left = 489.0
+offset_top = 10.0
+offset_right = 799.0
+offset_bottom = 93.0
 text = "BOY WIZARD"
 label_settings = SubResource("LabelSettings_vfpf0")
 horizontal_alignment = 1
@@ -86,9 +86,9 @@ horizontal_alignment = 1
 [node name="CenterBuyIn" type="Label" parent="CharacterSelect"]
 layout_mode = 0
 offset_left = 536.0
-offset_top = 520.0
+offset_top = 528.0
 offset_right = 761.0
-offset_bottom = 586.0
+offset_bottom = 594.0
 text = "Buy-In: $50"
 label_settings = SubResource("LabelSettings_adlwc")
 horizontal_alignment = 1
