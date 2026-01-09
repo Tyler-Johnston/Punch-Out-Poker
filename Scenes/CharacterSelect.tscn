@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3 uid="uid://cjjbjksmlvjca"]
+[gd_scene load_steps=13 format=3 uid="uid://cjjbjksmlvjca"]
 
 [ext_resource type="Script" uid="uid://c0wcmshheqq7r" path="res://Scenes/CharacterSelect.cs" id="1_8da4y"]
 [ext_resource type="FontFile" uid="uid://dmret52s833gh" path="res://Assets/Fonts/Jersey_10/Jersey10-Regular.ttf" id="2_8da4y"]
@@ -68,9 +68,13 @@ corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
 
+[sub_resource type="LabelSettings" id="LabelSettings_i0prf"]
+font = ExtResource("2_8da4y")
+font_size = 32
+
 [node name="CharacterSelect" type="Node2D"]
 
-[node name="CharacterSelect" type="Control" parent="." node_paths=PackedStringArray("CenterPortrait", "LeftPortrait", "RightPortrait", "CenterFrame", "LeftFrame", "RightFrame", "CenterName", "CenterBuyIn", "LeftArrow", "RightArrow", "ConfirmButton")]
+[node name="CharacterSelect" type="Control" parent="." node_paths=PackedStringArray("CenterPortrait", "LeftPortrait", "RightPortrait", "CenterFrame", "LeftFrame", "RightFrame", "CenterName", "CenterBuyIn", "LeftArrow", "RightArrow", "ConfirmButton", "BalanceLabel")]
 layout_mode = 3
 anchors_preset = 0
 offset_right = 1280.0
@@ -87,6 +91,7 @@ CenterBuyIn = NodePath("CenterBuyIn")
 LeftArrow = NodePath("HBoxContainer/LeftArrow")
 RightArrow = NodePath("HBoxContainer/RightArrow")
 ConfirmButton = NodePath("HBoxContainer/ConfirmButton")
+BalanceLabel = NodePath("BalanceLabel")
 
 [node name="Background" type="TextureRect" parent="CharacterSelect"]
 layout_mode = 1
@@ -139,10 +144,10 @@ horizontal_alignment = 1
 
 [node name="CenterBuyIn" type="Label" parent="CharacterSelect"]
 layout_mode = 0
-offset_left = 528.0
-offset_top = 528.0
-offset_right = 753.0
-offset_bottom = 594.0
+offset_left = 529.0
+offset_top = 544.0
+offset_right = 754.0
+offset_bottom = 610.0
 text = "Buy-In: $50"
 label_settings = SubResource("LabelSettings_adlwc")
 horizontal_alignment = 1
@@ -150,10 +155,10 @@ horizontal_alignment = 1
 [node name="HBoxContainer" type="HBoxContainer" parent="CharacterSelect"]
 custom_minimum_size = Vector2(0, 100)
 layout_mode = 0
-offset_left = 203.00002
-offset_top = 599.0
-offset_right = 1660.0
-offset_bottom = 774.0
+offset_left = 222.00002
+offset_top = 623.0
+offset_right = 1572.0
+offset_bottom = 723.0
 scale = Vector2(0.6, 0.6)
 theme_override_constants/separation = 400
 alignment = 1
@@ -221,3 +226,12 @@ offset_top = 200.0
 offset_right = 1180.0
 offset_bottom = 480.0
 expand_mode = 1
+
+[node name="BalanceLabel" type="Label" parent="CharacterSelect"]
+layout_mode = 0
+offset_left = 18.0
+offset_top = 676.0
+offset_right = 174.0
+offset_bottom = 711.0
+text = "Balance: $1000"
+label_settings = SubResource("LabelSettings_i0prf")
