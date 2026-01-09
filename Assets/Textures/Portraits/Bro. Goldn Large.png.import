@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://353h0txvq3uy"
-path="res://.godot/imported/Aryll.png-fe3e481912319afa2654ac691485a372.ctex"
+uid="uid://curvnhrordb00"
+path="res://.godot/imported/Bro. Goldn Large.png-62356798b0da658da992220e28673009.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/Textures/Portraits/Aryll.png"
-dest_files=["res://.godot/imported/Aryll.png-fe3e481912319afa2654ac691485a372.ctex"]
+source_file="res://Assets/Textures/Portraits/Bro. Goldn Large.png"
+dest_files=["res://.godot/imported/Bro. Goldn Large.png-62356798b0da658da992220e28673009.ctex"]
 
 [params]
 

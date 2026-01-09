@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cc57os7amx757"
-path="res://.godot/imported/Boy Wizard.png-75b8c4c24e47333af6fb457f1eedd0d1.ctex"
+uid="uid://imt0r66ud7js"
+path="res://.godot/imported/Aryll Large.png-dd8fc3730e5795ec5ff9f33f892d5719.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/Textures/Portraits/Boy Wizard.png"
-dest_files=["res://.godot/imported/Boy Wizard.png-75b8c4c24e47333af6fb457f1eedd0d1.ctex"]
+source_file="res://Assets/Textures/Portraits/Aryll Large.png"
+dest_files=["res://.godot/imported/Aryll Large.png-dd8fc3730e5795ec5ff9f33f892d5719.ctex"]
 
 [params]
 

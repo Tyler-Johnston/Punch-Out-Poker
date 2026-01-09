@@ -43,7 +43,6 @@ public partial class CharacterSelect : Control
 		RightArrow.Pressed += OnRightPressed;
 		ConfirmButton.Pressed += OnConfirmPressed;
 		
-		// Initial display
 		UpdateDisplay();
 	}
 	
@@ -70,23 +69,22 @@ public partial class CharacterSelect : Control
 		// Update center (main) opponent
 		CenterName.Text = current.Name;
 		CenterBuyIn.Text = $"Buy-In: ${current.BuyIn}";
-		//CenterDescription.Text = LoremIpsum;
-		LoadPortrait(CenterPortrait, current.Name, 1.0f, new Vector2(1.0f, 1.0f));
+		LoadPortrait(CenterPortrait, current.Name + " Large", 1.0f, new Vector2(1.0f, 1.0f));
 		
 		// Calculate left index (wrap around)
 		int leftIndex = _currentIndex - 1;
 		if (leftIndex < 0) leftIndex = _opponents.Length - 1;
-		LoadPortrait(LeftPortrait, _opponents[leftIndex].Name, 0.5f, new Vector2(0.7f, 0.7f));
+		LoadPortrait(LeftPortrait, _opponents[leftIndex].Name + " Small", 0.5f, new Vector2(0.7f, 0.7f));
 		
 		// Calculate right index (wrap around)
 		int rightIndex = _currentIndex + 1;
 		if (rightIndex >= _opponents.Length) rightIndex = 0;
-		LoadPortrait(RightPortrait, _opponents[rightIndex].Name, 0.5f, new Vector2(0.7f, 0.7f));
+		LoadPortrait(RightPortrait, _opponents[rightIndex].Name + " Small", 0.5f, new Vector2(0.7f, 0.7f));
 		
 		// Check if player can afford
 		bool canAfford = GameManager.Instance.PlayerMoney >= current.BuyIn;
 		ConfirmButton.Disabled = !canAfford;
-		ConfirmButton.Text = canAfford ? "PLAY!" : $"LOCKED (Need ${current.BuyIn})";
+		ConfirmButton.Text = canAfford ? "PLAY!" : $"LOCKED";
 	}
 	
 	private void LoadPortrait(TextureRect portraitNode, string opponentName, float alpha, Vector2 scale)

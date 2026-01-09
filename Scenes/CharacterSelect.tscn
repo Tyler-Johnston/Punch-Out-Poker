@@ -1,9 +1,9 @@
-[gd_scene load_steps=7 format=3 uid="uid://cjjbjksmlvjca"]
+[gd_scene load_steps=12 format=3 uid="uid://cjjbjksmlvjca"]
 
 [ext_resource type="Script" uid="uid://c0wcmshheqq7r" path="res://Scenes/CharacterSelect.cs" id="1_8da4y"]
 [ext_resource type="FontFile" uid="uid://dmret52s833gh" path="res://Assets/Fonts/Jersey_10/Jersey10-Regular.ttf" id="2_8da4y"]
 [ext_resource type="Texture2D" uid="uid://bel6u82ftxd0e" path="res://Assets/Textures/backgrounds/poker_background.jpg" id="2_fxt7g"]
-[ext_resource type="Texture2D" uid="uid://dc0bthlddoqfc" path="res://Assets/Textures/Frames/card_background.png" id="3_i0prf"]
+[ext_resource type="Texture2D" uid="uid://dtkuv1jg1wjh1" path="res://Assets/Textures/Frames/card_background.png" id="3_i0prf"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_vfpf0"]
 font = ExtResource("2_8da4y")
@@ -12,6 +12,61 @@ font_size = 76
 [sub_resource type="LabelSettings" id="LabelSettings_adlwc"]
 font = ExtResource("2_8da4y")
 font_size = 60
+
+[sub_resource type="FontVariation" id="FontVariation_i0prf"]
+base_font = ExtResource("2_8da4y")
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_8da4y"]
+content_margin_left = 40.0
+content_margin_right = 40.0
+bg_color = Color(0.6784314, 0, 0.15686275, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_i0prf"]
+content_margin_left = 40.0
+content_margin_right = 40.0
+bg_color = Color(0.6313726, 0, 0.14509805, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_j555r"]
+content_margin_left = 40.0
+content_margin_right = 40.0
+bg_color = Color(0.827451, 0, 0.2, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_jbnqh"]
+content_margin_left = 40.0
+content_margin_right = 40.0
+bg_color = Color(0.6117647, 0.6117647, 0.6117647, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
 
 [node name="CharacterSelect" type="Node2D"]
 
@@ -71,7 +126,6 @@ offset_left = 440.0
 offset_top = 140.0
 offset_right = 840.0
 offset_bottom = 540.0
-expand_mode = 1
 
 [node name="CenterName" type="Label" parent="CharacterSelect"]
 layout_mode = 0
@@ -85,35 +139,44 @@ horizontal_alignment = 1
 
 [node name="CenterBuyIn" type="Label" parent="CharacterSelect"]
 layout_mode = 0
-offset_left = 536.0
+offset_left = 528.0
 offset_top = 528.0
-offset_right = 761.0
+offset_right = 753.0
 offset_bottom = 594.0
 text = "Buy-In: $50"
 label_settings = SubResource("LabelSettings_adlwc")
 horizontal_alignment = 1
 
 [node name="HBoxContainer" type="HBoxContainer" parent="CharacterSelect"]
-custom_minimum_size = Vector2(0, 175)
+custom_minimum_size = Vector2(0, 100)
 layout_mode = 0
-offset_left = 329.0
-offset_top = 596.0
-offset_right = 1286.0
-offset_bottom = 771.0
-scale = Vector2(0.65, 0.65)
-theme_override_constants/separation = 250
+offset_left = 203.00002
+offset_top = 599.0
+offset_right = 1660.0
+offset_bottom = 774.0
+scale = Vector2(0.6, 0.6)
+theme_override_constants/separation = 400
 alignment = 1
 
 [node name="LeftArrow" type="Button" parent="CharacterSelect/HBoxContainer"]
 layout_mode = 2
+focus_mode = 0
 text = "                   <-                      "
 
 [node name="ConfirmButton" type="Button" parent="CharacterSelect/HBoxContainer"]
 layout_mode = 2
-text = "Confirm"
+focus_mode = 0
+theme_override_fonts/font = SubResource("FontVariation_i0prf")
+theme_override_font_sizes/font_size = 60
+theme_override_styles/normal = SubResource("StyleBoxFlat_8da4y")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_i0prf")
+theme_override_styles/hover = SubResource("StyleBoxFlat_j555r")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_jbnqh")
+text = "Play"
 
 [node name="RightArrow" type="Button" parent="CharacterSelect/HBoxContainer"]
 layout_mode = 2
+focus_mode = 0
 text = "                   ->                      "
 
 [node name="LeftFrame" type="TextureRect" parent="CharacterSelect"]
