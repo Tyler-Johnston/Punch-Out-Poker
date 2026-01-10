@@ -123,8 +123,6 @@ public partial class PokerGame : Node2D
 		if (currentOpponent != null)
 		{
 			GD.Print($"VS {currentOpponent.Name}");
-			
-			// Deduct buy-in example
 			GameManager.Instance.PlayerMoney -= currentOpponent.BuyIn;
 		}
 		else
@@ -145,7 +143,6 @@ public partial class PokerGame : Node2D
 		// Update Bet Slider default
 		betAmount = bigBlind; 
 		
-		// Set initial button state (Opponent has it "virtually" so it flips to Player on first hand)
 		playerHasButton = false; 
 
 		GD.Print($"=== Opponent: {currentOpponent.Name} ===");

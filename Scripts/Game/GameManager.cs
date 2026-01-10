@@ -8,11 +8,7 @@ public partial class GameManager : Node
 
 	// --- GAME DATA ---
 	public int PlayerMoney { get; set; } = 1000; // Starting money
-
-	// The opponent selected for the NEXT match
 	public OpponentProfile SelectedOpponent { get; set; }
-	
-	// Track which opponents are unlocked
 	private HashSet<string> _unlockedOpponents = new HashSet<string>();
 
 	public override void _Ready()

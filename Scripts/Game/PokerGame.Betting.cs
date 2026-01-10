@@ -34,8 +34,6 @@ public partial class PokerGame
 
 		if (opening)
 		{
-			// Opening: Min bet is Big Blind
-			// But wait, if opening, amountToCall is 0, so maxBet is just playerChips. Correct.
 			minBet = Math.Min(bigBlind, maxBet);
 		}
 		else

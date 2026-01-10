@@ -2,7 +2,7 @@ public static class OpponentProfiles
 {
 	 public static OpponentProfile[] CircuitAOpponents() => new[]
 	{
-		// Opponent 1. Passive, scared money
+		// Opponent 1
 		new OpponentProfile
 		{
 			Name = "Bro. Goldn",
@@ -13,10 +13,10 @@ public static class OpponentProfiles
 			Adaptability = 0.15f,    // Doesn't adjust
 			PreflopAggression = 0.8f,  // Even more passive preflop
 			PostflopAggression = 1.0f,
-			MistakeFactor = 1.40f
+			MistakeFactor = 1.45f
 		},
 
-		// Opponent 2: "Calling Carl" - Passive calling station
+		// Opponent 2
 		new OpponentProfile
 		{
 			Name = "Aryll",
@@ -27,10 +27,10 @@ public static class OpponentProfiles
 			Adaptability = 0.2f,    // Slight adjustment
 			PreflopAggression = 1.2f,  // Slightly more aggressive preflop
 			PostflopAggression = 0.8f,  // Passive postflop (calls too much)
-			MistakeFactor = 1.35f
+			MistakeFactor = 1.40f
 		},
 
-		// Opponent 3: "Wild Willie" - Aggressive maniac
+		// Opponent 3
 		new OpponentProfile
 		{
 			Name = "Boy Wizard",
@@ -41,7 +41,7 @@ public static class OpponentProfiles
 			Adaptability = 0.4f,    // Adjusts somewhat
 			PreflopAggression = 1.3f,  // Extra aggressive preflop
 			PostflopAggression = 1.1f,  // Extra aggressive postflop
-			MistakeFactor = 1.30f
+			MistakeFactor = 1.35f
 		}
 	};
 	

@@ -247,7 +247,6 @@ public partial class PokerGame
 				float betSizeRatio = (pot > 0) ? (float)toCall / pot : 0f;
 				if (betSizeRatio > 0.75f) overfoldChance *= 1.4f;
 				
-				// ADD THIS DEBUG
 				float randomRoll = GD.Randf();
 				GD.Print($"[MISTAKE DEBUG] OVERFOLD: Chance={overfoldChance:P1}, Roll={randomRoll:F3}, Trigger={randomRoll < overfoldChance}");
 			
@@ -279,7 +278,6 @@ public partial class PokerGame
 				// Less likely if very deep stacked (too expensive)
 				if (spr > 8.0f) overcallChance *= 0.6f;
 				
-				// ADD THIS DEBUG
 				float randomRoll = GD.Randf();
 				GD.Print($"[MISTAKE DEBUG] OVERCALL: Chance={overcallChance:P1}, Roll={randomRoll:F3}, Trigger={randomRoll < overcallChance}");
 
@@ -313,7 +311,6 @@ public partial class PokerGame
 				// More likely with shorter stacks (less commitment)
 				if (spr < 5.0f) badBluffChance *= 1.3f;
 				
-				// ADD THIS DEBUG
 				float randomRoll = GD.Randf();
 				GD.Print($"[MISTAKE DEBUG] BAD BLUFF: Chance={badBluffChance:P1}, Roll={randomRoll:F3}, Trigger={randomRoll < badBluffChance}");
 
@@ -340,7 +337,6 @@ public partial class PokerGame
 				// For now, use random factor to simulate board fear
 				if (GD.Randf() < 0.35f) missedValueChance *= 1.4f; // 35% of boards are "scary"
 			
-				// ADD THIS DEBUG
 				float randomRoll = GD.Randf();
 				GD.Print($"[MISTAKE DEBUG] MISSED VALUE: Chance={missedValueChance:P1}, Roll={randomRoll:F3}, Trigger={randomRoll < missedValueChance}");
 
@@ -786,7 +782,7 @@ public partial class PokerGame
 
 		strength += (GD.Randf() - 0.5f) * 0.08f;
 
-		// Maniac discount (enhanced)
+		// Maniac discount
 		float raiseFrequency = (handsPlayed > 5) ? (float)playerPreflopRaises / handsPlayed : 0.5f;
 		if (raiseFrequency > 0.85f && currentStreet == Street.Preflop)
 		{
