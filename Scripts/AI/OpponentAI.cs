@@ -13,7 +13,7 @@ public partial class PokerGame
 
 	// ========== ACTION HISTORY & TRACKING ==========
 	private List<PlayerAction> actionHistory = new List<PlayerAction>();
-	
+
 	private struct PlayerAction
 	{
 		public Street Street;
@@ -23,23 +23,35 @@ public partial class PokerGame
 		public bool WasAllIn;
 		public int HandNumber;
 	}
-	
+
 	private int currentHandNumber = 0;
-	
+
 	// ========== FREQUENCY EXPLOITATION TRACKING ==========
 	private int handsPlayed = 0;
 	private int playerPreflopRaises = 0;
 	private int playerPreflopFolds = 0;
 
-	// ==========  EQUITY CALCULATION SETTINGS ==========
+	// ========== EQUITY CALCULATION SETTINGS ==========
 	private const int DEFAULT_SIMULATIONS = 1000;
 	private const int PREFLOP_SIMULATIONS = 500;  // Faster preflop
 	private const int CRITICAL_SIMULATIONS = 1500; // Deep analysis for all-ins
 
+	// ========== MISTAKE SYSTEM ==========
+	private MistakeType currentMistake = MistakeType.None;
+
+	private enum MistakeType
+	{
+		None,
+		Overfold,      // Folding medium-strength hands under pressure
+		Overcall,      // Calling with weak hands
+		BadBluff,      // Bluffing in bad spots
+		MissedValue    // Not betting strong hands
+	}
+
 	// ===========================================================================================
 	// MAIN DECISION METHOD
 	// ===========================================================================================
-	
+
 	private AIAction DecideAIAction()
 	{
 		if (opponentChips <= 0) return AIAction.Check;
@@ -67,7 +79,7 @@ public partial class PokerGame
 		List<string> villainRange = EstimateVillainRange();
 		int simCount = GetSimulationCount(currentStreet, effectiveBB, facingBet);
 		float equity = CalculateEquity(opponentHand, communityCards, villainRange, simCount);
-		
+
 		GD.Print($"[EQUITY] {equity:P1} equity vs estimated range ({villainRange.Count} hands, {simCount} sims)");
 
 		// ===== STAGE 3: Get GTO Baseline Threshold =====
@@ -82,14 +94,14 @@ public partial class PokerGame
 
 		// ===== STAGE 5: Frequency Exploitation =====
 		float raiseFrequency = (handsPlayed > 5) ? (float)playerPreflopRaises / handsPlayed : 0.5f;
-		
+
 		if (raiseFrequency > 0.65f && currentStreet == Street.Preflop)
 		{
 			float exploit = (raiseFrequency - 0.65f) * 1.0f; // Max -35% for 100% raiser
 			gtoThreshold -= exploit;
 			GD.Print($"[EXPLOIT] Player raises {raiseFrequency:P0} -> Threshold -{exploit:F3} (MANIAC DETECTED)");
 		}
-		
+
 		// ===== STAGE 5.5: Consecutive Aggression Detection =====
 		if (currentStreet == Street.Preflop && facingBet)
 		{
@@ -99,9 +111,9 @@ public partial class PokerGame
 							a.HandNumber > currentHandNumber - 5 && 
 							a.HandNumber < currentHandNumber)
 				.ToList();
-			
+
 			int consecutiveRaises = recentHands.Count(a => a.ActionType == "Raise" || a.ActionType == "Bet");
-			
+
 			if (consecutiveRaises >= 3)
 			{
 				// Player is running a 3-bet blitz - widen calling range dramatically
@@ -120,16 +132,16 @@ public partial class PokerGame
 			gtoThreshold += strengthAdj;
 			GD.Print($"[OPPONENT] Strong action detected ({playerStrength:P1}) -> Threshold +{strengthAdj:F3}");
 		}
-		
+
 		// ===== STAGE 6.5: POT ODDS OVERRIDE =====
 		if (facingBet && toCall > 0)
 		{
 			int potAfterCall = pot + toCall;
 			float potOddsRequired = (float)toCall / potAfterCall;
 			float potOddsThreshold = potOddsRequired + 0.05f; // Add 5% margin for implied odds
-			
+
 			GD.Print($"[POT ODDS] Required: {potOddsRequired:P1}, Current threshold: {gtoThreshold:P1}");
-			
+
 			// If pot odds are better than threshold, use pot odds instead
 			if (potOddsThreshold < gtoThreshold)
 			{
@@ -138,28 +150,219 @@ public partial class PokerGame
 			}
 		}
 
-		gtoThreshold = Math.Clamp(gtoThreshold, 0.15f, 0.90f);
-		GD.Print($"[FINAL THRESHOLD] {gtoThreshold:P1}");
+		// ===== STAGE 7: MISTAKEFACTOR ADJUSTMENTS =====
+		float finalThreshold = gtoThreshold;
+		MistakeType appliedMistake = MistakeType.None;
 
-		// ===== STAGE 7: All-In Decision Check =====
+		if (currentOpponent.MistakeFactor > 1.0f)
+		{
+			(finalThreshold, appliedMistake) = ApplyMistakeAdjustments(
+				gtoThreshold, 
+				equity, 
+				facingBet, 
+				currentOpponent.MistakeFactor,
+				spr
+			);
+
+			GD.Print($"[MISTAKE] Type: {appliedMistake}, Adjusted threshold: {gtoThreshold:P1} → {finalThreshold:P1}");
+		}
+		else
+		{
+			finalThreshold = gtoThreshold;
+		}
+
+		// Store mistake for use in MakeDecision
+		currentMistake = appliedMistake;
+
+		finalThreshold = Math.Clamp(finalThreshold, 0.15f, 0.90f);
+		GD.Print($"[FINAL THRESHOLD] {finalThreshold:P1}");
+
+		// ===== STAGE 8: All-In Decision Check =====
 		if (facingBet && toCall > 0)
 		{
 			float commitment = (opponentChips > 0) ? (float)toCall / opponentChips : 1.0f;
 			bool isAllInScenario = (commitment > 0.75f) || (spr < 2.5f) || (toCall >= opponentChips);
-			
+
 			if (isAllInScenario)
 			{
 				GD.Print($"[ALL-IN SCENARIO] Commitment: {commitment:P0}, SPR: {spr:F2}");
-				return DecideAllInCall(equity, gtoThreshold, spr);
+				return DecideAllInCall(equity, finalThreshold, spr);
 			}
 		}
 
-		// ===== STAGE 8: Make Decision =====
-		AIAction decision = MakeDecision(equity, gtoThreshold, facingBet);
-		GD.Print($"[DECISION] {decision} (Equity {equity:P1} vs Threshold {gtoThreshold:P1})");
+		// ===== STAGE 9: Make Decision =====
+		AIAction decision = MakeDecision(equity, finalThreshold, facingBet, currentMistake);
+		GD.Print($"[DECISION] {decision} (Equity {equity:P1} vs Threshold {finalThreshold:P1})");
 		GD.Print($"========== AI DECISION END ==========\n");
-		
+
 		return decision;
+	}
+
+	// ===========================================================================================
+	// MISTAKE FACTOR SYSTEM
+	// ===========================================================================================
+
+	private (float adjustedThreshold, MistakeType mistake) ApplyMistakeAdjustments(
+		float baseThreshold, 
+		float equity, 
+		bool facingBet, 
+		float mistakeFactor,
+		float spr)
+	{
+		// Normalize mistakeFactor: 1.0 = no mistakes, 1.5 = heavy amateur
+		float mistakeIntensity = Math.Clamp(mistakeFactor - 1.0f, 0.0f, 0.5f);
+
+		GD.Print($"[MISTAKE DEBUG] MistakeFactor={mistakeFactor:F2}, Intensity={mistakeIntensity:F2}");
+		// Premium hands are mostly protected from mistakes
+		bool isPremiumHand = equity > 0.80f;
+		if (isPremiumHand)
+		{
+			mistakeIntensity *= 0.25f; // Reduce mistake chance by 75%
+			GD.Print($"[MISTAKE] Premium hand detected - mistake intensity reduced to {mistakeIntensity:F2}");
+		}
+
+		float equityRatio = equity / baseThreshold;
+		float adjustedThreshold = baseThreshold;
+		MistakeType mistake = MistakeType.None;
+		
+		GD.Print($"[MISTAKE DEBUG] Equity={equity:P1}, Threshold={baseThreshold:P1}, Ratio={equityRatio:F2}");
+		GD.Print($"[MISTAKE DEBUG] FacingBet={facingBet}, SPR={spr:F2}");
+
+		if (facingBet)
+		{
+			// DEFENSIVE MISTAKES when facing aggression
+
+			// Pattern 1: OVERFOLD medium-strength hands (scared money)
+			// Trigger: equity is 0.8x to 1.15x threshold (close to break-even)
+			if (equityRatio >= 0.80f && equityRatio <= 1.15f)
+			{
+				float overfoldChance = mistakeIntensity * 0.60f; // Max 30% at MF=1.5
+
+				// More likely on turn/river (pressure builds)
+				if (currentStreet == Street.Turn) overfoldChance *= 1.3f;
+				if (currentStreet == Street.River) overfoldChance *= 1.5f;
+
+				// More likely with larger bets (intimidation factor)
+				int toCall = currentBet - opponentBet;
+				float betSizeRatio = (pot > 0) ? (float)toCall / pot : 0f;
+				if (betSizeRatio > 0.75f) overfoldChance *= 1.4f;
+				
+				// ADD THIS DEBUG
+				float randomRoll = GD.Randf();
+				GD.Print($"[MISTAKE DEBUG] OVERFOLD: Chance={overfoldChance:P1}, Roll={randomRoll:F3}, Trigger={randomRoll < overfoldChance}");
+			
+
+				if (randomRoll < overfoldChance)
+				{
+					// Increase threshold to make folding more likely
+					float increase = mistakeIntensity * 0.15f; // Max +7.5% at MF=1.5
+					adjustedThreshold = baseThreshold * (1.0f + increase);
+					mistake = MistakeType.Overfold;
+					GD.Print($"[MISTAKE] Overfold pattern - scared money (chance: {overfoldChance:P1})");
+				}
+			}
+
+			// Pattern 2: OVERCALL weak hands (calling station / curious)
+			// Trigger: equity is < 0.75x threshold (clearly bad call)
+			else if (equityRatio < 0.75f)
+			{
+				float overcallChance = mistakeIntensity * 0.40f; // Max 20% at MF=1.5
+
+				// More likely on flop (wants to "see what happens")
+				if (currentStreet == Street.Flop) overcallChance *= 1.5f;
+
+				// More likely with smaller bets (cheaper to be curious)
+				int toCall = currentBet - opponentBet;
+				float betSizeRatio = (pot > 0) ? (float)toCall / pot : 0f;
+				if (betSizeRatio < 0.50f) overcallChance *= 1.6f;
+
+				// Less likely if very deep stacked (too expensive)
+				if (spr > 8.0f) overcallChance *= 0.6f;
+				
+				// ADD THIS DEBUG
+				float randomRoll = GD.Randf();
+				GD.Print($"[MISTAKE DEBUG] OVERCALL: Chance={overcallChance:P1}, Roll={randomRoll:F3}, Trigger={randomRoll < overcallChance}");
+
+				if (randomRoll < overcallChance)
+				{
+					// Decrease threshold to make calling more likely
+					float decrease = mistakeIntensity * 0.20f; // Max -10% at MF=1.5
+					adjustedThreshold = baseThreshold * (1.0f - decrease);
+					mistake = MistakeType.Overcall;
+					GD.Print($"[MISTAKE] Overcall pattern - calling station (chance: {overcallChance:P1})");
+				}
+			}
+		}
+		else
+		{
+			// AGGRESSIVE MISTAKES when not facing bet
+
+			// Pattern 3: BAD BLUFF with weak hands
+			// Trigger: equity is < 0.80x threshold (clearly not strong enough)
+			if (equityRatio < 0.80f)
+			{
+				float badBluffChance = mistakeIntensity * 0.50f; // Max 25% at MF=1.5
+
+				// More likely on flop/turn (trying to "take it down")
+				if (currentStreet == Street.Flop) badBluffChance *= 1.4f;
+				if (currentStreet == Street.Turn) badBluffChance *= 1.2f;
+
+				// Less likely on river (even amateurs get scared)
+				if (currentStreet == Street.River) badBluffChance *= 0.5f;
+
+				// More likely with shorter stacks (less commitment)
+				if (spr < 5.0f) badBluffChance *= 1.3f;
+				
+				// ADD THIS DEBUG
+				float randomRoll = GD.Randf();
+				GD.Print($"[MISTAKE DEBUG] BAD BLUFF: Chance={badBluffChance:P1}, Roll={randomRoll:F3}, Trigger={randomRoll < badBluffChance}");
+
+				if (randomRoll < badBluffChance)
+				{
+					float decrease = mistakeIntensity * 0.15f;
+					adjustedThreshold = baseThreshold * (1.0f - decrease);
+					mistake = MistakeType.BadBluff;
+					GD.Print($"[MISTAKE] Bad bluff setup - wannabe pro (chance: {badBluffChance:P1})");
+				}
+			}
+
+			// Pattern 4: MISSED VALUE with strong hands
+			// Trigger: equity is > 1.10x threshold but not premium (0.65-0.80)
+			else if (equityRatio > 1.10f && equity >= 0.65f && equity < 0.80f)
+			{
+				float missedValueChance = mistakeIntensity * 0.45f; // Max 22.5% at MF=1.5
+
+				// More likely on turn/river (afraid of "monsters under bed")
+				if (currentStreet == Street.Turn) missedValueChance *= 1.3f;
+				if (currentStreet == Street.River) missedValueChance *= 1.5f;
+
+				// More likely on scary boards (this would need board texture analysis)
+				// For now, use random factor to simulate board fear
+				if (GD.Randf() < 0.35f) missedValueChance *= 1.4f; // 35% of boards are "scary"
+			
+				// ADD THIS DEBUG
+				float randomRoll = GD.Randf();
+				GD.Print($"[MISTAKE DEBUG] MISSED VALUE: Chance={missedValueChance:P1}, Roll={randomRoll:F3}, Trigger={randomRoll < missedValueChance}");
+
+				if (randomRoll < missedValueChance)
+				{
+					// This will cause passive play in MakeDecision
+					mistake = MistakeType.MissedValue;
+					GD.Print($"[MISTAKE] Missed value setup - too passive (chance: {missedValueChance:P1})");
+				}
+			}
+		}
+
+		// Safety rails: clamp adjustments to prevent absurd thresholds
+		float maxAdjustment = 0.15f; // Never move threshold more than 15%
+		float adjustmentDelta = Math.Abs(adjustedThreshold - baseThreshold);
+		if (adjustmentDelta > maxAdjustment)
+		{
+			adjustedThreshold = baseThreshold + Math.Sign(adjustedThreshold - baseThreshold) * maxAdjustment;
+			GD.Print($"[SAFETY RAIL] Capping threshold adjustment at ±{maxAdjustment:P0}");
+		}
+
+		return (adjustedThreshold, mistake);
 	}
 
 	// ===========================================================================================
@@ -175,7 +378,7 @@ public partial class PokerGame
 	// ===========================================================================================
 	// MONTE CARLO EQUITY CALCULATOR
 	// ===========================================================================================
-	
+
 	private float CalculateEquity(List<Card> heroHand, List<Card> board, List<string> villainRange, int simulations)
 	{
 		if (heroHand == null || heroHand.Count != 2)
@@ -198,7 +401,7 @@ public partial class PokerGame
 			// Sample villain hand from their range using RangeSampler
 			List<Card> villainHand = RangeSampler.SampleHandFromRange(deck, villainRange);
 			if (villainHand == null || villainHand.Count != 2) continue;
-			
+
 			Deck.RemoveCardsFromDeck(deck, villainHand);
 
 			// Complete the board to 5 cards
@@ -217,7 +420,7 @@ public partial class PokerGame
 			// Lower rank = better hand in pheval
 			if (heroScore < villainScore) wins++;
 			else if (heroScore == villainScore) ties++;
-			
+
 			validSims++;
 		}
 
@@ -273,15 +476,15 @@ public partial class PokerGame
 			bool isLargeRiverBet = (toCall >= pot * 0.75f); // Overbet or pot-sized river bet
 			bool isRiverShove = (currentStreet == Street.River && toCall > 0 && 
 								 (isPlayerAllIn || isLargeRiverBet));
-			
+
 			if (isRiverShove)
 			{
 				// Apply profile-based adjustment: tight players' river shoves are EXTRA credible
 				float tightnessMultiplier = 1.0f - (currentOpponent.Looseness * 0.5f);
-				
+
 				GD.Print($"[Range] River shove detected (player all-in: {isPlayerAllIn}, large bet: {isLargeRiverBet})");
 				GD.Print($"[Range] Profile tightness factor: {tightnessMultiplier:F2}x");
-				
+
 				// For very tight players (< 0.45 looseness), use ONLY the ultra-narrow range
 				if (currentOpponent.Looseness < 0.45f)
 				{
@@ -295,7 +498,7 @@ public partial class PokerGame
 					return new List<string>(HandRanges.StrongPostflopRange);
 				}
 			}
-			
+
 			// Regular postflop logic
 			if (playerStrength > 0.75f)
 			{
@@ -318,7 +521,7 @@ public partial class PokerGame
 	// ===========================================================================================
 	// GTO THRESHOLD SYSTEM 
 	// ===========================================================================================
-	
+
 	private float GetGTOThreshold(Street street, bool facingBet, float spr)
 	{
 		if (street == Street.Preflop)
@@ -351,7 +554,7 @@ public partial class PokerGame
 	// ===========================================================================================
 	// DECISION LOGIC
 	// ===========================================================================================
-	
+
 	private AIAction DecideAllInCall(float equity, float threshold, float spr)
 	{
 		// SPR adjustments
@@ -380,7 +583,7 @@ public partial class PokerGame
 		}
 	}
 
-	private AIAction MakeDecision(float equity, float threshold, bool facingBet)
+	private AIAction MakeDecision(float equity, float threshold, bool facingBet, MistakeType mistake)
 	{
 		if (raisesThisStreet >= MAX_RAISES_PER_STREET)
 		{
@@ -390,12 +593,46 @@ public partial class PokerGame
 				return AIAction.Check;
 		}
 
+		float mistakeFactor = currentOpponent.MistakeFactor;
+		float mistakeIntensity = Math.Clamp(mistakeFactor - 1.0f, 0.0f, 0.5f);
+
 		if (facingBet)
 		{
-			// Facing a bet
+			// === FACING BET LOGIC ===
+
+			// Apply overcall mistake
+			if (mistake == MistakeType.Overcall && equity < threshold * 0.75f)
+			{
+				// Force call with weak hand
+				float overcallChance = 0.70f + (mistakeIntensity * 0.60f); // 70-100% chance
+				if (GD.Randf() < overcallChance)
+				{
+					GD.Print($"[MISTAKE EXECUTED] Overcalling with weak hand ({equity:P1} equity)");
+					return AIAction.Call;
+				}
+			}
+
+			// Apply overfold mistake
+			if (mistake == MistakeType.Overfold && equity >= threshold * 0.80f && equity < threshold * 1.15f)
+			{
+				// Force fold with medium hand
+				float overfoldChance = 0.65f + (mistakeIntensity * 0.70f); // 65-100% chance
+				if (GD.Randf() < overfoldChance)
+				{
+					GD.Print($"[MISTAKE EXECUTED] Overfolding medium-strength hand ({equity:P1} equity)");
+					return AIAction.Fold;
+				}
+			}
+
+			// Normal logic with adjusted threshold
 			if (equity < threshold * 0.75f)
 			{
-				// Weak hand - very rarely bluff (only if close to threshold)
+				// Safety: even bad players fold pure trash sometimes
+				float foldChance = 0.80f - (mistakeIntensity * 0.30f); // 80% down to 65%
+				if (GD.Randf() < foldChance)
+					return AIAction.Fold;
+
+				// Occasional bad bluff-raise
 				if (equity >= threshold * 0.70f && GD.Randf() < currentOpponent.BluffChance * 0.3f && raisesThisStreet < MAX_RAISES_PER_STREET)
 				{
 					aiBluffedThisHand = true;
@@ -407,7 +644,7 @@ public partial class PokerGame
 			else if (equity < threshold)
 			{
 				// Below threshold but close - mostly fold, occasionally bluff
-				if (GD.Randf() < currentOpponent.BluffChance * 0.25f)
+				if (GD.Randf() < currentOpponent.BluffChance * 0.25f && raisesThisStreet < MAX_RAISES_PER_STREET)
 				{
 					aiBluffedThisHand = true;
 					GD.Print("[BLUFF] Bluff-raising near threshold");
@@ -424,8 +661,9 @@ public partial class PokerGame
 			}
 			else
 			{
-				// Strong hand - raise frequently
+				// Strong hand - raise frequently (slightly reduced by mistakes)
 				float raiseChance = equity >= 0.80f ? 0.90f : 0.75f;
+				raiseChance -= (mistakeIntensity * 0.15f); // Slight reduction for amateurs
 				if (GD.Randf() < raiseChance && raisesThisStreet < MAX_RAISES_PER_STREET)
 					return AIAction.Raise;
 				return AIAction.Call;
@@ -433,44 +671,73 @@ public partial class PokerGame
 		}
 		else
 		{
-			// No bet facing - decide bet/check
+			// === NOT FACING BET LOGIC ===
+
+			// Apply bad bluff mistake
+			if (mistake == MistakeType.BadBluff && equity < threshold * 0.80f)
+			{
+				// Force bet with weak hand
+				float badBluffChance = 0.60f + (mistakeIntensity * 0.80f); // 60-100% chance
+				if (GD.Randf() < badBluffChance)
+				{
+					aiBluffedThisHand = true;
+					GD.Print($"[MISTAKE EXECUTED] Bad bluff with trash hand ({equity:P1} equity)");
+					return AIAction.Bet;
+				}
+			}
+
+			// Apply missed value mistake
+			if (mistake == MistakeType.MissedValue && equity >= 0.65f && equity < 0.80f)
+			{
+				// Force check with strong hand
+				float missedValueChance = 0.70f + (mistakeIntensity * 0.60f); // 70-100% chance
+				if (GD.Randf() < missedValueChance)
+				{
+					GD.Print($"[MISTAKE EXECUTED] Missed value with strong hand ({equity:P1} equity)");
+					return AIAction.Check;
+				}
+			}
+
+			// Normal logic
 			if (equity < threshold * 0.85f)
 			{
-				// FIXED: Only bluff if equity is reasonably close to threshold
-				if (equity >= threshold * 0.75f && GD.Randf() < currentOpponent.BluffChance * 0.5f)
+				// Allow more bluffs for amateurs (but still capped)
+				float bluffMultiplier = 1.0f + (mistakeIntensity * 0.8f); // Up to 1.4x
+				if (equity >= threshold * 0.75f && GD.Randf() < currentOpponent.BluffChance * 0.5f * bluffMultiplier)
 				{
 					aiBluffedThisHand = true;
 					GD.Print("[BLUFF] Bluff-betting marginal hand");
 					return AIAction.Bet;
 				}
-				return AIAction.Check; // Don't bet with air
+				return AIAction.Check;
 			}
 			else if (equity < threshold + 0.10f)
 			{
 				// Medium strength - mixed strategy
 				float betFreq = (equity - threshold * 0.85f) / (threshold + 0.10f - threshold * 0.85f);
+				betFreq -= (mistakeIntensity * 0.15f); // Amateurs miss more value
 				return GD.Randf() < betFreq * 0.65f ? AIAction.Bet : AIAction.Check;
 			}
 			else
 			{
-				// Strong hand - bet frequently
+				// Strong hand - bet frequently (slightly reduced by mistakes)
 				float equityMargin = equity - threshold;
 				float betChance;
-				
-				if (equityMargin > 0.20f) // 20%+ above threshold
+
+				if (equityMargin > 0.20f)
 				{
-					betChance = 0.98f; // Almost always bet
+					betChance = 0.98f - (mistakeIntensity * 0.10f); // Slight reduction
 					GD.Print($"[VALUE] Huge equity advantage ({equityMargin:P0}) -> betting {betChance:P0}");
 				}
 				else if (equity >= 0.80f)
 				{
-					betChance = 0.95f;
+					betChance = 0.95f - (mistakeIntensity * 0.12f);
 				}
 				else
 				{
-					betChance = 0.85f;
+					betChance = 0.85f - (mistakeIntensity * 0.15f);
 				}
-					
+
 				return GD.Randf() < betChance ? AIAction.Bet : AIAction.Check;
 			}
 		}
@@ -479,21 +746,21 @@ public partial class PokerGame
 	// ===========================================================================================
 	// OPPONENT MODELING
 	// ===========================================================================================
-	
+
 	private float EstimatePlayerStrength()
 	{
 		var currentHandActions = actionHistory.Where(a => a.HandNumber == currentHandNumber).ToList();
-		
+
 		if (currentHandActions.Count < 1)
 		{
 			if (actionHistory.Count > 10)
 				return EstimatePlayerStrengthFromHistory();
 			return 0.40f;
 		}
-		
+
 		float totalWeight = 0f;
 		float weightedSum = 0f;
-		
+
 		for (int i = 0; i < currentHandActions.Count; i++)
 		{
 			var action = currentHandActions[i];
@@ -502,9 +769,9 @@ public partial class PokerGame
 			weightedSum += actionStrength * weight;
 			totalWeight += weight;
 		}
-		
+
 		float strength = weightedSum / totalWeight;
-		
+
 		var currentStreetActions = currentHandActions.Where(a => a.Street == currentStreet).ToList();
 		if (currentStreetActions.Count > 0)
 		{
@@ -516,9 +783,9 @@ public partial class PokerGame
 			currentStreetStrength /= currentStreetActions.Count;
 			strength = (strength * 0.4f) + (currentStreetStrength * 0.6f);
 		}
-		
+
 		strength += (GD.Randf() - 0.5f) * 0.08f;
-		
+
 		// Maniac discount (enhanced)
 		float raiseFrequency = (handsPlayed > 5) ? (float)playerPreflopRaises / handsPlayed : 0.5f;
 		if (raiseFrequency > 0.85f && currentStreet == Street.Preflop)
@@ -527,14 +794,14 @@ public partial class PokerGame
 			strength -= discount;
 			GD.Print($"[Maniac Discount] {raiseFrequency:P0} -> Strength -{discount:F2}");
 		}
-		
+
 		return Math.Clamp(strength, 0.20f, 0.85f);
 	}
 
 	private float EvaluateActionStrength(PlayerAction action)
 	{
 		float betRatio = (action.PotSize > 0) ? (float)action.Amount / action.PotSize : 0f;
-		
+
 		switch (action.ActionType)
 		{
 			case "Fold": return 0.20f;
@@ -563,14 +830,14 @@ public partial class PokerGame
 	private float EstimatePlayerStrengthFromHistory()
 	{
 		if (actionHistory.Count == 0) return 0.40f;
-		
+
 		var recentActions = actionHistory.Skip(Math.Max(0, actionHistory.Count - 30)).ToList();
 		float totalStrength = 0f;
 		foreach (var action in recentActions)
 		{
 			totalStrength += EvaluateActionStrength(action);
 		}
-		
+
 		float avgStrength = totalStrength / recentActions.Count;
 		avgStrength = (avgStrength * 0.7f) + (0.45f * 0.3f);
 		return Math.Clamp(avgStrength, 0.30f, 0.70f);
@@ -587,13 +854,13 @@ public partial class PokerGame
 			WasAllIn = wasAllIn,
 			HandNumber = currentHandNumber
 		});
-		
+
 		if (currentStreet == Street.Preflop)
 		{
 			if (actionType == "Raise") playerPreflopRaises++;
 			else if (actionType == "Fold") playerPreflopFolds++;
 		}
-		
+
 		if (actionHistory.Count > 150)
 		{
 			actionHistory.RemoveRange(0, 50);
@@ -605,13 +872,14 @@ public partial class PokerGame
 		currentHandNumber++;
 		handsPlayed++;
 		aiBluffedThisHand = false;
+		currentMistake = MistakeType.None; // Reset mistake tracking
 		GD.Print($"\n[NEW HAND] #{currentHandNumber} (Total played: {handsPlayed})");
 	}
 
 	// ===========================================================================================
 	// EXECUTION & BET SIZING
 	// ===========================================================================================
-	
+
 	private void ExecuteAIAction(AIAction action)
 	{
 		if (opponentChips <= 0 && (action == AIAction.Bet || action == AIAction.Raise))
@@ -708,7 +976,7 @@ public partial class PokerGame
 		int betSize = (int)(pot * sizeFactor);
 		betSize = Math.Max(betSize, minBet);
 		int maxBet = Math.Max(minBet, opponentChips);
-		
+
 		return Math.Min(betSize, maxBet);
 	}
 }

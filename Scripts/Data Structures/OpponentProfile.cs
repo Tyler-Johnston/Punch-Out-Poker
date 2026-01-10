@@ -31,6 +31,15 @@ public class OpponentProfile
 	/// </summary>
 	public float Adaptability { get; set; }
 
+	/// <summary>
+	/// Controls deviation from optimal play. 
+	/// 1.0 = Solid regular (near-optimal), 
+	/// 1.1-1.2 = Weak regular (small leaks),
+	/// 1.3-1.4 = Amateur (clearly exploitable),
+	/// 1.5+ = Very weak (major mistakes).
+	/// </summary>
+	public float MistakeFactor { get; set; } = 1.0f;
+
 	// Street-specific modifiers
 
 	/// <summary>
