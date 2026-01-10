@@ -17,12 +17,16 @@ public partial class CharacterSelect : Control
 	[Export] public Button LeftArrow { get; set; }
 	[Export] public Button RightArrow { get; set; }
 	[Export] public Button ConfirmButton { get; set; }
+	[Export] public Button NextCircuitButton { get; set; }
 	
 	[Export] public Label BalanceLabel { get; set; }
+	[Export] public Label CircuitLabel { get; set; }
+	[Export] public ColorRect BackgroundTint { get; set; }
 	
 	private OpponentProfile[] _opponents;
 	private int _currentIndex = 0;
 	private int playerMoney = 0;
+	private int _currentCircuit = 0;
 	
 	public override void _Ready()
 	{
@@ -38,14 +42,81 @@ public partial class CharacterSelect : Control
 		playerMoney = GameManager.Instance.PlayerMoney;
 		BalanceLabel.Text = $"Balance: ${playerMoney}";
 	
-		// Load opponents from your existing profiles
-		_opponents = OpponentProfiles.CircuitAOpponents();
+		// Load initial circuit
+		LoadCircuit(_currentCircuit);
 		
 		// Connect button signals
 		LeftArrow.Pressed += OnLeftPressed;
 		RightArrow.Pressed += OnRightPressed;
 		ConfirmButton.Pressed += OnConfirmPressed;
 		
+		if (NextCircuitButton != null)
+		{
+			NextCircuitButton.Pressed += OnNextCircuitPressed;
+		}
+		
+		UpdateDisplay();
+	}
+	
+	private void LoadCircuit(int circuitIndex)
+	{
+		switch (circuitIndex)
+		{
+			case 0:
+				_opponents = OpponentProfiles.CircuitAOpponents();
+				if (CircuitLabel != null) CircuitLabel.Text = "MINOR CIRCUIT";
+				
+				if (BackgroundTint != null)
+				{
+					var tween = CreateTween();
+					tween.TweenProperty(BackgroundTint, "color", new Color("3a7d5e97"), 0.3f);
+				}
+				break;
+				
+			case 1:
+				_opponents = OpponentProfiles.CircuitBOpponents();
+				if (CircuitLabel != null) CircuitLabel.Text = "MAJOR CIRCUIT";
+				
+				if (BackgroundTint != null)
+				{
+					var tween = CreateTween();
+					tween.TweenProperty(BackgroundTint, "color", new Color("ed676397"), 0.3f);
+				}
+				break;
+				
+			// case 2:
+			//     _opponents = OpponentProfiles.CircuitCOpponents();
+			//     if (CircuitLabel != null) CircuitLabel.Text = "WORLD CIRCUIT";
+			//     if (BackgroundTint != null)
+			//     {
+			//         var tween = CreateTween();
+			//         tween.TweenProperty(BackgroundTint, "color", new Color("4a69bd97"), 0.3f);
+			//     }
+			//     break;
+			
+			default:
+				_opponents = OpponentProfiles.CircuitAOpponents();
+				if (CircuitLabel != null) CircuitLabel.Text = "MINOR CIRCUIT";
+				if (BackgroundTint != null)
+				{
+					var tween = CreateTween();
+					tween.TweenProperty(BackgroundTint, "color", new Color("3a7d5e97"), 0.3f);
+				}
+				break;
+		}
+		
+		_currentIndex = 0;
+	}
+
+	
+	private void OnNextCircuitPressed()
+	{
+		_currentCircuit++;
+		
+		if (_currentCircuit > 1)
+			_currentCircuit = 0;
+		
+		LoadCircuit(_currentCircuit);
 		UpdateDisplay();
 	}
 	
@@ -70,24 +141,20 @@ public partial class CharacterSelect : Control
 		var current = _opponents[_currentIndex];
 		bool isCurrentLocked = !IsOpponentUnlocked(current);
 		
-		// Update center (main) opponent
 		CenterName.Text = isCurrentLocked ? "???" : current.Name;
 		CenterBuyIn.Text = isCurrentLocked ? "Buy-In: ???" : $"Buy-In: ${current.BuyIn}";
 		LoadPortrait(CenterPortrait, current.Name + " Large", 1.0f, new Vector2(1.0f, 1.0f), isCurrentLocked);
 		
-		// Calculate left index (wrap around)
 		int leftIndex = _currentIndex - 1;
 		if (leftIndex < 0) leftIndex = _opponents.Length - 1;
 		bool isLeftLocked = !IsOpponentUnlocked(_opponents[leftIndex]);
 		LoadPortrait(LeftPortrait, _opponents[leftIndex].Name + " Small", 0.5f, new Vector2(0.7f, 0.7f), isLeftLocked);
 		
-		// Calculate right index (wrap around)
 		int rightIndex = _currentIndex + 1;
 		if (rightIndex >= _opponents.Length) rightIndex = 0;
 		bool isRightLocked = !IsOpponentUnlocked(_opponents[rightIndex]);
 		LoadPortrait(RightPortrait, _opponents[rightIndex].Name + " Small", 0.5f, new Vector2(0.7f, 0.7f), isRightLocked);
 		
-		// Check if player can afford AND has unlocked
 		bool canPlay = GameManager.Instance.CanPlayAgainst(current);
 		ConfirmButton.Disabled = !canPlay;
 		ConfirmButton.Text = isCurrentLocked ? "LOCKED" : (canPlay ? "PLAY!" : $"Need ${current.BuyIn}");
@@ -101,7 +168,6 @@ public partial class CharacterSelect : Control
 		{
 			portraitNode.Texture = GD.Load<Texture2D>(portraitPath);
 			
-			// Apply silhouette effect if locked
 			if (isLocked)
 			{
 				ShaderMaterial silhouetteMat = new ShaderMaterial();
@@ -110,7 +176,6 @@ public partial class CharacterSelect : Control
 			}
 			else
 			{
-				// Remove shader material when unlocked
 				portraitNode.Material = null;
 			}
 		}
@@ -119,7 +184,6 @@ public partial class CharacterSelect : Control
 			GD.PrintErr($"Portrait not found: {portraitPath}");
 		}
 		
-		// Apply fade effect to side portraits
 		portraitNode.Modulate = new Color(1, 1, 1, alpha);
 		portraitNode.Scale = scale;
 	}
@@ -133,14 +197,12 @@ public partial class CharacterSelect : Control
 	{
 		var opponent = _opponents[_currentIndex];
 		
-		// Check if opponent is unlocked and player can afford
 		if (!GameManager.Instance.CanPlayAgainst(opponent))
 		{
 			GD.Print($"Cannot play! Opponent locked or insufficient funds.");
 			return;
 		}
 		
-		// Set selected opponent and load game
 		GameManager.Instance.SelectedOpponent = opponent;
 		GetTree().ChangeSceneToFile("res://Scenes/PokerGame.tscn");
 	}
@@ -155,6 +217,8 @@ public partial class CharacterSelect : Control
 				OnRightPressed();
 			else if (keyEvent.Keycode == Key.Enter || keyEvent.Keycode == Key.Space)
 				OnConfirmPressed();
+			else if (keyEvent.Keycode == Key.Tab)
+				OnNextCircuitPressed();
 		}
 	}
 }

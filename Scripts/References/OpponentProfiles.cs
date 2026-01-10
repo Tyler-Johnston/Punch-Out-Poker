@@ -1,6 +1,6 @@
 public static class OpponentProfiles
 {
-	 public static OpponentProfile[] CircuitAOpponents() => new[]
+	public static OpponentProfile[] CircuitAOpponents() => new[]
 	{
 		// Opponent 1
 		new OpponentProfile
@@ -44,5 +44,51 @@ public static class OpponentProfiles
 			MistakeFactor = 1.35f
 		}
 	};
+	
+	public static OpponentProfile[] CircuitBOpponents() => new[]
+	{
+		// Opponent 4
+		new OpponentProfile
+		{
+			Name = "Robo",
+			BuyIn = 1000,
+			Aggression = 0.55f,        // Selective aggression
+			Looseness = 0.35f,         // Tight hand selection
+			Bluffiness = 0.30f,        // Occasional bluffs
+			Adaptability = 0.50f,      // Moderate adjustment
+			PreflopAggression = 1.3f,  // Aggressive with good hands
+			PostflopAggression = 1.2f, // Continues aggression
+			MistakeFactor = 1.30f
+		},
+
+		// Opponent 5 - Viktor "The Grinder" (Weak Regular)
+		new OpponentProfile
+		{
+			Name = "Old Wizard",
+			BuyIn = 2500,
+			Aggression = 0.45f,        // Balanced aggression
+			Looseness = 0.40f,         // Moderately tight
+			Bluffiness = 0.25f,        // Occasional bluffs
+			Adaptability = 0.60f,      // Good adjustment
+			PreflopAggression = 1.1f,  // Standard preflop
+			PostflopAggression = 1.0f, // Standard postflop (slightly weak)
+			MistakeFactor = 1.25f
+		},
+
+		// Opponent 6 - Duchess Amelia (Strong Regular)
+		new OpponentProfile
+		{
+			Name = "Rumi",
+			BuyIn = 5000,
+			Aggression = 0.50f,        // Balanced aggression
+			Looseness = 0.45f,         // Balanced range
+			Bluffiness = 0.35f,        // Strategic bluffs
+			Adaptability = 0.70f,      // Strong adjustment
+			PreflopAggression = 1.15f, // Slightly aggressive preflop
+			PostflopAggression = 1.05f, // Slightly aggressive postflop
+			MistakeFactor = 1.20f
+		}
+	};
+
 	
 }

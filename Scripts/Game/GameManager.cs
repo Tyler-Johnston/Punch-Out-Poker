@@ -6,6 +6,9 @@ public partial class GameManager : Node
 {
 	public static GameManager Instance { get; private set; }
 
+	// --- DEV TEST MODE ---
+	public bool DevTestMode = true;
+
 	// --- GAME DATA ---
 	public int PlayerMoney { get; set; } = 1000; // Starting money
 	public OpponentProfile SelectedOpponent { get; set; }
@@ -16,8 +19,45 @@ public partial class GameManager : Node
 		// Set the static instance to this node
 		Instance = this;
 		
-		// Start with first opponent unlocked
-		UnlockOpponent("Bro. Goldn");
+		if (DevTestMode)
+		{
+			GD.Print("=== DEV TEST MODE ENABLED ===");
+			InitializeDevMode();
+		}
+		else
+		{
+			UnlockOpponent("Bro. Goldn");
+		}
+	}
+	
+	/// <summary>
+	/// Initialize dev mode with max money and all opponents unlocked
+	/// </summary>
+	private void InitializeDevMode()
+	{
+		// Give max money
+		PlayerMoney = 999999;
+		GD.Print($"Dev Mode: Set money to ${PlayerMoney}");
+		
+		// Unlock all Circuit A opponents
+		foreach (var opponent in OpponentProfiles.CircuitAOpponents())
+		{
+			UnlockOpponent(opponent.Name);
+		}
+		
+		// Unlock all Circuit B opponents
+		foreach (var opponent in OpponentProfiles.CircuitBOpponents())
+		{
+			UnlockOpponent(opponent.Name);
+		}
+		
+		// Unlock Circuit C when added:
+		// foreach (var opponent in OpponentProfiles.CircuitCOpponents())
+		// {
+		//     UnlockOpponent(opponent.Name);
+		// }
+		
+		GD.Print($"Dev Mode: Unlocked {_unlockedOpponents.Count} opponents");
 	}
 	
 	/// <summary>
@@ -25,6 +65,10 @@ public partial class GameManager : Node
 	/// </summary>
 	public bool IsOpponentUnlocked(string opponentName)
 	{
+		// In dev mode, everything is unlocked
+		if (DevTestMode)
+			return true;
+			
 		return _unlockedOpponents.Contains(opponentName);
 	}
 	
@@ -53,21 +97,50 @@ public partial class GameManager : Node
 	/// </summary>
 	public void OnMatchWon(OpponentProfile defeatedOpponent)
 	{
-		// Get the circuit opponents
-		var opponents = OpponentProfiles.CircuitAOpponents();
-		
-		// Find the defeated opponent's index
-		for (int i = 0; i < opponents.Length; i++)
+		// In dev mode, everything is already unlocked
+		if (DevTestMode)
 		{
-			if (opponents[i].Name == defeatedOpponent.Name)
+			GD.Print($"Dev Mode: Skipping unlock logic (all unlocked)");
+			return;
+		}
+		
+		// Try Circuit A first
+		var circuitA = OpponentProfiles.CircuitAOpponents();
+		if (TryUnlockNextInCircuit(circuitA, defeatedOpponent))
+			return;
+		
+		// Try Circuit B
+		var circuitB = OpponentProfiles.CircuitBOpponents();
+		if (TryUnlockNextInCircuit(circuitB, defeatedOpponent))
+			return;
+		
+		// Add Circuit C when ready:
+		// var circuitC = OpponentProfiles.CircuitCOpponents();
+		// if (TryUnlockNextInCircuit(circuitC, defeatedOpponent))
+		//     return;
+	}
+	
+	/// <summary>
+	/// Helper method to unlock next opponent in a circuit
+	/// </summary>
+	private bool TryUnlockNextInCircuit(OpponentProfile[] circuit, OpponentProfile defeatedOpponent)
+	{
+		for (int i = 0; i < circuit.Length; i++)
+		{
+			if (circuit[i].Name == defeatedOpponent.Name)
 			{
 				// Unlock the next opponent if there is one
-				if (i + 1 < opponents.Length)
+				if (i + 1 < circuit.Length)
 				{
-					UnlockOpponent(opponents[i + 1].Name);
+					UnlockOpponent(circuit[i + 1].Name);
 				}
-				break;
+				else
+				{
+					GD.Print($"Circuit complete! {defeatedOpponent.Name} was the final opponent.");
+				}
+				return true;
 			}
 		}
+		return false;
 	}
 }

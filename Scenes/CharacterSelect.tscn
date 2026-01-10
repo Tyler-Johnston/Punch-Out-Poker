@@ -74,7 +74,7 @@ font_size = 32
 
 [node name="CharacterSelect" type="Node2D"]
 
-[node name="CharacterSelect" type="Control" parent="." node_paths=PackedStringArray("CenterPortrait", "LeftPortrait", "RightPortrait", "CenterFrame", "LeftFrame", "RightFrame", "CenterName", "CenterBuyIn", "LeftArrow", "RightArrow", "ConfirmButton", "BalanceLabel")]
+[node name="CharacterSelect" type="Control" parent="." node_paths=PackedStringArray("CenterPortrait", "LeftPortrait", "RightPortrait", "CenterFrame", "LeftFrame", "RightFrame", "CenterName", "CenterBuyIn", "LeftArrow", "RightArrow", "ConfirmButton", "NextCircuitButton", "BalanceLabel", "BackgroundTint")]
 layout_mode = 3
 anchors_preset = 0
 offset_right = 1280.0
@@ -91,7 +91,9 @@ CenterBuyIn = NodePath("CenterBuyIn")
 LeftArrow = NodePath("HBoxContainer/LeftArrow")
 RightArrow = NodePath("HBoxContainer/RightArrow")
 ConfirmButton = NodePath("HBoxContainer/ConfirmButton")
+NextCircuitButton = NodePath("NextCircuit")
 BalanceLabel = NodePath("BalanceLabel")
+BackgroundTint = NodePath("BackgroundTint")
 
 [node name="Background" type="TextureRect" parent="CharacterSelect"]
 layout_mode = 1
@@ -160,7 +162,7 @@ offset_top = 623.0
 offset_right = 1572.0
 offset_bottom = 723.0
 scale = Vector2(0.6, 0.6)
-theme_override_constants/separation = 400
+theme_override_constants/separation = 300
 alignment = 1
 
 [node name="LeftArrow" type="Button" parent="CharacterSelect/HBoxContainer"]
@@ -235,3 +237,11 @@ offset_right = 174.0
 offset_bottom = 711.0
 text = "Balance: $1000"
 label_settings = SubResource("LabelSettings_i0prf")
+
+[node name="NextCircuit" type="Button" parent="CharacterSelect"]
+layout_mode = 0
+offset_left = 1142.0
+offset_top = 654.0
+offset_right = 1242.0
+offset_bottom = 685.0
+text = "Next Circuit"
