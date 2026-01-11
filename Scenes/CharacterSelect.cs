@@ -84,15 +84,15 @@ public partial class CharacterSelect : Control
 				}
 				break;
 				
-			// case 2:
-			//     _opponents = OpponentProfiles.CircuitCOpponents();
-			//     if (CircuitLabel != null) CircuitLabel.Text = "WORLD CIRCUIT";
-			//     if (BackgroundTint != null)
-			//     {
-			//         var tween = CreateTween();
-			//         tween.TweenProperty(BackgroundTint, "color", new Color("4a69bd97"), 0.3f);
-			//     }
-			//     break;
+			 case 2:
+				 _opponents = OpponentProfiles.CircuitCOpponents();
+				 if (CircuitLabel != null) CircuitLabel.Text = "WORLD CIRCUIT";
+				 if (BackgroundTint != null)
+				 {
+					 var tween = CreateTween();
+					 tween.TweenProperty(BackgroundTint, "color", new Color("#5f62cd97"), 0.3f);
+				 }
+				 break;
 			
 			default:
 				_opponents = OpponentProfiles.CircuitAOpponents();
@@ -113,7 +113,7 @@ public partial class CharacterSelect : Control
 	{
 		_currentCircuit++;
 		
-		if (_currentCircuit > 1)
+		if (_currentCircuit > 2)
 			_currentCircuit = 0;
 		
 		LoadCircuit(_currentCircuit);

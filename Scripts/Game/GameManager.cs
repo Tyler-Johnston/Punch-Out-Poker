@@ -51,11 +51,11 @@ public partial class GameManager : Node
 			UnlockOpponent(opponent.Name);
 		}
 		
-		// Unlock Circuit C when added:
-		// foreach (var opponent in OpponentProfiles.CircuitCOpponents())
-		// {
-		//     UnlockOpponent(opponent.Name);
-		// }
+		 //Unlock Circuit C
+		 foreach (var opponent in OpponentProfiles.CircuitCOpponents())
+		 {
+			 UnlockOpponent(opponent.Name);
+		 }
 		
 		GD.Print($"Dev Mode: Unlocked {_unlockedOpponents.Count} opponents");
 	}
@@ -97,7 +97,6 @@ public partial class GameManager : Node
 	/// </summary>
 	public void OnMatchWon(OpponentProfile defeatedOpponent)
 	{
-		// In dev mode, everything is already unlocked
 		if (DevTestMode)
 		{
 			GD.Print($"Dev Mode: Skipping unlock logic (all unlocked)");

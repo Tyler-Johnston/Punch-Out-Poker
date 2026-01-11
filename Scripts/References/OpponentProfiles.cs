@@ -50,7 +50,7 @@ public static class OpponentProfiles
 		// Opponent 4
 		new OpponentProfile
 		{
-			Name = "Robo",
+			Name = "Cowboy",
 			BuyIn = 1000,
 			Aggression = 0.55f,        // Selective aggression
 			Looseness = 0.35f,         // Tight hand selection
@@ -61,10 +61,10 @@ public static class OpponentProfiles
 			MistakeFactor = 1.30f
 		},
 
-		// Opponent 5 - Viktor "The Grinder" (Weak Regular)
+		// Opponent 5
 		new OpponentProfile
 		{
-			Name = "Old Wizard",
+			Name = "Robo",
 			BuyIn = 2500,
 			Aggression = 0.45f,        // Balanced aggression
 			Looseness = 0.40f,         // Moderately tight
@@ -75,7 +75,7 @@ public static class OpponentProfiles
 			MistakeFactor = 1.25f
 		},
 
-		// Opponent 6 - Duchess Amelia (Strong Regular)
+		// Opponent 6 
 		new OpponentProfile
 		{
 			Name = "Rumi",
@@ -89,6 +89,52 @@ public static class OpponentProfiles
 			MistakeFactor = 1.20f
 		}
 	};
+	
+	public static OpponentProfile[] CircuitCOpponents() => new[]
+	{
+		// Opponent 7
+		new OpponentProfile
+		{
+			Name = "King",
+			BuyIn = 10000,
+			Aggression = 0.65f,        // Strong aggression
+			Looseness = 0.50f,         // Balanced range
+			Bluffiness = 0.45f,        // Frequent strategic bluffs
+			Adaptability = 0.80f,      // Excellent adjustment
+			PreflopAggression = 1.25f, // Strong preflop pressure
+			PostflopAggression = 1.20f, // Maintains aggression postflop
+			MistakeFactor = 1.15f
+		},
+
+		// Opponent 8
+		new OpponentProfile
+		{
+			Name = "Robo",
+			BuyIn = 25000,
+			Aggression = 0.55f,        // Calculated aggression
+			Looseness = 0.42f,         // Tight-balanced
+			Bluffiness = 0.40f,        // Well-timed bluffs
+			Adaptability = 0.90f,      // Near-perfect adjustment
+			PreflopAggression = 1.20f, // Positionally aware
+			PostflopAggression = 1.25f, // Exploits postflop edges
+			MistakeFactor = 1.10f
+		},
+
+		// Opponent 9 (Final Boss)
+		new OpponentProfile
+		{
+			Name = "Old Wizard",
+			BuyIn = 50000,
+			Aggression = 0.60f,        // Solver-based aggression
+			Looseness = 0.48f,         // Mathematically balanced
+			Bluffiness = 0.50f,        // Optimal bluff frequency
+			Adaptability = 0.95f,      // Nearly unexploitable
+			PreflopAggression = 1.22f, // Frequency-based ranges
+			PostflopAggression = 1.22f, // Balanced across streets
+			MistakeFactor = 1.05f
+		}
+	};
+
 
 	
 }
