@@ -71,6 +71,18 @@ public partial class PokerGame
 
 	private void UpdateHud()
 	{
+		if (isMatchComplete)
+		{
+			checkCallButton.Text = "Continue";
+			checkCallButton.Disabled = false;
+			foldButton.Visible = false;
+			betRaiseButton.Visible = false;
+			betSlider.Visible = false;
+			betSliderLabel.Visible = false;
+			potLabel.Visible = false;
+			return;
+		}
+	
 		if (waitingForNextGame)
 		{
 			if (IsGameOver())

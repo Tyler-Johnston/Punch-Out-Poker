@@ -5,7 +5,7 @@ public static class OpponentProfiles
 		// Opponent 1
 		new OpponentProfile
 		{
-			Name = "Bro. Goldn",
+			Name = "Steve",
 			BuyIn = 10,
 			Aggression = 0.25f,      // Very passive
 			Looseness = 0.4f,       // Tight hand selection
@@ -27,7 +27,7 @@ public static class OpponentProfiles
 			Adaptability = 0.2f,    // Slight adjustment
 			PreflopAggression = 1.2f,  // Slightly more aggressive preflop
 			PostflopAggression = 0.8f,  // Passive postflop (calls too much)
-			MistakeFactor = 1.50f
+			MistakeFactor = 1.52f
 		},
 
 		// Opponent 3
@@ -41,7 +41,7 @@ public static class OpponentProfiles
 			Adaptability = 0.4f,    // Adjusts somewhat
 			PreflopAggression = 1.3f,  // Extra aggressive preflop
 			PostflopAggression = 1.1f,  // Extra aggressive postflop
-			MistakeFactor = 1.45f
+			MistakeFactor = 1.48f
 		}
 	};
 	
@@ -58,7 +58,7 @@ public static class OpponentProfiles
 			Adaptability = 0.50f,      // Moderate adjustment
 			PreflopAggression = 1.3f,  // Aggressive with good hands
 			PostflopAggression = 1.2f, // Continues aggression
-			MistakeFactor = 1.40f
+			MistakeFactor = 1.45f
 		},
 
 		// Opponent 5
@@ -72,7 +72,7 @@ public static class OpponentProfiles
 			Adaptability = 0.60f,      // Good adjustment
 			PreflopAggression = 1.1f,  // Standard preflop
 			PostflopAggression = 1.0f, // Standard postflop (slightly weak)
-			MistakeFactor = 1.35f
+			MistakeFactor = 1.42f
 		},
 
 		// Opponent 6 
@@ -86,7 +86,7 @@ public static class OpponentProfiles
 			Adaptability = 0.70f,      // Strong adjustment
 			PreflopAggression = 1.15f, // Slightly aggressive preflop
 			PostflopAggression = 1.05f, // Slightly aggressive postflop
-			MistakeFactor = 1.30f
+			MistakeFactor = 1.39f
 		}
 	};
 	
@@ -103,7 +103,7 @@ public static class OpponentProfiles
 			Adaptability = 0.80f,      // Excellent adjustment
 			PreflopAggression = 1.25f, // Strong preflop pressure
 			PostflopAggression = 1.20f, // Maintains aggression postflop
-			MistakeFactor = 1.25f
+			MistakeFactor = 1.36f
 		},
 
 		// Opponent 8
@@ -117,7 +117,7 @@ public static class OpponentProfiles
 			Adaptability = 0.90f,      // Near-perfect adjustment
 			PreflopAggression = 1.20f, // Positionally aware
 			PostflopAggression = 1.25f, // Exploits postflop edges
-			MistakeFactor = 1.20f
+			MistakeFactor = 1.33f
 		},
 
 		// Opponent 9 (Final Boss)
@@ -131,7 +131,7 @@ public static class OpponentProfiles
 			Adaptability = 0.95f,      // Nearly unexploitable
 			PreflopAggression = 1.22f, // Frequency-based ranges
 			PostflopAggression = 1.22f, // Balanced across streets
-			MistakeFactor = 1.15f
+			MistakeFactor = 1.30f
 		}
 	};
 }

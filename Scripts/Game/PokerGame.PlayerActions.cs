@@ -21,12 +21,17 @@ public partial class PokerGame
 
 	private void OnCheckCallPressed()
 	{
-		// FIX: Handle "Next Hand" click safely to prevent button rotation bug
+		if (isMatchComplete)
+		{
+			GameManager.Instance.LastFacedOpponent = GameManager.Instance.SelectedOpponent;
+			GetTree().ChangeSceneToFile("res://Scenes/CharacterSelect.tscn");
+			return;
+		}
+		
 		if (!handInProgress)
 		{
-			// Prevent double-clicking
 			checkCallButton.Disabled = true; 
-			checkCallButton.Text = "Check"; // Reset label visually
+			checkCallButton.Text = "Check";
 			StartNewHand();
 			return;
 		}
@@ -43,19 +48,16 @@ public partial class PokerGame
 		}
 		else if (toCall < 0)
 		{
-			// === Refund Scenario (Uncalled Bet Return) ===
-			// This happens when we bet X, but Opponent is All-In for Y (where Y < X).
-			
+			// === Uncalled Bet Return ===
 			int refundAmount = Math.Abs(toCall);
 			
-			// Refund the chips to stack
 			playerChips += refundAmount;
-			playerBet -= refundAmount; // Reduce our active bet to match opponent's all-in
+			playerBet -= refundAmount;
 			
-			// Remove from pot/contribution tracking (passing negative value)
+			// Pass negative value to remove from pot/contribution tracking
 			AddToPot(true, -refundAmount);
 
-			playerIsAllIn = false; // We clearly have chips back now
+			playerIsAllIn = false; // because we have the chips back now
 			
 			ShowMessage($"You take back {refundAmount} excess chips (Match All-In)");
 			GD.Print($"Player matched All-In. Refunded {refundAmount} chips.");

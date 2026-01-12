@@ -42,8 +42,16 @@ public partial class CharacterSelect : Control
 		playerMoney = GameManager.Instance.PlayerMoney;
 		BalanceLabel.Text = $"Balance: ${playerMoney}";
 	
-		// Load initial circuit
-		LoadCircuit(_currentCircuit);
+		// Check if returning from a match
+		if (GameManager.Instance.LastFacedOpponent != null)
+		{
+			LoadLastOpponent();
+		}
+		else
+		{
+			// Load initial circuit
+			LoadCircuit(_currentCircuit);
+		}
 		
 		// Connect button signals
 		LeftArrow.Pressed += OnLeftPressed;
@@ -58,6 +66,52 @@ public partial class CharacterSelect : Control
 		UpdateDisplay();
 	}
 	
+	private void LoadLastOpponent()
+	{
+		var lastOpponent = GameManager.Instance.LastFacedOpponent;
+		
+		// Check Circuit A
+		var circuitA = OpponentProfiles.CircuitAOpponents();
+		for (int i = 0; i < circuitA.Length; i++)
+		{
+			if (circuitA[i].Name == lastOpponent.Name)
+			{
+				_currentCircuit = 0;
+				LoadCircuit(0);
+				_currentIndex = i;
+				return;
+			}
+		}
+		
+		// Check Circuit B
+		var circuitB = OpponentProfiles.CircuitBOpponents();
+		for (int i = 0; i < circuitB.Length; i++)
+		{
+			if (circuitB[i].Name == lastOpponent.Name)
+			{
+				_currentCircuit = 1;
+				LoadCircuit(1);
+				_currentIndex = i;
+				return;
+			}
+		}
+		
+		// Check Circuit C
+		var circuitC = OpponentProfiles.CircuitCOpponents();
+		for (int i = 0; i < circuitC.Length; i++)
+		{
+			if (circuitC[i].Name == lastOpponent.Name)
+			{
+				_currentCircuit = 2;
+				LoadCircuit(2);
+				_currentIndex = i;
+				return;
+			}
+		}
+		
+		LoadCircuit(0);
+	}
+		
 	private void LoadCircuit(int circuitIndex)
 	{
 		switch (circuitIndex)

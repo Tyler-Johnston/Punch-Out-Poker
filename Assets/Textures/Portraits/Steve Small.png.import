@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bmf8j6rawkhdv"
-path="res://.godot/imported/Robo Large.png-059e60b38902ba2f0d154c5feb1fb02c.ctex"
+uid="uid://b5m8mvh45r603"
+path="res://.godot/imported/Steve Small.png-080d5d1ce2cb2fb1b8284ebe85e0d0b8.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/Textures/Portraits/Robo Large.png"
-dest_files=["res://.godot/imported/Robo Large.png-059e60b38902ba2f0d154c5feb1fb02c.ctex"]
+source_file="res://Assets/Textures/Portraits/Steve Small.png"
+dest_files=["res://.godot/imported/Steve Small.png-080d5d1ce2cb2fb1b8284ebe85e0d0b8.ctex"]
 
 [params]
 

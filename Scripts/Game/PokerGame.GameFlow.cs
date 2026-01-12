@@ -13,6 +13,7 @@ public partial class PokerGame
 	private bool opponentIsAllIn = false;
 	private bool playerHasButton = false;
 	private bool isProcessingAIAction = false;
+	private bool isMatchComplete = false;
 
 	private bool IsGameOver()
 	{
@@ -30,14 +31,13 @@ public partial class PokerGame
 		{
 			ShowMessage("YOU WIN - Opponent ran out of chips!");
 			GD.Print("GAME OVER - Opponent has no chips");
+			GameManager.Instance.PlayerMoney += playerChips;
+			GameManager.Instance.OnMatchWon(GameManager.Instance.SelectedOpponent);
 		}
 
 		handInProgress = false;
 		waitingForNextGame = true;
-		checkCallButton.Text = "GAME OVER";
-		checkCallButton.Disabled = true;
-		foldButton.Visible = false;
-		betRaiseButton.Visible = false;
+		isMatchComplete = true;
 		UpdateHud();
 	}
 
