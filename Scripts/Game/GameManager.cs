@@ -7,7 +7,7 @@ public partial class GameManager : Node
 	public static GameManager Instance { get; private set; }
 
 	// --- DEV TEST MODE ---
-	public bool DevTestMode = true;
+	public bool DevTestMode = false;
 
 	// --- GAME DATA ---
 	public int PlayerMoney { get; set; } = 1000; // Starting money

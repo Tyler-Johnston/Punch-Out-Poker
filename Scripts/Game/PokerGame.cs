@@ -151,7 +151,7 @@ public partial class PokerGame : Node2D
 		GD.Print($"Looseness: {currentOpponent.Looseness:F2}");
 		GD.Print($"Bluffiness: {currentOpponent.Bluffiness:F2}");
 
-		musicPlayer.Play();
+		//musicPlayer.Play();
 		UpdateHud();
 		StartNewHand();
 	}
