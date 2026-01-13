@@ -89,7 +89,7 @@ public partial class PokerGame
 		GD.Print($"[GTO] Base threshold: {gtoThreshold:P1} (SPR: {spr:F2})");
 
 		// ===== STAGE 4: Profile Adjustment =====
-		float profileAdjustment = (0.50f - currentOpponent.Looseness) * 0.40f;
+		float profileAdjustment = (0.50f - currentOpponent.Looseness) * 0.60f;
 		gtoThreshold += profileAdjustment;
 		GD.Print($"[PROFILE] {currentOpponent.Name} looseness {currentOpponent.Looseness:F2} -> Threshold {(profileAdjustment >= 0 ? "+" : "")}{profileAdjustment:F3}");
 
@@ -139,10 +139,15 @@ public partial class PokerGame
 		{
 			int potAfterCall = pot + toCall;
 			float potOddsRequired = (float)toCall / potAfterCall;
-			float potOddsThreshold = potOddsRequired + 0.05f; // Add 5% margin for implied odds
+			float potOddsThreshold = potOddsRequired * 1.2f;
 
 			GD.Print($"[POT ODDS] Required: {potOddsRequired:P1}, Current threshold: {gtoThreshold:P1}");
 
+			if (currentOpponent.Looseness < 0.50f)
+			{
+				potOddsThreshold = potOddsRequired * 1.5f; // Add 50% margin
+				GD.Print($"[POT ODDS] Loose player bonus - extra forgiving");
+			}
 			// If pot odds are better than threshold, use pot odds instead
 			if (potOddsThreshold < gtoThreshold)
 			{
@@ -266,12 +271,14 @@ public partial class PokerGame
 
 			// Pattern 2: OVERCALL weak hands (calling station / curious)
 			// Trigger: equity is < 0.75x threshold (clearly bad call)
-			else if (equityRatio < 0.75f)
+			else if (equityRatio < 0.85f)
 			{
-				float overcallChance = mistakeIntensity * 0.55;
+				float overcallChance = mistakeIntensity * 0.55f;
 
 				// More likely on flop (wants to "see what happens")
-				if (currentStreet == Street.Flop) overcallChance *= 1.5f;
+				if (currentStreet == Street.Flop) overcallChance *= 2.0f;
+				
+				if (currentStreet == Street.Turn) overcallChance *= 2.0f; // NEW
 
 				// More likely with smaller bets (cheaper to be curious)
 				int toCall = currentBet - opponentBet;
@@ -302,7 +309,7 @@ public partial class PokerGame
 			// Trigger: equity is < 0.80x threshold (clearly not strong enough)
 			if (equityRatio < 0.80f)
 			{
-				float badBluffChance = mistakeIntensity * 0.30;
+				float badBluffChance = mistakeIntensity * 0.30f;
 
 				// More likely on flop/turn (trying to "take it down")
 				if (currentStreet == Street.Flop) badBluffChance *= 1.4f;
@@ -527,13 +534,13 @@ public partial class PokerGame
 		{
 			if (facingBet)
 			{
-				if (spr < 3.0f) return 0.42f; // Short stack: wider calls
-				if (spr < 7.0f) return 0.48f; // Medium stack
-				return 0.52f; // Deep stack
+				if (spr < 3.0f) return 0.36f; // Short stack: wider calls
+				if (spr < 7.0f) return 0.42f; // Medium stack
+				return 0.46f; // Deep stack
 			}
 			else
 			{
-				return 0.42f; // Can open 58% of hands
+				return 0.38f; // Can open 58% of hands
 			}
 		}
 		else if (street == Street.Flop)
@@ -598,7 +605,18 @@ public partial class PokerGame
 		if (facingBet)
 		{
 			// === FACING BET LOGIC ===
-
+			
+			float equityGap = Math.Abs(equity - threshold);
+			if (equityGap < 0.05f)
+			{
+				float coinFlip = GD.Randf();
+				if (coinFlip < 0.60f) // 60% chance to call in close spots
+				{
+					GD.Print($"[CLOSE DECISION] Within {equityGap:P1} of threshold - calling anyway");
+					return AIAction.Call;
+				}
+			}
+	
 			// Apply overcall mistake
 			if (mistake == MistakeType.Overcall && equity < threshold * 0.75f)
 			{
