@@ -1,137 +1,132 @@
+// File: OpponentProfiles.cs
+using Godot;
+using System;
+
 public static class OpponentProfiles
 {
 	public static OpponentProfile[] CircuitAOpponents() => new[]
 	{
-		// Opponent 1
+		// Opponent 1: Steve - Calling station
 		new OpponentProfile
 		{
 			Name = "Steve",
 			BuyIn = 25,
-			Aggression = 0.25f,      // Very passive
-			Looseness = 0.4f,       // Tight hand selection
-			Bluffiness = 0.15f,      // Never bluffs
-			Adaptability = 0.15f,    // Doesn't adjust
-			PreflopAggression = 0.8f,  // Even more passive preflop
-			PostflopAggression = 1.0f,
-			MistakeFactor = 1.55f
+			Looseness = 0.65f,           // Plays too many hands
+			Aggressiveness = 0.30f,      // Very passive
+			CallingStationRate = 0.40f,  // Refuses to fold 40% of time
+			BadBluffRate = 0.08f,        // Rarely bluffs
+			OverfoldRate = 0.12f,        // Sometimes folds medium
+			MissedValueRate = 0.30f      // Often checks strong hands
 		},
 
-		// Opponent 2
+		// Opponent 2: Aryll - Loose passive (calls everything)
 		new OpponentProfile
 		{
 			Name = "Aryll",
 			BuyIn = 50,
-			Aggression = 0.3f,      // Passive
-			Looseness = 0.7f,       // Plays lots of hands
-			Bluffiness = 0.20f,      // Rarely bluffs
-			Adaptability = 0.2f,    // Slight adjustment
-			PreflopAggression = 1.2f,  // Slightly more aggressive preflop
-			PostflopAggression = 0.8f,  // Passive postflop (calls too much)
-			MistakeFactor = 1.52f
+			Looseness = 0.75f,           // Plays almost everything
+			Aggressiveness = 0.35f,      // Passive
+			CallingStationRate = 0.50f,  // Even more stubborn than Steve
+			BadBluffRate = 0.05f,        // Almost never bluffs
+			OverfoldRate = 0.08f,        // Rarely folds
+			MissedValueRate = 0.35f      // Very passive with strong hands
 		},
 
-		// Opponent 3
+		// Opponent 3: Boy Wizard - Maniac (bluffs constantly)
 		new OpponentProfile
 		{
 			Name = "Boy Wizard",
 			BuyIn = 100,
-			Aggression = 0.85f,     // Very aggressive
-			Looseness = 0.8f,       // Plays almost any hand
-			Bluffiness = 0.7f,      // Bluffs frequentlyer g
-			Adaptability = 0.4f,    // Adjusts somewhat
-			PreflopAggression = 1.3f,  // Extra aggressive preflop
-			PostflopAggression = 1.1f,  // Extra aggressive postflop
-			MistakeFactor = 1.51f
+			Looseness = 0.85f,           // Plays everything
+			Aggressiveness = 0.80f,      // Very aggressive
+			CallingStationRate = 0.15f,  // Not a calling station
+			BadBluffRate = 0.35f,        // Bluffs way too much!
+			OverfoldRate = 0.05f,        // Never folds
+			MissedValueRate = 0.10f      // Usually bets his strong hands
 		}
 	};
 	
 	public static OpponentProfile[] CircuitBOpponents() => new[]
 	{
-		// Opponent 4
+		// Opponent 4: Cowboy - Tight-aggressive
 		new OpponentProfile
 		{
 			Name = "Cowboy",
 			BuyIn = 200,
-			Aggression = 0.55f,        // Selective aggression
-			Looseness = 0.35f,         // Tight hand selection
-			Bluffiness = 0.30f,        // Occasional bluffs
-			Adaptability = 0.50f,      // Moderate adjustment
-			PreflopAggression = 1.3f,  // Aggressive with good hands
-			PostflopAggression = 1.2f, // Continues aggression
-			MistakeFactor = 1.45f
+			Looseness = 0.40f,           // Tight hand selection
+			Aggressiveness = 0.65f,      // Aggressive when he plays
+			CallingStationRate = 0.12f,
+			BadBluffRate = 0.18f,        // Strategic bluffs
+			OverfoldRate = 0.20f,        // Folds medium hands
+			MissedValueRate = 0.15f
 		},
 
-		// Opponent 5
+		// Opponent 5: Hippie - Balanced but passive
 		new OpponentProfile
 		{
 			Name = "Hippie",
 			BuyIn = 350,
-			Aggression = 0.45f,        // Balanced aggression
-			Looseness = 0.40f,         // Moderately tight
-			Bluffiness = 0.25f,        // Occasional bluffs
-			Adaptability = 0.60f,      // Good adjustment
-			PreflopAggression = 1.1f,  // Standard preflop
-			PostflopAggression = 1.0f, // Standard postflop (slightly weak)
-			MistakeFactor = 1.42f
+			Looseness = 0.50f,           // Balanced
+			Aggressiveness = 0.40f,      // Slightly passive
+			CallingStationRate = 0.20f,
+			BadBluffRate = 0.15f,
+			OverfoldRate = 0.15f,
+			MissedValueRate = 0.25f      // Too passive postflop
 		},
 
-		// Opponent 6 
+		// Opponent 6: Rumi - Solid player
 		new OpponentProfile
 		{
 			Name = "Rumi",
 			BuyIn = 500,
-			Aggression = 0.50f,        // Balanced aggression
-			Looseness = 0.45f,         // Balanced range
-			Bluffiness = 0.35f,        // Strategic bluffs
-			Adaptability = 0.70f,      // Strong adjustment
-			PreflopAggression = 1.15f, // Slightly aggressive preflop
-			PostflopAggression = 1.05f, // Slightly aggressive postflop
-			MistakeFactor = 1.39f
+			Looseness = 0.52f,
+			Aggressiveness = 0.55f,
+			CallingStationRate = 0.12f,
+			BadBluffRate = 0.15f,
+			OverfoldRate = 0.10f,
+			MissedValueRate = 0.15f
 		}
 	};
 	
 	public static OpponentProfile[] CircuitCOpponents() => new[]
 	{
-		// Opponent 7
+		// Opponent 7: King - Strong aggressive player
 		new OpponentProfile
 		{
 			Name = "King",
 			BuyIn = 750,
-			Aggression = 0.65f,        // Strong aggression
-			Looseness = 0.50f,         // Balanced range
-			Bluffiness = 0.45f,        // Frequent strategic bluffs
-			Adaptability = 0.80f,      // Excellent adjustment
-			PreflopAggression = 1.25f, // Strong preflop pressure
-			PostflopAggression = 1.20f, // Maintains aggression postflop
-			MistakeFactor = 1.36f
+			Looseness = 0.55f,
+			Aggressiveness = 0.70f,
+			CallingStationRate = 0.08f,
+			BadBluffRate = 0.12f,
+			OverfoldRate = 0.08f,
+			MissedValueRate = 0.10f
 		},
 
-		// Opponent 8
+		// Opponent 8: Old Wizard - Exploitative expert
 		new OpponentProfile
 		{
 			Name = "Old Wizard",
 			BuyIn = 1500,
-			Aggression = 0.55f,        // Calculated aggression
-			Looseness = 0.42f,         // Tight-balanced
-			Bluffiness = 0.40f,        // Well-timed bluffs
-			Adaptability = 0.90f,      // Near-perfect adjustment
-			PreflopAggression = 1.20f, // Positionally aware
-			PostflopAggression = 1.25f, // Exploits postflop edges
-			MistakeFactor = 1.33f
+			Looseness = 0.50f,
+			Aggressiveness = 0.60f,
+			CallingStationRate = 0.05f,
+			BadBluffRate = 0.10f,
+			OverfoldRate = 0.05f,
+			MissedValueRate = 0.08f
 		},
 
-		// Opponent 9 (Final Boss)
+		// Opponent 9: Spade - Near-perfect GTO
 		new OpponentProfile
 		{
 			Name = "Spade",
 			BuyIn = 2000,
-			Aggression = 0.60f,        // Solver-based aggression
-			Looseness = 0.48f,         // Mathematically balanced
-			Bluffiness = 0.50f,        // Optimal bluff frequency
-			Adaptability = 0.95f,      // Nearly unexploitable
-			PreflopAggression = 1.22f, // Frequency-based ranges
-			PostflopAggression = 1.22f, // Balanced across streets
-			MistakeFactor = 1.30f
+			Looseness = 0.50f,           // Balanced
+			Aggressiveness = 0.50f,      // Balanced
+			CallingStationRate = 0.03f,  // Almost no mistakes
+			BadBluffRate = 0.08f,        // Optimal bluff frequency
+			OverfoldRate = 0.02f,
+			MissedValueRate = 0.03f
 		}
 	};
 }

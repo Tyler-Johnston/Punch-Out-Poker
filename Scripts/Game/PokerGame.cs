@@ -59,9 +59,10 @@ public partial class PokerGame : Node2D
 	private int playerContributed = 0;
 	private int opponentContributed = 0;
 
-	// AI
+	// AI - ✅ NEW: Added PokerAIv2 field
 	private OpponentProfile currentOpponent;
 	private int selectedOpponentIndex = 0;
+	private PokerAIv2 aiSystem; // ⬅️ NEW
 	
 	// Audio
 	private AudioStreamPlayer deckDealAudioPlayer;
@@ -137,6 +138,9 @@ public partial class PokerGame : Node2D
 			currentOpponent = circuitAOpponents[selectedOpponentIndex];
 		}
 		
+		// ✅ NEW: Initialize AI System
+		aiSystem = new PokerAIv2(currentOpponent); // ⬅️ NEW
+		
 		// chip amount
 		playerChips = currentOpponent.BuyIn;
 		opponentChips = currentOpponent.BuyIn;
@@ -151,11 +155,11 @@ public partial class PokerGame : Node2D
 		
 		playerHasButton = false; 
 
+		// ✅ UPDATED: New logging format
 		GD.Print($"=== Opponent: {currentOpponent.Name} ===");
 		GD.Print($"Buy-In: {currentOpponent.BuyIn} | Blinds: {smallBlind}/{bigBlind}");
-		GD.Print($"Aggression: {currentOpponent.Aggression:F2}");
-		GD.Print($"Looseness: {currentOpponent.Looseness:F2}");
-		GD.Print($"Bluffiness: {currentOpponent.Bluffiness:F2}");
+		GD.Print($"Style: Looseness {currentOpponent.Looseness:P0}, Aggressiveness {currentOpponent.Aggressiveness:P0}");
+		GD.Print($"Mistakes: CallingStation {currentOpponent.CallingStationRate:P0}, BadBluff {currentOpponent.BadBluffRate:P0}, Overfold {currentOpponent.OverfoldRate:P0}");
 
 		//musicPlayer.Play();
 		LoadOpponentPortrait();
@@ -461,4 +465,30 @@ public partial class PokerGame : Node2D
 		// Print to logs
 		GD.Print($"[OPPONENT DIALOGUE] {opponentDialogueLabel.Text}");
 	}
+	
+	//// ✅ NEW: Replace your entire DecideAIAction() method with this
+	//private AIAction DecideAIAction()
+	//{
+		//// Calculate equity (keep your existing equity calculation method)
+		//float equity = CalculateEquity(); // Your existing method that returns 0-100
+		//
+		//// Get game state variables
+		//bool facingBet = playerBet > opponentBet;
+		//int toCall = playerBet - opponentBet;
+		//int effectiveStack = Mathf.Min(playerChips, opponentChips);
+		//
+		//// Call new AI system
+		//AIAction decision = aiSystem.MakeDecision(
+			//equity: equity / 100f,  // Convert percentage (0-100) to decimal (0.0-1.0)
+			//street: currentStreet,
+			//facingBet: facingBet,
+			//toCall: toCall,
+			//pot: pot,
+			//effectiveStack: effectiveStack,
+			//currentBet: opponentBet,
+			//opponentBet: playerBet
+		//);
+		//
+		//return decision;
+	//}
 }
