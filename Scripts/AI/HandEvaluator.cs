@@ -123,4 +123,68 @@ public static class HandEvaluator
 		if (playerRank > opponentRank) return -1; // Opponent wins
 		return 0; // Tie
 	}
+	
+	// Get descriptive hand name (enhanced version)
+	public static string GetHandDescription(List<Card> hand, List<Card> board)
+	{
+		if (hand == null || hand.Count != 2)
+			return "Unknown Hand";
+		
+		// For preflop, just describe the hole cards
+		if (board == null || board.Count == 0)
+		{
+			return GetPreflopDescription(hand);
+		}
+		
+		// Postflop - use pheval evaluation
+		var allCards = hand.Concat(board).ToList();
+		int rank = EvaluateHand(hand, board);
+		string handType = GetHandName(rank);
+		
+		// Get more specific description
+		return GetDetailedHandName(allCards, handType);
+	}
+
+	private static string GetPreflopDescription(List<Card> hand)
+	{
+		string card1 = hand[0].Rank.ToString();
+		string card2 = hand[1].Rank.ToString();
+		
+		// Check if pair
+		if (hand[0].Rank == hand[1].Rank)
+			return $"Pair of {card1}s";
+		
+		// Check if suited
+		bool suited = hand[0].Suit == hand[1].Suit;
+		return suited ? $"{card1}{card2}s" : $"{card1}{card2}o";
+	}
+
+	private static string GetDetailedHandName(List<Card> cards, string handType)
+	{
+		var rankGroups = cards.GroupBy(c => c.Rank).OrderByDescending(g => g.Count()).ThenByDescending(g => (int)g.Key).ToList();
+		
+		switch (handType)
+		{
+			case "Straight Flush":
+				return "Straight Flush";
+			case "Four of a Kind":
+				return $"Four {rankGroups[0].Key}s";
+			case "Full House":
+				return "Full House";
+			case "Flush":
+				return "Flush";
+			case "Straight":
+				return "Straight";
+			case "Three of a Kind":
+				return $"Three {rankGroups[0].Key}s";
+			case "Two Pair":
+				return "Two Pair";
+			case "One Pair":
+				return $"Pair of {rankGroups[0].Key}s";
+			case "High Card":
+				return $"{rankGroups[0].Key}-high";
+			default:
+				return handType;
+		}
+	}
 }

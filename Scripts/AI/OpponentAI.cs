@@ -81,6 +81,7 @@ public partial class PokerGame
 		float equity = CalculateEquity(opponentHand, communityCards, villainRange, simCount);
 
 		GD.Print($"[EQUITY] {equity:P1} equity vs estimated range ({villainRange.Count} hands, {simCount} sims)");
+		UpdateOpponentDialogue(equity * 100f, false);
 
 		// ===== STAGE 3: Get GTO Baseline Threshold =====
 		float spr = (pot > 0) ? (float)Math.Min(playerChips, opponentChips) / pot : 999f;
@@ -176,6 +177,7 @@ public partial class PokerGame
 
 		finalThreshold = Math.Clamp(finalThreshold, 0.15f, 0.90f);
 		GD.Print($"[FINAL THRESHOLD] {finalThreshold:P1}");
+		
 
 		// ===== STAGE 8: All-In Decision Check =====
 		if (facingBet && toCall > 0)
@@ -194,6 +196,7 @@ public partial class PokerGame
 		AIAction decision = MakeDecision(equity, finalThreshold, facingBet, currentMistake);
 		GD.Print($"[DECISION] {decision} (Equity {equity:P1} vs Threshold {finalThreshold:P1})");
 		GD.Print($"========== AI DECISION END ==========\n");
+		UpdateOpponentDialogue(equity * 100f, aiBluffedThisHand);
 
 		return decision;
 	}
@@ -265,7 +268,7 @@ public partial class PokerGame
 			// Trigger: equity is < 0.75x threshold (clearly bad call)
 			else if (equityRatio < 0.75f)
 			{
-				float overcallChance = mistakeIntensity * 0.40f; // Max 20% at MF=1.5
+				float overcallChance = mistakeIntensity * 0.55;
 
 				// More likely on flop (wants to "see what happens")
 				if (currentStreet == Street.Flop) overcallChance *= 1.5f;
@@ -299,7 +302,7 @@ public partial class PokerGame
 			// Trigger: equity is < 0.80x threshold (clearly not strong enough)
 			if (equityRatio < 0.80f)
 			{
-				float badBluffChance = mistakeIntensity * 0.50f; // Max 25% at MF=1.5
+				float badBluffChance = mistakeIntensity * 0.30;
 
 				// More likely on flop/turn (trying to "take it down")
 				if (currentStreet == Street.Flop) badBluffChance *= 1.4f;

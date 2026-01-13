@@ -199,8 +199,8 @@ public partial class PokerGame
 		int playerRank = HandEvaluator.EvaluateHand(playerHand, communityCards);
 		int opponentRank = HandEvaluator.EvaluateHand(opponentHand, communityCards);
 
-		string playerHandName = HandEvaluator.GetHandName(playerRank);
-		string opponentHandName = HandEvaluator.GetHandName(opponentRank);
+		string playerHandName = HandEvaluator.GetHandDescription(playerHand, communityCards);
+		string opponentHandName = HandEvaluator.GetHandDescription(opponentHand, communityCards);
 
 		playerHandType.Text = playerHandName;
 		opponentHandType.Text = opponentHandName;

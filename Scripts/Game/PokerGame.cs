@@ -37,6 +37,7 @@ public partial class PokerGame : Node2D
 	private Label playerHandType;
 	private Label opponentHandType;
 	private Label betSliderLabel;
+	private Label opponentDialogueLabel;
 	
 	private Label checkCallLabel;
 	private Label betRaiseLabel;
@@ -46,6 +47,8 @@ public partial class PokerGame : Node2D
 	private Texture2D callBtnImg;
 	private Texture2D betBtnImg;
 	private Texture2D raiseBtnImg;
+	
+	private TextureRect opponentPortrait;
 	
 	// Game flow
 	private Street currentStreet = Street.Preflop;
@@ -103,6 +106,9 @@ public partial class PokerGame : Node2D
 		playerHandType = hudControl.GetNode<Label>("PlayerHandType");
 		opponentHandType = hudControl.GetNode<Label>("OpponentHandType");
 		betSliderLabel = hudControl.GetNode<Label>("BetSliderLabel");
+		opponentDialogueLabel = hudControl.GetNode<Label>("OpponentDialogue");
+		
+		opponentPortrait = hudControl.GetNode<TextureRect>("OpponentPortrait");
 		
 		// slider
 		betSlider = hudControl.GetNode<HSlider>("BetSlider");
@@ -152,6 +158,7 @@ public partial class PokerGame : Node2D
 		GD.Print($"Bluffiness: {currentOpponent.Bluffiness:F2}");
 
 		//musicPlayer.Play();
+		LoadOpponentPortrait();
 		UpdateHud();
 		StartNewHand();
 	}
@@ -268,6 +275,7 @@ public partial class PokerGame : Node2D
 	{
 		if (!waitingForNextGame && handInProgress) return; 
 		waitingForNextGame = false;
+		opponentDialogueLabel.Text = "";
 
 		if (IsGameOver())
 		{
@@ -406,7 +414,6 @@ public partial class PokerGame : Node2D
 	
 	private void EndHand()
 	{
-		GD.Print("In the End Hand method");
 		pot = 0;
 		handInProgress = false;
 		waitingForNextGame = true;
@@ -420,5 +427,38 @@ public partial class PokerGame : Node2D
 			UpdateHud(); 
 			RefreshBetSlider();
 		}
+	}
+	
+	private void LoadOpponentPortrait()
+	{
+		string portraitPath = $"res://Assets/Textures/Portraits/{currentOpponent.Name} Small.png";
+		
+		if (ResourceLoader.Exists(portraitPath))
+		{
+			opponentPortrait.Texture = GD.Load<Texture2D>(portraitPath);
+			GD.Print($"Loaded portrait: {portraitPath}");
+		}
+		else
+		{
+			GD.PrintErr($"Portrait not found: {portraitPath}");
+		}
+	}
+
+	public void UpdateOpponentDialogue(float equity, bool isBluffing = false)
+	{
+		// Get hand evaluation using HandEvaluator
+		string handEval = HandEvaluator.GetHandDescription(opponentHand, communityCards);
+		
+		// For debugging: show hand evaluation and equity percentage
+		opponentDialogueLabel.Text = $"{handEval} | Equity: {equity:F1}%";
+		
+		// Add bluff indicator
+		if (isBluffing)
+		{
+			opponentDialogueLabel.Text += " [BLUFF]";
+		}
+		
+		// Print to logs
+		GD.Print($"[OPPONENT DIALOGUE] {opponentDialogueLabel.Text}");
 	}
 }

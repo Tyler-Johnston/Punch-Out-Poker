@@ -42,18 +42,15 @@ public partial class CharacterSelect : Control
 		playerMoney = GameManager.Instance.PlayerMoney;
 		BalanceLabel.Text = $"Balance: ${playerMoney}";
 	
-		// Check if returning from a match
 		if (GameManager.Instance.LastFacedOpponent != null)
 		{
 			LoadLastOpponent();
 		}
 		else
 		{
-			// Load initial circuit
 			LoadCircuit(_currentCircuit);
 		}
 		
-		// Connect button signals
 		LeftArrow.Pressed += OnLeftPressed;
 		RightArrow.Pressed += OnRightPressed;
 		ConfirmButton.Pressed += OnConfirmPressed;

@@ -102,36 +102,65 @@ public partial class GameManager : Node
 			GD.Print($"Dev Mode: Skipping unlock logic (all unlocked)");
 			return;
 		}
-		
+			
 		var circuitA = OpponentProfiles.CircuitAOpponents();
-		if (TryUnlockNextInCircuit(circuitA, defeatedOpponent))
+		if (TryUnlockNextInCircuit(circuitA, defeatedOpponent, out bool circuitAComplete))
+		{
+			if (circuitAComplete)
+			{
+				// Unlock first opponent of Circuit B
+				var nextCircuit = OpponentProfiles.CircuitBOpponents();
+				UnlockOpponent(nextCircuit[0].Name);
+				GD.Print($"Circuit A complete! Unlocked Circuit B: {nextCircuit[0].Name}");
+			}
 			return;
+		}
 		
 		var circuitB = OpponentProfiles.CircuitBOpponents();
-		if (TryUnlockNextInCircuit(circuitB, defeatedOpponent))
+		if (TryUnlockNextInCircuit(circuitB, defeatedOpponent, out bool circuitBComplete))
+		{
+			if (circuitBComplete)
+			{
+				// Unlock first opponent of Circuit C
+				var nextCircuit = OpponentProfiles.CircuitCOpponents();
+				UnlockOpponent(nextCircuit[0].Name);
+				GD.Print($"Circuit B complete! Unlocked Circuit C: {nextCircuit[0].Name}");
+			}
 			return;
+		}
 		
-		 var circuitC = OpponentProfiles.CircuitCOpponents();
-		 if (TryUnlockNextInCircuit(circuitC, defeatedOpponent))
-			 return;
+		var circuitC = OpponentProfiles.CircuitCOpponents();
+		if (TryUnlockNextInCircuit(circuitC, defeatedOpponent, out bool circuitCComplete))
+		{
+			if (circuitCComplete)
+			{
+				GD.Print($"🎉 ALL CIRCUITS COMPLETE! You've beaten everyone!");
+			}
+			return;
+		}
 	}
+
 	
 	/// <summary>
 	/// Helper method to unlock next opponent in a circuit
 	/// </summary>
-	private bool TryUnlockNextInCircuit(OpponentProfile[] circuit, OpponentProfile defeatedOpponent)
+	private bool TryUnlockNextInCircuit(OpponentProfile[] circuit, OpponentProfile defeatedOpponent, out bool circuitComplete)
 	{
+		circuitComplete = false;
+		
 		for (int i = 0; i < circuit.Length; i++)
 		{
 			if (circuit[i].Name == defeatedOpponent.Name)
 			{
 				if (i + 1 < circuit.Length)
 				{
+					// Unlock next in same circuit
 					UnlockOpponent(circuit[i + 1].Name);
+					GD.Print($"Unlocked next opponent: {circuit[i + 1].Name}");
 				}
 				else
 				{
-					GD.Print($"Circuit complete! {defeatedOpponent.Name} was the final opponent.");
+					circuitComplete = true;
 				}
 				return true;
 			}

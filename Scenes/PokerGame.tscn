@@ -1,4 +1,4 @@
-[gd_scene load_steps=33 format=3 uid="uid://b5sq1675fwcio"]
+[gd_scene load_steps=34 format=3 uid="uid://b5sq1675fwcio"]
 
 [ext_resource type="Script" uid="uid://8k6pqsmgt5pe" path="res://Scripts/Game/PokerGame.cs" id="1_8w0ed"]
 [ext_resource type="FontFile" uid="uid://dmret52s833gh" path="res://Assets/Fonts/Jersey_10/Jersey10-Regular.ttf" id="2_j8upv"]
@@ -203,6 +203,10 @@ corner_radius_bottom_left = 5
 font = ExtResource("2_j8upv")
 font_size = 30
 
+[sub_resource type="LabelSettings" id="LabelSettings_47o1s"]
+font = ExtResource("2_j8upv")
+font_size = 36
+
 [sub_resource type="AudioStreamRandomizer" id="AudioStreamRandomizer_xxe2x"]
 streams_count = 4
 stream_0/stream = ExtResource("4_5ejkc")
@@ -300,10 +304,10 @@ label_settings = SubResource("LabelSettings_o1p3i")
 
 [node name="PotLabel" type="Label" parent="CanvasLayer/Control"]
 layout_mode = 0
-offset_left = 1110.0
-offset_top = 54.0
-offset_right = 1231.0
-offset_bottom = 106.0
+offset_left = 30.0
+offset_top = 511.0
+offset_right = 151.0
+offset_bottom = 563.0
 text = "Pot: 100"
 label_settings = SubResource("LabelSettings_l4y0v")
 
@@ -373,6 +377,22 @@ offset_left = 39.0
 offset_top = 353.0
 offset_right = 79.0
 offset_bottom = 393.0
+
+[node name="OpponentDialogue" type="Label" parent="CanvasLayer/Control"]
+layout_mode = 0
+offset_left = 687.0
+offset_top = 41.0
+offset_right = 1078.0
+offset_bottom = 93.0
+text = "I have a great hand!"
+label_settings = SubResource("LabelSettings_47o1s")
+
+[node name="OpponentPortrait" type="TextureRect" parent="CanvasLayer/Control"]
+layout_mode = 0
+offset_left = 1049.0
+offset_top = 28.0
+offset_right = 1239.0
+offset_bottom = 210.0
 
 [node name="PlayerArea" type="Node2D" parent="."]
 position = Vector2(376, 210.00002)

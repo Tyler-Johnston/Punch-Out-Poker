@@ -6,7 +6,7 @@ public static class OpponentProfiles
 		new OpponentProfile
 		{
 			Name = "Steve",
-			BuyIn = 10,
+			BuyIn = 25,
 			Aggression = 0.25f,      // Very passive
 			Looseness = 0.4f,       // Tight hand selection
 			Bluffiness = 0.15f,      // Never bluffs
@@ -20,7 +20,7 @@ public static class OpponentProfiles
 		new OpponentProfile
 		{
 			Name = "Aryll",
-			BuyIn = 25,
+			BuyIn = 50,
 			Aggression = 0.3f,      // Passive
 			Looseness = 0.7f,       // Plays lots of hands
 			Bluffiness = 0.20f,      // Rarely bluffs
@@ -34,14 +34,14 @@ public static class OpponentProfiles
 		new OpponentProfile
 		{
 			Name = "Boy Wizard",
-			BuyIn = 50,
+			BuyIn = 100,
 			Aggression = 0.85f,     // Very aggressive
 			Looseness = 0.8f,       // Plays almost any hand
 			Bluffiness = 0.7f,      // Bluffs frequentlyer g
 			Adaptability = 0.4f,    // Adjusts somewhat
 			PreflopAggression = 1.3f,  // Extra aggressive preflop
 			PostflopAggression = 1.1f,  // Extra aggressive postflop
-			MistakeFactor = 1.48f
+			MistakeFactor = 1.51f
 		}
 	};
 	
@@ -51,7 +51,7 @@ public static class OpponentProfiles
 		new OpponentProfile
 		{
 			Name = "Cowboy",
-			BuyIn = 100,
+			BuyIn = 200,
 			Aggression = 0.55f,        // Selective aggression
 			Looseness = 0.35f,         // Tight hand selection
 			Bluffiness = 0.30f,        // Occasional bluffs
@@ -65,7 +65,7 @@ public static class OpponentProfiles
 		new OpponentProfile
 		{
 			Name = "Hippie",
-			BuyIn = 250,
+			BuyIn = 350,
 			Aggression = 0.45f,        // Balanced aggression
 			Looseness = 0.40f,         // Moderately tight
 			Bluffiness = 0.25f,        // Occasional bluffs

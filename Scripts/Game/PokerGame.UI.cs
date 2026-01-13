@@ -80,6 +80,7 @@ public partial class PokerGame
 			betSlider.Visible = false;
 			betSliderLabel.Visible = false;
 			potLabel.Visible = false;
+			opponentDialogueLabel.Text = "";
 			return;
 		}
 	
@@ -100,6 +101,7 @@ public partial class PokerGame
 			betSlider.Visible = false;
 			betSliderLabel.Visible = false;
 			potLabel.Visible = false;
+			opponentDialogueLabel.Text = "";
 		}
 		else
 		{
