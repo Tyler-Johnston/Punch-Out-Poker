@@ -128,7 +128,7 @@ public partial class PokerGame
 		}
 
 		playerStackLabel.Text = $"You: {playerChips}";
-		opponentStackLabel.Text = $"{currentOpponent.Name}: {opponentChips}";
+		opponentStackLabel.Text = $"Opp: {opponentChips}";
 		potLabel.Text = $"Pot: {pot}";
 	}
 

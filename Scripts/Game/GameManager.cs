@@ -7,19 +7,23 @@ public partial class GameManager : Node
 	public static GameManager Instance { get; private set; }
 
 	// --- DEV TEST MODE ---
-	public bool DevTestMode = false;
+	[Export] public bool DevTestMode = false;
 
 	// --- GAME DATA ---
 	public int PlayerMoney { get; set; } = 1000;
 	
-	public OpponentProfile SelectedOpponent { get; set; }
-	public OpponentProfile LastFacedOpponent { get; set; }
-	
+	// Track which AI opponents have been defeated
 	private HashSet<string> _unlockedOpponents = new HashSet<string>();
+	private HashSet<string> _defeatedOpponents = new HashSet<string>();
+	
+	// Current match data
+	public string CurrentOpponentName { get; set; }
+	public int CurrentBuyIn { get; set; }
 
 	public override void _Ready()
 	{
 		Instance = this;
+		
 		if (DevTestMode)
 		{
 			GD.Print("=== DEV TEST MODE ENABLED ===");
@@ -27,7 +31,8 @@ public partial class GameManager : Node
 		}
 		else
 		{
-			UnlockOpponent(OpponentProfiles.CircuitAOpponents()[0].Name);
+			// Start with first opponent unlocked
+			UnlockOpponent("Steve");
 		}
 	}
 	
@@ -36,27 +41,13 @@ public partial class GameManager : Node
 	/// </summary>
 	private void InitializeDevMode()
 	{
-		// Give max money
 		PlayerMoney = 999999;
 		GD.Print($"Dev Mode: Set money to ${PlayerMoney}");
 		
-		// Unlock all Circuit A opponents
-		foreach (var opponent in OpponentProfiles.CircuitAOpponents())
-		{
-			UnlockOpponent(opponent.Name);
-		}
-		
-		// Unlock all Circuit B opponents
-		foreach (var opponent in OpponentProfiles.CircuitBOpponents())
-		{
-			UnlockOpponent(opponent.Name);
-		}
-		
-		 //Unlock Circuit C
-		 foreach (var opponent in OpponentProfiles.CircuitCOpponents())
-		 {
-			 UnlockOpponent(opponent.Name);
-		 }
+		// Unlock all opponents
+		UnlockOpponent("Steve");
+		UnlockOpponent("Aryll");
+		UnlockOpponent("Boy Wizard");
 		
 		GD.Print($"Dev Mode: Unlocked {_unlockedOpponents.Count} opponents");
 	}
@@ -85,86 +76,143 @@ public partial class GameManager : Node
 	}
 	
 	/// <summary>
-	/// Check if player can afford AND has unlocked this opponent
+	/// Check if player has already defeated this opponent
 	/// </summary>
-	public bool CanPlayAgainst(OpponentProfile opponent)
+	public bool HasDefeatedOpponent(string opponentName)
 	{
-		return IsOpponentUnlocked(opponent.Name) && PlayerMoney >= opponent.BuyIn;
+		return _defeatedOpponents.Contains(opponentName);
 	}
 	
 	/// <summary>
-	/// Call this when player wins a match to unlock the next opponent
+	/// Check if player can afford this buy-in amount
 	/// </summary>
-	public void OnMatchWon(OpponentProfile defeatedOpponent)
+	public bool CanAffordBuyIn(int buyIn)
+	{
+		return PlayerMoney >= buyIn;
+	}
+	
+	/// <summary>
+	/// Check if player can play against this opponent
+	/// </summary>
+	public bool CanPlayAgainst(string opponentName, int buyIn)
+	{
+		return IsOpponentUnlocked(opponentName) && CanAffordBuyIn(buyIn);
+	}
+	
+	/// <summary>
+	/// Deduct buy-in when starting a match
+	/// </summary>
+	public void StartMatch(string opponentName, int buyIn)
+	{
+		CurrentOpponentName = opponentName;
+		CurrentBuyIn = buyIn;
+		PlayerMoney -= buyIn;
+		GD.Print($"Started match vs {opponentName}. Buy-in: ${buyIn}. Remaining: ${PlayerMoney}");
+	}
+	
+	/// <summary>
+	/// Award winnings when player wins
+	/// </summary>
+	public void OnMatchWon(string defeatedOpponent, int winnings)
+	{
+		PlayerMoney += winnings;
+		
+		// Mark as defeated
+		if (!_defeatedOpponents.Contains(defeatedOpponent))
+		{
+			_defeatedOpponents.Add(defeatedOpponent);
+			GD.Print($"Defeated {defeatedOpponent} for the first time!");
+		}
+		
+		GD.Print($"Won ${winnings}! Total money: ${PlayerMoney}");
+		
+		// Unlock next opponent based on progression
+		UnlockNextOpponent(defeatedOpponent);
+	}
+	
+	/// <summary>
+	/// Handle match loss
+	/// </summary>
+	public void OnMatchLost(string opponent)
+	{
+		GD.Print($"Lost to {opponent}. Money remaining: ${PlayerMoney}");
+		
+		// Check for game over
+		if (PlayerMoney <= 0)
+		{
+			GD.Print("GAME OVER - No money left!");
+			// Handle game over logic here
+		}
+	}
+	
+	/// <summary>
+	/// Unlock progression system
+	/// </summary>
+	private void UnlockNextOpponent(string defeatedOpponent)
 	{
 		if (DevTestMode)
 		{
-			GD.Print($"Dev Mode: Skipping unlock logic (all unlocked)");
-			return;
-		}
-			
-		var circuitA = OpponentProfiles.CircuitAOpponents();
-		if (TryUnlockNextInCircuit(circuitA, defeatedOpponent, out bool circuitAComplete))
-		{
-			if (circuitAComplete)
-			{
-				// Unlock first opponent of Circuit B
-				var nextCircuit = OpponentProfiles.CircuitBOpponents();
-				UnlockOpponent(nextCircuit[0].Name);
-				GD.Print($"Circuit A complete! Unlocked Circuit B: {nextCircuit[0].Name}");
-			}
+			GD.Print("Dev Mode: All opponents already unlocked");
 			return;
 		}
 		
-		var circuitB = OpponentProfiles.CircuitBOpponents();
-		if (TryUnlockNextInCircuit(circuitB, defeatedOpponent, out bool circuitBComplete))
+		// Define your progression order
+		switch (defeatedOpponent)
 		{
-			if (circuitBComplete)
-			{
-				// Unlock first opponent of Circuit C
-				var nextCircuit = OpponentProfiles.CircuitCOpponents();
-				UnlockOpponent(nextCircuit[0].Name);
-				GD.Print($"Circuit B complete! Unlocked Circuit C: {nextCircuit[0].Name}");
-			}
-			return;
-		}
-		
-		var circuitC = OpponentProfiles.CircuitCOpponents();
-		if (TryUnlockNextInCircuit(circuitC, defeatedOpponent, out bool circuitCComplete))
-		{
-			if (circuitCComplete)
-			{
-				GD.Print($"🎉 ALL CIRCUITS COMPLETE! You've beaten everyone!");
-			}
-			return;
+			case "Steve":
+				UnlockOpponent("Aryll");
+				GD.Print("Circuit A complete! Unlocked Aryll");
+				break;
+				
+			case "Aryll":
+				UnlockOpponent("Boy Wizard");
+				GD.Print("Circuit B complete! Unlocked Boy Wizard");
+				break;
+				
+			case "Boy Wizard":
+				GD.Print("🎉 ALL OPPONENTS DEFEATED! You're the champion!");
+				// Unlock additional content, new game+, etc.
+				break;
 		}
 	}
-
 	
 	/// <summary>
-	/// Helper method to unlock next opponent in a circuit
+	/// Get list of all unlocked opponent names
 	/// </summary>
-	private bool TryUnlockNextInCircuit(OpponentProfile[] circuit, OpponentProfile defeatedOpponent, out bool circuitComplete)
+	public List<string> GetUnlockedOpponents()
 	{
-		circuitComplete = false;
-		
-		for (int i = 0; i < circuit.Length; i++)
+		return new List<string>(_unlockedOpponents);
+	}
+	
+	/// <summary>
+	/// Save/Load helpers (for future persistence)
+	/// </summary>
+	public Dictionary<string, Variant> GetSaveData()
+	{
+		return new Dictionary<string, Variant>
 		{
-			if (circuit[i].Name == defeatedOpponent.Name)
-			{
-				if (i + 1 < circuit.Length)
-				{
-					// Unlock next in same circuit
-					UnlockOpponent(circuit[i + 1].Name);
-					GD.Print($"Unlocked next opponent: {circuit[i + 1].Name}");
-				}
-				else
-				{
-					circuitComplete = true;
-				}
-				return true;
-			}
+			{ "money", PlayerMoney },
+			{ "unlocked", new Godot.Collections.Array<string>(_unlockedOpponents) },
+			{ "defeated", new Godot.Collections.Array<string>(_defeatedOpponents) }
+		};
+	}
+	
+	public void LoadSaveData(Dictionary<string, Variant> data)
+	{
+		PlayerMoney = data["money"].AsInt32();
+		
+		_unlockedOpponents.Clear();
+		foreach (var name in data["unlocked"].AsStringArray())
+		{
+			_unlockedOpponents.Add(name);
 		}
-		return false;
+		
+		_defeatedOpponents.Clear();
+		foreach (var name in data["defeated"].AsStringArray())
+		{
+			_defeatedOpponents.Add(name);
+		}
+		
+		GD.Print($"Loaded save: ${PlayerMoney}, {_unlockedOpponents.Count} unlocked");
 	}
 }

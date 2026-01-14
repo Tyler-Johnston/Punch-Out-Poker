@@ -9,25 +9,29 @@ public partial class PokerGame
 		if (!handInProgress || !isPlayerTurn) return;
 
 		playerHasActedThisStreet = true;
-		TrackPlayerAction("Fold", 0, false);
 
 		ShowMessage("You fold");
 		GD.Print("Player folds");
 		opponentChips += pot;
 		pot = 0;
+		
+		// ✅ AI wins - reduce tilt slightly
+		aiOpponent.ProcessHandResult(HandResult.Win);
+		
 		GD.Print($"Stacks -> Player: {playerChips}, Opponent: {opponentChips}");
-   		EndHand();
+		EndHand();
 	}
 
 	private void OnCheckCallPressed()
 	{
+		// ✅ NEW: Handle match complete / return to menu
 		if (isMatchComplete)
 		{
-			GameManager.Instance.LastFacedOpponent = GameManager.Instance.SelectedOpponent;
 			GetTree().ChangeSceneToFile("res://Scenes/CharacterSelect.tscn");
 			return;
 		}
 		
+		// ✅ NEW: Handle new hand start
 		if (!handInProgress)
 		{
 			checkCallButton.Disabled = true; 
@@ -43,7 +47,6 @@ public partial class PokerGame
 		if (toCall == 0)
 		{
 			ShowMessage("You check");
-			TrackPlayerAction("Check", 0, false);
 			GD.Print($"Player checks on {currentStreet}");
 		}
 		else if (toCall < 0)
@@ -76,16 +79,14 @@ public partial class PokerGame
 			{
 				playerIsAllIn = true;
 				ShowMessage($"You call {actualCall} chips (ALL-IN!)");
-				TrackPlayerAction("Call", actualCall, true);
 				GD.Print($"Player calls {actualCall} (ALL-IN)");
 			}
 			else
 			{
 				ShowMessage($"You call {actualCall} chips");
-				TrackPlayerAction("Call", actualCall, false);
 				GD.Print($"Player calls {actualCall}, Player stack: {playerChips}, Pot: {pot}");
 			}
-			chipsAudioPlayer.Play();
+			chipsAudioPlayer?.Play();
 		}
 
 		isPlayerTurn = false;
@@ -173,22 +174,19 @@ public partial class PokerGame
 		{
 			playerIsAllIn = true;
 			ShowMessage($"You raise to {playerBet} chips (ALL-IN!)");
-			TrackPlayerAction("Raise", playerBet, true);
 			GD.Print($"Player raises to {playerBet} (ALL-IN)");
 		}
 		else if (isRaise)
 		{
 			ShowMessage($"You raise to {playerBet} chips");
-			TrackPlayerAction("Raise", playerBet, false);
 			GD.Print($"Player raises to {playerBet}");
 		}
 		else
 		{
 			ShowMessage($"You bet {actualBet} chips");
-			TrackPlayerAction("Bet", playerBet, false);
 			GD.Print($"Player bets {actualBet}");
 		}
-		chipsAudioPlayer.Play();
+		chipsAudioPlayer?.Play();
 
 		isPlayerTurn = false;
 		UpdateHud();

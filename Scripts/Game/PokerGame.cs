@@ -58,11 +58,39 @@ public partial class PokerGame : Node2D
 	// Side Pot / Contribution Tracking
 	private int playerContributed = 0;
 	private int opponentContributed = 0;
+	//private int pot = 0;
+	//private int playerBet = 0;
+	//private int opponentBet = 0;
+	//private int currentBet = 0;
+	//private int betAmount = 0;
+	
+	// Blinds
+	//private int bigBlind = 2;
+	//private int smallBlind = 1;
+	
+	// Game state flags
+	private bool isPlayerTurn = true;
+	private bool playerHasButton = false;
+	private bool handInProgress = false;
+	private bool waitingForNextGame = false;
+	private bool playerIsAllIn = false;
+	private bool opponentIsAllIn = false;
+	private bool isProcessingAIAction = false;
+	//private bool playerHasActedThisStreet = false;
+	//private bool opponentHasActedThisStreet = false;
+	private bool aiBluffedThisHand = false;
+	
+	private int playerTotalBetsThisHand = 0;
+	//private int raisesThisStreet = 0;
+	
+	private Dictionary<Street, bool> playerBetOnStreet = new Dictionary<Street, bool>();
+	private Dictionary<Street, int> playerBetSizeOnStreet = new Dictionary<Street, int>();
 
-	// AI - ✅ NEW: Added PokerAIv2 field
-	private OpponentProfile currentOpponent;
-	private int selectedOpponentIndex = 0;
-	private PokerAIv2 aiSystem; // ⬅️ NEW
+	// ✅ NEW: AI Personality System
+	private AIPokerPlayer aiOpponent;
+	private PokerDecisionMaker decisionMaker;
+	private string currentOpponentName;
+	private int buyInAmount;
 	
 	// Audio
 	private AudioStreamPlayer deckDealAudioPlayer;
@@ -125,28 +153,52 @@ public partial class PokerGame : Node2D
 		betRaiseButton.Pressed += OnBetRaisePressed;
 		betSlider.ValueChanged += OnBetSliderValueChanged;
 
-		// choose the opponent we will face
-		currentOpponent = GameManager.Instance.SelectedOpponent;
-		if (currentOpponent != null)
+		// ✅ NEW: Initialize AI opponent based on GameManager selection
+		currentOpponentName = GameManager.Instance.CurrentOpponentName;
+		buyInAmount = GameManager.Instance.CurrentBuyIn;
+		
+		if (string.IsNullOrEmpty(currentOpponentName))
 		{
-			GD.Print($"VS {currentOpponent.Name}");
-			GameManager.Instance.PlayerMoney -= currentOpponent.BuyIn;
-		}
-		else
-		{
-			OpponentProfile[] circuitAOpponents = OpponentProfiles.CircuitAOpponents();
-			currentOpponent = circuitAOpponents[selectedOpponentIndex];
+			// Default for testing
+			currentOpponentName = "Steve";
+			buyInAmount = 100;
+			GD.PushWarning("No opponent selected, defaulting to Steve");
 		}
 		
-		// ✅ NEW: Initialize AI System
-		aiSystem = new PokerAIv2(currentOpponent); // ⬅️ NEW
+		GD.Print($"=== VS {currentOpponentName} ===");
+		GD.Print($"Buy-In: ${buyInAmount}");
+		
+		// ✅ Create AI opponent with personality
+		aiOpponent = new AIPokerPlayer();
+		aiOpponent.Personality = LoadOpponentPersonality(currentOpponentName);
+		aiOpponent.ChipStack = buyInAmount;
+		aiOpponent.PlayerName = currentOpponentName;
+
+		// ✅ Create decision maker
+		decisionMaker = new PokerDecisionMaker();
+
+		// ✅ Add decision maker as child of AI opponent
+		aiOpponent.AddChild(decisionMaker);
+
+		// ✅ Add AI opponent to scene tree
+		AddChild(aiOpponent);
+
+		// ✅ Explicitly set the decision maker reference (in case _Ready() didn't find it)
+		aiOpponent.SetDecisionMaker(decisionMaker);
+		// Log personality stats
+		var personality = aiOpponent.Personality;
+		GD.Print($"Personality Stats:");
+		GD.Print($"  Aggression: {personality.BaseAggression:F2}");
+		GD.Print($"  Bluff Freq: {personality.BaseBluffFrequency:F2}");
+		GD.Print($"  Call Tendency: {personality.CallTendency:F2}");
+		GD.Print($"  Tilt Sensitivity: {personality.TiltSensitivity:F2}");
 		
 		// chip amount
-		playerChips = currentOpponent.BuyIn;
-		opponentChips = currentOpponent.BuyIn;
+		playerChips = buyInAmount;
+		opponentChips = buyInAmount;
 		
 		// --- BLIND CALCULATION ---
-		bigBlind = Math.Max(2, currentOpponent.BuyIn / 50); 
+		bigBlind = Math.Max(2, buyInAmount / 50); 
 		if (bigBlind % 2 != 0) bigBlind++; 
 		smallBlind = bigBlind / 2;
 
@@ -155,16 +207,37 @@ public partial class PokerGame : Node2D
 		
 		playerHasButton = false; 
 
-		// ✅ UPDATED: New logging format
-		GD.Print($"=== Opponent: {currentOpponent.Name} ===");
-		GD.Print($"Buy-In: {currentOpponent.BuyIn} | Blinds: {smallBlind}/{bigBlind}");
-		GD.Print($"Style: Looseness {currentOpponent.Looseness:P0}, Aggressiveness {currentOpponent.Aggressiveness:P0}");
-		GD.Print($"Mistakes: CallingStation {currentOpponent.CallingStationRate:P0}, BadBluff {currentOpponent.BadBluffRate:P0}, Overfold {currentOpponent.OverfoldRate:P0}");
+		GD.Print($"Blinds: {smallBlind}/{bigBlind}");
 
 		//musicPlayer.Play();
 		LoadOpponentPortrait();
 		UpdateHud();
 		StartNewHand();
+	}
+	
+	/// <summary>
+	/// Load personality for the current opponent
+	/// </summary>
+	private PokerPersonality LoadOpponentPersonality(string opponentName)
+	{
+		// Try to load from .tres file first
+		string resourcePath = $"res://Resources/Personalities/{opponentName.ToLower().Replace(" ", "_")}_personality.tres";
+		
+		if (ResourceLoader.Exists(resourcePath))
+		{
+			GD.Print($"Loading personality from: {resourcePath}");
+			return GD.Load<PokerPersonality>(resourcePath);
+		}
+		
+		// Fall back to preset factory
+		GD.Print($"Loading personality from preset: {opponentName}");
+		return opponentName switch
+		{
+			"Steve" => PersonalityPresets.CreateSteve(),
+			"Aryll" => PersonalityPresets.CreateAryll(),
+			"Boy Wizard" => PersonalityPresets.CreateBoyWizard(),
+			_ => PersonalityPresets.CreateSteve() // Default fallback
+		};
 	}
 
 	private void ShowMessage(string text)
@@ -190,7 +263,7 @@ public partial class PokerGame : Node2D
 			int refund = playerContributed - opponentContributed;
 			playerChips += refund;
 			pot -= refund;
-			playerContributed -= refund; // Adjust history
+			playerContributed -= refund;
 			
 			GD.Print($"Side Pot: Returned {refund} uncalled chips to Player.");
 			ShowMessage($"Returned {refund} uncalled chips");
@@ -221,6 +294,13 @@ public partial class PokerGame : Node2D
 		playerHand.Add(deck.Deal());
 		opponentHand.Add(deck.Deal());
 		opponentHand.Add(deck.Deal());
+
+		// ✅ NEW: Deal cards to AI opponent
+		aiOpponent.Hand.Clear();
+		foreach (var card in opponentHand)
+		{
+			aiOpponent.DealCard(card);
+		}
 
 		GD.Print($"Player hand: {playerHand[0]}, {playerHand[1]}");
 		GD.Print($"Opponent hand: {opponentHand[0]}, {opponentHand[1]}");
@@ -287,7 +367,9 @@ public partial class PokerGame : Node2D
 			return;
 		}
 		
-		StartNewHandTracking();
+		// ✅ NEW: Reset AI opponent for new hand
+		aiOpponent.ResetForNewHand();
+		aiOpponent.ChipStack = opponentChips;
 
 		// Re-enable input button after state is safely locked
 		checkCallButton.Disabled = false;
@@ -346,42 +428,44 @@ public partial class PokerGame : Node2D
 		currentStreet = Street.Preflop;
 		handInProgress = true;
 
-		// Button Rotation: Toggles correctly now that state is locked
+		// Button Rotation
 		playerHasButton = !playerHasButton;
 
 		if (playerHasButton)
 		{
-			// 1. Handle Player (Small Blind)
+			// Player is Small Blind
 			int sbAmount = Math.Min(smallBlind, playerChips); 
 			playerChips -= sbAmount;
 			AddToPot(true, sbAmount);
 			playerBet = sbAmount;
 			if (playerChips == 0) playerIsAllIn = true;
 
-			// 2. Handle Opponent (Big Blind)
+			// Opponent is Big Blind
 			int bbAmount = Math.Min(bigBlind, opponentChips); 
 			opponentChips -= bbAmount;
+			aiOpponent.ChipStack = opponentChips;
 			AddToPot(false, bbAmount);
 			opponentBet = bbAmount;
 			currentBet = opponentBet; 
 			if (opponentChips == 0) opponentIsAllIn = true;
 
 			isPlayerTurn = true;
-			ShowMessage($"Blinds: You {sbAmount}, Opponent {bbAmount}");
+			ShowMessage($"Blinds: You {sbAmount}, {currentOpponentName} {bbAmount}");
 			GD.Print($"Player SB. Posted: {sbAmount} vs {bbAmount}. Pot: {pot}");
 		}
 		else
 		{
-			// 1. Handle Player (Big Blind)
+			// Player is Big Blind
 			int bbAmount = Math.Min(bigBlind, playerChips); 
 			playerChips -= bbAmount;
 			AddToPot(true, bbAmount);
 			playerBet = bbAmount;
 			if (playerChips == 0) playerIsAllIn = true;
 
-			// 2. Handle Opponent (Small Blind)
+			// Opponent is Small Blind
 			int sbAmount = Math.Min(smallBlind, opponentChips); 
 			opponentChips -= sbAmount;
+			aiOpponent.ChipStack = opponentChips;
 			AddToPot(false, sbAmount);
 			opponentBet = sbAmount;
 			
@@ -390,10 +474,9 @@ public partial class PokerGame : Node2D
 			if (opponentChips == 0) opponentIsAllIn = true;
 
 			isPlayerTurn = false;
-			ShowMessage($"Blinds: You {bbAmount}, Opponent {sbAmount}");
+			ShowMessage($"Blinds: You {bbAmount}, {currentOpponentName} {sbAmount}");
 			GD.Print($"Opponent SB. Posted: {sbAmount} vs {bbAmount}. Pot: {pot}");
 		}
-
 
 		UpdateHud();
 		UpdateButtonLabels();
@@ -410,10 +493,9 @@ public partial class PokerGame : Node2D
 		else if (!isPlayerTurn && opponentIsAllIn)
 		{
 			isPlayerTurn = true;
-			ShowMessage("Opponent is All-In");
+			ShowMessage($"{currentOpponentName} is All-In");
 			UpdateHud();
 		}
-
 	}
 	
 	private void EndHand()
@@ -435,7 +517,7 @@ public partial class PokerGame : Node2D
 	
 	private void LoadOpponentPortrait()
 	{
-		string portraitPath = $"res://Assets/Textures/Portraits/{currentOpponent.Name} Small.png";
+		string portraitPath = $"res://Assets/Textures/Portraits/{currentOpponentName} Small.png";
 		
 		if (ResourceLoader.Exists(portraitPath))
 		{
@@ -448,47 +530,133 @@ public partial class PokerGame : Node2D
 		}
 	}
 
-	public void UpdateOpponentDialogue(float equity, bool isBluffing = false)
+	public void UpdateOpponentDialogue(HandStrength handStrength, float tiltLevel = 0)
 	{
-		// Get hand evaluation using HandEvaluator
+		// Get hand evaluation
 		string handEval = HandEvaluator.GetHandDescription(opponentHand, communityCards);
 		
-		// For debugging: show hand evaluation and equity percentage
-		opponentDialogueLabel.Text = $"{handEval} | Equity: {equity:F1}%";
+		// Show personality info
+		var personality = aiOpponent.Personality;
+		opponentDialogueLabel.Text = $"{handEval}";
 		
-		// Add bluff indicator
-		if (isBluffing)
+		if (tiltLevel > 20)
 		{
-			opponentDialogueLabel.Text += " [BLUFF]";
+			opponentDialogueLabel.Text += $" [TILTED: {tiltLevel:F0}]";
 		}
 		
-		// Print to logs
-		GD.Print($"[OPPONENT DIALOGUE] {opponentDialogueLabel.Text}");
+		// Show current stats (affected by tilt)
+		GD.Print($"[AI STATE] Agg: {personality.CurrentAggression:F2}, " +
+				 $"Bluff: {personality.CurrentBluffFrequency:F2}, " +
+				 $"Tilt: {tiltLevel:F1}");
 	}
 	
-	//// ✅ NEW: Replace your entire DecideAIAction() method with this
-	//private AIAction DecideAIAction()
-	//{
-		//// Calculate equity (keep your existing equity calculation method)
-		//float equity = CalculateEquity(); // Your existing method that returns 0-100
-		//
-		//// Get game state variables
-		//bool facingBet = playerBet > opponentBet;
-		//int toCall = playerBet - opponentBet;
-		//int effectiveStack = Mathf.Min(playerChips, opponentChips);
-		//
-		//// Call new AI system
-		//AIAction decision = aiSystem.MakeDecision(
-			//equity: equity / 100f,  // Convert percentage (0-100) to decimal (0.0-1.0)
-			//street: currentStreet,
-			//facingBet: facingBet,
-			//toCall: toCall,
-			//pot: pot,
-			//effectiveStack: effectiveStack,
-			//currentBet: opponentBet,
-			//opponentBet: playerBet
-		//);
-		//
-		//return decision;
-	//}
+	/// <summary>
+	/// ✅ NEW: AI decision making using personality system
+	/// </summary>
+	private PlayerAction DecideAIAction()
+	{
+		// Create game state for AI decision maker
+		GameState gameState = new GameState
+		{
+			CommunityCards = new List<Card>(communityCards),
+			PotSize = pot,
+			CurrentBet = currentBet,
+			Stage = ConvertStreetToBettingStage(currentStreet),
+			BigBlind = bigBlind
+		};
+		gameState.SetPlayerBet(aiOpponent, opponentBet);
+		
+		// Get AI decision
+		PlayerAction action = aiOpponent.MakeDecision(gameState);
+		
+		// Get tell and display
+		HandStrength strength = aiOpponent.DetermineHandStrengthCategory(gameState);
+		string tell = aiOpponent.GetTellForHandStrength(strength);
+		
+		if (!string.IsNullOrEmpty(tell))
+		{
+			GD.Print($"[TELL] {currentOpponentName}: {tell}");
+			// You can trigger animations here based on tell name
+		}
+		
+		UpdateOpponentDialogue(strength, aiOpponent.Personality.TiltMeter);
+		
+		return action;
+	}
+	
+	/// <summary>
+	/// Convert your Street enum to BettingStage enum
+	/// </summary>
+	private BettingStage ConvertStreetToBettingStage(Street street)
+	{
+		return street switch
+		{
+			Street.Preflop => BettingStage.PreFlop,
+			Street.Flop => BettingStage.Flop,
+			Street.Turn => BettingStage.Turn,
+			Street.River => BettingStage.River,
+			_ => BettingStage.PreFlop
+		};
+	}
+	
+	/// <summary>
+	/// Check if game is over
+	/// </summary>
+	private bool IsGameOver()
+	{
+		return playerChips <= 0 || opponentChips <= 0;
+	}
+	
+	/// <summary>
+	/// Handle game over state
+	/// </summary>
+	private void HandleGameOver()
+	{
+		bool playerWon = opponentChips <= 0;
+		
+		if (playerWon)
+		{
+			int winnings = buyInAmount * 2; // Winner takes all
+			GameManager.Instance.OnMatchWon(currentOpponentName, winnings);
+			ShowMessage($"You defeated {currentOpponentName}!");
+			GD.Print($"=== VICTORY vs {currentOpponentName} ===");
+			
+			// Process AI tilt for losing
+			aiOpponent.ProcessHandResult(HandResult.Loss);
+		}
+		else
+		{
+			GameManager.Instance.OnMatchLost(currentOpponentName);
+			ShowMessage($"{currentOpponentName} wins!");
+			GD.Print($"=== DEFEAT vs {currentOpponentName} ===");
+		}
+		
+		// Return to menu after delay
+		GetTree().CreateTimer(3.0).Timeout += () => 
+		{
+			GetTree().ChangeSceneToFile("res://Scenes/CharacterSelect.tscn");
+		};
+	}
 }
+	
+	//// Placeholder methods - you'll need to implement these based on your existing code
+	//private void UpdateHud() { /* Your existing implementation */ }
+	//private void UpdateButtonLabels() { /* Your existing implementation */ }
+	//private void RefreshBetSlider() { /* Your existing implementation */ }
+	//private void OnFoldPressed() { /* Your existing implementation */ }
+	//private void OnCheckCallPressed() { /* Your existing implementation */ }
+	//private void OnBetRaisePressed() { /* Your existing implementation */ }
+	//private void OnBetSliderValueChanged(double value) { /* Your existing implementation */ }
+	//private void CheckAndProcessAITurn() { /* Call DecideAIAction() here */ }
+	//private void AdvanceStreet() { /* Your existing implementation */ }
+	//private void StartNewHandTracking() { /* Your existing implementation */ }
+//}
+//
+//// Supporting enum (if you don't have it already)
+//public enum Street
+//{
+	//Preflop,
+	//Flop,
+	//Turn,
+	//River
+//}

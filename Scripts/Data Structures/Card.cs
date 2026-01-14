@@ -1,9 +1,6 @@
 using Godot;
 using System;
 
-public enum Suit { Clubs, Diamonds, Hearts, Spades }
-public enum Rank { Two, Three, Four, Five, Six, Seven, Eight, Nine, Ten, Jack, Queen, King, Ace }
-
 public class Card
 {
 	public Suit Suit { get; }
@@ -31,7 +28,15 @@ public class Card
 			Rank.Queen => "Q",
 			Rank.Jack => "J",
 			Rank.Ten => "10",
-			_ => ((int)Rank + 2).ToString()
+			Rank.Nine => "9",
+			Rank.Eight => "8",
+			Rank.Seven => "7",
+			Rank.Six => "6",
+			Rank.Five => "5",
+			Rank.Four => "4",
+			Rank.Three => "3",
+			Rank.Two => "2",
+			_ => "?"
 		};
 		
 		string suitStr = Suit switch
@@ -55,7 +60,15 @@ public class Card
 			Rank.Queen => "Q",
 			Rank.Jack => "J",
 			Rank.Ten => "10",
-			_ => ((int)Rank + 2).ToString()
+			Rank.Nine => "9",
+			Rank.Eight => "8",
+			Rank.Seven => "7",
+			Rank.Six => "6",
+			Rank.Five => "5",
+			Rank.Four => "4",
+			Rank.Three => "3",
+			Rank.Two => "2",
+			_ => "?"
 		};
 	}
 	

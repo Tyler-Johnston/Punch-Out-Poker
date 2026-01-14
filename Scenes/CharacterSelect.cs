@@ -1,5 +1,6 @@
 using Godot;
 using System;
+using System.Collections.Generic;
 
 public partial class CharacterSelect : Control
 {
@@ -23,10 +24,26 @@ public partial class CharacterSelect : Control
 	[Export] public Label CircuitLabel { get; set; }
 	[Export] public ColorRect BackgroundTint { get; set; }
 	
-	private OpponentProfile[] _opponents;
+	// ✅ NEW: Opponent data structure
+	private class OpponentData
+	{
+		public string Name { get; set; }
+		public int BuyIn { get; set; }
+		public string PersonalityPreset { get; set; }
+		
+		public OpponentData(string name, int buyIn, string preset = null)
+		{
+			Name = name;
+			BuyIn = buyIn;
+			PersonalityPreset = preset ?? name; // Default to name if no preset specified
+		}
+	}
+	
+	private List<OpponentData> _opponents;
 	private int _currentIndex = 0;
 	private int playerMoney = 0;
 	private int _currentCircuit = 0;
+	private string _lastFacedOpponent = null;
 	
 	public override void _Ready()
 	{
@@ -42,7 +59,10 @@ public partial class CharacterSelect : Control
 		playerMoney = GameManager.Instance.PlayerMoney;
 		BalanceLabel.Text = $"Balance: ${playerMoney}";
 	
-		if (GameManager.Instance.LastFacedOpponent != null)
+		// Check if we have a last faced opponent
+		_lastFacedOpponent = GameManager.Instance.CurrentOpponentName;
+		
+		if (!string.IsNullOrEmpty(_lastFacedOpponent))
 		{
 			LoadLastOpponent();
 		}
@@ -65,56 +85,70 @@ public partial class CharacterSelect : Control
 	
 	private void LoadLastOpponent()
 	{
-		var lastOpponent = GameManager.Instance.LastFacedOpponent;
-		
-		// Check Circuit A
-		var circuitA = OpponentProfiles.CircuitAOpponents();
-		for (int i = 0; i < circuitA.Length; i++)
+		// Try to find the opponent across all circuits
+		for (int circuit = 0; circuit <= 2; circuit++)
 		{
-			if (circuitA[i].Name == lastOpponent.Name)
+			var opponents = GetCircuitOpponents(circuit);
+			for (int i = 0; i < opponents.Count; i++)
 			{
-				_currentCircuit = 0;
-				LoadCircuit(0);
-				_currentIndex = i;
-				return;
+				if (opponents[i].Name == _lastFacedOpponent)
+				{
+					_currentCircuit = circuit;
+					LoadCircuit(circuit);
+					_currentIndex = i;
+					return;
+				}
 			}
 		}
 		
-		// Check Circuit B
-		var circuitB = OpponentProfiles.CircuitBOpponents();
-		for (int i = 0; i < circuitB.Length; i++)
-		{
-			if (circuitB[i].Name == lastOpponent.Name)
-			{
-				_currentCircuit = 1;
-				LoadCircuit(1);
-				_currentIndex = i;
-				return;
-			}
-		}
-		
-		// Check Circuit C
-		var circuitC = OpponentProfiles.CircuitCOpponents();
-		for (int i = 0; i < circuitC.Length; i++)
-		{
-			if (circuitC[i].Name == lastOpponent.Name)
-			{
-				_currentCircuit = 2;
-				LoadCircuit(2);
-				_currentIndex = i;
-				return;
-			}
-		}
-		
+		// If not found, default to Circuit 0
 		LoadCircuit(0);
+	}
+	
+	/// <summary>
+	/// ✅ NEW: Define opponents for each circuit
+	/// </summary>
+	private List<OpponentData> GetCircuitOpponents(int circuitIndex)
+	{
+		switch (circuitIndex)
+		{
+			case 0: // Minor Circuit
+				return new List<OpponentData>
+				{
+					new OpponentData("Steve", 100, "Steve"),
+					new OpponentData("Aryll", 200, "Aryll"),
+					new OpponentData("Boy Wizard", 500, "Boy Wizard"),
+					// Add more Circuit A opponents here
+				};
+				
+			case 1: // Major Circuit
+				return new List<OpponentData>
+				{
+					// Add more Circuit B opponents here
+				};
+				
+			case 2: // World Circuit
+				return new List<OpponentData>
+				{
+					// Add Circuit C opponents here
+				};
+				
+			default:
+				return new List<OpponentData>
+				{
+					new OpponentData("Steve", 100, "Steve"),
+				};
+		}
 	}
 		
 	private void LoadCircuit(int circuitIndex)
 	{
+		_opponents = GetCircuitOpponents(circuitIndex);
+		_currentIndex = 0;
+		
 		switch (circuitIndex)
 		{
 			case 0:
-				_opponents = OpponentProfiles.CircuitAOpponents();
 				if (CircuitLabel != null) CircuitLabel.Text = "MINOR CIRCUIT";
 				
 				if (BackgroundTint != null)
@@ -125,7 +159,6 @@ public partial class CharacterSelect : Control
 				break;
 				
 			case 1:
-				_opponents = OpponentProfiles.CircuitBOpponents();
 				if (CircuitLabel != null) CircuitLabel.Text = "MAJOR CIRCUIT";
 				
 				if (BackgroundTint != null)
@@ -135,18 +168,16 @@ public partial class CharacterSelect : Control
 				}
 				break;
 				
-			 case 2:
-				 _opponents = OpponentProfiles.CircuitCOpponents();
-				 if (CircuitLabel != null) CircuitLabel.Text = "WORLD CIRCUIT";
-				 if (BackgroundTint != null)
-				 {
-					 var tween = CreateTween();
-					 tween.TweenProperty(BackgroundTint, "color", new Color("#5f62cd97"), 0.3f);
-				 }
-				 break;
+			case 2:
+				if (CircuitLabel != null) CircuitLabel.Text = "WORLD CIRCUIT";
+				if (BackgroundTint != null)
+				{
+					var tween = CreateTween();
+					tween.TweenProperty(BackgroundTint, "color", new Color("#5f62cd97"), 0.3f);
+				}
+				break;
 			
 			default:
-				_opponents = OpponentProfiles.CircuitAOpponents();
 				if (CircuitLabel != null) CircuitLabel.Text = "MINOR CIRCUIT";
 				if (BackgroundTint != null)
 				{
@@ -155,8 +186,6 @@ public partial class CharacterSelect : Control
 				}
 				break;
 		}
-		
-		_currentIndex = 0;
 	}
 
 	
@@ -175,40 +204,60 @@ public partial class CharacterSelect : Control
 	{
 		_currentIndex--;
 		if (_currentIndex < 0)
-			_currentIndex = _opponents.Length - 1;
+			_currentIndex = _opponents.Count - 1;
 		UpdateDisplay();
 	}
 	
 	private void OnRightPressed()
 	{
 		_currentIndex++;
-		if (_currentIndex >= _opponents.Length)
+		if (_currentIndex >= _opponents.Count)
 			_currentIndex = 0;
 		UpdateDisplay();
 	}
 	
 	private void UpdateDisplay()
 	{
+		if (_opponents == null || _opponents.Count == 0)
+		{
+			CenterName.Text = "Coming Soon";
+			CenterBuyIn.Text = "";
+			ConfirmButton.Disabled = true;
+			return;
+		}
+	
 		var current = _opponents[_currentIndex];
-		bool isCurrentLocked = !IsOpponentUnlocked(current);
+		bool isCurrentLocked = !IsOpponentUnlocked(current.Name);
 		
 		CenterName.Text = isCurrentLocked ? "???" : current.Name;
 		CenterBuyIn.Text = isCurrentLocked ? "Buy-In: ???" : $"Buy-In: ${current.BuyIn}";
 		LoadPortrait(CenterPortrait, current.Name + " Large", 1.0f, new Vector2(1.0f, 1.0f), isCurrentLocked);
 		
 		int leftIndex = _currentIndex - 1;
-		if (leftIndex < 0) leftIndex = _opponents.Length - 1;
-		bool isLeftLocked = !IsOpponentUnlocked(_opponents[leftIndex]);
+		if (leftIndex < 0) leftIndex = _opponents.Count - 1;
+		bool isLeftLocked = !IsOpponentUnlocked(_opponents[leftIndex].Name);
 		LoadPortrait(LeftPortrait, _opponents[leftIndex].Name + " Small", 0.5f, new Vector2(0.7f, 0.7f), isLeftLocked);
 		
 		int rightIndex = _currentIndex + 1;
-		if (rightIndex >= _opponents.Length) rightIndex = 0;
-		bool isRightLocked = !IsOpponentUnlocked(_opponents[rightIndex]);
+		if (rightIndex >= _opponents.Count) rightIndex = 0;
+		bool isRightLocked = !IsOpponentUnlocked(_opponents[rightIndex].Name);
 		LoadPortrait(RightPortrait, _opponents[rightIndex].Name + " Small", 0.5f, new Vector2(0.7f, 0.7f), isRightLocked);
 		
-		bool canPlay = GameManager.Instance.CanPlayAgainst(current);
-		ConfirmButton.Disabled = !canPlay;
-		ConfirmButton.Text = isCurrentLocked ? "LOCKED" : (canPlay ? "PLAY!" : $"Need ${current.BuyIn}");
+		bool canPlay = GameManager.Instance.CanPlayAgainst(current.Name, current.BuyIn);
+		ConfirmButton.Disabled = !canPlay || isCurrentLocked;
+		
+		if (isCurrentLocked)
+		{
+			ConfirmButton.Text = "LOCKED";
+		}
+		else if (canPlay)
+		{
+			ConfirmButton.Text = "PLAY!";
+		}
+		else
+		{
+			ConfirmButton.Text = $"Need ${current.BuyIn}";
+		}
 	}
 	
 	private void LoadPortrait(TextureRect portraitNode, string opponentName, float alpha, Vector2 scale, bool isLocked = false)
@@ -239,22 +288,34 @@ public partial class CharacterSelect : Control
 		portraitNode.Scale = scale;
 	}
 	
-	private bool IsOpponentUnlocked(OpponentProfile opponent)
+	/// <summary>
+	/// ✅ NEW: Check if opponent is unlocked using GameManager
+	/// </summary>
+	private bool IsOpponentUnlocked(string opponentName)
 	{
-		return GameManager.Instance.IsOpponentUnlocked(opponent.Name);
+		return GameManager.Instance.IsOpponentUnlocked(opponentName);
 	}
 	
 	private void OnConfirmPressed()
 	{
 		var opponent = _opponents[_currentIndex];
 		
-		if (!GameManager.Instance.CanPlayAgainst(opponent))
+		if (!IsOpponentUnlocked(opponent.Name))
 		{
-			GD.Print($"Cannot play! Opponent locked or insufficient funds.");
+			GD.Print($"Opponent {opponent.Name} is locked!");
 			return;
 		}
 		
-		GameManager.Instance.SelectedOpponent = opponent;
+		if (!GameManager.Instance.CanPlayAgainst(opponent.Name, opponent.BuyIn))
+		{
+			GD.Print($"Cannot play! Insufficient funds. Need ${opponent.BuyIn}, have ${playerMoney}");
+			return;
+		}
+		
+		// ✅ NEW: Set opponent in GameManager and start match
+		GameManager.Instance.StartMatch(opponent.Name, opponent.BuyIn);
+		
+		GD.Print($"Starting match vs {opponent.Name} (Buy-in: ${opponent.BuyIn})");
 		GetTree().ChangeSceneToFile("res://Scenes/PokerGame.tscn");
 	}
 	

@@ -6,40 +6,7 @@ using System.Collections.Generic;
 public partial class PokerGame
 {
 	// Game state fields
-	private bool handInProgress = false;
-	private bool waitingForNextGame = false;
-	private bool isPlayerTurn = true;
-	private bool playerIsAllIn = false;
-	private bool opponentIsAllIn = false;
-	private bool playerHasButton = false;
-	private bool isProcessingAIAction = false;
 	private bool isMatchComplete = false;
-
-	private bool IsGameOver()
-	{
-		return playerChips <= 0 || opponentChips <= 0;
-	}
-
-	private void HandleGameOver()
-	{
-		if (playerChips < smallBlind)
-		{
-			ShowMessage("GAME OVER - You ran out of chips!");
-			GD.Print("GAME OVER - Player has no chips");
-		}
-		else if (opponentChips < bigBlind)
-		{
-			ShowMessage("YOU WIN - Opponent ran out of chips!");
-			GD.Print("GAME OVER - Opponent has no chips");
-			GameManager.Instance.PlayerMoney += playerChips;
-			GameManager.Instance.OnMatchWon(GameManager.Instance.SelectedOpponent);
-		}
-
-		handInProgress = false;
-		waitingForNextGame = true;
-		isMatchComplete = true;
-		UpdateHud();
-	}
 
 	private void AdvanceStreet()
 	{
@@ -143,10 +110,10 @@ public partial class PokerGame
 		isProcessingAIAction = true;
 		opponentHasActedThisStreet = true;
 
-		AIAction action = DecideAIAction();
+		PlayerAction action = DecideAIAction();
 		ExecuteAIAction(action);
 
-		if (action == AIAction.Fold || !handInProgress)
+		if (action == PlayerAction.Fold || !handInProgress)
 		{
 			isProcessingAIAction = false;
 			return;
@@ -179,6 +146,190 @@ public partial class PokerGame
 			RefreshBetSlider();
 		}
 	}
+	
+		/// <summary>
+	/// Execute the AI's chosen action and update game state
+	/// </summary>
+	private void ExecuteAIAction(PlayerAction action)
+	{
+		GD.Print($"[AI ACTION] {currentOpponentName}: {action}");
+		
+		switch (action)
+		{
+			case PlayerAction.Fold:
+				OnOpponentFold();
+				break;
+				
+			case PlayerAction.Check:
+				OnOpponentCheck();
+				break;
+				
+			case PlayerAction.Call:
+				OnOpponentCall();
+				break;
+				
+			case PlayerAction.Raise:
+				OnOpponentRaise();
+				break;
+				
+			case PlayerAction.AllIn:
+				OnOpponentAllIn();
+				break;
+		}
+		
+		UpdateHud();
+		chipsAudioPlayer?.Play();
+	}
+
+	/// <summary>
+	/// Handle opponent fold
+	/// </summary>
+	private void OnOpponentFold()
+	{
+		ShowMessage($"{currentOpponentName} folds");
+		GD.Print($"{currentOpponentName} folds");
+		
+		int winAmount = pot;
+		playerChips += pot;
+		pot = 0;
+		
+		aiOpponent.IsFolded = true;
+		handInProgress = false;
+		
+		// Player wins by fold
+		GetTree().CreateTimer(1.5).Timeout += () => {
+			ShowMessage($"You win ${winAmount}!");
+			EndHand();
+		};
+	}
+
+	/// <summary>
+	/// Handle opponent check
+	/// </summary>
+	private void OnOpponentCheck()
+	{
+		ShowMessage($"{currentOpponentName} checks");
+		GD.Print($"{currentOpponentName} checks");
+	}
+
+	/// <summary>
+	/// Handle opponent call
+	/// </summary>
+	private void OnOpponentCall()
+	{
+		int toCall = currentBet - opponentBet;
+		int callAmount = Math.Min(toCall, opponentChips);
+		
+		opponentChips -= callAmount;
+		aiOpponent.ChipStack = opponentChips;
+		AddToPot(false, callAmount);
+		opponentBet += callAmount;
+		
+		if (opponentChips == 0)
+		{
+			opponentIsAllIn = true;
+			aiOpponent.IsAllIn = true;
+			ShowMessage($"{currentOpponentName} calls all-in for ${callAmount}");
+			GD.Print($"{currentOpponentName} calls all-in: {callAmount}");
+		}
+		else
+		{
+			ShowMessage($"{currentOpponentName} calls ${callAmount}");
+			GD.Print($"{currentOpponentName} calls: {callAmount}");
+		}
+	}
+
+	/// <summary>
+	/// Handle opponent raise/bet
+	/// </summary>
+	private void OnOpponentRaise()
+	{
+		// Create game state for bet size calculation
+		GameState gameState = new GameState
+		{
+			CommunityCards = new List<Card>(communityCards),
+			PotSize = pot,
+			CurrentBet = currentBet,
+			Stage = ConvertStreetToBettingStage(currentStreet),
+			BigBlind = bigBlind
+		};
+		gameState.SetPlayerBet(aiOpponent, opponentBet);
+		
+		// Calculate bet size
+		float handStrength = aiOpponent.DetermineHandStrengthCategory(gameState) switch
+		{
+			HandStrength.Strong => 0.8f,
+			HandStrength.Medium => 0.5f,
+			HandStrength.Weak => 0.3f,
+			HandStrength.Bluffing => 0.2f,
+			_ => 0.5f
+		};
+		
+		int raiseAmount = decisionMaker.CalculateBetSize(aiOpponent, gameState, handStrength);
+		
+		// Ensure valid raise
+		int minRaise = (currentBet - opponentBet) + bigBlind;
+		raiseAmount = Math.Max(raiseAmount, minRaise);
+		raiseAmount = Math.Min(raiseAmount, opponentChips);
+		
+		if (raiseAmount >= opponentChips)
+		{
+			// All-in
+			OnOpponentAllIn();
+			return;
+		}
+		
+		opponentChips -= raiseAmount;
+		aiOpponent.ChipStack = opponentChips;
+		AddToPot(false, raiseAmount);
+		opponentBet += raiseAmount;
+		currentBet = opponentBet;
+		
+		raisesThisStreet++;
+		playerHasActedThisStreet = false; // Player needs to respond
+		
+		bool isOpening = (currentBet == bigBlind && currentStreet == Street.Preflop) || 
+						 (currentBet == 0 && currentStreet != Street.Preflop);
+		
+		if (isOpening)
+		{
+			ShowMessage($"{currentOpponentName} bets ${raiseAmount}");
+			GD.Print($"{currentOpponentName} bets: {raiseAmount}");
+		}
+		else
+		{
+			ShowMessage($"{currentOpponentName} raises to ${currentBet}");
+			GD.Print($"{currentOpponentName} raises to: {currentBet}");
+		}
+		
+		// Track if this might be a bluff
+		if (handStrength < 0.4f)
+		{
+			aiBluffedThisHand = true;
+		}
+	}
+
+	/// <summary>
+	/// Handle opponent all-in
+	/// </summary>
+	private void OnOpponentAllIn()
+	{
+		int allInAmount = opponentChips;
+		
+		AddToPot(false, allInAmount);
+		opponentBet += allInAmount;
+		opponentChips = 0;
+		aiOpponent.ChipStack = 0;
+		
+		opponentIsAllIn = true;
+		aiOpponent.IsAllIn = true;
+		
+		currentBet = Math.Max(currentBet, opponentBet);
+		playerHasActedThisStreet = false; // Player needs to respond
+		
+		ShowMessage($"{currentOpponentName} goes ALL-IN for ${allInAmount}!");
+		GD.Print($"{currentOpponentName} ALL-IN: {allInAmount}");
+	}
 
 	private async void ShowDown()
 	{
@@ -189,7 +340,6 @@ public partial class PokerGame
 
 		if (refundOccurred)
 		{
-			// Wait to read the "Returned X chips" message
 			await ToSignal(GetTree().CreateTimer(1.5f), SceneTreeTimer.SignalName.Timeout);
 		}
 
@@ -207,36 +357,77 @@ public partial class PokerGame
 
 		int result = HandEvaluator.CompareHands(playerRank, opponentRank);
 		string message;
+		HandResult aiHandResult;
+		
+		// ✅ SAFE: Store pot amount before any modifications
+		int finalPot = pot;
 
 		if (result > 0)
 		{
+			// Player wins
 			GD.Print("\nPLAYER WINS!");
-			message = $"You win with {playerHandName}!";
-			if (aiBluffedThisHand && opponentRank > 6185)
-				GD.Print("Opponent was bluffing!");
+			message = $"You win ${finalPot} with {playerHandName}!";  // ✅ Use finalPot
+			
+			if (opponentRank <= 2467)
+			{
+				GD.Print($"{currentOpponentName} suffered a bad beat!");
+				aiHandResult = HandResult.BadBeat;
+			}
+			else if (aiBluffedThisHand && opponentRank > 6185)
+			{
+				GD.Print($"{currentOpponentName} was bluffing!");
+				aiHandResult = HandResult.BluffCaught;
+			}
+			else
+			{
+				aiHandResult = HandResult.Loss;
+			}
+			
 			playerChips += pot;
+			aiOpponent.ProcessHandResult(aiHandResult);
 		}
 		else if (result < 0)
 		{
+			// Opponent wins
 			GD.Print("\nOPPONENT WINS!");
-			message = $"Opponent wins with {opponentHandName}";
+			message = $"{currentOpponentName} wins ${finalPot} with {opponentHandName}";  // ✅ Use finalPot
+			
 			if (aiBluffedThisHand)
-				GD.Print("Opponent was bluffing with weak hand!");
+			{
+				GD.Print($"{currentOpponentName} won with a bluff!");
+			}
 			else if (opponentRank < 1609)
-				GD.Print("Opponent had a strong hand!");
+			{
+				GD.Print($"{currentOpponentName} had a strong hand!");
+			}
+			
 			opponentChips += pot;
+			aiOpponent.ChipStack = opponentChips;
+			aiOpponent.ProcessHandResult(HandResult.Win);
+			
+			if (playerRank <= 2467)
+			{
+				GD.Print("You suffered a bad beat!");
+			}
 		}
 		else
 		{
+			// Split pot
 			GD.Print("\nSPLIT POT!");
-			message = "Split pot!";
 			int split = pot / 2;
+			message = $"Split pot - ${split} each!";
 			playerChips += split;
 			opponentChips += pot - split;
+			aiOpponent.ChipStack = opponentChips;
+			
+			aiOpponent.ProcessHandResult(HandResult.Neutral);
 		}
 
 		ShowMessage(message);
 		GD.Print($"Stacks -> Player: {playerChips}, Opponent: {opponentChips}");
-		EndHand();
+		GD.Print($"AI Tilt Level: {aiOpponent.Personality.TiltMeter:F1}");
+		
+		EndHand();  // This might set pot = 0, so we stored it earlier
 	}
+
 }
