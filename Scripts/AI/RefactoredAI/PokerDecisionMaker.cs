@@ -39,6 +39,27 @@ public partial class PokerDecisionMaker : Node
 			return DecideCheckOrBet(player, gameState, handStrength);
 		}
 		
+		// Anti-calling station logic - fold to big bets with weak hands
+		float betRatio = toCall / potSize;
+		if (handStrength < 0.40f && betRatio > 1.5f)
+		{
+			// Facing a pot-sized bet or bigger with weak hand - fold more often
+			float foldChance = 0.75f - (personality.CallTendency * 0.3f);
+			if (GD.Randf() < foldChance)
+			{
+				GD.Print($"[{player.PlayerName}] Folding to large bet (strength: {handStrength:F2}, bet: {betRatio:F1}x pot)");
+				return PlayerAction.Fold;
+			}
+		}
+		
+		// Only for VERY weak hands facing HUGE bets
+		if (handStrength < 0.30f && betRatio > 2.0f) // Jack-high facing 2x pot+
+		{
+			GD.Print($"[{player.PlayerName}] Too weak to call huge bet");
+			return PlayerAction.Fold;
+		}
+
+		
 		// Can't call if we don't have enough chips - must fold or all-in
 		if (toCall >= player.ChipStack)
 		{
@@ -54,7 +75,7 @@ public partial class PokerDecisionMaker : Node
 		// Facing a bet - decide fold/call/raise
 		
 		// Bluffing logic - sometimes raise with weak hands
-		if (handStrength < 0.4f && GD.Randf() < bluffChance)
+		if (handStrength < 0.35f && GD.Randf() < bluffChance) // ✅ Changed from 0.4f to 0.35f
 		{
 			// Bluff raise - need enough chips
 			if (player.ChipStack > toCall * 2)
@@ -90,8 +111,7 @@ public partial class PokerDecisionMaker : Node
 		// Medium hand - usually call
 		if (handStrength > callThreshold)
 		{
-			// Consider pot odds for draws
-			if (handStrength > potOdds || GD.Randf() < personality.CallTendency)
+			if (handStrength > potOdds * 1.5f || GD.Randf() < personality.CallTendency)
 			{
 				return PlayerAction.Call;
 			}
@@ -99,7 +119,7 @@ public partial class PokerDecisionMaker : Node
 		
 		// Weak hand - usually fold
 		// But calling stations (high CallTendency) call too much
-		if (GD.Randf() < personality.CallTendency * 0.5f)
+		if (GD.Randf() < personality.CallTendency * 0.3f)
 		{
 			GD.Print($"[{player.PlayerName}] Calling station behavior - calling with weak hand");
 			return PlayerAction.Call;
@@ -161,22 +181,47 @@ public partial class PokerDecisionMaker : Node
 		float currentBet = gameState.CurrentBet;
 		float toCall = currentBet - gameState.GetPlayerCurrentBet(player);
 		
-		// Base bet sizing on pot size
-		float baseBetMultiplier = 0.5f; // 50% pot bet
+		// ✅ IMPROVED: Strength-based sizing
+		float baseBetMultiplier;
 		
-		// Adjust by hand strength
-		if (handStrength > 0.8f)
+		if (handStrength >= 0.80f) // Premium hands (straights, flushes, full houses)
 		{
-			baseBetMultiplier = 0.75f; // Bigger bets with strong hands
+			baseBetMultiplier = 0.70f + (GD.Randf() * 0.30f); // 0.70-1.00x pot (VALUE BET)
 		}
-		else if (handStrength < 0.4f && GD.Randf() < personality.CurrentBluffFrequency)
+		else if (handStrength >= 0.65f) // Strong hands (top pair good kicker, two pair)
 		{
-			baseBetMultiplier = 0.6f; // Medium-sized bluffs
+			baseBetMultiplier = 0.55f + (GD.Randf() * 0.25f); // 0.55-0.80x pot
+		}
+		else if (handStrength >= 0.45f) // Medium hands (middle pair, weak two pair)
+		{
+			baseBetMultiplier = 0.40f + (GD.Randf() * 0.20f); // 0.40-0.60x pot
+		}
+		else if (handStrength >= 0.35f) // Weak hands (bottom pair, draws)
+		{
+			baseBetMultiplier = 0.25f + (GD.Randf() * 0.20f); // 0.25-0.45x pot (MIN BET)
+		}
+		else // Bluffs (<0.35)
+		{
+			baseBetMultiplier = 0.50f + (GD.Randf() * 0.30f); // 0.50-0.80x pot (LOOK STRONG!)
 		}
 		
 		// Personality modifications
-		float aggressionMultiplier = 0.5f + (personality.CurrentAggression * 1.0f);
+		float aggressionMultiplier = 0.7f + (personality.CurrentAggression * 0.6f);
 		float betSize = potSize * baseBetMultiplier * aggressionMultiplier;
+		
+		// Tilt adjustments (tilted = bigger bets)
+		if (personality.TiltMeter > 20f)
+		{
+			betSize *= 1.15f; // 15% bigger when tilted
+			GD.Print($"[{player.PlayerName}] Tilted betting ({personality.TiltMeter:F0} tilt) - increased bet size");
+		}
+		
+		// Stage-based adjustments
+		if (gameState.Stage == BettingStage.River && handStrength > 0.70f)
+		{
+			betSize *= 1.2f; // Go for value on river
+			GD.Print($"[{player.PlayerName}] River value bet");
+		}
 		
 		// Ensure minimum raise is valid (at least double the current bet or one big blind)
 		float minRaise = toCall > 0 ? (currentBet - gameState.GetPlayerCurrentBet(player)) + currentBet : gameState.BigBlind;
@@ -186,7 +231,7 @@ public partial class PokerDecisionMaker : Node
 		if (betSize >= player.ChipStack * 0.9f)
 		{
 			// Risk tolerance affects all-in decisions
-			if (GD.Randf() < personality.CurrentRiskTolerance)
+			if (GD.Randf() < personality.CurrentRiskTolerance || handStrength > 0.80f)
 			{
 				GD.Print($"[{player.PlayerName}] Going all-in! ({player.ChipStack} chips)");
 				return player.ChipStack; // All-in
@@ -194,7 +239,7 @@ public partial class PokerDecisionMaker : Node
 			else
 			{
 				// Scale back to smaller bet
-				betSize = player.ChipStack * 0.5f;
+				betSize = player.ChipStack * 0.6f; // ✅ Changed from 0.5f to 0.6f
 			}
 		}
 		
@@ -224,38 +269,34 @@ public partial class PokerDecisionMaker : Node
 			return EvaluatePreflopHand(holeCards);
 		}
 		
-		// Post-flop evaluation using HandEvaluator
+		// Use pheval directly with power curve
 		int phevalRank = HandEvaluator.EvaluateHand(holeCards, communityCards);
-		HandRank rank = PokerUtilities.ConvertPhevalRankToHandRank(phevalRank);
 		
-		// Convert hand rank to strength (0.0 to 1.0)
-		float baseStrength = rank switch
+		// Convert pheval rank (1-7462) to strength (0.0-1.0)
+		// Lower rank = better hand in pheval
+		float strength = 1.0f - ((phevalRank - 1) / 7461.0f);
+		
+		// Apply power curve for better differentiation
+		strength = (float)Math.Pow(strength, 0.75);
+		
+		// Minimum floor for pairs
+		if (phevalRank <= 6185) // Any pair or better
 		{
-			HandRank.RoyalFlush => 1.0f,
-			HandRank.StraightFlush => 0.95f,
-			HandRank.FourOfAKind => 0.90f,
-			HandRank.FullHouse => 0.85f,
-			HandRank.Flush => 0.75f,
-			HandRank.Straight => 0.65f,
-			HandRank.ThreeOfAKind => 0.55f,
-			HandRank.TwoPair => 0.45f,
-			HandRank.OnePair => 0.30f,
-			HandRank.HighCard => 0.15f,
-			_ => 0.10f
-		};
+			strength = Math.Max(strength, 0.38f); // Minimum 0.38 for any pair
+		}
 		
 		// Adjust for draw potential on flop/turn
 		if (stage == BettingStage.Flop || stage == BettingStage.Turn)
 		{
 			List<Card> allCards = new List<Card>(holeCards);
 			allCards.AddRange(communityCards);
-			baseStrength += EvaluateDrawPotential(allCards) * 0.15f;
+			strength += EvaluateDrawPotential(allCards) * 0.10f; // ✅ Reduced from 0.15f
 		}
 		
 		// Add randomness so AI doesn't play perfectly
-		float randomness = (GD.Randf() - 0.5f) * 0.1f; // +/- 5%
+		float randomness = (GD.Randf() - 0.5f) * 0.08f; // ✅ Reduced from 0.1f
 		
-		return Mathf.Clamp(baseStrength + randomness, 0f, 1f);
+		return Mathf.Clamp(strength + randomness, 0.10f, 1.0f);
 	}
 	
 	private float EvaluatePreflopHand(List<Card> holeCards)
@@ -320,6 +361,7 @@ public partial class GameState : RefCounted
 	public float CurrentBet { get; set; }
 	public BettingStage Stage { get; set; }
 	public float BigBlind { get; set; }
+	public int OpponentChipStack { get; set; }
 	
 	private Dictionary<AIPokerPlayer, float> playerBets = new Dictionary<AIPokerPlayer, float>();
 	

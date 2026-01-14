@@ -23,7 +23,6 @@ public partial class PokerPersonality : Resource
 	public float TiltMeter { get; private set; } = 0f;
 	public int ConsecutiveLosses { get; set; } = 0;
 	
-	// Tell system - Use Godot.Collections.Dictionary instead of System.Collections.Generic.Dictionary
 	[Export] public Dictionary<string, Array<string>> Tells { get; set; }
 	
 	public PokerPersonality()
