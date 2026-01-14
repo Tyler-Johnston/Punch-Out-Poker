@@ -250,7 +250,7 @@ public partial class PokerGame
 			CommunityCards = new List<Card>(communityCards),
 			PotSize = pot,
 			CurrentBet = currentBet,
-			Stage = ConvertStreetToBettingStage(currentStreet),
+			Street = currentStreet,
 			BigBlind = bigBlind
 		};
 		gameState.SetPlayerBet(aiOpponent, opponentBet);

@@ -58,15 +58,6 @@ public partial class PokerGame : Node2D
 	// Side Pot / Contribution Tracking
 	private int playerContributed = 0;
 	private int opponentContributed = 0;
-	//private int pot = 0;
-	//private int playerBet = 0;
-	//private int opponentBet = 0;
-	//private int currentBet = 0;
-	//private int betAmount = 0;
-	
-	// Blinds
-	//private int bigBlind = 2;
-	//private int smallBlind = 1;
 	
 	// Game state flags
 	private bool isPlayerTurn = true;
@@ -76,17 +67,13 @@ public partial class PokerGame : Node2D
 	private bool playerIsAllIn = false;
 	private bool opponentIsAllIn = false;
 	private bool isProcessingAIAction = false;
-	//private bool playerHasActedThisStreet = false;
-	//private bool opponentHasActedThisStreet = false;
 	private bool aiBluffedThisHand = false;
 	
 	private int playerTotalBetsThisHand = 0;
-	//private int raisesThisStreet = 0;
 	
 	private Dictionary<Street, bool> playerBetOnStreet = new Dictionary<Street, bool>();
 	private Dictionary<Street, int> playerBetSizeOnStreet = new Dictionary<Street, int>();
 
-	// ✅ NEW: AI Personality System
 	private AIPokerPlayer aiOpponent;
 	private PokerDecisionMaker decisionMaker;
 	private string currentOpponentName;
@@ -153,7 +140,6 @@ public partial class PokerGame : Node2D
 		betRaiseButton.Pressed += OnBetRaisePressed;
 		betSlider.ValueChanged += OnBetSliderValueChanged;
 
-		// ✅ NEW: Initialize AI opponent based on GameManager selection
 		currentOpponentName = GameManager.Instance.CurrentOpponentName;
 		buyInAmount = GameManager.Instance.CurrentBuyIn;
 		
@@ -168,23 +154,17 @@ public partial class PokerGame : Node2D
 		GD.Print($"=== VS {currentOpponentName} ===");
 		GD.Print($"Buy-In: ${buyInAmount}");
 		
-		// ✅ Create AI opponent with personality
 		aiOpponent = new AIPokerPlayer();
 		aiOpponent.Personality = LoadOpponentPersonality(currentOpponentName);
 		aiOpponent.ChipStack = buyInAmount;
 		aiOpponent.PlayerName = currentOpponentName;
 
-		// ✅ Create decision maker
 		decisionMaker = new PokerDecisionMaker();
-
-		// ✅ Add decision maker as child of AI opponent
 		aiOpponent.AddChild(decisionMaker);
-
-		// ✅ Add AI opponent to scene tree
 		AddChild(aiOpponent);
-
-		// ✅ Explicitly set the decision maker reference (in case _Ready() didn't find it)
+		// Explicitly set the decision maker reference (in case _Ready() didn't find it)
 		aiOpponent.SetDecisionMaker(decisionMaker);
+		
 		// Log personality stats
 		var personality = aiOpponent.Personality;
 		GD.Print($"Personality Stats:");
@@ -236,6 +216,12 @@ public partial class PokerGame : Node2D
 			"Steve" => PersonalityPresets.CreateSteve(),
 			"Aryll" => PersonalityPresets.CreateAryll(),
 			"Boy Wizard" => PersonalityPresets.CreateBoyWizard(),
+			"Cowboy" => PersonalityPresets.CreateCowboy(),
+			"Hippie" => PersonalityPresets.CreateHippie(),
+			"Rumi" => PersonalityPresets.CreateRumi(),
+			"King" => PersonalityPresets.CreateKing(),
+			"Old Wizard" => PersonalityPresets.CreateOldWizard(),
+			"Spade" => PersonalityPresets.CreateSpade(),
 			_ => PersonalityPresets.CreateSteve() // Default fallback
 		};
 	}
@@ -255,7 +241,7 @@ public partial class PokerGame : Node2D
 			opponentContributed += amount;
 	}
 
-	// Returns any chips that weren't matched (Side Pot logic for Heads Up)
+	// Side Pot logic for Heads Up
 	private bool ReturnUncalledChips()
 	{
 		if (playerContributed > opponentContributed)
@@ -295,7 +281,7 @@ public partial class PokerGame : Node2D
 		opponentHand.Add(deck.Deal());
 		opponentHand.Add(deck.Deal());
 
-		// ✅ NEW: Deal cards to AI opponent
+		// Deal cards to AI opponent
 		aiOpponent.Hand.Clear();
 		foreach (var card in opponentHand)
 		{
@@ -367,7 +353,7 @@ public partial class PokerGame : Node2D
 			return;
 		}
 		
-		// ✅ NEW: Reset AI opponent for new hand
+		// Reset AI opponent for new hand
 		aiOpponent.ResetForNewHand();
 		aiOpponent.ChipStack = opponentChips;
 
@@ -551,7 +537,7 @@ public partial class PokerGame : Node2D
 	}
 	
 	/// <summary>
-	/// ✅ NEW: AI decision making using personality system
+	/// AI decision making using personality system
 	/// </summary>
 	private PlayerAction DecideAIAction()
 	{
@@ -561,7 +547,7 @@ public partial class PokerGame : Node2D
 			CommunityCards = new List<Card>(communityCards),
 			PotSize = pot,
 			CurrentBet = currentBet,
-			Stage = ConvertStreetToBettingStage(currentStreet),
+			Street = currentStreet,
 			BigBlind = bigBlind
 		};
 		gameState.SetPlayerBet(aiOpponent, opponentBet);
@@ -576,27 +562,11 @@ public partial class PokerGame : Node2D
 		if (!string.IsNullOrEmpty(tell))
 		{
 			GD.Print($"[TELL] {currentOpponentName}: {tell}");
-			// You can trigger animations here based on tell name
 		}
 		
 		UpdateOpponentDialogue(strength, aiOpponent.Personality.TiltMeter);
 		
 		return action;
-	}
-	
-	/// <summary>
-	/// Convert your Street enum to BettingStage enum
-	/// </summary>
-	private BettingStage ConvertStreetToBettingStage(Street street)
-	{
-		return street switch
-		{
-			Street.Preflop => BettingStage.PreFlop,
-			Street.Flop => BettingStage.Flop,
-			Street.Turn => BettingStage.Turn,
-			Street.River => BettingStage.River,
-			_ => BettingStage.PreFlop
-		};
 	}
 	
 	/// <summary>
@@ -638,25 +608,3 @@ public partial class PokerGame : Node2D
 		};
 	}
 }
-	
-	//// Placeholder methods - you'll need to implement these based on your existing code
-	//private void UpdateHud() { /* Your existing implementation */ }
-	//private void UpdateButtonLabels() { /* Your existing implementation */ }
-	//private void RefreshBetSlider() { /* Your existing implementation */ }
-	//private void OnFoldPressed() { /* Your existing implementation */ }
-	//private void OnCheckCallPressed() { /* Your existing implementation */ }
-	//private void OnBetRaisePressed() { /* Your existing implementation */ }
-	//private void OnBetSliderValueChanged(double value) { /* Your existing implementation */ }
-	//private void CheckAndProcessAITurn() { /* Call DecideAIAction() here */ }
-	//private void AdvanceStreet() { /* Your existing implementation */ }
-	//private void StartNewHandTracking() { /* Your existing implementation */ }
-//}
-//
-//// Supporting enum (if you don't have it already)
-//public enum Street
-//{
-	//Preflop,
-	//Flop,
-	//Turn,
-	//River
-//}

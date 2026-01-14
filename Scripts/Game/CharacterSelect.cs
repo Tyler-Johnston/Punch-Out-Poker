@@ -24,7 +24,6 @@ public partial class CharacterSelect : Control
 	[Export] public Label CircuitLabel { get; set; }
 	[Export] public ColorRect BackgroundTint { get; set; }
 	
-	// ✅ NEW: Opponent data structure
 	private class OpponentData
 	{
 		public string Name { get; set; }
@@ -35,7 +34,7 @@ public partial class CharacterSelect : Control
 		{
 			Name = name;
 			BuyIn = buyIn;
-			PersonalityPreset = preset ?? name; // Default to name if no preset specified
+			PersonalityPreset = preset ?? name;
 		}
 	}
 	
@@ -106,37 +105,40 @@ public partial class CharacterSelect : Control
 	}
 	
 	/// <summary>
-	/// ✅ NEW: Define opponents for each circuit
+	/// Define opponents for each circuit
 	/// </summary>
 	private List<OpponentData> GetCircuitOpponents(int circuitIndex)
 	{
 		switch (circuitIndex)
 		{
-			case 0: // Minor Circuit
+			case 0: // Minor Circuit (Circuit A)
 				return new List<OpponentData>
 				{
-					new OpponentData("Steve", 100, "Steve"),
-					new OpponentData("Aryll", 200, "Aryll"),
-					new OpponentData("Boy Wizard", 500, "Boy Wizard"),
-					// Add more Circuit A opponents here
+					new OpponentData("Steve", 50),
+					new OpponentData("Aryll", 125),
+					new OpponentData("Boy Wizard", 250)
 				};
 				
-			case 1: // Major Circuit
+			case 1: // Major Circuit (Circuit B)
 				return new List<OpponentData>
 				{
-					// Add more Circuit B opponents here
+					new OpponentData("Cowboy", 500),
+					new OpponentData("Hippie", 750),
+					new OpponentData("Rumi", 1250)
 				};
 				
-			case 2: // World Circuit
+			case 2: // World Circuit (Circuit C)
 				return new List<OpponentData>
 				{
-					// Add Circuit C opponents here
+					new OpponentData("King", 1500),
+					new OpponentData("Old Wizard", 2000),
+					new OpponentData("Spade", 2500)
 				};
 				
 			default:
 				return new List<OpponentData>
 				{
-					new OpponentData("Steve", 100, "Steve"),
+					new OpponentData("Steve", 50)
 				};
 		}
 	}
@@ -289,7 +291,7 @@ public partial class CharacterSelect : Control
 	}
 	
 	/// <summary>
-	/// ✅ NEW: Check if opponent is unlocked using GameManager
+	/// Check if opponent is unlocked using GameManager
 	/// </summary>
 	private bool IsOpponentUnlocked(string opponentName)
 	{
@@ -312,7 +314,7 @@ public partial class CharacterSelect : Control
 			return;
 		}
 		
-		// ✅ NEW: Set opponent in GameManager and start match
+		// Set opponent in GameManager and start match
 		GameManager.Instance.StartMatch(opponent.Name, opponent.BuyIn);
 		
 		GD.Print($"Starting match vs {opponent.Name} (Buy-in: ${opponent.BuyIn})");

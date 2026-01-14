@@ -24,7 +24,6 @@ public partial class PokerGame
 			}
 			else
 			{
-				// FIX: If currentBet > 0 (e.g. Big Blind option), it's technically a Raise
 				if (currentBet > 0)
 				{
 					// Calculate total like the raise block
@@ -40,7 +39,6 @@ public partial class PokerGame
 		}
 		else
 		{
-			// Check specifically for the negative call (Refund scenario)
 			if (toCall < 0)
 			{
 				checkCallButton.Text = $"Call (Take back {Math.Abs(toCall)})";

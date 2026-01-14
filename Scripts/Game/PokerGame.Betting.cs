@@ -22,8 +22,6 @@ public partial class PokerGame
 
 	private (int minBet, int maxBet) GetLegalBetRange()
 	{
-		// FIX: Calculate Max Raise Increment correctly
-		// You can't raise with chips you need just to CALL!
 		int amountToCall = currentBet - playerBet;
 		int maxBet = playerChips - amountToCall; 
 		
@@ -38,7 +36,6 @@ public partial class PokerGame
 		}
 		else
 		{
-			// Min Raise Logic...
 			int minRaiseIncrement = (amountToCall == 0) ? bigBlind : amountToCall;
 			minRaiseIncrement = Math.Max(minRaiseIncrement, bigBlind);
 
@@ -51,12 +48,9 @@ public partial class PokerGame
 			}
 		}
 
-		// Safety clamp
 		if (minBet > maxBet) minBet = maxBet;
-
 		return (minBet, maxBet);
 	}
-
 
 	private void ResetBettingRound()
 	{

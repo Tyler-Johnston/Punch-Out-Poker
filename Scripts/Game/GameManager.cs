@@ -7,7 +7,7 @@ public partial class GameManager : Node
 	public static GameManager Instance { get; private set; }
 
 	// --- DEV TEST MODE ---
-	[Export] public bool DevTestMode = false;
+	[Export] public bool DevTestMode = true;
 
 	// --- GAME DATA ---
 	public int PlayerMoney { get; set; } = 1000;
@@ -31,7 +31,6 @@ public partial class GameManager : Node
 		}
 		else
 		{
-			// Start with first opponent unlocked
 			UnlockOpponent("Steve");
 		}
 	}
@@ -48,7 +47,13 @@ public partial class GameManager : Node
 		UnlockOpponent("Steve");
 		UnlockOpponent("Aryll");
 		UnlockOpponent("Boy Wizard");
-		
+		UnlockOpponent("Cowboy");
+		UnlockOpponent("Hippie");
+		UnlockOpponent("Rumi");
+		UnlockOpponent("King");
+		UnlockOpponent("Old Wizard");
+		UnlockOpponent("Spade");
+				
 		GD.Print($"Dev Mode: Unlocked {_unlockedOpponents.Count} opponents");
 	}
 	
@@ -141,7 +146,6 @@ public partial class GameManager : Node
 		if (PlayerMoney <= 0)
 		{
 			GD.Print("GAME OVER - No money left!");
-			// Handle game over logic here
 		}
 	}
 	
@@ -161,17 +165,33 @@ public partial class GameManager : Node
 		{
 			case "Steve":
 				UnlockOpponent("Aryll");
-				GD.Print("Circuit A complete! Unlocked Aryll");
 				break;
 				
 			case "Aryll":
 				UnlockOpponent("Boy Wizard");
-				GD.Print("Circuit B complete! Unlocked Boy Wizard");
 				break;
 				
 			case "Boy Wizard":
-				GD.Print("🎉 ALL OPPONENTS DEFEATED! You're the champion!");
-				// Unlock additional content, new game+, etc.
+				UnlockOpponent("Cowboy");
+				break;
+				
+			case "Cowboy":
+				UnlockOpponent("Hippie");
+				break;
+				
+			case "Hippie":
+				UnlockOpponent("Rumi");
+				break;
+				
+			case "Rumi":
+				UnlockOpponent("King");
+				break;
+				
+			case "King":
+				UnlockOpponent("Old Wizard");
+				break;
+				
+			case "Spade":
 				break;
 		}
 	}

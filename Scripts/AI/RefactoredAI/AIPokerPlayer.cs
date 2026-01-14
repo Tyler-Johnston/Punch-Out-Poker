@@ -220,7 +220,7 @@ public partial class AIPokerPlayer : Node
 	/// </summary>
 	private float EvaluateCurrentHandStrength(GameState gameState)
 	{
-		if (gameState.Stage == BettingStage.PreFlop)
+		if (gameState.Street == Street.Preflop)
 		{
 			return EvaluatePreflop();
 		}

@@ -12,7 +12,7 @@ public partial class PokerDecisionMaker : Node
 	public PlayerAction DecideAction(AIPokerPlayer player, GameState gameState)
 	{
 		// Calculate base hand strength (0.0 to 1.0)
-		float handStrength = EvaluateHandStrength(player.Hand, gameState.CommunityCards, gameState.Stage);
+		float handStrength = EvaluateHandStrength(player.Hand, gameState.CommunityCards, gameState.Street);
 		
 		// Get personality-modified decision
 		return MakePersonalityBasedDecision(player, gameState, handStrength);
@@ -216,8 +216,8 @@ public partial class PokerDecisionMaker : Node
 			GD.Print($"[{player.PlayerName}] Tilted betting ({personality.TiltMeter:F0} tilt) - increased bet size");
 		}
 		
-		// Stage-based adjustments
-		if (gameState.Stage == BettingStage.River && handStrength > 0.70f)
+		// Street-based adjustments
+		if (gameState.Street == Street.River && handStrength > 0.70f)
 		{
 			betSize *= 1.2f; // Go for value on river
 			GD.Print($"[{player.PlayerName}] River value bet");
@@ -254,7 +254,7 @@ public partial class PokerDecisionMaker : Node
 		return finalBet;
 	}
 	
-	private float EvaluateHandStrength(List<Card> holeCards, List<Card> communityCards, BettingStage stage)
+	private float EvaluateHandStrength(List<Card> holeCards, List<Card> communityCards, Street street)
 	{
 		// Validate input
 		if (holeCards == null || holeCards.Count != 2)
@@ -264,7 +264,7 @@ public partial class PokerDecisionMaker : Node
 		}
 		
 		// Pre-flop evaluation
-		if (stage == BettingStage.PreFlop || communityCards == null || communityCards.Count == 0)
+		if (street == Street.Preflop || communityCards == null || communityCards.Count == 0)
 		{
 			return EvaluatePreflopHand(holeCards);
 		}
@@ -286,15 +286,15 @@ public partial class PokerDecisionMaker : Node
 		}
 		
 		// Adjust for draw potential on flop/turn
-		if (stage == BettingStage.Flop || stage == BettingStage.Turn)
+		if (street == Street.Flop || street == Street.Turn)
 		{
 			List<Card> allCards = new List<Card>(holeCards);
 			allCards.AddRange(communityCards);
-			strength += EvaluateDrawPotential(allCards) * 0.10f; // ✅ Reduced from 0.15f
+			strength += EvaluateDrawPotential(allCards) * 0.10f;
 		}
 		
 		// Add randomness so AI doesn't play perfectly
-		float randomness = (GD.Randf() - 0.5f) * 0.08f; // ✅ Reduced from 0.1f
+		float randomness = (GD.Randf() - 0.5f) * 0.08f;
 		
 		return Mathf.Clamp(strength + randomness, 0.10f, 1.0f);
 	}
@@ -359,7 +359,7 @@ public partial class GameState : RefCounted
 	public List<Card> CommunityCards { get; set; } = new List<Card>();
 	public float PotSize { get; set; }
 	public float CurrentBet { get; set; }
-	public BettingStage Stage { get; set; }
+	public Street Street { get; set; }
 	public float BigBlind { get; set; }
 	public int OpponentChipStack { get; set; }
 	
