@@ -13,6 +13,9 @@ public partial class AIPokerPlayer : Node
 	[Export] public string PlayerName { get; set; }
 	[Export] public int StartingChips { get; set; } = 20000;
 	
+	public float HandRandomnessSeed { get; private set; }
+	public float BetSizeSeed { get; private set; }
+	
 	// Game state
 	public int ChipStack { get; set; }
 	public List<Card> Hand { get; private set; }
@@ -66,18 +69,49 @@ public partial class AIPokerPlayer : Node
 		}
 	}
 
-	
-	/// <summary>
-	/// Main decision-making method called during betting rounds
-	/// </summary>
 	public PlayerAction MakeDecision(GameState gameState)
 	{
-		if (IsFolded || IsAllIn)
+		// ✅ Debug logging
+		GD.Print($"[{PlayerName}] MakeDecision called - IsFolded: {IsFolded}, IsAllIn: {IsAllIn}, ChipStack: {ChipStack}");
+		
+		// ✅ Safety check: If IsAllIn but we have chips, reset it (shouldn't happen but prevents soft-lock)
+		if (IsAllIn && ChipStack > 0)
 		{
+			GD.PrintErr($"[{PlayerName}] ERROR: IsAllIn=true but ChipStack={ChipStack}! Resetting IsAllIn.");
+			IsAllIn = false;
+		}
+		
+		// ✅ Only return early if ACTUALLY folded/all-in
+		if (IsFolded)
+		{
+			GD.Print($"[{PlayerName}] Folded - returning Check");
 			return PlayerAction.Check;
 		}
 		
+		if (IsAllIn)
+		{
+			GD.Print($"[{PlayerName}] All-in with 0 chips - returning Check");
+			return PlayerAction.Check;
+		}
+		
+		// ✅ Safety: ensure decision maker exists
+		if (decisionMaker == null)
+		{
+			GD.PrintErr($"[{PlayerName}] DecisionMaker is null! Folding as fallback.");
+			return PlayerAction.Fold;
+		}
+		
+		// ✅ Call the actual decision logic
+		GD.Print($"[{PlayerName}] Calling DecisionMaker.DecideAction()");
 		PlayerAction action = decisionMaker.DecideAction(this, gameState);
+		
+		// ✅ Validation: can't check when facing a bet
+		float toCall = gameState.CurrentBet - gameState.GetPlayerCurrentBet(this);
+		if (action == PlayerAction.Check && toCall > 0)
+		{
+			GD.PrintErr($"[{PlayerName}] ERROR: Tried to check when facing {toCall} bet! Converting to Fold.");
+			action = PlayerAction.Fold;
+		}
 		
 		// Handle specific action execution
 		int betAmount = 0;
@@ -96,10 +130,8 @@ public partial class AIPokerPlayer : Node
 		EmitSignal(SignalName.ActionTaken, (int)action, betAmount);
 		return action;
 	}
+
 	
-	/// <summary>
-	/// Process the result of a completed hand and adjust tilt
-	/// </summary>
 	public void ProcessHandResult(HandResult result)
 	{
 		float previousTilt = Personality.TiltMeter;
@@ -114,12 +146,12 @@ public partial class AIPokerPlayer : Node
 				
 			case HandResult.BluffCaught:
 				Personality.AddTilt(12f);
-				GD.Print($"{PlayerName} caught a bluff and folded! Tilt: {Personality.TiltMeter}");
+				GD.Print($"{PlayerName}'s bluff was caught! Tilt: {Personality.TiltMeter}");
 				break;
 				
 			case HandResult.Loss:
 				Personality.ConsecutiveLosses++;
-				float lossAmount = 5f * Personality.ConsecutiveLosses;
+				float lossAmount = 5f * Personality.ConsecutiveLosses; // 5, 10, 15, 20...
 				Personality.AddTilt(lossAmount);
 				GD.Print($"{PlayerName} lost (streak: {Personality.ConsecutiveLosses}). Tilt: {Personality.TiltMeter}");
 				break;
@@ -131,21 +163,40 @@ public partial class AIPokerPlayer : Node
 				break;
 				
 			case HandResult.Win:
+				// ✅ Only reduce tilt on WINS
 				Personality.ConsecutiveLosses = 0;
-				Personality.ReduceTilt(3f);
+				Personality.ReduceTilt(5f); // Increased from 3 to 5 (wins calm you down more)
 				GD.Print($"{PlayerName} won! Tilt reduced to: {Personality.TiltMeter}");
 				break;
 				
 			case HandResult.Neutral:
-				Personality.ReduceTilt(2f);
+				// Split pot or fold - small tilt decay
+				Personality.ReduceTilt(1f);
 				break;
 		}
 		
-		// Emit signal if tilt changed significantly
-		if (Mathf.Abs(previousTilt - Personality.TiltMeter) > 1f)
+		// Emit signal if tilt changed
+		if (Mathf.Abs(previousTilt - Personality.TiltMeter) > 0.5f)
 		{
 			EmitSignal(SignalName.TiltLevelChanged, Personality.TiltMeter);
 		}
+	}
+	
+	public void ResetForNewHand()
+	{
+		Hand.Clear();
+		IsFolded = false;
+		CurrentBetThisRound = 0;
+		
+		HandRandomnessSeed = GD.Randf() - 0.5f;
+		BetSizeSeed = GD.Randf();
+		
+		if (ChipStack > 0)
+		{
+			IsAllIn = false;
+		}
+		
+		//Personality.ReduceTilt(2f);
 	}
 	
 	/// <summary>
@@ -281,24 +332,24 @@ public partial class AIPokerPlayer : Node
 		return ChipStack >= amount;
 	}
 	
-	/// <summary>
-	/// Reset player state for new hand
-	/// </summary>
-	public void ResetForNewHand()
-	{
-		Hand.Clear();
-		IsFolded = false;
-		CurrentBetThisRound = 0;
-		
-		if (ChipStack > 0)
-		{
-			IsAllIn = false;
-		}
-		
-		// Gradual tilt decay between hands
-		Personality.ReduceTilt(2f);
-	}
-	
+	///// <summary>
+	///// Reset player state for new hand
+	///// </summary>
+	//public void ResetForNewHand()
+	//{
+		//Hand.Clear();
+		//IsFolded = false;
+		//CurrentBetThisRound = 0;
+		//
+		//if (ChipStack > 0)
+		//{
+			//IsAllIn = false;
+		//}
+		//
+		//// Gradual tilt decay between hands
+		//Personality.ReduceTilt(2f);
+	//}
+	//
 	/// <summary>
 	/// Deal cards to this player
 	/// </summary>

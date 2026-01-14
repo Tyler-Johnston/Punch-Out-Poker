@@ -39,25 +39,63 @@ public partial class PokerPersonality : Resource
 		CurrentRiskTolerance = BaseRiskTolerance;
 	}
 	
-	public void UpdateTiltedStats()
+	/// <summary>
+	/// Add tilt when player loses/suffers bad beat
+	/// consecutive losses build up anger
+	/// </summary>
+	public void AddTilt(float baseAmount)
 	{
-		float tiltMultiplier = TiltMeter * TiltSensitivity * 0.01f;
+		// TiltSensitivity scales how much they tilt (0.20 = tough, 0.60 = emotional)
+		float scaledTilt = baseAmount * TiltSensitivity;
+		TiltMeter = Mathf.Clamp(TiltMeter + scaledTilt, 0f, 100f);
 		
-		CurrentAggression = Mathf.Clamp(BaseAggression + (tiltMultiplier), 0f, 1f);
-		CurrentBluffFrequency = Mathf.Clamp(BaseBluffFrequency + (tiltMultiplier * 0.8f), 0f, 1f);
-		CurrentFoldThreshold = Mathf.Clamp(BaseFoldThreshold - (tiltMultiplier * 0.5f), 0f, 1f);
-		CurrentRiskTolerance = Mathf.Clamp(BaseRiskTolerance + (tiltMultiplier), 0f, 1f);
+		UpdateStatsFromTilt();
+		
+		GD.Print($"[TILT] {CharacterName} +{scaledTilt:F1} tilt (total: {TiltMeter:F1}) | " +
+				 $"Agg: {CurrentAggression:F3}, Bluff: {CurrentBluffFrequency:F3}");
+	}
+
+	/// <summary>
+	/// Reduce tilt (only on wins, not every hand!)
+	/// </summary>
+	public void ReduceTilt(float baseAmount)
+	{
+		float previousTilt = TiltMeter;
+		TiltMeter = Mathf.Max(0f, TiltMeter - baseAmount);
+		
+		if (previousTilt != TiltMeter)
+		{
+			UpdateStatsFromTilt();
+			
+			if (TiltMeter == 0f)
+			{
+				GD.Print($"[TILT] {CharacterName} fully recovered (calm)");
+			}
+		}
 	}
 	
-	public void AddTilt(float amount)
+	/// <summary>
+	/// Update all personality stats based on current tilt level
+	/// Higher tilt = more aggressive, more bluffs, less folding, more risk-taking
+	/// </summary>
+	private void UpdateStatsFromTilt()
 	{
-		TiltMeter = Mathf.Clamp(TiltMeter + amount, 0f, 100f);
-		UpdateTiltedStats();
+		// Tilt factor: 0 tilt = 1.0x, 20 tilt = 1.2x, 50 tilt = 1.5x, 100 tilt = 2.0x
+		float tiltFactor = 1f + (TiltMeter / 100f);
+		
+		// Increase aggression (bet/raise more when tilted)
+		CurrentAggression = Mathf.Clamp(BaseAggression * tiltFactor, 0f, 1f);
+		
+		// Increase bluff frequency (try to win back losses)
+		CurrentBluffFrequency = Mathf.Clamp(BaseBluffFrequency * tiltFactor, 0f, 1f);
+		
+		// Decrease fold threshold (call more marginal spots when tilted = worse defense)
+		// If FoldThreshold = 0.50, at 20 tilt becomes 0.40 (calls 10% wider)
+		float foldReduction = (TiltMeter / 100f) * 0.20f; // Max -20% at 100 tilt
+		CurrentFoldThreshold = Mathf.Clamp(BaseFoldThreshold - foldReduction, 0.20f, 1f);
+		
+		// Increase risk tolerance (call all-ins lighter when tilted)
+		CurrentRiskTolerance = Mathf.Clamp(BaseRiskTolerance * tiltFactor, 0f, 1f);
 	}
-	
-	public void ReduceTilt(float amount)
-	{
-		TiltMeter = Mathf.Max(0f, TiltMeter - amount);
-		UpdateTiltedStats();
-	}
+
 }

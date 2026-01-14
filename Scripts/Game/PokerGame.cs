@@ -548,7 +548,8 @@ public partial class PokerGame : Node2D
 			PotSize = pot,
 			CurrentBet = currentBet,
 			Street = currentStreet,
-			BigBlind = bigBlind
+			BigBlind = bigBlind,
+			IsAIInPosition = DetermineAIPosition()
 		};
 		gameState.SetPlayerBet(aiOpponent, opponentBet);
 		
@@ -606,5 +607,26 @@ public partial class PokerGame : Node2D
 		{
 			GetTree().ChangeSceneToFile("res://Scenes/CharacterSelect.tscn");
 		};
+	}
+	
+	/// <summary>
+	/// Determine if AI is in position (acts last postflop)
+	/// In heads-up: button posts SB and acts last postflop = in position
+	/// </summary>
+	private bool DetermineAIPosition()
+	{
+		// Preflop: button acts first, so AI is OOP if they have button
+		// Postflop: button acts last, so AI is IP if they have button
+		
+		if (currentStreet == Street.Preflop)
+		{
+			// Preflop in HU: button = OOP (acts first)
+			return playerHasButton; // If player has button, AI is IP (acts last preflop)
+		}
+		else
+		{
+			// Postflop: button = IP (acts last)
+			return !playerHasButton; // If player doesn't have button, AI has button = IP
+		}
 	}
 }

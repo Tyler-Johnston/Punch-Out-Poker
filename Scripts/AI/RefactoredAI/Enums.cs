@@ -42,16 +42,18 @@ public enum PlayerAction
 	AllIn             // Bet all remaining chips
 }
 
-/// <summary>
-/// Stages of a Texas Hold'em poker hand
-/// </summary>
-public enum BettingStage
-{
-	PreFlop,          // Before community cards are dealt
-	Flop,             // After first 3 community cards
-	Turn,             // After 4th community card
-	River             // After 5th (final) community card
-}
+public enum Decision { Fold, Call, Check, Bet }
+
+///// <summary>
+///// Stages of a Texas Hold'em poker hand
+///// </summary>
+//public enum BettingStage
+//{
+	//PreFlop,          // Before community cards are dealt
+	//Flop,             // After first 3 community cards
+	//Turn,             // After 4th community card
+	//River             // After 5th (final) community card
+//}
 
 /// <summary>
 /// Standard poker hand rankings from lowest to highest
