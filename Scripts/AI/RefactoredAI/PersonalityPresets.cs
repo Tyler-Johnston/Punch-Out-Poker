@@ -8,7 +8,7 @@ public static class PersonalityPresets
 		{
 			CharacterName = "Steve",
 			BaseAggression = 0.45f,
-			BaseBluffFrequency = 0.28f,
+			BaseBluffFrequency = 0.33f,
 			BaseFoldThreshold = 0.55f,
 			BaseRiskTolerance = 0.60f,
 			TiltSensitivity = 0.20f,
@@ -32,7 +32,7 @@ public static class PersonalityPresets
 		{
 			CharacterName = "Aryll",
 			BaseAggression = 0.30f,
-			BaseBluffFrequency = 0.32f,
+			BaseBluffFrequency = 0.25f,
 			BaseFoldThreshold = 0.40f,
 			BaseRiskTolerance = 0.35f,
 			TiltSensitivity = 0.50f,
