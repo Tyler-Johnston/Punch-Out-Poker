@@ -15,7 +15,13 @@ public partial class AIPokerPlayer : Node
 	
 	public float HandRandomnessSeed { get; private set; }
 	public float BetSizeSeed { get; private set; }
-	
+	public float PreflopDecisionSeed { get; private set; }
+	public float FlopDecisionSeed { get; private set; }
+	public float TurnDecisionSeed { get; private set; }
+	public float RiverDecisionSeed { get; private set; }
+	public float TrapDecisionSeed { get; private set; }
+	public float AllInCommitmentSeed { get; private set; }
+
 	// Game state
 	public int ChipStack { get; set; }
 	public List<Card> Hand { get; private set; }
@@ -188,16 +194,26 @@ public partial class AIPokerPlayer : Node
 		IsFolded = false;
 		CurrentBetThisRound = 0;
 		
-		HandRandomnessSeed = GD.Randf() - 0.5f;
-		BetSizeSeed = GD.Randf();
+		// ✅ Generate all seeds at start of hand for consistency
+		HandRandomnessSeed = GD.Randf() - 0.5f; // -0.5 to 0.5
+		BetSizeSeed = GD.Randf();               // 0 to 1
+		
+		// ✅ NEW: Decision seeds per street
+		PreflopDecisionSeed = GD.Randf();
+		FlopDecisionSeed = GD.Randf();
+		TurnDecisionSeed = GD.Randf();
+		RiverDecisionSeed = GD.Randf();
+		
+		// ✅ NEW: Other decision seeds
+		TrapDecisionSeed = GD.Randf();
+		AllInCommitmentSeed = GD.Randf();
 		
 		if (ChipStack > 0)
 		{
 			IsAllIn = false;
 		}
-		
-		//Personality.ReduceTilt(2f);
 	}
+
 	
 	/// <summary>
 	/// Get an appropriate tell based on current hand strength
