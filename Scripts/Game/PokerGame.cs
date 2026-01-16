@@ -515,29 +515,29 @@ public partial class PokerGame : Node2D
 			GD.PrintErr($"Portrait not found: {portraitPath}");
 		}
 	}
-
-	public void UpdateOpponentDialogue(HandStrength handStrength, float tiltLevel = 0)
-	{
-		// Get hand evaluation
-		string handEval = HandEvaluator.GetHandDescription(opponentHand, communityCards);
-		
-		// Show personality info
-		var personality = aiOpponent.Personality;
-		opponentDialogueLabel.Text = $"{handEval}";
-		
-		if (tiltLevel > 20)
-		{
-			opponentDialogueLabel.Text += $" [TILTED: {tiltLevel:F0}]";
-		}
-		
-		// Show current stats (affected by tilt)
-		GD.Print($"[AI STATE] Agg: {personality.CurrentAggression:F2}, " +
-				 $"Bluff: {personality.CurrentBluffFrequency:F2}, " +
-				 $"Tilt: {tiltLevel:F1}");
-	}
+//
+	//public void UpdateOpponentDialogue(HandStrength handStrength, float tiltLevel = 0)
+	//{
+		//// Get hand evaluation
+		//string handEval = HandEvaluator.GetHandDescription(opponentHand, communityCards);
+		//
+		//// Show personality info
+		//var personality = aiOpponent.Personality;
+		//opponentDialogueLabel.Text = $"{handEval}";
+		//
+		//if (tiltLevel > 20)
+		//{
+			//opponentDialogueLabel.Text += $" [TILTED: {tiltLevel:F0}]";
+		//}
+		//
+		//// Show current stats (affected by tilt)
+		//GD.Print($"[AI STATE] Agg: {personality.CurrentAggression:F2}, " +
+				 //$"Bluff: {personality.CurrentBluffFrequency:F2}, " +
+				 //$"Tilt: {tiltLevel:F1}");
+	//}
 	
 	/// <summary>
-	/// AI decision making using personality system
+	/// AI decision making using personality + dialogue system
 	/// </summary>
 	private PlayerAction DecideAIAction()
 	{
@@ -553,22 +553,42 @@ public partial class PokerGame : Node2D
 		};
 		gameState.SetPlayerBet(aiOpponent, opponentBet);
 		
-		// Get AI decision
+		// 1) Get AI decision (Fold/Check/Call/Raise/AllIn)
 		PlayerAction action = aiOpponent.MakeDecision(gameState);
 		
-		// Get tell and display
+		// 2) Evaluate hand strength category for tells / dialogue
 		HandStrength strength = aiOpponent.DetermineHandStrengthCategory(gameState);
-		string tell = aiOpponent.GetTellForHandStrength(strength);
 		
-		if (!string.IsNullOrEmpty(tell))
+		// 3) Get a *behavior* tell key (for logs/animations)
+		string tellKey = aiOpponent.GetTellForHandStrength(strength);
+		if (!string.IsNullOrEmpty(tellKey))
 		{
-			GD.Print($"[TELL] {currentOpponentName}: {tell}");
+			GD.Print($"[TELL] {currentOpponentName}: {tellKey}");
+			// If you later add animations, you can map tellKey -> animation here
 		}
 		
-		UpdateOpponentDialogue(strength, aiOpponent.Personality.TiltMeter);
+		// 4) Get a spoken dialogue line (what appears in the label)
+		string dialogueLine = aiOpponent.GetDialogueForAction(
+			action,
+			strength,
+			aiBluffedThisHand // set this from your bluff-tracking logic if you want
+		);
+		
+		// 5) Apply chattiness: chance that they say nothing
+		float chatRoll = GD.Randf();
+		if (chatRoll <= aiOpponent.Personality.Chattiness && !string.IsNullOrEmpty(dialogueLine))
+		{
+			opponentDialogueLabel.Text = dialogueLine;
+		}
+		else
+		{
+			// Silent this turn
+			opponentDialogueLabel.Text = "";
+		}
 		
 		return action;
 	}
+
 	
 	/// <summary>
 	/// Check if game is over

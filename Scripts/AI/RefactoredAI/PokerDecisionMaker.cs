@@ -17,13 +17,13 @@ public static class PokerAIConfig
 	
 	// Value bet thresholds by street
 	public const float FLOP_VALUE_THRESHOLD = 0.55f;
-	public const float TURN_VALUE_THRESHOLD = 0.55f;
-	public const float RIVER_VALUE_THRESHOLD = 0.60f;
+	public const float TURN_VALUE_THRESHOLD = 0.58f;
+	public const float RIVER_VALUE_THRESHOLD = 0.62f;
 	
-	// Bluff ceilings by street
-	public const float FLOP_BLUFF_CEILING = 0.32f;
-	public const float TURN_BLUFF_CEILING = 0.30f;
-	public const float RIVER_BLUFF_CEILING = 0.28f;
+	// ✅ INCREASED: Bluff ceilings allow more bluff opportunities
+	public const float FLOP_BLUFF_CEILING = 0.48f;   // Was 0.42f → 0.48f
+	public const float TURN_BLUFF_CEILING = 0.45f;   // Was 0.38f → 0.45f
+	public const float RIVER_BLUFF_CEILING = 0.42f;  // Was 0.35f → 0.42f
 	
 	// Size respect (how much bet size affects thresholds)
 	public const float FLOP_SIZE_BUMP = 0.025f;
@@ -47,14 +47,16 @@ public static class PokerAIConfig
 	public const float SIZE_FACTOR_VALUE_ADJUST = 0.03f;
 	public const float SIZE_FACTOR_BLUFF_ADJUST = 0.04f;
 	
-	// Bluff and trap probabilities
-	public const float BLUFF_BASE_PROB = 0.40f;
-	public const float BLUFF_AGGRESSION_WEIGHT = 0.25f;
-	public const float TRAP_PROBABILITY = 0.20f;
+	// ✅ INCREASED: Bluff probabilities to match stated personality
+	public const float BLUFF_BASE_PROB = 0.55f;              // Was 0.40f → 0.55f
+	public const float BLUFF_AGGRESSION_WEIGHT = 0.35f;      // Was 0.25f → 0.35f
 	
-	// ✅ NEW: Value bet frequency for balancing (not 100%)
-	public const float VALUE_BET_BASE_FREQ = 0.60f;
-	public const float VALUE_BET_AGGRESSION_WEIGHT = 0.30f;
+	// ✅ REDUCED: Trap less often to extract more value
+	public const float TRAP_PROBABILITY = 0.08f;             // Was 0.20f → 0.08f
+	
+	// ✅ ADJUSTED: Value bet frequencies for better balance
+	public const float VALUE_BET_BASE_FREQ = 0.70f;          // Was 0.60f → 0.70f
+	public const float VALUE_BET_AGGRESSION_WEIGHT = 0.20f;  // Was 0.30f → 0.20f
 }
 
 public partial class PokerDecisionMaker : Node
@@ -228,7 +230,7 @@ public partial class PokerDecisionMaker : Node
 	}
 
 	// ══════════════════════════════════════════════════════════════
-	// CENTRAL CHECK/BET LOGIC - ✅ BALANCED FREQUENCIES
+	// CENTRAL CHECK/BET LOGIC - ✅ CORRECTED & BALANCED
 	// ══════════════════════════════════════════════════════════════
 	
 	private (Decision decision, float plannedBetRatio) DecideCheckOrBet(
@@ -278,39 +280,52 @@ public partial class PokerDecisionMaker : Node
 		valueThreshold += PokerAIConfig.SIZE_FACTOR_VALUE_ADJUST * sizeFactor * (1f - effRiskTol);
 		bluffCeiling -= PokerAIConfig.SIZE_FACTOR_BLUFF_ADJUST * sizeFactor;
 
-		// ✅ VALUE BET - NOW WITH CHECKING FREQUENCY FOR BALANCE
+		// ═══════════════════════════════════════════════════════
+		// VALUE HANDS (>= valueThreshold)
+		// ═══════════════════════════════════════════════════════
 		if (handStrength >= valueThreshold)
 		{
-			// Trap with premium hands
+			// ✅ REDUCED: Trap 8% instead of 20%
 			if (handStrength > 0.85f && player.TrapDecisionSeed < PokerAIConfig.TRAP_PROBABILITY)
 			{
 				GD.Print($"[AI] Trapping with {handStrength:F2} strength");
 				return (Decision.Check, 0f);
 			}
 			
-			// Add checking frequency to medium-strong value hands for balance
+			// ✅ CORRECTED: Check 10-30% of medium-strong value hands
 			if (handStrength < 0.75f)  // Not premium
 			{
-				// Value hands bet 60-90% of the time (not 100%)
+				// Bet 70-90% of the time (check 10-30%)
 				float valueBetFreq = PokerAIConfig.VALUE_BET_BASE_FREQ + 
 									 (effAggression * PokerAIConfig.VALUE_BET_AGGRESSION_WEIGHT);
+				// Steve (0.45 agg): 0.70 + (0.45 * 0.20) = 0.79 = bet 79%, check 21%
+				// Boy Wizard (0.85): 0.70 + (0.85 * 0.20) = 0.87 = bet 87%, check 13%
+				
 				float valueSeed = GetDecisionSeedForStreet(player, street);
 				
-				if (valueSeed >= valueBetFreq)
+				// ✅ CORRECTED: Check when seed EXCEEDS bet frequency
+				if (valueSeed > valueBetFreq)
 				{
 					GD.Print($"[AI] Checking value hand ({handStrength:F2}) for deception");
 					return (Decision.Check, 0f);
 				}
 			}
 			
+			// Bet value hands
 			return (Decision.Bet, plannedBetRatio);
 		}
 
-		// BLUFF (only with very weak hands)
+		// ═══════════════════════════════════════════════════════
+		// BLUFF RANGE (<= bluffCeiling)
+		// ═══════════════════════════════════════════════════════
 		if (handStrength <= bluffCeiling)
 		{
+			// ✅ INCREASED: More aggressive bluff formula
 			float bluffProb = PokerAIConfig.BLUFF_BASE_PROB * effBluffFreq + 
 							  PokerAIConfig.BLUFF_AGGRESSION_WEIGHT * effAggression;
+			// Steve (0.33 bluff, 0.45 agg): 0.55 * 0.33 + 0.35 * 0.45 = 0.34 = 34%
+			// Boy Wizard (0.70, 0.85): 0.55 * 0.70 + 0.35 * 0.85 = 0.68 = 68%
+			
 			float bluffSeed = GetDecisionSeedForStreet(player, street);
 			
 			if (bluffSeed < bluffProb)
@@ -321,29 +336,25 @@ public partial class PokerDecisionMaker : Node
 			return (Decision.Check, 0f);
 		}
 
-		// ✅ MEDIUM HANDS - REDUCED FREQUENCIES FOR BALANCE
+		// ═══════════════════════════════════════════════════════
+		// MEDIUM HANDS (between bluffCeiling and valueThreshold)
+		// ═══════════════════════════════════════════════════════
 		float mediumBetFreq = street switch
 		{
-			Street.Flop => 0.20f + (0.45f * effAggression),    // ~43% for 0.50 agg (was 70%)
-			Street.Turn => 0.25f + (0.50f * effAggression),    // ~50% for 0.50 agg (was 78%)
-			Street.River => 0.15f + (0.40f * effAggression),   // ~35% for 0.50 agg (was 63%)
-			_ => 0.15f + (0.40f * effAggression)
+			Street.Flop => 0.25f + (0.40f * effAggression),    // ~45% at 0.50 agg, 59% at 0.85 agg
+			Street.Turn => 0.20f + (0.45f * effAggression),    // ~43% at 0.50 agg, 58% at 0.85 agg
+			Street.River => 0.15f + (0.35f * effAggression),   // ~33% at 0.50 agg, 45% at 0.85 agg
+			_ => 0.20f + (0.35f * effAggression)
 		};
 		
 		float mediumSeed = GetDecisionSeedForStreet(player, street);
 		if (mediumSeed < mediumBetFreq)
 		{
-			if (street == Street.Turn)
-			{
-				GD.Print($"[AI] 🎯 TURN BET: {handStrength:F2} strength, {plannedBetRatio:F2}x pot");
-			}
-			else
-			{
-				GD.Print($"[AI] Betting medium hand ({handStrength:F2}) for protection/value");
-			}
+			GD.Print($"[AI] Betting medium hand ({handStrength:F2}) for protection/value");
 			return (Decision.Bet, plannedBetRatio);
 		}
 
+		// Check back
 		return (Decision.Check, 0f);
 	}
 
@@ -559,7 +570,7 @@ public partial class PokerDecisionMaker : Node
 		
 		betSize = Mathf.Max(betSize, minRaise);
 		
-		// ✅ River stack commitment with strong hands
+		// River stack commitment with strong hands
 		if (gameState.Street == Street.River && handStrength >= 0.60f)
 		{
 			float stackToPotRatio = player.ChipStack / potSize;

@@ -1,10 +1,11 @@
 using Godot;
 using System;
 using System.Collections.Generic;
+using Godot.Collections;
 
 /// <summary>
 /// Represents an AI-controlled poker player with personality-driven behavior
-/// Handles chip management, hand tracking, tilt processing, and tell display
+/// Handles chip management, hand tracking, tilt processing, and tell / dialogue display
 /// </summary>
 public partial class AIPokerPlayer : Node
 {
@@ -13,6 +14,7 @@ public partial class AIPokerPlayer : Node
 	[Export] public string PlayerName { get; set; }
 	[Export] public int StartingChips { get; set; } = 20000;
 	
+	// Random seeds for per-hand variation
 	public float HandRandomnessSeed { get; private set; }
 	public float BetSizeSeed { get; private set; }
 	public float PreflopDecisionSeed { get; private set; }
@@ -77,17 +79,17 @@ public partial class AIPokerPlayer : Node
 
 	public PlayerAction MakeDecision(GameState gameState)
 	{
-		// ✅ Debug logging
+		// Debug logging
 		GD.Print($"[{PlayerName}] MakeDecision called - IsFolded: {IsFolded}, IsAllIn: {IsAllIn}, ChipStack: {ChipStack}");
 		
-		// ✅ Safety check: If IsAllIn but we have chips, reset it (shouldn't happen but prevents soft-lock)
+		// Safety check: If IsAllIn but we have chips, reset it
 		if (IsAllIn && ChipStack > 0)
 		{
 			GD.PrintErr($"[{PlayerName}] ERROR: IsAllIn=true but ChipStack={ChipStack}! Resetting IsAllIn.");
 			IsAllIn = false;
 		}
 		
-		// ✅ Only return early if ACTUALLY folded/all-in
+		// Only return early if actually folded/all-in
 		if (IsFolded)
 		{
 			GD.Print($"[{PlayerName}] Folded - returning Check");
@@ -100,18 +102,18 @@ public partial class AIPokerPlayer : Node
 			return PlayerAction.Check;
 		}
 		
-		// ✅ Safety: ensure decision maker exists
+		// Safety: ensure decision maker exists
 		if (decisionMaker == null)
 		{
 			GD.PrintErr($"[{PlayerName}] DecisionMaker is null! Folding as fallback.");
 			return PlayerAction.Fold;
 		}
 		
-		// ✅ Call the actual decision logic
+		// Call the actual decision logic
 		GD.Print($"[{PlayerName}] Calling DecisionMaker.DecideAction()");
 		PlayerAction action = decisionMaker.DecideAction(this, gameState);
 		
-		// ✅ Validation: can't check when facing a bet
+		// Validation: can't check when facing a bet
 		float toCall = gameState.CurrentBet - gameState.GetPlayerCurrentBet(this);
 		if (action == PlayerAction.Check && toCall > 0)
 		{
@@ -137,7 +139,6 @@ public partial class AIPokerPlayer : Node
 		return action;
 	}
 
-	
 	public void ProcessHandResult(HandResult result)
 	{
 		float previousTilt = Personality.TiltMeter;
@@ -169,9 +170,9 @@ public partial class AIPokerPlayer : Node
 				break;
 				
 			case HandResult.Win:
-				// ✅ Only reduce tilt on WINS
+				// Only reduce tilt on WINS
 				Personality.ConsecutiveLosses = 0;
-				Personality.ReduceTilt(5f); // Increased from 3 to 5 (wins calm you down more)
+				Personality.ReduceTilt(5f); // Wins calm you down more
 				GD.Print($"{PlayerName} won! Tilt reduced to: {Personality.TiltMeter}");
 				break;
 				
@@ -194,17 +195,17 @@ public partial class AIPokerPlayer : Node
 		IsFolded = false;
 		CurrentBetThisRound = 0;
 		
-		// ✅ Generate all seeds at start of hand for consistency
+		// Generate all seeds at start of hand for consistency
 		HandRandomnessSeed = GD.Randf() - 0.5f; // -0.5 to 0.5
 		BetSizeSeed = GD.Randf();               // 0 to 1
 		
-		// ✅ NEW: Decision seeds per street
+		// Decision seeds per street
 		PreflopDecisionSeed = GD.Randf();
 		FlopDecisionSeed = GD.Randf();
 		TurnDecisionSeed = GD.Randf();
 		RiverDecisionSeed = GD.Randf();
 		
-		// ✅ NEW: Other decision seeds
+		// Other decision seeds
 		TrapDecisionSeed = GD.Randf();
 		AllInCommitmentSeed = GD.Randf();
 		
@@ -214,18 +215,17 @@ public partial class AIPokerPlayer : Node
 		}
 	}
 
-	
 	/// <summary>
-	/// Get an appropriate tell based on current hand strength
+	/// Get an appropriate tell based on current hand strength (for animation / logs)
 	/// Returns empty string if no tell should be shown (25% of the time)
 	/// </summary>
 	public string GetTellForHandStrength(HandStrength strength)
 	{
 		string tellCategory = strength switch
 		{
-			HandStrength.Strong => "strong_hand",
-			HandStrength.Weak => "weak_hand",
-			HandStrength.Bluffing => "bluffing",
+			HandStrength.Strong    => "strong_hand",
+			HandStrength.Weak      => "weak_hand",
+			HandStrength.Bluffing  => "bluffing",
 			_ => ""
 		};
 		
@@ -250,6 +250,77 @@ public partial class AIPokerPlayer : Node
 		
 		return "";
 	}
+
+	/// <summary>
+	/// Returns a spoken dialogue line based on action + hand strength + bluffing.
+	/// Uses TellReliability to decide how honest Strong/Weak/Bluffing lines are,
+	/// and falls back to OnFold/OnBet/etc. when not using a tell.
+	/// </summary>
+	public string GetDialogueForAction(PlayerAction action, HandStrength strength, bool isBluffing)
+	{
+		var p = Personality;
+		var dialog = p.Dialogue;
+
+		// 1) Sometimes use spoken tells (StrongHand / WeakHand / Bluffing)
+		float roll = GD.Randf();
+		bool useTell = roll < p.TellReliability;
+		string spokenLine;
+
+		if (useTell)
+		{
+			if (isBluffing && dialog.ContainsKey("Bluffing"))
+			{
+				spokenLine = GetRandom(dialog["Bluffing"]);
+				GD.Print($"[AI SPOKEN TELL] {spokenLine}");
+				return spokenLine;
+			}
+			
+			if (strength == HandStrength.Strong && dialog.ContainsKey("StrongHand"))
+			{
+				spokenLine = GetRandom(dialog["StrongHand"]);
+				GD.Print($"[AI SPOKEN TELL] {spokenLine}");
+				return spokenLine;
+			}
+			
+			if (strength == HandStrength.Weak && dialog.ContainsKey("WeakHand"))
+			{
+				spokenLine = GetRandom(dialog["WeakHand"]);
+				GD.Print($"[AI SPOKEN TELL] {spokenLine}");
+				return spokenLine;
+			}
+		}
+
+		// 2) Action-specific lines
+		string key = action switch
+		{
+			PlayerAction.Fold  => "OnFold",
+			PlayerAction.Check => "OnCheck",
+			PlayerAction.Call  => "OnCall",
+			//PlayerAction.Bet   => "OnBet",
+			PlayerAction.Raise => "OnRaise",
+			PlayerAction.AllIn => "OnAllIn",
+			_                  => null
+		};
+
+		if (key != null && dialog.ContainsKey(key))
+		{
+			spokenLine = GetRandom(dialog[key]);
+			GD.Print($"[AI SPOKEN ACTION] {spokenLine}");
+			return spokenLine;
+		}
+
+		// 3) No line this turn
+		return "";
+	}
+
+
+	private string GetRandom(Array<string> lines)
+	{
+		if (lines == null || lines.Count == 0)
+			return "";
+		int idx = (int)GD.RandRange(0, lines.Count - 1);
+		return lines[idx];
+	}
 	
 	/// <summary>
 	/// Set the decision maker externally (when not added as child node)
@@ -260,7 +331,6 @@ public partial class AIPokerPlayer : Node
 		GD.Print($"[{PlayerName}] DecisionMaker set externally");
 	}
 
-	
 	/// <summary>
 	/// Determine current hand strength category for tell system
 	/// </summary>
@@ -348,24 +418,6 @@ public partial class AIPokerPlayer : Node
 		return ChipStack >= amount;
 	}
 	
-	///// <summary>
-	///// Reset player state for new hand
-	///// </summary>
-	//public void ResetForNewHand()
-	//{
-		//Hand.Clear();
-		//IsFolded = false;
-		//CurrentBetThisRound = 0;
-		//
-		//if (ChipStack > 0)
-		//{
-			//IsAllIn = false;
-		//}
-		//
-		//// Gradual tilt decay between hands
-		//Personality.ReduceTilt(2f);
-	//}
-	//
 	/// <summary>
 	/// Deal cards to this player
 	/// </summary>
@@ -387,7 +439,9 @@ public partial class AIPokerPlayer : Node
 			BaseFoldThreshold = 0.5f,
 			BaseRiskTolerance = 0.5f,
 			TiltSensitivity = 0.4f,
-			CallTendency = 0.5f
+			CallTendency = 0.5f,
+			Chattiness = 0.5f,
+			TellReliability = 0.5f
 		};
 	}
 	
