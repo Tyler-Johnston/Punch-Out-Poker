@@ -8,6 +8,7 @@ public partial class GameManager : Node
 
 	// --- DEV TEST MODE ---
 	[Export] public bool DevTestMode = true;
+	public int circuitType = 0; // 0 = Minor, 1 = Major, 2 = World
 
 	// --- GAME DATA ---
 	public int PlayerMoney { get; set; } = 1000;
@@ -33,6 +34,17 @@ public partial class GameManager : Node
 		{
 			UnlockOpponent("Steve");
 		}
+	}
+	
+	// circuitType 0 = Minor, 1 = Major, 2 = World
+	public int GetCircuitType()
+	{
+		return circuitType;
+	}
+	
+	public void SetCircuitType(int newCircuitType)
+	{
+		circuitType = newCircuitType;
 	}
 	
 	/// <summary>

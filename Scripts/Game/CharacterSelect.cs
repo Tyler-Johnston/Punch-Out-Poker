@@ -37,8 +37,58 @@ public partial class CharacterSelect : Control
 			PersonalityPreset = preset ?? name;
 		}
 	}
-	
-	private List<OpponentData> _opponents;
+
+	// ---------------------------------------------------------
+	// NEW: Centralized Data Structures (No more switch cases)
+	// ---------------------------------------------------------
+
+	// 1. The Opponent Data (List of Lists)
+	private readonly List<List<OpponentData>> _circuitData = new List<List<OpponentData>>
+	{
+		// Index 0: Minor Circuit
+		new List<OpponentData>
+		{
+			new OpponentData("Steve", 50),
+			new OpponentData("Aryll", 125),
+			new OpponentData("Boy Wizard", 250)
+		},
+
+		// Index 1: Major Circuit
+		new List<OpponentData>
+		{
+			new OpponentData("Cowboy", 500),
+			new OpponentData("Hippie", 750),
+			new OpponentData("Rumi", 1250)
+		},
+
+		// Index 2: World Circuit
+		new List<OpponentData>
+		{
+			new OpponentData("King", 1500),
+			new OpponentData("Old Wizard", 2000),
+			new OpponentData("Spade", 2500)
+		}
+	};
+
+	// 2. The Background Colors for each circuit
+	private readonly Color[] _circuitColors = new Color[]
+	{
+		new Color("3a7d5e97"), // 0: Green (Minor)
+		new Color("ed676397"), // 1: Red (Major)
+		new Color("5f62cd97")  // 2: Blue (World)
+	};
+
+	// 3. The Display Names for each circuit
+	private readonly string[] _circuitNames = new string[]
+	{
+		"MINOR CIRCUIT",
+		"MAJOR CIRCUIT",
+		"WORLD CIRCUIT"
+	};
+
+	// ---------------------------------------------------------
+
+	private List<OpponentData> _currentOpponentsList;
 	private int _currentIndex = 0;
 	private int playerMoney = 0;
 	private int _currentCircuit = 0;
@@ -46,6 +96,7 @@ public partial class CharacterSelect : Control
 	
 	public override void _Ready()
 	{
+		// Positioning code remains the same
 		CenterPortrait.Position = new Vector2(440, 110);
 		CenterFrame.Position = new Vector2(420, 90);
 		
@@ -58,7 +109,7 @@ public partial class CharacterSelect : Control
 		playerMoney = GameManager.Instance.PlayerMoney;
 		BalanceLabel.Text = $"Balance: ${playerMoney}";
 	
-		// Check if we have a last faced opponent
+		// Check if we have a last faced opponent to resume selection
 		_lastFacedOpponent = GameManager.Instance.CurrentOpponentName;
 		
 		if (!string.IsNullOrEmpty(_lastFacedOpponent))
@@ -67,6 +118,12 @@ public partial class CharacterSelect : Control
 		}
 		else
 		{
+			_currentCircuit = GameManager.Instance.GetCircuitType();
+			
+			// Safety clamp
+			if (_currentCircuit < 0 || _currentCircuit >= _circuitData.Count) 
+				_currentCircuit = 0;
+
 			LoadCircuit(_currentCircuit);
 		}
 		
@@ -84,10 +141,10 @@ public partial class CharacterSelect : Control
 	
 	private void LoadLastOpponent()
 	{
-		// Try to find the opponent across all circuits
-		for (int circuit = 0; circuit <= 2; circuit++)
+		// Search through our List of Lists to find where the last opponent lives
+		for (int circuit = 0; circuit < _circuitData.Count; circuit++)
 		{
-			var opponents = GetCircuitOpponents(circuit);
+			var opponents = _circuitData[circuit];
 			for (int i = 0; i < opponents.Count; i++)
 			{
 				if (opponents[i].Name == _lastFacedOpponent)
@@ -103,99 +160,39 @@ public partial class CharacterSelect : Control
 		// If not found, default to Circuit 0
 		LoadCircuit(0);
 	}
-	
-	/// <summary>
-	/// Define opponents for each circuit
-	/// </summary>
-	private List<OpponentData> GetCircuitOpponents(int circuitIndex)
-	{
-		switch (circuitIndex)
-		{
-			case 0: // Minor Circuit (Circuit A)
-				return new List<OpponentData>
-				{
-					new OpponentData("Steve", 50),
-					new OpponentData("Aryll", 125),
-					new OpponentData("Boy Wizard", 250)
-				};
-				
-			case 1: // Major Circuit (Circuit B)
-				return new List<OpponentData>
-				{
-					new OpponentData("Cowboy", 500),
-					new OpponentData("Hippie", 750),
-					new OpponentData("Rumi", 1250)
-				};
-				
-			case 2: // World Circuit (Circuit C)
-				return new List<OpponentData>
-				{
-					new OpponentData("King", 1500),
-					new OpponentData("Old Wizard", 2000),
-					new OpponentData("Spade", 2500)
-				};
-				
-			default:
-				return new List<OpponentData>
-				{
-					new OpponentData("Steve", 50)
-				};
-		}
-	}
 		
 	private void LoadCircuit(int circuitIndex)
 	{
-		_opponents = GetCircuitOpponents(circuitIndex);
+		// Safety check
+		if (circuitIndex < 0 || circuitIndex >= _circuitData.Count)
+		{
+			GD.PrintErr($"Invalid circuit index: {circuitIndex}");
+			circuitIndex = 0;
+		}
+
+		// 1. Set the Data
+		_currentOpponentsList = _circuitData[circuitIndex];
 		_currentIndex = 0;
 		
-		switch (circuitIndex)
+		// 2. Set the UI Label
+		if (CircuitLabel != null) 
 		{
-			case 0:
-				if (CircuitLabel != null) CircuitLabel.Text = "MINOR CIRCUIT";
-				
-				if (BackgroundTint != null)
-				{
-					var tween = CreateTween();
-					tween.TweenProperty(BackgroundTint, "color", new Color("3a7d5e97"), 0.3f);
-				}
-				break;
-				
-			case 1:
-				if (CircuitLabel != null) CircuitLabel.Text = "MAJOR CIRCUIT";
-				
-				if (BackgroundTint != null)
-				{
-					var tween = CreateTween();
-					tween.TweenProperty(BackgroundTint, "color", new Color("ed676397"), 0.3f);
-				}
-				break;
-				
-			case 2:
-				if (CircuitLabel != null) CircuitLabel.Text = "WORLD CIRCUIT";
-				if (BackgroundTint != null)
-				{
-					var tween = CreateTween();
-					tween.TweenProperty(BackgroundTint, "color", new Color("#5f62cd97"), 0.3f);
-				}
-				break;
-			
-			default:
-				if (CircuitLabel != null) CircuitLabel.Text = "MINOR CIRCUIT";
-				if (BackgroundTint != null)
-				{
-					var tween = CreateTween();
-					tween.TweenProperty(BackgroundTint, "color", new Color("3a7d5e97"), 0.3f);
-				}
-				break;
+			CircuitLabel.Text = _circuitNames[circuitIndex];
+		}
+
+		// 3. Set the Background Tint (Tweened)
+		if (BackgroundTint != null)
+		{
+			var tween = CreateTween();
+			tween.TweenProperty(BackgroundTint, "color", _circuitColors[circuitIndex], 0.3f);
 		}
 	}
 
-	
 	private void OnNextCircuitPressed()
 	{
 		_currentCircuit++;
 		
-		if (_currentCircuit > 2)
+		if (_currentCircuit >= _circuitData.Count)
 			_currentCircuit = 0;
 		
 		LoadCircuit(_currentCircuit);
@@ -206,21 +203,21 @@ public partial class CharacterSelect : Control
 	{
 		_currentIndex--;
 		if (_currentIndex < 0)
-			_currentIndex = _opponents.Count - 1;
+			_currentIndex = _currentOpponentsList.Count - 1;
 		UpdateDisplay();
 	}
 	
 	private void OnRightPressed()
 	{
 		_currentIndex++;
-		if (_currentIndex >= _opponents.Count)
+		if (_currentIndex >= _currentOpponentsList.Count)
 			_currentIndex = 0;
 		UpdateDisplay();
 	}
 	
 	private void UpdateDisplay()
 	{
-		if (_opponents == null || _opponents.Count == 0)
+		if (_currentOpponentsList == null || _currentOpponentsList.Count == 0)
 		{
 			CenterName.Text = "Coming Soon";
 			CenterBuyIn.Text = "";
@@ -228,23 +225,26 @@ public partial class CharacterSelect : Control
 			return;
 		}
 	
-		var current = _opponents[_currentIndex];
+		var current = _currentOpponentsList[_currentIndex];
 		bool isCurrentLocked = !IsOpponentUnlocked(current.Name);
 		
 		CenterName.Text = isCurrentLocked ? "???" : current.Name;
 		CenterBuyIn.Text = isCurrentLocked ? "Buy-In: ???" : $"Buy-In: ${current.BuyIn}";
 		LoadPortrait(CenterPortrait, current.Name + " Large", 1.0f, new Vector2(1.0f, 1.0f), isCurrentLocked);
 		
+		// Left Portrait logic
 		int leftIndex = _currentIndex - 1;
-		if (leftIndex < 0) leftIndex = _opponents.Count - 1;
-		bool isLeftLocked = !IsOpponentUnlocked(_opponents[leftIndex].Name);
-		LoadPortrait(LeftPortrait, _opponents[leftIndex].Name + " Small", 0.5f, new Vector2(0.7f, 0.7f), isLeftLocked);
+		if (leftIndex < 0) leftIndex = _currentOpponentsList.Count - 1;
+		bool isLeftLocked = !IsOpponentUnlocked(_currentOpponentsList[leftIndex].Name);
+		LoadPortrait(LeftPortrait, _currentOpponentsList[leftIndex].Name + " Small", 0.5f, new Vector2(0.7f, 0.7f), isLeftLocked);
 		
+		// Right Portrait logic
 		int rightIndex = _currentIndex + 1;
-		if (rightIndex >= _opponents.Count) rightIndex = 0;
-		bool isRightLocked = !IsOpponentUnlocked(_opponents[rightIndex].Name);
-		LoadPortrait(RightPortrait, _opponents[rightIndex].Name + " Small", 0.5f, new Vector2(0.7f, 0.7f), isRightLocked);
+		if (rightIndex >= _currentOpponentsList.Count) rightIndex = 0;
+		bool isRightLocked = !IsOpponentUnlocked(_currentOpponentsList[rightIndex].Name);
+		LoadPortrait(RightPortrait, _currentOpponentsList[rightIndex].Name + " Small", 0.5f, new Vector2(0.7f, 0.7f), isRightLocked);
 		
+		// Button Logic
 		bool canPlay = GameManager.Instance.CanPlayAgainst(current.Name, current.BuyIn);
 		ConfirmButton.Disabled = !canPlay || isCurrentLocked;
 		
@@ -290,9 +290,6 @@ public partial class CharacterSelect : Control
 		portraitNode.Scale = scale;
 	}
 	
-	/// <summary>
-	/// Check if opponent is unlocked using GameManager
-	/// </summary>
 	private bool IsOpponentUnlocked(string opponentName)
 	{
 		return GameManager.Instance.IsOpponentUnlocked(opponentName);
@@ -300,7 +297,7 @@ public partial class CharacterSelect : Control
 	
 	private void OnConfirmPressed()
 	{
-		var opponent = _opponents[_currentIndex];
+		var opponent = _currentOpponentsList[_currentIndex];
 		
 		if (!IsOpponentUnlocked(opponent.Name))
 		{
@@ -314,10 +311,11 @@ public partial class CharacterSelect : Control
 			return;
 		}
 		
-		// Set opponent in GameManager and start match
 		GameManager.Instance.StartMatch(opponent.Name, opponent.BuyIn);
+		GameManager.Instance.SetCircuitType(_currentCircuit);
 		
-		GD.Print($"Starting match vs {opponent.Name} (Buy-in: ${opponent.BuyIn})");
+		
+		GD.Print($"Starting match vs {opponent.Name} (Buy-in: ${opponent.BuyIn}, Circuit: {_currentCircuit})");
 		GetTree().ChangeSceneToFile("res://Scenes/PokerGame.tscn");
 	}
 	

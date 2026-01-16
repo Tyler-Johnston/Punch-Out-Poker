@@ -5,14 +5,14 @@ using System.Collections.Generic;
 
 public partial class PokerGame : Node2D
 {
-	// Core game data
+	// core game data
 	private PackedScene cardVisualScene;
 	private Deck deck;
 	private List<Card> playerHand = new List<Card>();
 	private List<Card> opponentHand = new List<Card>();
 	private List<Card> communityCards = new List<Card>();
 
-	// Card visuals
+	// card visuals
 	private CardVisual playerCard1;
 	private CardVisual playerCard2;
 	private CardVisual opponentCard1;
@@ -38,7 +38,6 @@ public partial class PokerGame : Node2D
 	private Label opponentHandType;
 	private Label betSliderLabel;
 	private Label opponentDialogueLabel;
-	
 	private Label checkCallLabel;
 	private Label betRaiseLabel;
 	
@@ -49,17 +48,18 @@ public partial class PokerGame : Node2D
 	private Texture2D raiseBtnImg;
 	
 	private TextureRect opponentPortrait;
+	private TextureRect tableColor;
 	
-	// Game flow
+	// game flow
 	private Street currentStreet = Street.Preflop;
 	private int playerChips = 100;
 	private int opponentChips = 100;
 
-	// Side Pot / Contribution Tracking
+	// side pot and contribution tracking
 	private int playerContributed = 0;
 	private int opponentContributed = 0;
 	
-	// Game state flags
+	// game state flags
 	private bool isPlayerTurn = true;
 	private bool playerHasButton = false;
 	private bool handInProgress = false;
@@ -74,6 +74,7 @@ public partial class PokerGame : Node2D
 	private Dictionary<Street, bool> playerBetOnStreet = new Dictionary<Street, bool>();
 	private Dictionary<Street, int> playerBetSizeOnStreet = new Dictionary<Street, int>();
 
+	// ais
 	private AIPokerPlayer aiOpponent;
 	private PokerDecisionMaker decisionMaker;
 	private string currentOpponentName;
@@ -125,6 +126,7 @@ public partial class PokerGame : Node2D
 		opponentDialogueLabel = hudControl.GetNode<Label>("OpponentDialogue");
 		
 		opponentPortrait = hudControl.GetNode<TextureRect>("OpponentPortrait");
+		tableColor = hudControl.GetNode<TextureRect>("ColorRect");
 		
 		// slider
 		betSlider = hudControl.GetNode<HSlider>("BetSlider");
@@ -140,20 +142,21 @@ public partial class PokerGame : Node2D
 		betRaiseButton.Pressed += OnBetRaisePressed;
 		betSlider.ValueChanged += OnBetSliderValueChanged;
 
+		// initialize opponent information
 		currentOpponentName = GameManager.Instance.CurrentOpponentName;
 		buyInAmount = GameManager.Instance.CurrentBuyIn;
 		
 		if (string.IsNullOrEmpty(currentOpponentName))
 		{
-			// Default for testing
 			currentOpponentName = "Steve";
-			buyInAmount = 100;
+			buyInAmount = 50;
 			GD.PushWarning("No opponent selected, defaulting to Steve");
 		}
 		
 		GD.Print($"=== VS {currentOpponentName} ===");
 		GD.Print($"Buy-In: ${buyInAmount}");
 		
+		// ai initialization
 		aiOpponent = new AIPokerPlayer();
 		aiOpponent.Personality = LoadOpponentPersonality(currentOpponentName);
 		aiOpponent.ChipStack = buyInAmount;
@@ -161,11 +164,10 @@ public partial class PokerGame : Node2D
 
 		decisionMaker = new PokerDecisionMaker();
 		aiOpponent.AddChild(decisionMaker);
-		AddChild(aiOpponent);
-		// Explicitly set the decision maker reference (in case _Ready() didn't find it)
+		AddChild(aiOpponent); // the line below is what actually worked.
 		aiOpponent.SetDecisionMaker(decisionMaker);
 		
-		// Log personality stats
+		// log personality stats
 		var personality = aiOpponent.Personality;
 		GD.Print($"Personality Stats:");
 		GD.Print($"  Aggression: {personality.BaseAggression:F2}");
@@ -177,17 +179,40 @@ public partial class PokerGame : Node2D
 		playerChips = buyInAmount;
 		opponentChips = buyInAmount;
 		
-		// --- BLIND CALCULATION ---
+		// blind calculation
 		bigBlind = Math.Max(2, buyInAmount / 50); 
 		if (bigBlind % 2 != 0) bigBlind++; 
 		smallBlind = bigBlind / 2;
-
-		// Update Bet Slider default
 		betAmount = bigBlind; 
-		
 		playerHasButton = false; 
-
 		GD.Print($"Blinds: {smallBlind}/{bigBlind}");
+		
+		// get table color depending on the circuit we are in
+		Color middleColor = new Color("#52a67f"); 
+		switch (GameManager.Instance.GetCircuitType())
+		{
+			case 0:
+				middleColor = new Color("#52a67f"); 
+				break;
+			case 1:
+				middleColor = new Color("dc4169ff"); 
+				break;
+			case 2:
+				middleColor = new Color("#127AE3"); 
+				break;
+				
+		}
+		
+		// set the table color
+		var gradientTexture = tableColor.Texture as GradientTexture2D;
+		if (gradientTexture != null)
+		{
+			gradientTexture.Gradient = (Gradient)gradientTexture.Gradient.Duplicate();
+			Color cornerColor = middleColor.Darkened(0.3f);
+
+			gradientTexture.Gradient.SetColor(0, middleColor);
+			gradientTexture.Gradient.SetColor(1, cornerColor);
+		}
 
 		//musicPlayer.Play();
 		LoadOpponentPortrait();

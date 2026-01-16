@@ -619,7 +619,7 @@ public static class PersonalityPresets
 			TiltSensitivity = 0.35f,       // Moderate tilt resistance
 			CallTendency = 0.50f,          // Perfectly balanced
 
-			Chattiness = 0.5f,       // Speaks sometimes, poetic
+			Chattiness = 0.65f,       // Speaks sometimes, poetic
 			TellReliability = 0.50f  // Balanced, not obvious
 		};
 
