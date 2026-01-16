@@ -11,6 +11,7 @@ public partial class CharacterSelect : Control
 	[Export] public TextureRect CenterFrame { get; set; }
 	[Export] public TextureRect LeftFrame { get; set; }
 	[Export] public TextureRect RightFrame { get; set; }
+	[Export] public TextureRect BackgroundImage { get; set; }
 	
 	[Export] public Label CenterName { get; set; }
 	[Export] public Label CenterBuyIn { get; set; }
@@ -37,11 +38,6 @@ public partial class CharacterSelect : Control
 			PersonalityPreset = preset ?? name;
 		}
 	}
-
-	// ---------------------------------------------------------
-	// NEW: Centralized Data Structures (No more switch cases)
-	// ---------------------------------------------------------
-
 	// 1. The Opponent Data (List of Lists)
 	private readonly List<List<OpponentData>> _circuitData = new List<List<OpponentData>>
 	{
@@ -70,7 +66,6 @@ public partial class CharacterSelect : Control
 		}
 	};
 
-	// 2. The Background Colors for each circuit
 	private readonly Color[] _circuitColors = new Color[]
 	{
 		new Color("3a7d5e97"), // 0: Green (Minor)
@@ -78,15 +73,12 @@ public partial class CharacterSelect : Control
 		new Color("5f62cd97")  // 2: Blue (World)
 	};
 
-	// 3. The Display Names for each circuit
 	private readonly string[] _circuitNames = new string[]
 	{
 		"MINOR CIRCUIT",
 		"MAJOR CIRCUIT",
 		"WORLD CIRCUIT"
 	};
-
-	// ---------------------------------------------------------
 
 	private List<OpponentData> _currentOpponentsList;
 	private int _currentIndex = 0;
@@ -108,10 +100,15 @@ public partial class CharacterSelect : Control
 		
 		playerMoney = GameManager.Instance.PlayerMoney;
 		BalanceLabel.Text = $"Balance: ${playerMoney}";
-	
-		// Check if we have a last faced opponent to resume selection
-		_lastFacedOpponent = GameManager.Instance.CurrentOpponentName;
 		
+		// make the background image more pixelated
+		ShaderMaterial pixelMat = new ShaderMaterial();
+		pixelMat.Shader = GD.Load<Shader>("res://Assets/Shaders/PixelateTexture.gdshader");
+		pixelMat.SetShaderParameter("pixel_amount", 256.0f);
+		BackgroundImage.Material = pixelMat;
+
+		// check if we have a last faced opponent to resume selection
+		_lastFacedOpponent = GameManager.Instance.CurrentOpponentName;
 		if (!string.IsNullOrEmpty(_lastFacedOpponent))
 		{
 			LoadLastOpponent();
