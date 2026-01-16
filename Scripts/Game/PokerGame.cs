@@ -213,6 +213,9 @@ public partial class PokerGame : Node2D
 			gradientTexture.Gradient.SetColor(0, middleColor);
 			gradientTexture.Gradient.SetColor(1, cornerColor);
 		}
+		ShaderMaterial retroMat = new ShaderMaterial();
+		retroMat.Shader = GD.Load<Shader>("res://Assets/Shaders/Pixelate.gdshader");
+		tableColor.Material = retroMat;
 
 		//musicPlayer.Play();
 		LoadOpponentPortrait();
