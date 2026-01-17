@@ -15,7 +15,7 @@ public partial class PokerGame
 		opponentChips += pot;
 		pot = 0;
 		
-		// ✅ AI wins - reduce tilt slightly
+		// ai wins so reduce tilt slightly
 		aiOpponent.ProcessHandResult(HandResult.Win);
 		
 		GD.Print($"Stacks -> Player: {playerChips}, Opponent: {opponentChips}");
@@ -24,14 +24,12 @@ public partial class PokerGame
 
 	private void OnCheckCallPressed()
 	{
-		// ✅ NEW: Handle match complete / return to menu
 		if (isMatchComplete)
 		{
 			GetTree().ChangeSceneToFile("res://Scenes/CharacterSelect.tscn");
 			return;
 		}
 		
-		// ✅ NEW: Handle new hand start
 		if (!handInProgress)
 		{
 			checkCallButton.Disabled = true; 

@@ -192,6 +192,18 @@ public partial class PokerGame
 		ShowMessage($"{currentOpponentName} folds");
 		GD.Print($"{currentOpponentName} folds");
 		
+		// If player bet big (> 60% of pot) and AI folded, AI gets annoyed.
+		if (pot > 0 && currentBet > 0)
+		{
+			float betRatio = (float)currentBet / pot;
+			if (betRatio > 0.6f)
+			{
+				float tiltPenalty = 1.0f;
+				aiOpponent.Personality.TiltMeter += tiltPenalty;
+				GD.Print($"[TILT] {currentOpponentName} bullied into folding. Tilt +{tiltPenalty} (Total: {aiOpponent.Personality.TiltMeter:F1})");
+			}
+		}
+
 		int winAmount = pot;
 		playerChips += pot;
 		pot = 0;
@@ -205,6 +217,7 @@ public partial class PokerGame
 			EndHand();
 		};
 	}
+
 
 	/// <summary>
 	/// Handle opponent check

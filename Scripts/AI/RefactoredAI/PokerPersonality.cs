@@ -22,7 +22,7 @@ public partial class PokerPersonality : Resource
 	public float CurrentRiskTolerance { get; private set; }
 
 	// Tilt tracking
-	public float TiltMeter { get; private set; } = 0f;
+	public float TiltMeter { get; set; } = 0f;
 	public int ConsecutiveLosses { get; set; } = 0;
 
 	// Behavioral tells: key = "strong_hand", "weak_hand", "bluffing"

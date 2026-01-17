@@ -187,13 +187,32 @@ public partial class PokerDecisionMaker : Node
 		// 6) Large bet (0.8x+ pot)
 		if (betRatio > 0.8f)
 		{
-			float bluffAdjust = Mathf.Lerp(0.03f, -0.03f, effBluffFreq);
-			float callThreshold = Mathf.Clamp(threshold + bluffAdjust, 0f, 1f);
+			// === NEW HERO CALL LOGIC ===
+			// If we have a decent bluff catcher (0.35+) and are Tilted OR Curious, we call light.
+			bool heroCall = false;
+			float heroCallChance = 0.0f;
 
-			if (handStrength < callThreshold)
+			if (personality.TiltMeter > 3.0f) heroCallChance += 0.20f; // Anger Call
+			if (personality.CallTendency > 0.6f) heroCallChance += 0.15f; // Curious Call
+
+			// Use a unique seed for this specific decision
+			float heroSeed = (handStrength * 100) % 1.0f; 
+			if (handStrength > 0.30f && heroSeed < heroCallChance)
 			{
-				GD.Print($"[AI] Folding to large bet ({betRatio:F1}x pot) on {street} - need {callThreshold:F2}, have {handStrength:F2}");
-				return Decision.Fold;
+				heroCall = true;
+				GD.Print($"[AI] HERO CALL! (Tilt: {personality.TiltMeter}, Strength: {handStrength:F2})");
+			}
+
+			if (!heroCall)
+			{
+				float bluffAdjust = Mathf.Lerp(0.03f, -0.03f, effBluffFreq);
+				float callThreshold = Mathf.Clamp(threshold + bluffAdjust, 0f, 1f);
+
+				if (handStrength < callThreshold)
+				{
+					GD.Print($"[AI] Folding to large bet ({betRatio:F1}x pot) on {street} - need {callThreshold:F2}, have {handStrength:F2}");
+					return Decision.Fold;
+				}
 			}
 		}
 		else
@@ -230,7 +249,7 @@ public partial class PokerDecisionMaker : Node
 	}
 
 	// ══════════════════════════════════════════════════════════════
-	// CENTRAL CHECK/BET LOGIC - ✅ CORRECTED & BALANCED
+	// CENTRAL CHECK/BET LOGIC
 	// ══════════════════════════════════════════════════════════════
 	
 	private (Decision decision, float plannedBetRatio) DecideCheckOrBet(
