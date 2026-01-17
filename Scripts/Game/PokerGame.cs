@@ -247,7 +247,7 @@ public partial class PokerGame : Node2D
 			"Rumi" => PersonalityPresets.CreateRumi(),
 			"King" => PersonalityPresets.CreateKing(),
 			"Old Wizard" => PersonalityPresets.CreateOldWizard(),
-			"Spade" => PersonalityPresets.CreateSpade(),
+			"Akalite" => PersonalityPresets.CreateAkalite(),
 			_ => PersonalityPresets.CreateSteve()
 		};
 	}
@@ -278,7 +278,7 @@ public partial class PokerGame : Node2D
 			playerContributed -= refund;
 			
 			GD.Print($"Side Pot: Returned {refund} uncalled chips to Player.");
-			ShowMessage($"Returned {refund} uncalled chips");
+			//ShowMessage($"Returned {refund} uncalled chips");
 			return true;
 		}
 		else if (opponentContributed > playerContributed)
@@ -289,7 +289,7 @@ public partial class PokerGame : Node2D
 			opponentContributed -= refund;
 			
 			GD.Print($"Side Pot: Returned {refund} uncalled chips to Opponent.");
-			ShowMessage($"Returned {refund} uncalled chips");
+			//ShowMessage($"Returned {refund} uncalled chips");
 			return true;
 		}
 		return false;
@@ -318,6 +318,7 @@ public partial class PokerGame : Node2D
 		GD.Print($"Player hand: {playerHand[0]}, {playerHand[1]}");
 		GD.Print($"Opponent hand: {opponentHand[0]}, {opponentHand[1]}");
 		await ToSignal(GetTree().CreateTimer(0.25f), SceneTreeTimer.SignalName.Timeout);
+		
 		// Animate Player Card 1
 		//deckDealAudioPlayer.Play();
 		await playerCard1.RevealCard(playerHand[0]);

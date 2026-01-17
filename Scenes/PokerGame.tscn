@@ -286,36 +286,36 @@ text = "Bet"
 
 [node name="PlayerStackLabel" type="Label" parent="CanvasLayer/Control"]
 layout_mode = 0
-offset_left = 863.0
+offset_left = 848.0
 offset_top = 620.0
-offset_right = 903.0
-offset_bottom = 665.0
+offset_right = 912.0
+offset_bottom = 672.0
 text = "0"
 label_settings = SubResource("LabelSettings_eibjp")
 
 [node name="OpponentStackLabel" type="Label" parent="CanvasLayer/Control"]
 layout_mode = 0
-offset_left = 263.0
+offset_left = 271.0
 offset_top = 72.0
-offset_right = 303.0
-offset_bottom = 117.0
+offset_right = 311.0
+offset_bottom = 124.0
 text = "0"
 label_settings = SubResource("LabelSettings_o1p3i")
 
 [node name="PotLabel" type="Label" parent="CanvasLayer/Control"]
 layout_mode = 0
-offset_left = 30.0
-offset_top = 511.0
-offset_right = 151.0
-offset_bottom = 563.0
+offset_left = 581.0
+offset_top = 447.0
+offset_right = 702.0
+offset_bottom = 499.0
 text = "Pot: 100"
 label_settings = SubResource("LabelSettings_l4y0v")
 
 [node name="GameStateLabel" type="Label" parent="CanvasLayer/Control"]
 layout_mode = 0
-offset_left = 372.0
+offset_left = 352.0
 offset_top = 233.0
-offset_right = 660.0
+offset_right = 640.0
 offset_bottom = 285.0
 text = "Game State Label"
 label_settings = SubResource("LabelSettings_l4y0v")
@@ -421,7 +421,7 @@ grow_horizontal = 1
 grow_vertical = 1
 
 [node name="OpponentArea" type="Node2D" parent="."]
-position = Vector2(41.666656, 28.666687)
+position = Vector2(43.333317, 28.666685)
 scale = Vector2(1.5, 1.5)
 
 [node name="OpponentCard1" parent="OpponentArea" instance=ExtResource("3_c6vvi")]
@@ -447,7 +447,7 @@ grow_horizontal = 1
 grow_vertical = 1
 
 [node name="CommunityCardsArea" type="Node2D" parent="."]
-position = Vector2(116.66668, 124.66668)
+position = Vector2(109.33334, 123.000015)
 scale = Vector2(1.5, 1.5)
 
 [node name="Flop1" parent="CommunityCardsArea" instance=ExtResource("3_c6vvi")]

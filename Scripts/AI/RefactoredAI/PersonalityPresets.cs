@@ -17,8 +17,8 @@ public static class PersonalityPresets
 			CallTendency = 0.50f,
 
 			// Dialogue settings
-			Chattiness = 0.6f,        // Friendly, talks often
-			TellReliability = 0.75f   // Easy to read (beginner)
+			Chattiness = 0.70f,        // Friendly, talks often
+			TellReliability = 0.85f   // Easy to read (beginner)
 		};
 
 		// === TELLS (behavioral cues) ===
@@ -143,8 +143,8 @@ public static class PersonalityPresets
 			TiltSensitivity = 0.50f,
 			CallTendency = 0.75f,  // Calling station - plays too many hands
 
-			Chattiness = 0.8f,       // Talkative, emotional
-			TellReliability = 0.85f  // Very easy to read
+			Chattiness = 0.80f,       // Talkative, emotional
+			TellReliability = 0.75f  // Very easy to read
 		};
 
 		personality.Tells["strong_hand"] = new Godot.Collections.Array<string>
@@ -963,11 +963,11 @@ public static class PersonalityPresets
 		return personality;
 	}
 
-	public static PokerPersonality CreateSpade()
+	public static PokerPersonality CreateAkalite()
 	{
 		var personality = new PokerPersonality
 		{
-			CharacterName = "Spade",
+			CharacterName = "Akalite",
 			BaseAggression = 0.60f,        // Solver-based balanced aggression
 			BaseBluffFrequency = 0.50f,    // Optimal bluff frequency
 			BaseFoldThreshold = 0.46f,     // Mathematically sound

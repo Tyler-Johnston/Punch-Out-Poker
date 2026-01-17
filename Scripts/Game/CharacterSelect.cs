@@ -62,7 +62,7 @@ public partial class CharacterSelect : Control
 		{
 			new OpponentData("King", 1500),
 			new OpponentData("Old Wizard", 2000),
-			new OpponentData("Spade", 2500)
+			new OpponentData("Akalite", 2500)
 		}
 	};
 

@@ -64,7 +64,7 @@ public partial class GameManager : Node
 		UnlockOpponent("Rumi");
 		UnlockOpponent("King");
 		UnlockOpponent("Old Wizard");
-		UnlockOpponent("Spade");
+		UnlockOpponent("Akalite");
 				
 		GD.Print($"Dev Mode: Unlocked {_unlockedOpponents.Count} opponents");
 	}
@@ -203,7 +203,7 @@ public partial class GameManager : Node
 				UnlockOpponent("Old Wizard");
 				break;
 				
-			case "Spade":
+			case "Akalite":
 				break;
 		}
 	}
