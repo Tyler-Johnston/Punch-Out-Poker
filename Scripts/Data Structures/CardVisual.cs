@@ -1,6 +1,7 @@
 using Godot;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 public partial class CardVisual : Control
 {
@@ -27,8 +28,8 @@ public partial class CardVisual : Control
 		// Preload all card textures
 		LoadAllCardTextures();
 		
-		// Load card back (use joker or create a separate back image)
-		cardBackTexture = GD.Load<Texture2D>("res://Assets/Textures/card_pngs/card_backs/card_back_1.png");
+		// Load card back
+		cardBackTexture = GD.Load<Texture2D>($"res://Assets/Textures/card_pngs/card_backs/card_back_{GameManager.Instance.GetCircuitType() + 1}.png");
 		
 		// Set initial size based on card texture
 		if (cardTextures.Count > 0)
@@ -117,19 +118,34 @@ public partial class CardVisual : Control
 		cardTexture.Texture = cardBackTexture;
 	}
 	
-	// Optional: Animated card reveal
-	public async void RevealCard(Card card)
-	{
-		// Flip animation
-		var tween = CreateTween();
-		tween.SetTrans(Tween.TransitionType.Quad);
-		tween.TweenProperty(cardTexture, "scale:x", 0.0f, 0.15f);
-		await ToSignal(tween, Tween.SignalName.Finished);
-		
-		ShowCard(card);
-		
-		tween = CreateTween();
-		tween.SetTrans(Tween.TransitionType.Quad);
-		tween.TweenProperty(cardTexture, "scale:x", 1.0f, 0.15f);
-	}
+public async Task RevealCard(Card card)
+{
+	// IMPORTANT: Ensure the pivot is exactly in the center, or it will "slide" while flipping
+	cardTexture.PivotOffset = cardTexture.Size / 2;
+
+	// Phase 1: Flip halfway (Show Back -> Edge)
+	var tween = CreateTween();
+	tween.SetEase(Tween.EaseType.In); // Start slow, speed up
+	tween.SetTrans(Tween.TransitionType.Sine); // Smooth sine wave
+	
+	// Scale X to 0 (make it thin like a line)
+	tween.TweenProperty(cardTexture, "scale:x", 0.0f, 0.15f);
+	
+	await ToSignal(tween, Tween.SignalName.Finished);
+
+	// Phase 2: Swap Texture (The magic trick)
+	ShowCard(card);
+
+	// Phase 3: Flip rest of the way (Edge -> Show Front)
+	tween = CreateTween();
+	tween.SetEase(Tween.EaseType.Out); // Start fast, slow down to stop
+	tween.SetTrans(Tween.TransitionType.Sine);
+	
+	// Scale X back to 1 (full width)
+	tween.TweenProperty(cardTexture, "scale:x", 1.0f, 0.15f);
+
+	await ToSignal(tween, Tween.SignalName.Finished);
+}
+
+
 }

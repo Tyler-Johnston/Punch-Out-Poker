@@ -1,14 +1,15 @@
-// PokerGame.GameFlow.cs
 using Godot;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 public partial class PokerGame
 {
 	// Game state fields
 	private bool isMatchComplete = false;
 
-	private void AdvanceStreet()
+	// === CHANGED TO ASYNC ===
+	private async void AdvanceStreet()
 	{
 		ResetBettingRound();
 		aiBluffedThisHand = false;
@@ -34,8 +35,10 @@ public partial class PokerGame
 				return;
 		}
 
-		DealCommunityCards(nextStreet);
-		RevealCommunityCards(nextStreet);
+		// === CHANGED: Await the animation to finish ===
+		await DealCommunityCards(nextStreet);
+		
+		// RevealCommunityCards(nextStreet); // REMOVED (Merged into DealCommunityCards)
 		currentStreet = nextStreet;
 
 		// All-in scenarios
@@ -345,105 +348,58 @@ public partial class PokerGame
 		
 		return true;
 	}
-
-
-	private async void ShowDown()
+	
+	/// <summary>
+	/// AI decision making using personality + dialogue system
+	/// </summary>
+	private PlayerAction DecideAIAction()
 	{
-		GD.Print("\n=== Showdown ===");
+		// Create game state for AI decision maker
+		GameState gameState = new GameState
+		{
+			CommunityCards = new List<Card>(communityCards),
+			PotSize = pot,
+			CurrentBet = currentBet,
+			Street = currentStreet,
+			BigBlind = bigBlind,
+			IsAIInPosition = DetermineAIPosition()
+		};
+		gameState.SetPlayerBet(aiOpponent, opponentBet);
 		
-		// 1. Process Refunds First
-		bool refundOccurred = ReturnUncalledChips();
-
-		if (refundOccurred)
-		{
-			await ToSignal(GetTree().CreateTimer(1.5f), SceneTreeTimer.SignalName.Timeout);
-		}
-
-		opponentCard1.ShowCard(opponentHand[0]);
-		opponentCard2.ShowCard(opponentHand[1]);
-
-		int playerRank = HandEvaluator.EvaluateHand(playerHand, communityCards);
-		int opponentRank = HandEvaluator.EvaluateHand(opponentHand, communityCards);
-
-		string playerHandName = HandEvaluator.GetHandDescription(playerHand, communityCards);
-		string opponentHandName = HandEvaluator.GetHandDescription(opponentHand, communityCards);
-
-		playerHandType.Text = playerHandName;
-		opponentHandType.Text = opponentHandName;
-
-		int result = HandEvaluator.CompareHands(playerRank, opponentRank);
-		string message;
-		HandResult aiHandResult;
+		// 1) Get AI decision (Fold/Check/Call/Raise/AllIn)
+		PlayerAction action = aiOpponent.MakeDecision(gameState);
 		
-		// ✅ SAFE: Store pot amount before any modifications
-		int finalPot = pot;
-
-		if (result > 0)
+		// 2) Evaluate hand strength category for tells / dialogue
+		HandStrength strength = aiOpponent.DetermineHandStrengthCategory(gameState);
+		
+		// 3) Get a *behavior* tell key (for logs/animations)
+		string tellKey = aiOpponent.GetTellForHandStrength(strength);
+		if (!string.IsNullOrEmpty(tellKey))
 		{
-			// Player wins
-			GD.Print("\nPLAYER WINS!");
-			message = $"You win ${finalPot} with {playerHandName}!";  // ✅ Use finalPot
-			
-			if (opponentRank <= 2467)
-			{
-				GD.Print($"{currentOpponentName} suffered a bad beat!");
-				aiHandResult = HandResult.BadBeat;
-			}
-			else if (aiBluffedThisHand && opponentRank > 6185)
-			{
-				GD.Print($"{currentOpponentName} was bluffing!");
-				aiHandResult = HandResult.BluffCaught;
-			}
-			else
-			{
-				aiHandResult = HandResult.Loss;
-			}
-			
-			playerChips += pot;
-			aiOpponent.ProcessHandResult(aiHandResult);
+			GD.Print($"[TELL] {currentOpponentName}: {tellKey}");
+			// If you later add animations, you can map tellKey -> animation here
 		}
-		else if (result < 0)
+		
+		// 4) Get a spoken dialogue line (what appears in the label)
+		string dialogueLine = aiOpponent.GetDialogueForAction(
+			action,
+			strength,
+			aiBluffedThisHand // set this from your bluff-tracking logic if you want
+		);
+		
+		// 5) Apply chattiness: chance that they say nothing
+		float chatRoll = GD.Randf();
+		if (chatRoll <= aiOpponent.Personality.Chattiness && !string.IsNullOrEmpty(dialogueLine))
 		{
-			// Opponent wins
-			GD.Print("\nOPPONENT WINS!");
-			message = $"{currentOpponentName} wins ${finalPot} with {opponentHandName}";  // ✅ Use finalPot
-			
-			if (aiBluffedThisHand)
-			{
-				GD.Print($"{currentOpponentName} won with a bluff!");
-			}
-			else if (opponentRank < 1609)
-			{
-				GD.Print($"{currentOpponentName} had a strong hand!");
-			}
-			
-			opponentChips += pot;
-			aiOpponent.ChipStack = opponentChips;
-			aiOpponent.ProcessHandResult(HandResult.Win);
-			
-			if (playerRank <= 2467)
-			{
-				GD.Print("You suffered a bad beat!");
-			}
+			opponentDialogueLabel.Text = dialogueLine;
 		}
 		else
 		{
-			// Split pot
-			GD.Print("\nSPLIT POT!");
-			int split = pot / 2;
-			message = $"Split pot - ${split} each!";
-			playerChips += split;
-			opponentChips += pot - split;
-			aiOpponent.ChipStack = opponentChips;
-			
-			aiOpponent.ProcessHandResult(HandResult.Neutral);
+			// Silent this turn
+			opponentDialogueLabel.Text = "";
 		}
-
-		ShowMessage(message);
-		GD.Print($"Stacks -> Player: {playerChips}, Opponent: {opponentChips}");
-		GD.Print($"AI Tilt Level: {aiOpponent.Personality.TiltMeter:F1}");
 		
-		EndHand();  // This might set pot = 0, so we stored it earlier
+		return action;
 	}
 
 }

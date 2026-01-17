@@ -1,7 +1,7 @@
-// PokerGame.cs
 using Godot;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks; // Added for Task
 
 public partial class PokerGame : Node2D
 {
@@ -164,7 +164,7 @@ public partial class PokerGame : Node2D
 
 		decisionMaker = new PokerDecisionMaker();
 		aiOpponent.AddChild(decisionMaker);
-		AddChild(aiOpponent); // the line below is what actually worked.
+		AddChild(aiOpponent); 
 		aiOpponent.SetDecisionMaker(decisionMaker);
 		
 		// log personality stats
@@ -228,7 +228,6 @@ public partial class PokerGame : Node2D
 	/// </summary>
 	private PokerPersonality LoadOpponentPersonality(string opponentName)
 	{
-		// Try to load from .tres file first
 		string resourcePath = $"res://Resources/Personalities/{opponentName.ToLower().Replace(" ", "_")}_personality.tres";
 		
 		if (ResourceLoader.Exists(resourcePath))
@@ -237,7 +236,6 @@ public partial class PokerGame : Node2D
 			return GD.Load<PokerPersonality>(resourcePath);
 		}
 		
-		// Fall back to preset factory
 		GD.Print($"Loading personality from preset: {opponentName}");
 		return opponentName switch
 		{
@@ -250,7 +248,7 @@ public partial class PokerGame : Node2D
 			"King" => PersonalityPresets.CreateKing(),
 			"Old Wizard" => PersonalityPresets.CreateOldWizard(),
 			"Spade" => PersonalityPresets.CreateSpade(),
-			_ => PersonalityPresets.CreateSteve() // Default fallback
+			_ => PersonalityPresets.CreateSteve()
 		};
 	}
 
@@ -297,7 +295,8 @@ public partial class PokerGame : Node2D
 		return false;
 	}
 
-	private void DealInitialHands()
+	// === UPDATED ASYNC METHOD WITH ANIMATION ===
+	private async Task DealInitialHands()
 	{
 		GD.Print("\n=== Dealing Initial Hands ===");
 		playerHand.Clear();
@@ -319,13 +318,23 @@ public partial class PokerGame : Node2D
 		GD.Print($"Player hand: {playerHand[0]}, {playerHand[1]}");
 		GD.Print($"Opponent hand: {opponentHand[0]}, {opponentHand[1]}");
 
-		playerCard1.ShowCard(playerHand[0]);
-		playerCard2.ShowCard(playerHand[1]);
+		// Animate Player Card 1
+		deckDealAudioPlayer.Play();
+		await playerCard1.RevealCard(playerHand[0]);
+
+		// Animate Player Card 2
+		deckDealAudioPlayer.Play();
+		await playerCard2.RevealCard(playerHand[1]);
+
+		// Opponent cards stay face down
+		deckDealAudioPlayer.Play();
 		opponentCard1.ShowBack();
+		deckDealAudioPlayer.Play();
 		opponentCard2.ShowBack();
 	}
 
-	private void DealCommunityCards(Street street)
+	// === UPDATED ASYNC METHOD MERGING DEAL & REVEAL ===
+	public async Task DealCommunityCards(Street street)
 	{
 		GD.Print($"\n=== Community Cards: {street} ===");
 		switch (street)
@@ -336,40 +345,36 @@ public partial class PokerGame : Node2D
 				communityCards.Add(deck.Deal());
 				GD.Print($"Flop: {communityCards[0]}, {communityCards[1]}, {communityCards[2]}");
 				ShowMessage("Flop dealt");
+				
+				deckDealAudioPlayer.Play();
+				await flop1.RevealCard(communityCards[0]);
+				await flop2.RevealCard(communityCards[1]);
+				await flop3.RevealCard(communityCards[2]);
 				break;
+				
 			case Street.Turn:
 				communityCards.Add(deck.Deal());
 				GD.Print($"Turn: {communityCards[3]}");
 				ShowMessage("Turn card");
+				
+				deckDealAudioPlayer.Play();
+				await turnCard.RevealCard(communityCards[3]);
 				break;
+				
 			case Street.River:
 				communityCards.Add(deck.Deal());
 				GD.Print($"River: {communityCards[4]}");
 				ShowMessage("River card");
+				
+				deckDealAudioPlayer.Play();
+				await riverCard.RevealCard(communityCards[4]);
 				break;
 		}
 	}
 
-	private void RevealCommunityCards(Street street)
-	{
-		GD.Print($"\n=== Reveal Community Cards: {street} ===");
-		switch (street)
-		{
-			case Street.Flop:
-				flop1.ShowCard(communityCards[0]);
-				flop2.ShowCard(communityCards[1]);
-				flop3.ShowCard(communityCards[2]);
-				break;
-			case Street.Turn:
-				turnCard.ShowCard(communityCards[3]);
-				break;
-			case Street.River:
-				riverCard.ShowCard(communityCards[4]);
-				break;
-		}
-	}
+	// Note: Old RevealCommunityCards method is deleted.
 	
-	private void StartNewHand()
+	private async void StartNewHand()
 	{
 		if (!waitingForNextGame && handInProgress) return; 
 		waitingForNextGame = false;
@@ -401,7 +406,7 @@ public partial class PokerGame : Node2D
 
 		deck = new Deck();
 		deck.Shuffle();
-		deckDealAudioPlayer.Play();
+		// deckDealAudioPlayer.Play(); // Handled in deal method
 
 		pot = 0;
 		playerContributed = 0;
@@ -438,7 +443,7 @@ public partial class PokerGame : Node2D
 		turnCard.ShowBack();
 		riverCard.ShowBack();
 
-		DealInitialHands();
+		await DealInitialHands(); // Await the animation here
 		currentStreet = Street.Preflop;
 		handInProgress = true;
 
@@ -543,78 +548,111 @@ public partial class PokerGame : Node2D
 			GD.PrintErr($"Portrait not found: {portraitPath}");
 		}
 	}
-//
-	//public void UpdateOpponentDialogue(HandStrength handStrength, float tiltLevel = 0)
-	//{
-		//// Get hand evaluation
-		//string handEval = HandEvaluator.GetHandDescription(opponentHand, communityCards);
-		//
-		//// Show personality info
-		//var personality = aiOpponent.Personality;
-		//opponentDialogueLabel.Text = $"{handEval}";
-		//
-		//if (tiltLevel > 20)
-		//{
-			//opponentDialogueLabel.Text += $" [TILTED: {tiltLevel:F0}]";
-		//}
-		//
-		//// Show current stats (affected by tilt)
-		//GD.Print($"[AI STATE] Agg: {personality.CurrentAggression:F2}, " +
-				 //$"Bluff: {personality.CurrentBluffFrequency:F2}, " +
-				 //$"Tilt: {tiltLevel:F1}");
-	//}
 	
-	/// <summary>
-	/// AI decision making using personality + dialogue system
-	/// </summary>
-	private PlayerAction DecideAIAction()
+	private async void ShowDown()
 	{
-		// Create game state for AI decision maker
-		GameState gameState = new GameState
+		GD.Print("\n=== Showdown ===");
+		
+		// 1. Process Refunds First
+		bool refundOccurred = ReturnUncalledChips();
+
+		if (refundOccurred)
 		{
-			CommunityCards = new List<Card>(communityCards),
-			PotSize = pot,
-			CurrentBet = currentBet,
-			Street = currentStreet,
-			BigBlind = bigBlind,
-			IsAIInPosition = DetermineAIPosition()
-		};
-		gameState.SetPlayerBet(aiOpponent, opponentBet);
-		
-		// 1) Get AI decision (Fold/Check/Call/Raise/AllIn)
-		PlayerAction action = aiOpponent.MakeDecision(gameState);
-		
-		// 2) Evaluate hand strength category for tells / dialogue
-		HandStrength strength = aiOpponent.DetermineHandStrengthCategory(gameState);
-		
-		// 3) Get a *behavior* tell key (for logs/animations)
-		string tellKey = aiOpponent.GetTellForHandStrength(strength);
-		if (!string.IsNullOrEmpty(tellKey))
-		{
-			GD.Print($"[TELL] {currentOpponentName}: {tellKey}");
-			// If you later add animations, you can map tellKey -> animation here
+			await ToSignal(GetTree().CreateTimer(1.5f), SceneTreeTimer.SignalName.Timeout);
 		}
+
+		// Reveal Opponent Hand with animation
+		deckDealAudioPlayer.Play();
+		await opponentCard1.RevealCard(opponentHand[0]);
 		
-		// 4) Get a spoken dialogue line (what appears in the label)
-		string dialogueLine = aiOpponent.GetDialogueForAction(
-			action,
-			strength,
-			aiBluffedThisHand // set this from your bluff-tracking logic if you want
-		);
+		await ToSignal(GetTree().CreateTimer(0.5f), SceneTreeTimer.SignalName.Timeout);
 		
-		// 5) Apply chattiness: chance that they say nothing
-		float chatRoll = GD.Randf();
-		if (chatRoll <= aiOpponent.Personality.Chattiness && !string.IsNullOrEmpty(dialogueLine))
+		deckDealAudioPlayer.Play();
+		await opponentCard2.RevealCard(opponentHand[1]);
+		
+		await ToSignal(GetTree().CreateTimer(1.0f), SceneTreeTimer.SignalName.Timeout);
+
+		int playerRank = HandEvaluator.EvaluateHand(playerHand, communityCards);
+		int opponentRank = HandEvaluator.EvaluateHand(opponentHand, communityCards);
+
+		string playerHandName = HandEvaluator.GetHandDescription(playerHand, communityCards);
+		string opponentHandName = HandEvaluator.GetHandDescription(opponentHand, communityCards);
+
+		playerHandType.Text = playerHandName;
+		opponentHandType.Text = opponentHandName;
+
+		int result = HandEvaluator.CompareHands(playerRank, opponentRank);
+		string message;
+		HandResult aiHandResult;
+		
+		int finalPot = pot;
+
+		if (result > 0)
 		{
-			opponentDialogueLabel.Text = dialogueLine;
+			// Player wins
+			GD.Print("\nPLAYER WINS!");
+			message = $"You win ${finalPot} with {playerHandName}!";
+			
+			if (opponentRank <= 2467)
+			{
+				GD.Print($"{currentOpponentName} suffered a bad beat!");
+				aiHandResult = HandResult.BadBeat;
+			}
+			else if (aiBluffedThisHand && opponentRank > 6185)
+			{
+				GD.Print($"{currentOpponentName} was bluffing!");
+				aiHandResult = HandResult.BluffCaught;
+			}
+			else
+			{
+				aiHandResult = HandResult.Loss;
+			}
+			
+			playerChips += pot;
+			aiOpponent.ProcessHandResult(aiHandResult);
+		}
+		else if (result < 0)
+		{
+			// Opponent wins
+			GD.Print("\nOPPONENT WINS!");
+			message = $"{currentOpponentName} wins ${finalPot} with {opponentHandName}";
+			
+			if (aiBluffedThisHand)
+			{
+				GD.Print($"{currentOpponentName} won with a bluff!");
+			}
+			else if (opponentRank < 1609)
+			{
+				GD.Print($"{currentOpponentName} had a strong hand!");
+			}
+			
+			opponentChips += pot;
+			aiOpponent.ChipStack = opponentChips;
+			aiOpponent.ProcessHandResult(HandResult.Win);
+			
+			if (playerRank <= 2467)
+			{
+				GD.Print("You suffered a bad beat!");
+			}
 		}
 		else
 		{
-			// Silent this turn
-			opponentDialogueLabel.Text = "";
+			// Split pot
+			GD.Print("\nSPLIT POT!");
+			int split = pot / 2;
+			message = $"Split pot - ${split} each!";
+			playerChips += split;
+			opponentChips += pot - split;
+			aiOpponent.ChipStack = opponentChips;
+			
+			aiOpponent.ProcessHandResult(HandResult.Neutral);
 		}
+
+		ShowMessage(message);
+		GD.Print($"Stacks -> Player: {playerChips}, Opponent: {opponentChips}");
+		GD.Print($"AI Tilt Level: {aiOpponent.Personality.TiltMeter:F1}");
 		
-		return action;
+		EndHand();
 	}
 
 	
