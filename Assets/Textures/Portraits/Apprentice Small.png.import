@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dgtfci13ncx7g"
-path="res://.godot/imported/Spade Large.png-e7660247af7a658663281ca96c5a1df5.ctex"
+uid="uid://cnhc7kyj180vc"
+path="res://.godot/imported/Apprentice Small.png-a2f672004ad8471ed0b7ccd76933a7f8.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/Textures/Portraits/Spade Large.png"
-dest_files=["res://.godot/imported/Spade Large.png-e7660247af7a658663281ca96c5a1df5.ctex"]
+source_file="res://Assets/Textures/Portraits/Apprentice Small.png"
+dest_files=["res://.godot/imported/Apprentice Small.png-a2f672004ad8471ed0b7ccd76933a7f8.ctex"]
 
 [params]
 

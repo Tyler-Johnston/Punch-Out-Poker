@@ -607,11 +607,11 @@ public static class PersonalityPresets
 		return personality;
 	}
 
-	public static PokerPersonality CreateRumi()
+	public static PokerPersonality CreateApprentice()
 	{
 		var personality = new PokerPersonality
 		{
-			CharacterName = "Rumi",
+			CharacterName = "Apprentice",
 			BaseAggression = 0.50f,        // Balanced aggression
 			BaseBluffFrequency = 0.35f,    // Strategic bluffs
 			BaseFoldThreshold = 0.47f,     // Balanced range

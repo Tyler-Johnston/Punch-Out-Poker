@@ -52,9 +52,9 @@ public partial class CharacterSelect : Control
 		// Index 1: Major Circuit
 		new List<OpponentData>
 		{
-			new OpponentData("Cowboy", 500),
+			new OpponentData("Apprentice", 500),
 			new OpponentData("Hippie", 750),
-			new OpponentData("Rumi", 1250)
+			new OpponentData("Cowboy", 1250)
 		},
 
 		// Index 2: World Circuit

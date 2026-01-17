@@ -59,9 +59,9 @@ public partial class GameManager : Node
 		UnlockOpponent("Steve");
 		UnlockOpponent("Aryll");
 		UnlockOpponent("Boy Wizard");
-		UnlockOpponent("Cowboy");
+		UnlockOpponent("Apprentice");
 		UnlockOpponent("Hippie");
-		UnlockOpponent("Rumi");
+		UnlockOpponent("Cowboy");
 		UnlockOpponent("King");
 		UnlockOpponent("Old Wizard");
 		UnlockOpponent("Akalite");
@@ -184,20 +184,21 @@ public partial class GameManager : Node
 				break;
 				
 			case "Boy Wizard":
-				UnlockOpponent("Cowboy");
+				UnlockOpponent("Apprentice");
 				break;
 				
-			case "Cowboy":
+			case "Apprentice":
 				UnlockOpponent("Hippie");
 				break;
 				
 			case "Hippie":
-				UnlockOpponent("Rumi");
+				UnlockOpponent("Cowboy");
 				break;
 				
-			case "Rumi":
+			case "Cowboy":
 				UnlockOpponent("King");
 				break;
+				
 				
 			case "King":
 				UnlockOpponent("Old Wizard");
