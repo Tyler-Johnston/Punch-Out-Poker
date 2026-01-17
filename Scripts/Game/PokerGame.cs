@@ -317,14 +317,15 @@ public partial class PokerGame : Node2D
 
 		GD.Print($"Player hand: {playerHand[0]}, {playerHand[1]}");
 		GD.Print($"Opponent hand: {opponentHand[0]}, {opponentHand[1]}");
-
+		await ToSignal(GetTree().CreateTimer(0.25f), SceneTreeTimer.SignalName.Timeout);
 		// Animate Player Card 1
-		deckDealAudioPlayer.Play();
+		//deckDealAudioPlayer.Play();
 		await playerCard1.RevealCard(playerHand[0]);
+		await ToSignal(GetTree().CreateTimer(0.25f), SceneTreeTimer.SignalName.Timeout);
 
 		// Animate Player Card 2
-		deckDealAudioPlayer.Play();
 		await playerCard2.RevealCard(playerHand[1]);
+		await ToSignal(GetTree().CreateTimer(0.25f), SceneTreeTimer.SignalName.Timeout);
 
 		// Opponent cards stay face down
 		deckDealAudioPlayer.Play();
@@ -348,7 +349,9 @@ public partial class PokerGame : Node2D
 				
 				deckDealAudioPlayer.Play();
 				await flop1.RevealCard(communityCards[0]);
+				await ToSignal(GetTree().CreateTimer(0.25f), SceneTreeTimer.SignalName.Timeout);
 				await flop2.RevealCard(communityCards[1]);
+				await ToSignal(GetTree().CreateTimer(0.25f), SceneTreeTimer.SignalName.Timeout);
 				await flop3.RevealCard(communityCards[2]);
 				break;
 				
@@ -359,6 +362,7 @@ public partial class PokerGame : Node2D
 				
 				deckDealAudioPlayer.Play();
 				await turnCard.RevealCard(communityCards[3]);
+				await ToSignal(GetTree().CreateTimer(0.25f), SceneTreeTimer.SignalName.Timeout);
 				break;
 				
 			case Street.River:
@@ -368,6 +372,7 @@ public partial class PokerGame : Node2D
 				
 				deckDealAudioPlayer.Play();
 				await riverCard.RevealCard(communityCards[4]);
+				await ToSignal(GetTree().CreateTimer(0.25f), SceneTreeTimer.SignalName.Timeout);
 				break;
 		}
 	}
@@ -394,7 +399,7 @@ public partial class PokerGame : Node2D
 		checkCallButton.Disabled = false;
 
 		GD.Print("\n=== New Hand ===");
-		ShowMessage("New hand starting...");
+		ShowMessage("");
 
 		betSlider.Visible = true;
 		foldButton.Visible = true;
@@ -443,7 +448,7 @@ public partial class PokerGame : Node2D
 		turnCard.ShowBack();
 		riverCard.ShowBack();
 
-		await DealInitialHands(); // Await the animation here
+		await DealInitialHands();
 		currentStreet = Street.Preflop;
 		handInProgress = true;
 
