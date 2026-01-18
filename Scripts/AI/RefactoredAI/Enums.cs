@@ -112,3 +112,15 @@ public enum Street
 	Turn,
 	River
 }
+
+public enum Expression
+{
+	Neutral = 0,
+	Happy = 1,
+	Sad = 2,
+	Angry = 3,
+	Surprised = 4,
+	Annoyed = 5,
+	Worried = 6,
+	Smirk = 7
+}

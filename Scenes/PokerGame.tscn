@@ -1,9 +1,11 @@
-[gd_scene load_steps=34 format=3 uid="uid://b5sq1675fwcio"]
+[gd_scene load_steps=36 format=3 uid="uid://b5sq1675fwcio"]
 
 [ext_resource type="Script" uid="uid://8k6pqsmgt5pe" path="res://Scripts/Game/PokerGame.cs" id="1_8w0ed"]
 [ext_resource type="FontFile" uid="uid://dmret52s833gh" path="res://Assets/Fonts/Jersey_10/Jersey10-Regular.ttf" id="2_j8upv"]
 [ext_resource type="PackedScene" uid="uid://dm1t1olfbu82u" path="res://Scenes/CardVisual.tscn" id="3_c6vvi"]
+[ext_resource type="Texture2D" uid="uid://dtkuv1jg1wjh1" path="res://Assets/Textures/Frames/card_background.png" id="3_xxe2x"]
 [ext_resource type="AudioStream" uid="uid://b3h8kitkwugq8" path="res://Assets/SFX/CardAudio/DeckDeal/DeckDeal1.wav" id="4_5ejkc"]
+[ext_resource type="Texture2D" uid="uid://daasu3i5bdok6" path="res://Assets/Textures/expressions/king_expressions.png" id="4_u1fmj"]
 [ext_resource type="AudioStream" uid="uid://ctdqqmnk4qhfp" path="res://Assets/SFX/CardAudio/DeckDeal/DeckDeal2.wav" id="5_34q52"]
 [ext_resource type="AudioStream" uid="uid://yfg63qsfbhia" path="res://Assets/SFX/CardAudio/DeckDeal/DeckDeal3.wav" id="6_h5gdr"]
 [ext_resource type="AudioStream" uid="uid://bc6f5w4ndgos4" path="res://Assets/SFX/CardAudio/DeckDeal/DeckDeal4.wav" id="7_47o1s"]
@@ -393,6 +395,15 @@ offset_left = 1049.0
 offset_top = 28.0
 offset_right = 1239.0
 offset_bottom = 210.0
+texture = ExtResource("3_xxe2x")
+expand_mode = 5
+stretch_mode = 4
+
+[node name="Sprite2D" type="Sprite2D" parent="CanvasLayer"]
+position = Vector2(1142, 127)
+scale = Vector2(1.5, 1.5)
+texture = ExtResource("4_u1fmj")
+hframes = 8
 
 [node name="PlayerArea" type="Node2D" parent="."]
 position = Vector2(376, 210.00002)

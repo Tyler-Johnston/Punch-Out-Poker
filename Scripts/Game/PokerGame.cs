@@ -195,7 +195,7 @@ public partial class PokerGame : Node2D
 				middleColor = new Color("#52a67f"); 
 				break;
 			case 1:
-				middleColor = new Color("c50064ff"); 
+				middleColor = new Color("a80054ff"); 
 				break;
 			case 2:
 				middleColor = new Color("#127AE3"); 
