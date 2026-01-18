@@ -195,7 +195,7 @@ public partial class PokerGame : Node2D
 				middleColor = new Color("#52a67f"); 
 				break;
 			case 1:
-				middleColor = new Color("dc4169ff"); 
+				middleColor = new Color("c50064ff"); 
 				break;
 			case 2:
 				middleColor = new Color("#127AE3"); 
@@ -218,7 +218,7 @@ public partial class PokerGame : Node2D
 		tableColor.Material = retroMat;
 
 		//musicPlayer.Play();
-		LoadOpponentPortrait();
+		//LoadOpponentPortrait();
 		UpdateHud();
 		StartNewHand();
 	}

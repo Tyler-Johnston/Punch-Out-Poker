@@ -8,7 +8,6 @@ public partial class PokerGame
 	// Game state fields
 	private bool isMatchComplete = false;
 
-	// === CHANGED TO ASYNC ===
 	private async void AdvanceStreet()
 	{
 		ResetBettingRound();
@@ -35,10 +34,7 @@ public partial class PokerGame
 				return;
 		}
 
-		// === CHANGED: Await the animation to finish ===
 		await DealCommunityCards(nextStreet);
-		
-		// RevealCommunityCards(nextStreet); // REMOVED (Merged into DealCommunityCards)
 		currentStreet = nextStreet;
 
 		// All-in scenarios
@@ -150,7 +146,7 @@ public partial class PokerGame
 		}
 	}
 	
-		/// <summary>
+	/// <summary>
 	/// Execute the AI's chosen action and update game state
 	/// </summary>
 	private void ExecuteAIAction(PlayerAction action)
@@ -291,7 +287,6 @@ public partial class PokerGame
 		
 		if (raiseAmount >= opponentChips)
 		{
-			// All-in
 			OnOpponentAllIn();
 			return;
 		}
@@ -303,7 +298,7 @@ public partial class PokerGame
 		currentBet = opponentBet;
 		
 		raisesThisStreet++;
-		playerHasActedThisStreet = false; // Player needs to respond
+		playerHasActedThisStreet = false;
 		
 		bool isOpening = (currentBet == bigBlind && currentStreet == Street.Preflop) || 
 						 (currentBet == 0 && currentStreet != Street.Preflop);
@@ -342,7 +337,7 @@ public partial class PokerGame
 		aiOpponent.IsAllIn = true;
 		
 		currentBet = Math.Max(currentBet, opponentBet);
-		playerHasActedThisStreet = false; // Player needs to respond
+		playerHasActedThisStreet = false;
 		
 		ShowMessage($"{currentOpponentName} goes ALL-IN for ${allInAmount}!");
 		GD.Print($"{currentOpponentName} ALL-IN: {allInAmount}");
@@ -408,7 +403,6 @@ public partial class PokerGame
 		}
 		else
 		{
-			// Silent this turn
 			opponentDialogueLabel.Text = "";
 		}
 		
