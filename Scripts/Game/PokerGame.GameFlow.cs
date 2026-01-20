@@ -177,7 +177,7 @@ public partial class PokerGame
 		}
 		
 		UpdateHud();
-		chipsAudioPlayer?.Play();
+		//chipsAudioPlayer?.Play();
 	}
 
 	/// <summary>

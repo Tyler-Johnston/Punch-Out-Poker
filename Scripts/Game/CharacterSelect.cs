@@ -311,8 +311,6 @@ public partial class CharacterSelect : Control
 		GameManager.Instance.StartMatch(opponent.Name, opponent.BuyIn);
 		GameManager.Instance.SetCircuitType(_currentCircuit);
 		
-		
-		GD.Print($"Starting match vs {opponent.Name} (Buy-in: ${opponent.BuyIn}, Circuit: {_currentCircuit})");
 		GetTree().ChangeSceneToFile("res://Scenes/PokerGame.tscn");
 	}
 	

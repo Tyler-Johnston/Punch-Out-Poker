@@ -50,6 +50,8 @@ public partial class PokerGame : Node2D
 	private TextureRect opponentPortrait;
 	private TextureRect tableColor;
 	
+	private AtlasTexture _opponentAtlas;
+	
 	// game flow
 	private Street currentStreet = Street.Preflop;
 	private int playerChips = 100;
@@ -81,13 +83,13 @@ public partial class PokerGame : Node2D
 	private int buyInAmount;
 	
 	// Audio
-	private AudioStreamPlayer deckDealAudioPlayer;
-	private AudioStreamPlayer chipsAudioPlayer;
+	//private AudioStreamPlayer deckDealAudioPlayer;
+	//private AudioStreamPlayer chipsAudioPlayer;
+	private SFXPlayer sfxPlayer;
 	private AudioStreamPlayer musicPlayer;
 
 	public override void _Ready()
 	{
-		GD.Print("=== Poker Game Started ===");
 		Control hudControl = GetNode<Control>("CanvasLayer/Control");
 		cardVisualScene = GD.Load<PackedScene>("res://Scenes/CardVisual.tscn");
 
@@ -132,8 +134,9 @@ public partial class PokerGame : Node2D
 		betSlider = hudControl.GetNode<HSlider>("BetSlider");
 		
 		// audio players
-		deckDealAudioPlayer = GetNode<AudioStreamPlayer>("DeckDealAudioPlayer");
-		chipsAudioPlayer = GetNode<AudioStreamPlayer>("ChipsAudioPlayer");  
+		//deckDealAudioPlayer = GetNode<AudioStreamPlayer>("DeckDealAudioPlayer");
+		//chipsAudioPlayer = GetNode<AudioStreamPlayer>("ChipsAudioPlayer");  
+		sfxPlayer = GetNode<SFXPlayer>("SFXPlayer");
 		musicPlayer = GetNode<AudioStreamPlayer>("MusicPlayer");  
 		
 		// set on-press handlers
@@ -153,8 +156,7 @@ public partial class PokerGame : Node2D
 			GD.PushWarning("No opponent selected, defaulting to Steve");
 		}
 		
-		GD.Print($"=== VS {currentOpponentName} ===");
-		GD.Print($"Buy-In: ${buyInAmount}");
+		GD.Print($"---------- Player VS {currentOpponentName} ----------");
 		
 		// ai initialization
 		aiOpponent = new AIPokerPlayer();
@@ -163,7 +165,6 @@ public partial class PokerGame : Node2D
 		aiOpponent.PlayerName = currentOpponentName;
 
 		decisionMaker = new PokerDecisionMaker();
-		aiOpponent.AddChild(decisionMaker);
 		AddChild(aiOpponent); 
 		aiOpponent.SetDecisionMaker(decisionMaker);
 		
@@ -218,38 +219,8 @@ public partial class PokerGame : Node2D
 		tableColor.Material = retroMat;
 
 		//musicPlayer.Play();
-		//LoadOpponentPortrait();
 		UpdateHud();
 		StartNewHand();
-	}
-	
-	/// <summary>
-	/// Load personality for the current opponent
-	/// </summary>
-	private PokerPersonality LoadOpponentPersonality(string opponentName)
-	{
-		string resourcePath = $"res://Resources/Personalities/{opponentName.ToLower().Replace(" ", "_")}_personality.tres";
-		
-		if (ResourceLoader.Exists(resourcePath))
-		{
-			GD.Print($"Loading personality from: {resourcePath}");
-			return GD.Load<PokerPersonality>(resourcePath);
-		}
-		
-		GD.Print($"Loading personality from preset: {opponentName}");
-		return opponentName switch
-		{
-			"Steve" => PersonalityPresets.CreateSteve(),
-			"Aryll" => PersonalityPresets.CreateAryll(),
-			"Boy Wizard" => PersonalityPresets.CreateBoyWizard(),
-			"Apprentice" => PersonalityPresets.CreateApprentice(),
-			"Hippie" => PersonalityPresets.CreateHippie(),
-			"Cowboy" => PersonalityPresets.CreateCowboy(),
-			"King" => PersonalityPresets.CreateKing(),
-			"Old Wizard" => PersonalityPresets.CreateOldWizard(),
-			"Akalite" => PersonalityPresets.CreateAkalite(),
-			_ => PersonalityPresets.CreateSteve()
-		};
 	}
 
 	private void ShowMessage(string text)
@@ -278,7 +249,6 @@ public partial class PokerGame : Node2D
 			playerContributed -= refund;
 			
 			GD.Print($"Side Pot: Returned {refund} uncalled chips to Player.");
-			//ShowMessage($"Returned {refund} uncalled chips");
 			return true;
 		}
 		else if (opponentContributed > playerContributed)
@@ -289,13 +259,11 @@ public partial class PokerGame : Node2D
 			opponentContributed -= refund;
 			
 			GD.Print($"Side Pot: Returned {refund} uncalled chips to Opponent.");
-			//ShowMessage($"Returned {refund} uncalled chips");
 			return true;
 		}
 		return false;
 	}
 
-	// === UPDATED ASYNC METHOD WITH ANIMATION ===
 	private async Task DealInitialHands()
 	{
 		GD.Print("\n=== Dealing Initial Hands ===");
@@ -320,22 +288,20 @@ public partial class PokerGame : Node2D
 		await ToSignal(GetTree().CreateTimer(0.25f), SceneTreeTimer.SignalName.Timeout);
 		
 		// Animate Player Card 1
-		//deckDealAudioPlayer.Play();
+		sfxPlayer.PlaySound("card_flip");
 		await playerCard1.RevealCard(playerHand[0]);
 		await ToSignal(GetTree().CreateTimer(0.25f), SceneTreeTimer.SignalName.Timeout);
 
 		// Animate Player Card 2
+		sfxPlayer.PlaySound("card_flip");
 		await playerCard2.RevealCard(playerHand[1]);
 		await ToSignal(GetTree().CreateTimer(0.25f), SceneTreeTimer.SignalName.Timeout);
 
 		// Opponent cards stay face down
-		deckDealAudioPlayer.Play();
 		opponentCard1.ShowBack();
-		deckDealAudioPlayer.Play();
 		opponentCard2.ShowBack();
 	}
 
-	// === UPDATED ASYNC METHOD MERGING DEAL & REVEAL ===
 	public async Task DealCommunityCards(Street street)
 	{
 		GD.Print($"\n=== Community Cards: {street} ===");
@@ -348,11 +314,13 @@ public partial class PokerGame : Node2D
 				GD.Print($"Flop: {communityCards[0]}, {communityCards[1]}, {communityCards[2]}");
 				ShowMessage("Flop dealt");
 				
-				deckDealAudioPlayer.Play();
+				sfxPlayer.PlaySound("card_flip");
 				await flop1.RevealCard(communityCards[0]);
 				await ToSignal(GetTree().CreateTimer(0.25f), SceneTreeTimer.SignalName.Timeout);
+				sfxPlayer.PlaySound("card_flip");
 				await flop2.RevealCard(communityCards[1]);
 				await ToSignal(GetTree().CreateTimer(0.25f), SceneTreeTimer.SignalName.Timeout);
+				sfxPlayer.PlaySound("card_flip");
 				await flop3.RevealCard(communityCards[2]);
 				break;
 				
@@ -361,7 +329,7 @@ public partial class PokerGame : Node2D
 				GD.Print($"Turn: {communityCards[3]}");
 				ShowMessage("Turn card");
 				
-				deckDealAudioPlayer.Play();
+				sfxPlayer.PlaySound("card_flip");
 				await turnCard.RevealCard(communityCards[3]);
 				await ToSignal(GetTree().CreateTimer(0.25f), SceneTreeTimer.SignalName.Timeout);
 				break;
@@ -371,14 +339,12 @@ public partial class PokerGame : Node2D
 				GD.Print($"River: {communityCards[4]}");
 				ShowMessage("River card");
 				
-				deckDealAudioPlayer.Play();
+				sfxPlayer.PlaySound("card_flip");
 				await riverCard.RevealCard(communityCards[4]);
 				await ToSignal(GetTree().CreateTimer(0.25f), SceneTreeTimer.SignalName.Timeout);
 				break;
 		}
 	}
-
-	// Note: Old RevealCommunityCards method is deleted.
 	
 	private async void StartNewHand()
 	{
@@ -392,11 +358,11 @@ public partial class PokerGame : Node2D
 			return;
 		}
 		
-		// Reset AI opponent for new hand
+		// reset AI opponent for new hand
 		aiOpponent.ResetForNewHand();
 		aiOpponent.ChipStack = opponentChips;
 
-		// Re-enable input button after state is safely locked
+		// re-enable input button after state is safely locked
 		checkCallButton.Disabled = false;
 
 		GD.Print("\n=== New Hand ===");
@@ -455,7 +421,6 @@ public partial class PokerGame : Node2D
 
 		// Button Rotation
 		playerHasButton = !playerHasButton;
-
 		if (playerHasButton)
 		{
 			// Player is Small Blind
@@ -540,21 +505,6 @@ public partial class PokerGame : Node2D
 		}
 	}
 	
-	private void LoadOpponentPortrait()
-	{
-		string portraitPath = $"res://Assets/Textures/Portraits/{currentOpponentName} Small.png";
-		
-		if (ResourceLoader.Exists(portraitPath))
-		{
-			opponentPortrait.Texture = GD.Load<Texture2D>(portraitPath);
-			GD.Print($"Loaded portrait: {portraitPath}");
-		}
-		else
-		{
-			GD.PrintErr($"Portrait not found: {portraitPath}");
-		}
-	}
-	
 	private async void ShowDown()
 	{
 		GD.Print("\n=== Showdown ===");
@@ -567,15 +517,12 @@ public partial class PokerGame : Node2D
 			await ToSignal(GetTree().CreateTimer(1.5f), SceneTreeTimer.SignalName.Timeout);
 		}
 
-		// Reveal Opponent Hand with animation
-		deckDealAudioPlayer.Play();
+		// reveal opponent hand
+		sfxPlayer.PlaySound("card_flip");
 		await opponentCard1.RevealCard(opponentHand[0]);
-		
 		await ToSignal(GetTree().CreateTimer(0.5f), SceneTreeTimer.SignalName.Timeout);
-		
-		deckDealAudioPlayer.Play();
+		sfxPlayer.PlaySound("card_flip");
 		await opponentCard2.RevealCard(opponentHand[1]);
-		
 		await ToSignal(GetTree().CreateTimer(1.0f), SceneTreeTimer.SignalName.Timeout);
 
 		int playerRank = HandEvaluator.EvaluateHand(playerHand, communityCards);
@@ -709,7 +656,6 @@ public partial class PokerGame : Node2D
 	{
 		// Preflop: button acts first, so AI is OOP if they have button
 		// Postflop: button acts last, so AI is IP if they have button
-		
 		if (currentStreet == Street.Preflop)
 		{
 			// Preflop in HU: button = OOP (acts first)
@@ -720,5 +666,22 @@ public partial class PokerGame : Node2D
 			// Postflop: button = IP (acts last)
 			return !playerHasButton; // If player doesn't have button, AI has button = IP
 		}
+	}
+	
+	private PokerPersonality LoadOpponentPersonality(string opponentName)
+	{
+		return opponentName switch
+		{
+			"Steve"   => PersonalityPresets.CreateSteve(),
+			"Aryll" => PersonalityPresets.CreateAryll(),
+			"Boy Wizard"   => PersonalityPresets.CreateBoyWizard(),
+			"Apprentice"   => PersonalityPresets.CreateApprentice(),
+			"Hippie"   => PersonalityPresets.CreateHippie(),
+			"Cowboy"   => PersonalityPresets.CreateCowboy(),
+			"King"   => PersonalityPresets.CreateKing(),
+			"Old Wizard"   => PersonalityPresets.CreateOldWizard(),
+			"Akalite"   => PersonalityPresets.CreateAkalite(),
+			_       => throw new ArgumentException($"Unknown opponent: {opponentName}")
+		};
 	}
 }

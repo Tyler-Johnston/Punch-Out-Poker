@@ -3,12 +3,12 @@
 importer="wav"
 type="AudioStreamWAV"
 uid="uid://yfg63qsfbhia"
-path="res://.godot/imported/DeckDeal3.wav-af30f40161d342bdacad54299f8af5e0.sample"
+path="res://.godot/imported/deck_deal_3.wav-57d960fc992d90389eeabdd7f592614d.sample"
 
 [deps]
 
-source_file="res://Assets/SFX/CardAudio/DeckDeal/DeckDeal3.wav"
-dest_files=["res://.godot/imported/DeckDeal3.wav-af30f40161d342bdacad54299f8af5e0.sample"]
+source_file="res://Assets/SFX/DeckDeal/deck_deal_3.wav"
+dest_files=["res://.godot/imported/deck_deal_3.wav-57d960fc992d90389eeabdd7f592614d.sample"]
 
 [params]
 

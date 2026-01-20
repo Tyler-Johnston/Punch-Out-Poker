@@ -58,11 +58,6 @@ public partial class AIPokerPlayer : Node
 		if (HasNode("PokerDecisionMaker"))
 		{
 			decisionMaker = GetNode<PokerDecisionMaker>("PokerDecisionMaker");
-			GD.Print($"[{PlayerName}] Found PokerDecisionMaker child node");
-		}
-		else
-		{
-			GD.Print($"[{PlayerName}] No PokerDecisionMaker child node found - will be set externally");
 		}
 		
 		if (Personality == null)
@@ -323,12 +318,11 @@ public partial class AIPokerPlayer : Node
 	}
 	
 	/// <summary>
-	/// Set the decision maker externally (when not added as child node)
+	/// Set the decision maker
 	/// </summary>
 	public void SetDecisionMaker(PokerDecisionMaker dm)
 	{
 		decisionMaker = dm;
-		GD.Print($"[{PlayerName}] DecisionMaker set externally");
 	}
 
 	/// <summary>

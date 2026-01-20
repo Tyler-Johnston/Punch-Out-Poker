@@ -62,8 +62,6 @@ public partial class CardVisual : Control
 				}
 			}
 		}
-		
-		GD.Print($"Loaded {cardTextures.Count} card textures");
 	}
 	
 	private string GetCardFilename(Rank rank, Suit suit)
@@ -140,7 +138,6 @@ public partial class CardVisual : Control
 		
 		// Scale X back to 1 (full width)
 		tween.TweenProperty(cardTexture, "scale:x", 1.0f, 0.15f);
-
 		await ToSignal(tween, Tween.SignalName.Finished);
 	}
 

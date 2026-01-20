@@ -62,7 +62,7 @@ public partial class PokerGame
 			
 			ShowMessage($"You take back {refundAmount} excess chips (Match All-In)");
 			GD.Print($"Player matched All-In. Refunded {refundAmount} chips.");
-			chipsAudioPlayer.Play();
+			sfxPlayer.PlayRandomChip();
 		}
 		else
 		{
@@ -84,7 +84,7 @@ public partial class PokerGame
 				ShowMessage($"You call {actualCall} chips");
 				GD.Print($"Player calls {actualCall}, Player stack: {playerChips}, Pot: {pot}");
 			}
-			chipsAudioPlayer?.Play();
+			sfxPlayer.PlayRandomChip();
 		}
 
 		isPlayerTurn = false;
@@ -184,7 +184,8 @@ public partial class PokerGame
 			ShowMessage($"You bet {actualBet} chips");
 			GD.Print($"Player bets {actualBet}");
 		}
-		chipsAudioPlayer?.Play();
+		//chipsAudioPlayer?.Play();
+		sfxPlayer.PlayRandomChip();
 
 		isPlayerTurn = false;
 		UpdateHud();

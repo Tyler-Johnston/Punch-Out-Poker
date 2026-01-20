@@ -1,17 +1,12 @@
-[gd_scene load_steps=36 format=3 uid="uid://b5sq1675fwcio"]
+[gd_scene load_steps=32 format=3 uid="uid://b5sq1675fwcio"]
 
 [ext_resource type="Script" uid="uid://8k6pqsmgt5pe" path="res://Scripts/Game/PokerGame.cs" id="1_8w0ed"]
 [ext_resource type="FontFile" uid="uid://dmret52s833gh" path="res://Assets/Fonts/Jersey_10/Jersey10-Regular.ttf" id="2_j8upv"]
 [ext_resource type="PackedScene" uid="uid://dm1t1olfbu82u" path="res://Scenes/CardVisual.tscn" id="3_c6vvi"]
 [ext_resource type="Texture2D" uid="uid://dtkuv1jg1wjh1" path="res://Assets/Textures/Frames/card_background.png" id="3_xxe2x"]
-[ext_resource type="AudioStream" uid="uid://b3h8kitkwugq8" path="res://Assets/SFX/CardAudio/DeckDeal/DeckDeal1.wav" id="4_5ejkc"]
 [ext_resource type="Texture2D" uid="uid://daasu3i5bdok6" path="res://Assets/Textures/expressions/king_expressions.png" id="4_u1fmj"]
-[ext_resource type="AudioStream" uid="uid://ctdqqmnk4qhfp" path="res://Assets/SFX/CardAudio/DeckDeal/DeckDeal2.wav" id="5_34q52"]
-[ext_resource type="AudioStream" uid="uid://yfg63qsfbhia" path="res://Assets/SFX/CardAudio/DeckDeal/DeckDeal3.wav" id="6_h5gdr"]
-[ext_resource type="AudioStream" uid="uid://bc6f5w4ndgos4" path="res://Assets/SFX/CardAudio/DeckDeal/DeckDeal4.wav" id="7_47o1s"]
-[ext_resource type="AudioStream" uid="uid://bmi2q5pbu5irv" path="res://Assets/SFX/CardAudio/Chips/Chips1.wav" id="8_h5gdr"]
-[ext_resource type="AudioStream" uid="uid://dctkppswnoupo" path="res://Assets/SFX/CardAudio/Chips/Chips2.wav" id="9_47o1s"]
 [ext_resource type="AudioStream" uid="uid://dss833xi3m8t5" path="res://Assets/Music/regrowth wip.wav" id="10_47o1s"]
+[ext_resource type="Script" uid="uid://dgfw5uwspo7c3" path="res://Scripts/Game/SFXPlayer.cs" id="12_u5b2p"]
 
 [sub_resource type="Gradient" id="Gradient_47o1s"]
 offsets = PackedFloat32Array(0.013333334, 0.96)
@@ -209,18 +204,6 @@ font_size = 30
 font = ExtResource("2_j8upv")
 font_size = 36
 
-[sub_resource type="AudioStreamRandomizer" id="AudioStreamRandomizer_xxe2x"]
-streams_count = 4
-stream_0/stream = ExtResource("4_5ejkc")
-stream_1/stream = ExtResource("5_34q52")
-stream_2/stream = ExtResource("6_h5gdr")
-stream_3/stream = ExtResource("7_47o1s")
-
-[sub_resource type="AudioStreamRandomizer" id="AudioStreamRandomizer_u1fmj"]
-streams_count = 2
-stream_0/stream = ExtResource("8_h5gdr")
-stream_1/stream = ExtResource("9_47o1s")
-
 [node name="PokerGame" type="Node2D"]
 scale = Vector2(3, 3)
 script = ExtResource("1_8w0ed")
@@ -390,6 +373,7 @@ text = "I have a great hand!"
 label_settings = SubResource("LabelSettings_47o1s")
 
 [node name="OpponentPortrait" type="TextureRect" parent="CanvasLayer/Control"]
+visible = false
 layout_mode = 0
 offset_left = 1049.0
 offset_top = 28.0
@@ -516,11 +500,9 @@ offset_bottom = -16.0
 grow_horizontal = 1
 grow_vertical = 1
 
-[node name="DeckDealAudioPlayer" type="AudioStreamPlayer" parent="."]
-stream = SubResource("AudioStreamRandomizer_xxe2x")
-
-[node name="ChipsAudioPlayer" type="AudioStreamPlayer" parent="."]
-stream = SubResource("AudioStreamRandomizer_u1fmj")
+[node name="SFXPlayer" type="AudioStreamPlayer" parent="."]
+max_polyphony = 32
+script = ExtResource("12_u5b2p")
 
 [node name="MusicPlayer" type="AudioStreamPlayer" parent="."]
 stream = ExtResource("10_47o1s")

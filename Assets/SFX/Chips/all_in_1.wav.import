@@ -3,12 +3,12 @@
 importer="wav"
 type="AudioStreamWAV"
 uid="uid://b4i425pst2gta"
-path="res://.godot/imported/all_in_1.wav-f86c24f99b2ef66f258ef7bbba3ec5c0.sample"
+path="res://.godot/imported/all_in_1.wav-a3d2171eda8ff2e0b9e9a09451c92eac.sample"
 
 [deps]
 
-source_file="res://Assets/SFX/CardAudio/Chips/all_in_1.wav"
-dest_files=["res://.godot/imported/all_in_1.wav-f86c24f99b2ef66f258ef7bbba3ec5c0.sample"]
+source_file="res://Assets/SFX/Chips/all_in_1.wav"
+dest_files=["res://.godot/imported/all_in_1.wav-a3d2171eda8ff2e0b9e9a09451c92eac.sample"]
 
 [params]
 
