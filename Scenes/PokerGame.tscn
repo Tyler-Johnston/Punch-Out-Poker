@@ -1,10 +1,11 @@
-[gd_scene load_steps=32 format=3 uid="uid://b5sq1675fwcio"]
+[gd_scene load_steps=31 format=3 uid="uid://b5sq1675fwcio"]
 
 [ext_resource type="Script" uid="uid://8k6pqsmgt5pe" path="res://Scripts/Game/PokerGame.cs" id="1_8w0ed"]
 [ext_resource type="FontFile" uid="uid://dmret52s833gh" path="res://Assets/Fonts/Jersey_10/Jersey10-Regular.ttf" id="2_j8upv"]
 [ext_resource type="PackedScene" uid="uid://dm1t1olfbu82u" path="res://Scenes/CardVisual.tscn" id="3_c6vvi"]
 [ext_resource type="Texture2D" uid="uid://dtkuv1jg1wjh1" path="res://Assets/Textures/Frames/card_background.png" id="3_xxe2x"]
 [ext_resource type="Texture2D" uid="uid://daasu3i5bdok6" path="res://Assets/Textures/expressions/king_expressions.png" id="4_u1fmj"]
+[ext_resource type="Shader" uid="uid://csfo7n8cjhc25" path="res://Assets/Shaders/crt_lcd.gdshader" id="8_34q52"]
 [ext_resource type="AudioStream" uid="uid://dss833xi3m8t5" path="res://Assets/Music/regrowth wip.wav" id="10_47o1s"]
 [ext_resource type="Script" uid="uid://dgfw5uwspo7c3" path="res://Scripts/Game/SFXPlayer.cs" id="12_u5b2p"]
 
@@ -203,6 +204,14 @@ font_size = 30
 [sub_resource type="LabelSettings" id="LabelSettings_47o1s"]
 font = ExtResource("2_j8upv")
 font_size = 36
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_h5gdr"]
+shader = ExtResource("8_34q52")
+shader_parameter/screen_width = 1280.0
+shader_parameter/screen_height = 720.0
+shader_parameter/grid_strength = 0.15
+shader_parameter/grain_amount = 0.03
+shader_parameter/blur_strength = 0.5
 
 [node name="PokerGame" type="Node2D"]
 scale = Vector2(3, 3)
@@ -506,3 +515,14 @@ script = ExtResource("12_u5b2p")
 
 [node name="MusicPlayer" type="AudioStreamPlayer" parent="."]
 stream = ExtResource("10_47o1s")
+
+[node name="lcdCanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="ColorRect" type="ColorRect" parent="lcdCanvasLayer"]
+material = SubResource("ShaderMaterial_h5gdr")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
