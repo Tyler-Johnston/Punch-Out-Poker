@@ -375,9 +375,9 @@ label_settings = SubResource("LabelSettings_l4y0v")
 [node name="BetSlider" type="HSlider" parent="CanvasLayer/Control"]
 layout_mode = 0
 offset_left = 120.0
-offset_top = 667.0
+offset_top = 675.0
 offset_right = 384.0
-offset_bottom = 684.0
+offset_bottom = 692.0
 theme_override_styles/slider = SubResource("StyleBoxFlat_vnib4")
 theme_override_styles/grabber_area = SubResource("StyleBoxFlat_hkg01")
 theme_override_styles/grabber_area_highlight = SubResource("StyleBoxFlat_hkg01")
@@ -385,9 +385,9 @@ theme_override_styles/grabber_area_highlight = SubResource("StyleBoxFlat_hkg01")
 [node name="BetSliderLabel" type="Label" parent="CanvasLayer/Control"]
 layout_mode = 0
 offset_left = 32.0
-offset_top = 658.0
+offset_top = 666.0
 offset_right = 111.0
-offset_bottom = 692.0
+offset_bottom = 700.0
 text = "Amount"
 label_settings = SubResource("LabelSettings_hkg01")
 

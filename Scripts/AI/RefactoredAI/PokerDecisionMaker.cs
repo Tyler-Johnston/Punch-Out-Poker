@@ -670,25 +670,48 @@ public partial class PokerDecisionMaker : Node
 			return EvaluatePreflopHand(holeCards);
 		}
 		
-		int phevalRank = HandEvaluator.EvaluateHand(holeCards, communityCards);
-		float strength = 1.0f - ((phevalRank - 1) / 7461.0f);
-		strength = (float)Math.Pow(strength, 0.75);
-		
-		if (phevalRank <= 6185)
+		// 1. Calculate Absolute Strength
+		int myRank = HandEvaluator.EvaluateHand(holeCards, communityCards);
+		float myAbsStrength = 1.0f - ((myRank - 1) / 7461.0f);
+
+		// 2. Calculate Board Strength (counterfeit check)
+		float boardStrength = 0f;
+		if (communityCards.Count >= 5)
 		{
-			strength = Math.Max(strength, 0.38f);
+			// Check if the board ITSELF is already very strong (counterfeiting our hand)
+			// Using an empty list for hole cards tells Evaluator to just check the board
+			int boardRank = HandEvaluator.EvaluateHand(new List<Card>(), communityCards);
+			boardStrength = 1.0f - ((boardRank - 1) / 7461.0f);
+		}
+
+		// 3. Adjust Strength for Counterfeiting
+		float adjustedStrength = myAbsStrength;
+		
+		// If our hand is barely better than the board (e.g. board has 2-pair, we have 2-pair with bad kicker)
+		if (communityCards.Count >= 5 && (myAbsStrength - boardStrength < 0.05f))
+		{
+			GD.Print($"[AI] Counterfeit detected! Abs: {myAbsStrength:F2} vs Board: {boardStrength:F2}");
+			adjustedStrength = 0.2f; // Downgrade to "weak"
+		}
+
+		// Apply power curve to adjusted strength
+		adjustedStrength = (float)Math.Pow(adjustedStrength, 0.75);
+		
+		if (myRank <= 6185) // Better than One Pair
+		{
+			adjustedStrength = Math.Max(adjustedStrength, 0.38f);
 		}
 		
 		if (street == Street.Flop || street == Street.Turn)
 		{
 			List<Card> allCards = new List<Card>(holeCards);
 			allCards.AddRange(communityCards);
-			strength += EvaluateDrawPotential(allCards) * 0.10f;
+			adjustedStrength += EvaluateDrawPotential(allCards) * 0.10f;
 		}
 		
 		float randomness = randomnessSeed * 0.08f;
 		
-		return Mathf.Clamp(strength + randomness, 0.10f, 1.0f);
+		return Mathf.Clamp(adjustedStrength + randomness, 0.10f, 1.0f);
 	}
 	
 	private float EvaluatePreflopHand(List<Card> holeCards)

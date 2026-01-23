@@ -172,7 +172,6 @@ public partial class PokerGame : Node2D
 		AddChild(aiOpponent); 
 		aiOpponent.SetDecisionMaker(decisionMaker);
 		
-		// Initialize Dialogue Manager
 		dialogueManager = new DialogueManager();
 		AddChild(dialogueManager);
 		dialogueManager.Initialize(aiOpponent.Personality);
@@ -247,7 +246,6 @@ public partial class PokerGame : Node2D
 			opponentContributed += amount;
 	}
 	
-	// NEW: Visual updates for Tilt State
 	private void UpdateOpponentVisuals()
 	{
 		TiltState state = aiOpponent.CurrentTiltState;
@@ -290,7 +288,6 @@ public partial class PokerGame : Node2D
 		tween.TweenProperty(node, "position", originalPos, 0.05f);
 	}
 
-	// Side Pot logic for Heads Up
 	private bool ReturnUncalledChips()
 	{
 		if (playerContributed > opponentContributed)
@@ -417,13 +414,15 @@ public partial class PokerGame : Node2D
 		GD.Print("\n=== New Hand ===");
 		ShowMessage("");
 
+
 		cashOutButton.Disabled = true;
 		cashOutButton.Visible = false;
-		checkCallButton.Disabled = false;
 		betSlider.Visible = true;
-		foldButton.Visible = true;
-		betRaiseButton.Visible = true;
 		betSliderLabel.Visible = true;
+		foldButton.Visible = true;
+		foldButton.Disabled = true;
+		betRaiseButton.Visible = true;
+		betRaiseButton.Disabled = true;
 		potLabel.Visible = true;
 		playerHandType.Text = "";
 		opponentHandType.Text = "";
@@ -585,8 +584,6 @@ public partial class PokerGame : Node2D
 
 		string playerHandName = HandEvaluator.GetHandDescription(playerHand, communityCards);
 		string opponentHandName = HandEvaluator.GetHandDescription(opponentHand, communityCards);
-
-		await ToSignal(GetTree().CreateTimer(0.95), SceneTreeTimer.SignalName.Timeout);
 		
 		playerHandType.Text = playerHandName;
 		opponentHandType.Text = opponentHandName;
