@@ -115,7 +115,7 @@ public partial class PokerGame : Node2D
 		riverCard = communityCardsArea.GetNode<CardVisual>("River");
 
 		// action buttons
-		Control actionButtons = hudControl.GetNode<Control>("ActionButtons");
+		Control actionButtons = hudControl.GetNode<Control>("ButtonUI/ActionButtons");
 		foldButton = actionButtons.GetNode<Button>("FoldButton");
 		checkCallButton = actionButtons.GetNode<Button>("CheckCallButton");
 		betRaiseButton = actionButtons.GetNode<Button>("BetRaiseButton");
@@ -411,12 +411,10 @@ public partial class PokerGame : Node2D
 		aiOpponent.ResetForNewHand();
 		aiOpponent.ChipStack = opponentChips;
 
-		// re-enable input button after state is safely locked
-		checkCallButton.Disabled = false;
-
 		GD.Print("\n=== New Hand ===");
 		ShowMessage("");
 
+		checkCallButton.Disabled = false;
 		betSlider.Visible = true;
 		foldButton.Visible = true;
 		betRaiseButton.Visible = true;
@@ -424,12 +422,11 @@ public partial class PokerGame : Node2D
 		potLabel.Visible = true;
 		playerHandType.Text = "";
 		opponentHandType.Text = "";
-		aiStrengthAtAllIn = 0f; // Reset snapshot
+		aiStrengthAtAllIn = 0f;
 
 		deck = new Deck();
 		deck.Shuffle();
-		// deckDealAudioPlayer.Play(); // Handled in deal method
-
+		
 		pot = 0;
 		playerContributed = 0;
 		opponentContributed = 0;
@@ -573,7 +570,7 @@ public partial class PokerGame : Node2D
 		// reveal opponent hand
 		sfxPlayer.PlaySound("card_flip");
 		await opponentCard1.RevealCard(opponentHand[0]);
-		await ToSignal(GetTree().CreateTimer(0.5f), SceneTreeTimer.SignalName.Timeout);
+		await ToSignal(GetTree().CreateTimer(0.30f), SceneTreeTimer.SignalName.Timeout);
 		sfxPlayer.PlaySound("card_flip");
 		await opponentCard2.RevealCard(opponentHand[1]);
 		await ToSignal(GetTree().CreateTimer(1.0f), SceneTreeTimer.SignalName.Timeout);
@@ -584,15 +581,16 @@ public partial class PokerGame : Node2D
 		string playerHandName = HandEvaluator.GetHandDescription(playerHand, communityCards);
 		string opponentHandName = HandEvaluator.GetHandDescription(opponentHand, communityCards);
 
+		await ToSignal(GetTree().CreateTimer(0.95), SceneTreeTimer.SignalName.Timeout);
+		
 		playerHandType.Text = playerHandName;
 		opponentHandType.Text = opponentHandName;
 
 		int result = HandEvaluator.CompareHands(playerRank, opponentRank);
 		string message;
 		HandResult aiHandResult;
-		
 		int finalPot = pot;
-
+		
 		if (result > 0)
 		{
 			// Player wins

@@ -229,6 +229,7 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="ColorRect" type="TextureRect" parent="CanvasLayer/Control"]
+custom_minimum_size = Vector2(50, 20)
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -237,15 +238,20 @@ grow_horizontal = 2
 grow_vertical = 2
 texture = SubResource("GradientTexture2D_vtryj")
 
-[node name="ActionButtons" type="HBoxContainer" parent="CanvasLayer/Control"]
+[node name="ButtonUI" type="VBoxContainer" parent="CanvasLayer/Control"]
 layout_mode = 0
-offset_left = 20.000002
-offset_top = 630.0
-offset_right = 183.59999
-offset_bottom = 661.0
-scale = Vector2(2.5, 2.5)
+offset_left = 43.0
+offset_top = 556.0
+offset_right = 201.0
+offset_bottom = 620.5
+scale = Vector2(2.25, 2.25)
 
-[node name="FoldButton" type="Button" parent="CanvasLayer/Control/ActionButtons"]
+[node name="ActionButtons" type="HBoxContainer" parent="CanvasLayer/Control/ButtonUI"]
+layout_mode = 2
+size_flags_vertical = 3
+alignment = 1
+
+[node name="FoldButton" type="Button" parent="CanvasLayer/Control/ButtonUI/ActionButtons"]
 custom_minimum_size = Vector2(50, 20)
 layout_mode = 2
 focus_mode = 0
@@ -256,7 +262,7 @@ theme_override_styles/hover = SubResource("StyleBoxFlat_vtryj")
 theme_override_styles/disabled = SubResource("StyleBoxFlat_m5pa5")
 text = "Fold"
 
-[node name="CheckCallButton" type="Button" parent="CanvasLayer/Control/ActionButtons"]
+[node name="CheckCallButton" type="Button" parent="CanvasLayer/Control/ButtonUI/ActionButtons"]
 custom_minimum_size = Vector2(50, 0)
 layout_mode = 2
 focus_mode = 0
@@ -267,7 +273,7 @@ theme_override_styles/hover = SubResource("StyleBoxFlat_mhpyu")
 theme_override_styles/disabled = SubResource("StyleBoxFlat_crlcv")
 text = "Check"
 
-[node name="BetRaiseButton" type="Button" parent="CanvasLayer/Control/ActionButtons"]
+[node name="BetRaiseButton" type="Button" parent="CanvasLayer/Control/ButtonUI/ActionButtons"]
 custom_minimum_size = Vector2(50, 0)
 layout_mode = 2
 focus_mode = 0
@@ -277,6 +283,17 @@ theme_override_styles/pressed = SubResource("StyleBoxFlat_epj03")
 theme_override_styles/hover = SubResource("StyleBoxFlat_p0x7j")
 theme_override_styles/disabled = SubResource("StyleBoxFlat_bvnvu")
 text = "Bet"
+
+[node name="CashOutButton" type="Button" parent="CanvasLayer/Control/ButtonUI"]
+custom_minimum_size = Vector2(50, 0)
+layout_mode = 2
+focus_mode = 0
+theme_override_fonts/font = ExtResource("2_j8upv")
+theme_override_styles/normal = SubResource("StyleBoxFlat_u1fmj")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_epj03")
+theme_override_styles/hover = SubResource("StyleBoxFlat_p0x7j")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_bvnvu")
+text = "Cash Out"
 
 [node name="PlayerStackLabel" type="Label" parent="CanvasLayer/Control"]
 layout_mode = 0
@@ -334,20 +351,20 @@ label_settings = SubResource("LabelSettings_l4y0v")
 
 [node name="BetSlider" type="HSlider" parent="CanvasLayer/Control"]
 layout_mode = 0
-offset_left = 128.0
-offset_top = 582.0
-offset_right = 399.0
-offset_bottom = 599.0
+offset_left = 130.0
+offset_top = 517.0
+offset_right = 401.0
+offset_bottom = 534.0
 theme_override_styles/slider = SubResource("StyleBoxFlat_vnib4")
 theme_override_styles/grabber_area = SubResource("StyleBoxFlat_hkg01")
 theme_override_styles/grabber_area_highlight = SubResource("StyleBoxFlat_hkg01")
 
 [node name="BetSliderLabel" type="Label" parent="CanvasLayer/Control"]
 layout_mode = 0
-offset_left = 43.0
-offset_top = 573.0
-offset_right = 122.0
-offset_bottom = 607.0
+offset_left = 42.0
+offset_top = 508.0
+offset_right = 121.0
+offset_bottom = 542.0
 text = "Amount"
 label_settings = SubResource("LabelSettings_hkg01")
 
@@ -517,6 +534,7 @@ script = ExtResource("12_u5b2p")
 stream = ExtResource("10_47o1s")
 
 [node name="lcdCanvasLayer" type="CanvasLayer" parent="."]
+visible = false
 
 [node name="ColorRect" type="ColorRect" parent="lcdCanvasLayer"]
 material = SubResource("ShaderMaterial_h5gdr")

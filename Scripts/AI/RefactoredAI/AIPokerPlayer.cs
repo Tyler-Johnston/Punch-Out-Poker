@@ -182,11 +182,10 @@ public partial class AIPokerPlayer : Node
 				}
 				
 				Personality.ReduceTilt(reliefAmount);
-				GD.Print($"{PlayerName} won ({bigBlindsWon:F1} BBs). Tilt -{reliefAmount}");
+				GD.Print($"{PlayerName} won ({bigBlindsWon:F1} BBs). Tilt reduced by {reliefAmount}");
 				break;
 				
 			case HandResult.Neutral:
-				// Split pot or fold - small tilt decay
 				Personality.ReduceTilt(1f);
 				break;
 		}
@@ -202,7 +201,6 @@ public partial class AIPokerPlayer : Node
 	private void AddTiltSafe(float amount)
 	{
 		Personality.AddTilt(amount);
-		// Cap tilt at 100 (Monkey Tilt Max) to prevent math breaking
 		if (Personality.TiltMeter > 100f)
 		{
 			Personality.TiltMeter = 100f;
@@ -216,8 +214,8 @@ public partial class AIPokerPlayer : Node
 		CurrentBetThisRound = 0;
 		
 		// Generate all seeds at start of hand for consistency
-		HandRandomnessSeed = GD.Randf() - 0.5f; // -0.5 to 0.5
-		BetSizeSeed = GD.Randf();               // 0 to 1
+		HandRandomnessSeed = GD.Randf() - 0.5f;
+		BetSizeSeed = GD.Randf();
 		
 		// Decision seeds per street
 		PreflopDecisionSeed = GD.Randf();
@@ -370,9 +368,6 @@ public partial class AIPokerPlayer : Node
 			return HandStrength.Weak;
 	}
 	
-	// --------------------------------------------------------------------------------
-	// REFACTORED: Use DecisionMaker for calculation to ensure 100% consistency
-	// --------------------------------------------------------------------------------
 	public float EvaluateCurrentHandStrength(GameState gameState)
 	{
 		if (decisionMaker == null)

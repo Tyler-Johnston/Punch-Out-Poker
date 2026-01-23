@@ -656,11 +656,6 @@ public partial class PokerDecisionMaker : Node
 		
 		return finalBet;
 	}
-
-
-	// ══════════════════════════════════════════════════════════════
-	// HAND STRENGTH EVALUATION
-	// ══════════════════════════════════════════════════════════════
 	
 	public float EvaluateHandStrength(List<Card> holeCards, List<Card> communityCards, Street street, float randomnessSeed)
 	{
