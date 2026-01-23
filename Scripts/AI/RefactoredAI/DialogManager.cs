@@ -61,7 +61,9 @@ public partial class DialogueManager : Node
 			return null;
 		
 		// Check if character wants to talk (chattiness roll)
-		if (!forceTell && rng.NextDouble() > personality.Chattiness)
+		// Steaming/Monkey players ignore Chattiness stat and rant anyway
+		bool isRanting = (context == DialogueContext.OnTilt); 
+		if (!forceTell && !isRanting && rng.NextDouble() > personality.Chattiness)
 			return null;
 		
 		// Get the appropriate line
@@ -119,14 +121,23 @@ public partial class DialogueManager : Node
 	}
 	
 	/// <summary>
-	/// Get tilt-adjusted dialogue
+	/// Get tilt-adjusted dialogue using the new TiltState
 	/// </summary>
-	public string GetTiltDialogue(float tiltLevel)
+	public string GetTiltDialogue(TiltState tiltState)
 	{
-		if (tiltLevel < 10) return null;
+		// Zen players don't complain about tilt
+		if (tiltState == TiltState.Zen) return null;
 		
-		// Higher tilt = more likely to say something
-		if (rng.NextDouble() * 100 > tiltLevel) return null;
+		// Probability to speak based on anger level
+		float probability = tiltState switch
+		{
+			TiltState.Annoyed => 0.15f,   // 15% chance
+			TiltState.Steaming => 0.40f,  // 40% chance
+			TiltState.Monkey => 0.75f,    // 75% chance (ranting)
+			_ => 0f
+		};
+		
+		if (rng.NextDouble() > probability) return null;
 		
 		return SelectLine(DialogueContext.OnTilt);
 	}

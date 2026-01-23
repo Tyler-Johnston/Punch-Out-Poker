@@ -3,12 +3,10 @@ using System.Collections.Generic;
 
 public partial class SFXPlayer : AudioStreamPlayer
 {
-	// 1. Define lists of sound names for random selection
 	private readonly string[] _chipSounds = { "chips_1", "chips_2" };
 	private readonly string[] _allInSounds = { "all_in_1", "all_in_2" };
 	private readonly string[] _deckSounds = { "deck_deal_1", "deck_deal_2", "deck_deal_3", "deck_deal_4" };
 
-	// Dictionary to hold loaded sound resources
 	private Dictionary<string, AudioStream> _sounds = new Dictionary<string, AudioStream>();
 
 	public override void _Ready()
@@ -25,46 +23,50 @@ public partial class SFXPlayer : AudioStreamPlayer
 		LoadSound("check", "res://Assets/SFX/check.mp3");
 	}
 
-	// --- RANDOM PLAY METHODS ---
-
-	public void PlayRandomChip()
+	public void PlayRandomChip(bool isOpponent = false)
 	{
-		PlayRandomFromList(_chipSounds);
+		PlayRandomFromList(_chipSounds, isOpponent);
 	}
 
-	public void PlayRandomAllIn()
+	public void PlayRandomAllIn(bool isOpponent = false)
 	{
-		PlayRandomFromList(_allInSounds);
+		PlayRandomFromList(_allInSounds, isOpponent);
 	}
 
-	public void PlayRandomDeckSound()
+	public void PlayRandomDeckSound(bool isOpponent = false)
 	{
-		PlayRandomFromList(_deckSounds);
+		PlayRandomFromList(_deckSounds, isOpponent);
 	}
 
-	// --- HELPER METHODS ---
-
-	// Private helper to pick a random string from an array and play it
-	private void PlayRandomFromList(string[] soundList)
+	private void PlayRandomFromList(string[] soundList, bool isOpponent)
 	{
 		if (soundList.Length == 0) return;
 
-		// GD.Randi() returns a random unsigned int. 
-		// We use modulo (%) to wrap it within the array's index range.
 		int index = (int)(GD.Randi() % soundList.Length);
 		string selectedSound = soundList[index];
 		
-		PlaySound(selectedSound);
+		PlaySound(selectedSound, isOpponent);
 	}
 
-	public void PlaySound(string soundName)
+	public void PlaySound(string soundName, bool isOpponent = false)
 	{
 		if (_sounds.TryGetValue(soundName, out AudioStream stream))
 		{
 			this.Stream = stream;
 			
-			// Optional: Add slight pitch variance for realism
-			// this.PitchScale = (float)GD.RandRange(0.95, 1.05);
+			// 2. Adjust Pitch based on who triggered it
+			float basePitch = 1.0f;
+			
+			if (isOpponent)
+			{
+				basePitch = 0.925f; 
+			}
+			else
+			{
+				// Normal pitch for player (Slightly higher/brighter)
+				basePitch = 1.0f;
+			}
+			this.PitchScale = basePitch;
 			
 			this.Play();
 		}

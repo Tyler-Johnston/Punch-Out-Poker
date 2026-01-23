@@ -104,6 +104,15 @@ public enum Street
 	River
 }
 
+public enum TiltState
+{
+	Zen,        // 0 - 10   (Calm, playing optimally)
+	Annoyed,    // 10 - 25  (Slightly looser, chatty)
+	Steaming,   // 25 - 50  (Aggressive, betting bigger)
+	Monkey      // 50+      (Shoving random hands, zero patience)
+}
+
+
 public enum Expression
 {
 	Neutral,

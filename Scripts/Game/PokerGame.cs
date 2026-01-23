@@ -1,7 +1,7 @@
 using Godot;
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks; // Added for Task
+using System.Threading.Tasks;
 
 public partial class PokerGame : Node2D
 {
@@ -56,6 +56,10 @@ public partial class PokerGame : Node2D
 	private Street currentStreet = Street.Preflop;
 	private int playerChips = 100;
 	private int opponentChips = 100;
+	
+	// Track AI strength when they commit to all-in (for bad beat detection)
+	// This must be set in OnOpponentAllIn / OnOpponentCall logic!
+	public float aiStrengthAtAllIn = 0f; 
 
 	// side pot and contribution tracking
 	private int playerContributed = 0;
@@ -79,12 +83,11 @@ public partial class PokerGame : Node2D
 	// ais
 	private AIPokerPlayer aiOpponent;
 	private PokerDecisionMaker decisionMaker;
+	private DialogueManager dialogueManager; // New dialogue manager
 	private string currentOpponentName;
 	private int buyInAmount;
 	
 	// Audio
-	//private AudioStreamPlayer deckDealAudioPlayer;
-	//private AudioStreamPlayer chipsAudioPlayer;
 	private SFXPlayer sfxPlayer;
 	private AudioStreamPlayer musicPlayer;
 
@@ -134,8 +137,6 @@ public partial class PokerGame : Node2D
 		betSlider = hudControl.GetNode<HSlider>("BetSlider");
 		
 		// audio players
-		//deckDealAudioPlayer = GetNode<AudioStreamPlayer>("DeckDealAudioPlayer");
-		//chipsAudioPlayer = GetNode<AudioStreamPlayer>("ChipsAudioPlayer");  
 		sfxPlayer = GetNode<SFXPlayer>("SFXPlayer");
 		musicPlayer = GetNode<AudioStreamPlayer>("MusicPlayer");  
 		
@@ -167,6 +168,11 @@ public partial class PokerGame : Node2D
 		decisionMaker = new PokerDecisionMaker();
 		AddChild(aiOpponent); 
 		aiOpponent.SetDecisionMaker(decisionMaker);
+		
+		// Initialize Dialogue Manager
+		dialogueManager = new DialogueManager();
+		AddChild(dialogueManager);
+		dialogueManager.Initialize(aiOpponent.Personality);
 		
 		// log personality stats
 		var personality = aiOpponent.Personality;
@@ -236,6 +242,49 @@ public partial class PokerGame : Node2D
 			playerContributed += amount;
 		else
 			opponentContributed += amount;
+	}
+	
+	// NEW: Visual updates for Tilt State
+	private void UpdateOpponentVisuals()
+	{
+		TiltState state = aiOpponent.CurrentTiltState;
+		
+		switch (state)
+		{
+			case TiltState.Zen:
+				opponentStackLabel.Modulate = Colors.White;
+				break;
+			case TiltState.Annoyed:
+				opponentStackLabel.Modulate = Colors.Yellow;
+				break;
+			case TiltState.Steaming:
+				opponentStackLabel.Modulate = Colors.Orange;
+				ApplyShake(opponentPortrait, 2.0f);
+				break;
+			case TiltState.Monkey:
+				opponentStackLabel.Modulate = Colors.Red;
+				ApplyShake(opponentPortrait, 5.0f);
+				break;
+		}
+
+		// Trigger Random Tilt Dialogue
+		if (handInProgress && !waitingForNextGame)
+		{
+			string tiltLine = dialogueManager.GetTiltDialogue(state);
+			if (!string.IsNullOrEmpty(tiltLine))
+			{
+				opponentDialogueLabel.Text = tiltLine;
+			}
+		}
+	}
+	
+	private void ApplyShake(Control node, float intensity)
+	{
+		var tween = CreateTween();
+		Vector2 originalPos = node.Position;
+		tween.TweenProperty(node, "position", originalPos + new Vector2(intensity, 0), 0.05f);
+		tween.TweenProperty(node, "position", originalPos - new Vector2(intensity, 0), 0.05f);
+		tween.TweenProperty(node, "position", originalPos, 0.05f);
 	}
 
 	// Side Pot logic for Heads Up
@@ -375,6 +424,7 @@ public partial class PokerGame : Node2D
 		potLabel.Visible = true;
 		playerHandType.Text = "";
 		opponentHandType.Text = "";
+		aiStrengthAtAllIn = 0f; // Reset snapshot
 
 		deck = new Deck();
 		deck.Shuffle();
@@ -418,6 +468,9 @@ public partial class PokerGame : Node2D
 		await DealInitialHands();
 		currentStreet = Street.Preflop;
 		handInProgress = true;
+		
+		// Update visuals at start of hand
+		UpdateOpponentVisuals();
 
 		// Button Rotation
 		playerHasButton = !playerHasButton;
@@ -546,9 +599,19 @@ public partial class PokerGame : Node2D
 			GD.Print("\nPLAYER WINS!");
 			message = $"You win ${finalPot} with {playerHandName}!";
 			
-			if (opponentRank <= 2467)
+			// Definition: AI was Strong (>0.70) when chips went in, but lost.
+			bool isBadBeat = (aiStrengthAtAllIn > 0.70f); 
+			// Definition: AI had a monster hand (Four of a kind, etc) but lost (Cooler)
+			bool isCooler = (opponentRank <= 1609); 
+			
+			if (isBadBeat)
 			{
-				GD.Print($"{currentOpponentName} suffered a bad beat!");
+				GD.Print($"{currentOpponentName} suffered a BAD BEAT! (Strength was {aiStrengthAtAllIn:F2})");
+				aiHandResult = HandResult.BadBeat;
+			}
+			else if (isCooler)
+			{
+				GD.Print($"{currentOpponentName} suffered a COOLER!");
 				aiHandResult = HandResult.BadBeat;
 			}
 			else if (aiBluffedThisHand && opponentRank > 6185)
@@ -558,7 +621,7 @@ public partial class PokerGame : Node2D
 			}
 			else
 			{
-				aiHandResult = HandResult.Loss;
+				aiHandResult = HandResult.Loss; 
 			}
 			
 			playerChips += pot;

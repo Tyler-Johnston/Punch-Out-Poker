@@ -18,6 +18,9 @@ public partial class PokerGame
 		// ai wins so reduce tilt slightly
 		aiOpponent.ProcessHandResult(HandResult.Win);
 		
+		// Update visuals immediately (e.g., stops shaking if they calm down)
+		UpdateOpponentVisuals();
+		
 		GD.Print($"Stacks -> Player: {playerChips}, Opponent: {opponentChips}");
 		EndHand();
 	}
@@ -45,6 +48,7 @@ public partial class PokerGame
 		if (toCall == 0)
 		{
 			ShowMessage("You check");
+			sfxPlayer.PlaySound("check");
 			GD.Print($"Player checks on {currentStreet}");
 		}
 		else if (toCall < 0)
@@ -89,6 +93,7 @@ public partial class PokerGame
 
 		isPlayerTurn = false;
 		UpdateHud();
+		UpdateOpponentVisuals(); // Ensure visuals are current
 		RefreshBetSlider();
 
 		// Check for end of betting round
@@ -121,7 +126,6 @@ public partial class PokerGame
 			GetTree().CreateTimer(0.8).Timeout += AdvanceStreet;
 		}
 		// 5. CONTINUE BETTING (AI MUST ACT)
-		// Includes: Player Raise All-In (playerBet > opponentBet)
 		else
 		{
 			GetTree().CreateTimer(1.2).Timeout += CheckAndProcessAITurn;
@@ -184,11 +188,12 @@ public partial class PokerGame
 			ShowMessage($"You bet {actualBet} chips");
 			GD.Print($"Player bets {actualBet}");
 		}
-		//chipsAudioPlayer?.Play();
+		
 		sfxPlayer.PlayRandomChip();
 
 		isPlayerTurn = false;
 		UpdateHud();
+		UpdateOpponentVisuals(); // Ensure visuals are current
 		RefreshBetSlider();
 
 		bool betsAreEqual = (playerBet == opponentBet);
@@ -220,7 +225,6 @@ public partial class PokerGame
 			GetTree().CreateTimer(0.8).Timeout += AdvanceStreet;
 		}
 		// 5. CONTINUE BETTING (AI MUST ACT)
-		// Includes: Player Raise All-In (playerBet > opponentBet)
 		else
 		{
 			GetTree().CreateTimer(1.2).Timeout += CheckAndProcessAITurn;

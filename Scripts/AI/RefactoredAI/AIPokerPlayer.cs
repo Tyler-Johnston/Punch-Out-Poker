@@ -141,25 +141,25 @@ public partial class AIPokerPlayer : Node
 		switch (result)
 		{
 			case HandResult.BadBeat:
-				Personality.AddTilt(20f);
+				AddTiltSafe(20f);
 				Personality.ConsecutiveLosses++;
 				GD.Print($"{PlayerName} suffered a bad beat! Tilt: {Personality.TiltMeter}");
 				break;
 				
 			case HandResult.BluffCaught:
-				Personality.AddTilt(12f);
+				AddTiltSafe(12f);
 				GD.Print($"{PlayerName}'s bluff was caught! Tilt: {Personality.TiltMeter}");
 				break;
 				
 			case HandResult.Loss:
 				Personality.ConsecutiveLosses++;
 				float lossAmount = 5f * Personality.ConsecutiveLosses; // 5, 10, 15, 20...
-				Personality.AddTilt(lossAmount);
+				AddTiltSafe(lossAmount);
 				GD.Print($"{PlayerName} lost (streak: {Personality.ConsecutiveLosses}). Tilt: {Personality.TiltMeter}");
 				break;
 				
 			case HandResult.AllInLoss:
-				Personality.AddTilt(25f);
+				AddTiltSafe(25f);
 				Personality.ConsecutiveLosses++;
 				GD.Print($"{PlayerName} lost all-in! Tilt: {Personality.TiltMeter}");
 				break;
@@ -181,6 +181,17 @@ public partial class AIPokerPlayer : Node
 		if (Mathf.Abs(previousTilt - Personality.TiltMeter) > 0.5f)
 		{
 			EmitSignal(SignalName.TiltLevelChanged, Personality.TiltMeter);
+		}
+	}
+	
+	// Helper to prevent tilt from exploding to infinity
+	private void AddTiltSafe(float amount)
+	{
+		Personality.AddTilt(amount);
+		// Cap tilt at 100 (Monkey Tilt Max) to prevent math breaking
+		if (Personality.TiltMeter > 100f)
+		{
+			Personality.TiltMeter = 100f;
 		}
 	}
 	
@@ -291,7 +302,6 @@ public partial class AIPokerPlayer : Node
 			PlayerAction.Fold  => "OnFold",
 			PlayerAction.Check => "OnCheck",
 			PlayerAction.Call  => "OnCall",
-			//PlayerAction.Bet   => "OnBet",
 			PlayerAction.Raise => "OnRaise",
 			PlayerAction.AllIn => "OnAllIn",
 			_                  => null
@@ -346,45 +356,24 @@ public partial class AIPokerPlayer : Node
 			return HandStrength.Weak;
 	}
 	
-	/// <summary>
-	/// Evaluate current hand strength (delegates to decision maker)
-	/// </summary>
-	private float EvaluateCurrentHandStrength(GameState gameState)
+	// --------------------------------------------------------------------------------
+	// REFACTORED: Use DecisionMaker for calculation to ensure 100% consistency
+	// --------------------------------------------------------------------------------
+	public float EvaluateCurrentHandStrength(GameState gameState)
 	{
-		if (gameState.Street == Street.Preflop)
+		if (decisionMaker == null)
 		{
-			return EvaluatePreflop();
+			GD.PrintErr("DecisionMaker is null in EvaluateCurrentHandStrength! Returning default 0.5f");
+			return 0.5f;
 		}
 		
-		int phevalRank = HandEvaluator.EvaluateHand(Hand, gameState.CommunityCards);
-		float strength = 1.0f - ((phevalRank - 1) / 7461.0f);
-		strength = (float)Math.Pow(strength, 0.75);
-		
-		if (phevalRank <= 6185) // Any pair or better
-		{
-			strength = Math.Max(strength, 0.38f);
-		}
-		
-		return Mathf.Clamp(strength, 0.10f, 1.0f);
-	}
-
-	private float EvaluatePreflop()
-	{
-		if (Hand.Count != 2) return 0.2f;
-		
-		bool isPair = Hand[0].Rank == Hand[1].Rank;
-		bool isSuited = Hand[0].Suit == Hand[1].Suit;
-		int highCard = Mathf.Max((int)Hand[0].Rank, (int)Hand[1].Rank);
-		
-		if (isPair)
-		{
-			return 0.5f + (highCard / 28f);
-		}
-		
-		float strength = 0.2f + (highCard / 40f);
-		if (isSuited) strength += 0.1f;
-		
-		return Mathf.Clamp(strength, 0.1f, 1.0f);
+		// Pass the exact same randomness seed this player is using for this hand
+		return decisionMaker.EvaluateHandStrength(
+			this.Hand, 
+			gameState.CommunityCards, 
+			gameState.Street, 
+			this.HandRandomnessSeed
+		);
 	}
 	
 	/// <summary>
@@ -437,6 +426,19 @@ public partial class AIPokerPlayer : Node
 			Chattiness = 0.5f,
 			TellReliability = 0.5f
 		};
+	}
+	
+	// Helper property to get state enum
+	public TiltState CurrentTiltState
+	{
+		get
+		{
+			float t = Personality.TiltMeter;
+			if (t >= 50f) return TiltState.Monkey;
+			if (t >= 25f) return TiltState.Steaming;
+			if (t >= 10f) return TiltState.Annoyed;
+			return TiltState.Zen;
+		}
 	}
 	
 	/// <summary>

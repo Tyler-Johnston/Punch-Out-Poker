@@ -20,43 +20,34 @@ public static class PokerAIConfig
 	public const float TURN_VALUE_THRESHOLD = 0.58f;
 	public const float RIVER_VALUE_THRESHOLD = 0.62f;
 	
-	// ✅ INCREASED: Bluff ceilings allow more bluff opportunities
-	public const float FLOP_BLUFF_CEILING = 0.48f;   // Was 0.42f → 0.48f
-	public const float TURN_BLUFF_CEILING = 0.45f;   // Was 0.38f → 0.45f
-	public const float RIVER_BLUFF_CEILING = 0.42f;  // Was 0.35f → 0.42f
+	public const float FLOP_BLUFF_CEILING = 0.48f;
+	public const float TURN_BLUFF_CEILING = 0.45f;
+	public const float RIVER_BLUFF_CEILING = 0.42f;
 	
-	// Size respect (how much bet size affects thresholds)
 	public const float FLOP_SIZE_BUMP = 0.025f;
 	public const float LATER_STREET_SIZE_BUMP = 0.045f;
-	
-	// Pot odds - only override for strong value spots
+
 	public const float POT_ODDS_MULTIPLIER = 1.25f;
 	public const float POT_ODDS_OVERRIDE_THRESHOLD = 0.40f;
 	
-	// Position adjustments
 	public const float OOP_VALUE_TIGHTEN = 0.03f;
 	public const float OOP_BLUFF_REDUCE = 0.03f;
 	
-	// Street-specific bet size multipliers
 	public const float PREFLOP_BET_MULTIPLIER = 1.0f;
 	public const float FLOP_BET_MULTIPLIER = 1.15f;
 	public const float TURN_BET_MULTIPLIER = 1.25f;
 	public const float RIVER_BET_MULTIPLIER = 1.20f;
 	
-	// Threshold adjustment factors
 	public const float SIZE_FACTOR_VALUE_ADJUST = 0.03f;
 	public const float SIZE_FACTOR_BLUFF_ADJUST = 0.04f;
 	
-	// ✅ INCREASED: Bluff probabilities to match stated personality
-	public const float BLUFF_BASE_PROB = 0.55f;              // Was 0.40f → 0.55f
-	public const float BLUFF_AGGRESSION_WEIGHT = 0.35f;      // Was 0.25f → 0.35f
+	public const float BLUFF_BASE_PROB = 0.55f;
+	public const float BLUFF_AGGRESSION_WEIGHT = 0.35f;
 	
-	// ✅ REDUCED: Trap less often to extract more value
-	public const float TRAP_PROBABILITY = 0.08f;             // Was 0.20f → 0.08f
+	public const float TRAP_PROBABILITY = 0.08f;
 	
-	// ✅ ADJUSTED: Value bet frequencies for better balance
-	public const float VALUE_BET_BASE_FREQ = 0.70f;          // Was 0.60f → 0.70f
-	public const float VALUE_BET_AGGRESSION_WEIGHT = 0.20f;  // Was 0.30f → 0.20f
+	public const float VALUE_BET_BASE_FREQ = 0.70f;
+	public const float VALUE_BET_AGGRESSION_WEIGHT = 0.20f;
 }
 
 public partial class PokerDecisionMaker : Node
@@ -75,7 +66,7 @@ public partial class PokerDecisionMaker : Node
 		float betRatio = toCall / potSize;
 
 		GD.Print($"[AI STATE] {player.PlayerName} | Street: {gameState.Street} | Strength: {handStrength:F2} | " +
-				 $"ToCall: {toCall} | BetRatio: {betRatio:F2} | Tilt: {personality.TiltMeter:F0} | Pos: {(gameState.IsAIInPosition ? "IP" : "OOP")}");
+				 $"ToCall: {toCall} | BetRatio: {betRatio:F2} | Tilt: {player.CurrentTiltState} ({personality.TiltMeter:F0}) | Pos: {(gameState.IsAIInPosition ? "IP" : "OOP")}");
 
 		// No bet to face - check or bet decision
 		if (toCall <= 0)
@@ -94,19 +85,19 @@ public partial class PokerDecisionMaker : Node
 			{
 				GD.Print($"[AI] Small all-in ({betRatio:F2}x pot), using normal call logic");
 				
-				Decision callFoldDecision = DecideCallOrFold(handStrength, betRatio, potSize, toCall, gameState.Street, personality);
+				Decision callFoldDecision = DecideCallOrFold(handStrength, betRatio, potSize, toCall, gameState.Street, personality, player);
 				PlayerAction action = callFoldDecision == Decision.Fold ? PlayerAction.Fold : PlayerAction.AllIn;
 				GD.Print($"[AI ACTION] {player.PlayerName} {action}");
 				return action;
 			}
 			
-			PlayerAction allInAction = DecideAllIn(handStrength, betRatio, gameState.Street, personality, player);
+			PlayerAction allInAction = DecideAllIn(handStrength, betRatio, gameState.Street, personality, player, gameState);
 			GD.Print($"[AI ACTION] {player.PlayerName} {allInAction}");
 			return allInAction;
 		}
 
 		// Standard facing-bet decision
-		Decision callFoldDecision2 = DecideCallOrFold(handStrength, betRatio, potSize, toCall, gameState.Street, personality);
+		Decision callFoldDecision2 = DecideCallOrFold(handStrength, betRatio, potSize, toCall, gameState.Street, personality, player);
 		
 		if (callFoldDecision2 == Decision.Fold)
 		{
@@ -130,7 +121,8 @@ public partial class PokerDecisionMaker : Node
 		float potSize,
 		float toCall,
 		Street street,
-		PokerPersonality personality)
+		PokerPersonality personality,
+		AIPokerPlayer player)
 	{
 		// Only use pot odds override for clear value spots
 		float potOdds = toCall / (potSize + toCall);
@@ -172,15 +164,23 @@ public partial class PokerDecisionMaker : Node
 		// 5) HUGE OVERBET RULE (2.5x+ pot)
 		if (betRatio >= 2.5f)
 		{
-			float overbetTighten = Mathf.Lerp(0.08f, 0.18f, 1f - effRiskTol);
-			float overbetThreshold = Mathf.Clamp(0.58f + overbetTighten, 0f, 1f);
-			float bluffDiscount = 0.04f * effBluffFreq;
-			overbetThreshold -= bluffDiscount;
-
-			if (handStrength < overbetThreshold)
+			// ✅ ENUM CHECK: If Monkey Tilt, we call huge overbets lighter
+			if (player.CurrentTiltState == TiltState.Monkey)
 			{
-				GD.Print($"[AI] Folding to huge overbet ({betRatio:F1}x pot) - need {overbetThreshold:F2}, have {handStrength:F2}");
-				return Decision.Fold;
+				threshold -= 0.15f; // Calling station mode
+			}
+			else
+			{
+				float overbetTighten = Mathf.Lerp(0.08f, 0.18f, 1f - effRiskTol);
+				float overbetThreshold = Mathf.Clamp(0.58f + overbetTighten, 0f, 1f);
+				float bluffDiscount = 0.04f * effBluffFreq;
+				overbetThreshold -= bluffDiscount;
+
+				if (handStrength < overbetThreshold)
+				{
+					GD.Print($"[AI] Folding to huge overbet ({betRatio:F1}x pot) - need {overbetThreshold:F2}, have {handStrength:F2}");
+					return Decision.Fold;
+				}
 			}
 		}
 
@@ -188,19 +188,19 @@ public partial class PokerDecisionMaker : Node
 		if (betRatio > 0.8f)
 		{
 			// === NEW HERO CALL LOGIC ===
-			// If we have a decent bluff catcher (0.35+) and are Tilted OR Curious, we call light.
 			bool heroCall = false;
 			float heroCallChance = 0.0f;
 
-			if (personality.TiltMeter > 3.0f) heroCallChance += 0.20f; // Anger Call
-			if (personality.CallTendency > 0.6f) heroCallChance += 0.15f; // Curious Call
+			// ✅ ENUM CHECK: Higher states = Higher hero call chance
+			if (player.CurrentTiltState >= TiltState.Annoyed) heroCallChance += 0.20f; 
+			if (player.CurrentTiltState >= TiltState.Steaming) heroCallChance += 0.20f;
+			if (personality.CallTendency > 0.6f) heroCallChance += 0.15f; 
 
-			// Use a unique seed for this specific decision
 			float heroSeed = (handStrength * 100) % 1.0f; 
 			if (handStrength > 0.30f && heroSeed < heroCallChance)
 			{
 				heroCall = true;
-				GD.Print($"[AI] HERO CALL! (Tilt: {personality.TiltMeter}, Strength: {handStrength:F2})");
+				GD.Print($"[AI] HERO CALL! (State: {player.CurrentTiltState}, Strength: {handStrength:F2})");
 			}
 
 			if (!heroCall)
@@ -264,7 +264,7 @@ public partial class PokerDecisionMaker : Node
 		float effBluffFreq = Mathf.Clamp(personality.CurrentBluffFrequency * tiltFactor, 0f, 1f);
 		float effRiskTol = Mathf.Clamp(personality.CurrentRiskTolerance * tiltFactor, 0f, 1f);
 
-		float plannedBetRatio = CalculatePlannedBetRatio(handStrength, personality, street, player.BetSizeSeed);
+		float plannedBetRatio = CalculatePlannedBetRatio(handStrength, personality, street, player.BetSizeSeed, player);
 
 		// Value and bluff thresholds by street
 		float valueThreshold, bluffCeiling;
@@ -304,25 +304,22 @@ public partial class PokerDecisionMaker : Node
 		// ═══════════════════════════════════════════════════════
 		if (handStrength >= valueThreshold)
 		{
-			// ✅ REDUCED: Trap 8% instead of 20%
-			if (handStrength > 0.85f && player.TrapDecisionSeed < PokerAIConfig.TRAP_PROBABILITY)
+			// ✅ ENUM CHECK: Steaming/Monkey players don't trap. They just bet.
+			bool canTrap = player.CurrentTiltState < TiltState.Steaming;
+			
+			if (canTrap && handStrength > 0.85f && player.TrapDecisionSeed < PokerAIConfig.TRAP_PROBABILITY)
 			{
 				GD.Print($"[AI] Trapping with {handStrength:F2} strength");
 				return (Decision.Check, 0f);
 			}
 			
-			// ✅ CORRECTED: Check 10-30% of medium-strong value hands
 			if (handStrength < 0.75f)  // Not premium
 			{
-				// Bet 70-90% of the time (check 10-30%)
 				float valueBetFreq = PokerAIConfig.VALUE_BET_BASE_FREQ + 
 									 (effAggression * PokerAIConfig.VALUE_BET_AGGRESSION_WEIGHT);
-				// Steve (0.45 agg): 0.70 + (0.45 * 0.20) = 0.79 = bet 79%, check 21%
-				// Boy Wizard (0.85): 0.70 + (0.85 * 0.20) = 0.87 = bet 87%, check 13%
-				
+
 				float valueSeed = GetDecisionSeedForStreet(player, street);
 				
-				// ✅ CORRECTED: Check when seed EXCEEDS bet frequency
 				if (valueSeed > valueBetFreq)
 				{
 					GD.Print($"[AI] Checking value hand ({handStrength:F2}) for deception");
@@ -330,7 +327,6 @@ public partial class PokerDecisionMaker : Node
 				}
 			}
 			
-			// Bet value hands
 			return (Decision.Bet, plannedBetRatio);
 		}
 
@@ -339,11 +335,14 @@ public partial class PokerDecisionMaker : Node
 		// ═══════════════════════════════════════════════════════
 		if (handStrength <= bluffCeiling)
 		{
-			// ✅ INCREASED: More aggressive bluff formula
 			float bluffProb = PokerAIConfig.BLUFF_BASE_PROB * effBluffFreq + 
 							  PokerAIConfig.BLUFF_AGGRESSION_WEIGHT * effAggression;
-			// Steve (0.33 bluff, 0.45 agg): 0.55 * 0.33 + 0.35 * 0.45 = 0.34 = 34%
-			// Boy Wizard (0.70, 0.85): 0.55 * 0.70 + 0.35 * 0.85 = 0.68 = 68%
+			
+			// ✅ ENUM CHECK: Steaming players bluff way more
+			if (player.CurrentTiltState >= TiltState.Steaming)
+			{
+				bluffProb += 0.20f;
+			}
 			
 			float bluffSeed = GetDecisionSeedForStreet(player, street);
 			
@@ -356,13 +355,13 @@ public partial class PokerDecisionMaker : Node
 		}
 
 		// ═══════════════════════════════════════════════════════
-		// MEDIUM HANDS (between bluffCeiling and valueThreshold)
+		// MEDIUM HANDS
 		// ═══════════════════════════════════════════════════════
 		float mediumBetFreq = street switch
 		{
-			Street.Flop => 0.25f + (0.40f * effAggression),    // ~45% at 0.50 agg, 59% at 0.85 agg
-			Street.Turn => 0.20f + (0.45f * effAggression),    // ~43% at 0.50 agg, 58% at 0.85 agg
-			Street.River => 0.15f + (0.35f * effAggression),   // ~33% at 0.50 agg, 45% at 0.85 agg
+			Street.Flop => 0.25f + (0.40f * effAggression), 
+			Street.Turn => 0.20f + (0.45f * effAggression),
+			Street.River => 0.15f + (0.35f * effAggression),
 			_ => 0.20f + (0.35f * effAggression)
 		};
 		
@@ -373,7 +372,6 @@ public partial class PokerDecisionMaker : Node
 			return (Decision.Bet, plannedBetRatio);
 		}
 
-		// Check back
 		return (Decision.Check, 0f);
 	}
 
@@ -395,43 +393,39 @@ public partial class PokerDecisionMaker : Node
 	/// <summary>
 	/// Calculate planned bet ratio with increased sizing + street multipliers
 	/// </summary>
-	private float CalculatePlannedBetRatio(float handStrength, PokerPersonality personality, Street street, float betSizeSeed)
+	private float CalculatePlannedBetRatio(float handStrength, PokerPersonality personality, Street street, float betSizeSeed, AIPokerPlayer player)
 	{
-		// BetSizeSeed is already 0-1 from GD.Randf()
 		float normalizedSeed = betSizeSeed;
-		
 		float baseBetMultiplier;
 		
 		// Base bet ranges by hand strength
 		if (handStrength >= 0.80f) // Premium hands
 		{
-			baseBetMultiplier = 0.85f + (normalizedSeed * 0.35f); // 0.85-1.20x pot
+			baseBetMultiplier = 0.85f + (normalizedSeed * 0.35f); 
 		}
 		else if (handStrength >= 0.65f) // Strong hands
 		{
-			baseBetMultiplier = 0.65f + (normalizedSeed * 0.30f); // 0.65-0.95x pot
+			baseBetMultiplier = 0.65f + (normalizedSeed * 0.30f); 
 		}
 		else if (handStrength >= 0.45f) // Medium hands
 		{
-			baseBetMultiplier = 0.50f + (normalizedSeed * 0.25f); // 0.50-0.75x pot
+			baseBetMultiplier = 0.50f + (normalizedSeed * 0.25f); 
 		}
 		else if (handStrength >= 0.35f) // Weak hands
 		{
-			baseBetMultiplier = 0.35f + (normalizedSeed * 0.25f); // 0.35-0.60x pot
+			baseBetMultiplier = 0.35f + (normalizedSeed * 0.25f); 
 		}
-		else // Polarized bluff sizing (capped)
+		else // Polarized bluff sizing
 		{
 			if (normalizedSeed < 0.60f)
 			{
-				// Small bluff (60% of the time)
 				float smallBluffSeed = normalizedSeed / 0.60f;
-				baseBetMultiplier = 0.35f + (smallBluffSeed * 0.20f); // 0.35-0.55x
+				baseBetMultiplier = 0.35f + (smallBluffSeed * 0.20f); 
 			}
 			else
 			{
-				// Big bluff (40% of the time) - capped to prevent exploitation
 				float bigBluffSeed = (normalizedSeed - 0.60f) / 0.40f;
-				baseBetMultiplier = 1.20f + (bigBluffSeed * 0.40f); // 1.20-1.60x
+				baseBetMultiplier = 1.20f + (bigBluffSeed * 0.40f); 
 			}
 		}
 		
@@ -450,12 +444,18 @@ public partial class PokerDecisionMaker : Node
 		// Apply aggression multiplier
 		float aggressionMultiplier = 0.8f + (personality.CurrentAggression * 0.5f);
 		
+		// ✅ ENUM CHECK: Steaming players bet bigger
+		if (player.CurrentTiltState >= TiltState.Steaming)
+		{
+			aggressionMultiplier *= 1.25f;
+		}
+
 		return baseBetMultiplier * aggressionMultiplier;
 	}
 
 
 	// ══════════════════════════════════════════════════════════════
-	// ALL-IN DECISION LOGIC
+	// ALL-IN DECISION LOGIC (UPDATED WITH STACK PROTECTION)
 	// ══════════════════════════════════════════════════════════════
 	
 	private PlayerAction DecideAllIn(
@@ -463,11 +463,30 @@ public partial class PokerDecisionMaker : Node
 		float betRatio, 
 		Street street, 
 		PokerPersonality personality, 
-		AIPokerPlayer player)
+		AIPokerPlayer player,
+		GameState gameState)
 	{
 		float tiltFactor = 1f + (personality.TiltMeter / 100f);
 		float effRiskTol = Mathf.Clamp(personality.CurrentRiskTolerance * tiltFactor, 0f, 1f);
 		float effBluffFreq = Mathf.Clamp(personality.CurrentBluffFrequency * tiltFactor, 0f, 1f);
+
+		// -----------------------------------------------------------------------
+		// ✅ STACK PROTECTION FIX: Prevent "Suicide Calls" with trash hands
+		// -----------------------------------------------------------------------
+		if (street == Street.Preflop && player.ChipStack > gameState.BigBlind * 15)
+		{
+			// ✅ ENUM CHECK: Only protect stack if we are NOT Steaming/Monkey
+			if (player.CurrentTiltState < TiltState.Steaming)
+			{
+				// Require decent equity (0.60 = ~pairs or high aces)
+				if (handStrength < 0.60f)
+				{
+					GD.Print($"[AI] Protecting stack (State: {player.CurrentTiltState}). Folding {handStrength:F2} to preflop shove.");
+					return PlayerAction.Fold;
+				}
+			}
+		}
+		// -----------------------------------------------------------------------
 
 		float allInThreshold = street switch
 		{
@@ -491,6 +510,12 @@ public partial class PokerDecisionMaker : Node
 			Street.Flop => effBluffFreq * 0.20f,
 			_ => effBluffFreq * 0.10f
 		};
+		
+		// ✅ ENUM CHECK: Steaming players shove significantly more often
+		if (player.CurrentTiltState >= TiltState.Steaming)
+		{
+			bluffShoveProb *= 2.0f;
+		}
 		
 		float bluffSeed = GetDecisionSeedForStreet(player, street);
 		if (handStrength < 0.25f && bluffSeed < bluffShoveProb)
@@ -543,6 +568,13 @@ public partial class PokerDecisionMaker : Node
 
 		// Bluff raise
 		float bluffRaiseProb = effBluffFreq * (street == Street.Flop ? 0.35f : 0.20f);
+		
+		// ✅ ENUM CHECK: Steaming players bluff raise more
+		if (player.CurrentTiltState >= TiltState.Steaming)
+		{
+			bluffRaiseProb *= 1.5f;
+		}
+
 		float bluffRaiseSeed = GetDecisionSeedForStreet(player, street);
 		
 		if (handStrength < 0.32f && bluffRaiseSeed < bluffRaiseProb && player.ChipStack > toCall * 3f)
@@ -565,17 +597,16 @@ public partial class PokerDecisionMaker : Node
 		float currentBet = gameState.CurrentBet;
 		float toCall = currentBet - gameState.GetPlayerCurrentBet(player);
 		
-		float baseBetRatio = CalculatePlannedBetRatio(handStrength, personality, gameState.Street, player.BetSizeSeed);
+		float baseBetRatio = CalculatePlannedBetRatio(handStrength, personality, gameState.Street, player.BetSizeSeed, player);
 		float betSize = potSize * baseBetRatio;
 		
-		// Tilt adjustments
-		if (personality.TiltMeter > 20f)
+		// ✅ ENUM CHECK: Steaming players consistently overbet
+		if (player.CurrentTiltState >= TiltState.Steaming)
 		{
 			betSize *= 1.15f;
-			GD.Print($"[{player.PlayerName}] Tilted betting ({personality.TiltMeter:F0} tilt)");
+			GD.Print($"[{player.PlayerName}] Tilted betting ({player.CurrentTiltState})");
 		}
 		
-		// Proper minimum raise calculation
 		float minRaise;
 		if (toCall > 0)
 		{
@@ -631,7 +662,7 @@ public partial class PokerDecisionMaker : Node
 	// HAND STRENGTH EVALUATION
 	// ══════════════════════════════════════════════════════════════
 	
-	private float EvaluateHandStrength(List<Card> holeCards, List<Card> communityCards, Street street, float randomnessSeed)
+	public float EvaluateHandStrength(List<Card> holeCards, List<Card> communityCards, Street street, float randomnessSeed)
 	{
 		if (holeCards == null || holeCards.Count != 2)
 		{
@@ -660,7 +691,6 @@ public partial class PokerDecisionMaker : Node
 			strength += EvaluateDrawPotential(allCards) * 0.10f;
 		}
 		
-		// Use seeded randomness (consistent per hand)
 		float randomness = randomnessSeed * 0.08f;
 		
 		return Mathf.Clamp(strength + randomness, 0.10f, 1.0f);
@@ -682,7 +712,6 @@ public partial class PokerDecisionMaker : Node
 		
 		if (isPair)
 		{
-			// Non-linear scaling (AA = 0.85, not 0.75)
 			strength = 0.50f + ((float)Math.Pow(highCard / 14f, 1.3) * 0.35f);
 		}
 		else

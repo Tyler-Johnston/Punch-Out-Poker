@@ -13,6 +13,9 @@ public partial class PokerGame
 		ResetBettingRound();
 		aiBluffedThisHand = false;
 		isProcessingAIAction = false;
+		
+		// Ensure visuals are fresh for new street
+		UpdateOpponentVisuals();
 
 		Street nextStreet;
 		
@@ -177,7 +180,7 @@ public partial class PokerGame
 		}
 		
 		UpdateHud();
-		//chipsAudioPlayer?.Play();
+		UpdateOpponentVisuals(); // Update visuals (shake if steaming, etc)
 	}
 
 	/// <summary>
@@ -188,17 +191,36 @@ public partial class PokerGame
 		ShowMessage($"{currentOpponentName} folds");
 		GD.Print($"{currentOpponentName} folds");
 		
-		// If player bet big (> 60% of pot) and AI folded, AI gets annoyed.
+		// --- NEW DYNAMIC BULLY LOGIC ---
 		if (pot > 0 && currentBet > 0)
 		{
 			float betRatio = (float)currentBet / pot;
-			if (betRatio > 0.6f)
+			float tiltPenalty = 0f;
+
+			// Tiered Tilt Penalties
+			if (betRatio >= 1.0f) // Overbet or Pot-Sized Shove
 			{
-				float tiltPenalty = 1.0f;
-				aiOpponent.Personality.TiltMeter += tiltPenalty;
-				GD.Print($"[TILT] {currentOpponentName} bullied into folding. Tilt +{tiltPenalty} (Total: {aiOpponent.Personality.TiltMeter:F1})");
+				tiltPenalty = 8.0f;
+				GD.Print($"[TILT] MAJOR BULLY! Ratio {betRatio:F2}. Tilt +{tiltPenalty}");
+			}
+			else if (betRatio > 0.6f) // Strong Bet
+			{
+				tiltPenalty = 4.0f;
+				GD.Print($"[TILT] Bullied. Ratio {betRatio:F2}. Tilt +{tiltPenalty}");
+			}
+			else if (betRatio > 0.3f) // Standard Bet (Annoyance)
+			{
+				tiltPenalty = 2.0f; 
+				GD.Print($"[TILT] Mild pressure. Ratio {betRatio:F2}. Tilt +{tiltPenalty}");
+			}
+
+			// Apply Penalty
+			if (tiltPenalty > 0)
+			{
+				aiOpponent.Personality.AddTilt(tiltPenalty);
 			}
 		}
+		// -------------------------------
 
 		int winAmount = pot;
 		playerChips += pot;
@@ -214,12 +236,12 @@ public partial class PokerGame
 		};
 	}
 
-
 	/// <summary>
 	/// Handle opponent check
 	/// </summary>
 	private void OnOpponentCheck()
 	{
+		sfxPlayer.PlaySound("check", true);
 		ShowMessage($"{currentOpponentName} checks");
 		GD.Print($"{currentOpponentName} checks");
 	}
@@ -241,6 +263,17 @@ public partial class PokerGame
 		{
 			opponentIsAllIn = true;
 			aiOpponent.IsAllIn = true;
+			
+			// --- SNAPSHOT CAPTURE FOR BAD BEAT ---
+			GameState snapState = new GameState 
+			{ 
+				CommunityCards = new List<Card>(communityCards),
+				Street = currentStreet
+			};
+			aiStrengthAtAllIn = aiOpponent.EvaluateCurrentHandStrength(snapState);
+			GD.Print($"[SNAPSHOT] AI Called All-In. Strength: {aiStrengthAtAllIn:F2}");
+			// ------------------------------------
+			
 			ShowMessage($"{currentOpponentName} calls all-in for ${callAmount}");
 			GD.Print($"{currentOpponentName} calls all-in: {callAmount}");
 		}
@@ -339,6 +372,16 @@ public partial class PokerGame
 		currentBet = Math.Max(currentBet, opponentBet);
 		playerHasActedThisStreet = false;
 		
+		// --- SNAPSHOT CAPTURE FOR BAD BEAT ---
+		GameState snapState = new GameState 
+		{ 
+			CommunityCards = new List<Card>(communityCards),
+			Street = currentStreet
+		};
+		aiStrengthAtAllIn = aiOpponent.EvaluateCurrentHandStrength(snapState);
+		GD.Print($"[SNAPSHOT] AI Pushed All-In. Strength: {aiStrengthAtAllIn:F2}");
+		// ------------------------------------
+		
 		ShowMessage($"{currentOpponentName} goes ALL-IN for ${allInAmount}!");
 		GD.Print($"{currentOpponentName} ALL-IN: {allInAmount}");
 	}
@@ -380,24 +423,19 @@ public partial class PokerGame
 		// 2) Evaluate hand strength category for tells / dialogue
 		HandStrength strength = aiOpponent.DetermineHandStrengthCategory(gameState);
 		
-		// 3) Get a *behavior* tell key (for logs/animations)
-		string tellKey = aiOpponent.GetTellForHandStrength(strength);
-		if (!string.IsNullOrEmpty(tellKey))
-		{
-			GD.Print($"[TELL] {currentOpponentName}: {tellKey}");
-			// If you later add animations, you can map tellKey -> animation here
-		}
-		
-		// 4) Get a spoken dialogue line (what appears in the label)
+		// 3) Get a spoken dialogue line (what appears in the label)
 		string dialogueLine = aiOpponent.GetDialogueForAction(
 			action,
 			strength,
-			aiBluffedThisHand // set this from your bluff-tracking logic if you want
+			aiBluffedThisHand 
 		);
 		
-		// 5) Apply chattiness: chance that they say nothing
+		// 4) Apply chattiness: chance that they say nothing
+		// Steaming/Monkey players ignore chattiness (DialogueManager handles this logic too, but we double check here)
 		float chatRoll = GD.Randf();
-		if (chatRoll <= aiOpponent.Personality.Chattiness && !string.IsNullOrEmpty(dialogueLine))
+		bool alwaysTalk = (aiOpponent.CurrentTiltState >= TiltState.Steaming);
+		
+		if ((chatRoll <= aiOpponent.Personality.Chattiness || alwaysTalk) && !string.IsNullOrEmpty(dialogueLine))
 		{
 			opponentDialogueLabel.Text = dialogueLine;
 		}
