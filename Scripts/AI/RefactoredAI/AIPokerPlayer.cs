@@ -134,7 +134,7 @@ public partial class AIPokerPlayer : Node
 		return action;
 	}
 
-	public void ProcessHandResult(HandResult result)
+	public void ProcessHandResult(HandResult result, int potSize, int bigBlind)
 	{
 		float previousTilt = Personality.TiltMeter;
 		
@@ -165,10 +165,24 @@ public partial class AIPokerPlayer : Node
 				break;
 				
 			case HandResult.Win:
-				// Only reduce tilt on WINS
 				Personality.ConsecutiveLosses = 0;
-				Personality.ReduceTilt(5f); // Wins calm you down more
-				GD.Print($"{PlayerName} won! Tilt reduced to: {Personality.TiltMeter}");
+				
+				// DYNAMIC RECOVERY LOGIC
+				float bigBlindsWon = (float)potSize / bigBlind;
+				float reliefAmount = 2.0f; // Base relief for any win
+				
+				if (bigBlindsWon > 20) 
+				{
+					reliefAmount = 15.0f; // Huge pot = Huge relief
+					GD.Print($"{PlayerName} won a MONSTER POT! Major relief.");
+				}
+				else if (bigBlindsWon > 10)
+				{
+					reliefAmount = 8.0f; // Big pot = Good relief
+				}
+				
+				Personality.ReduceTilt(reliefAmount);
+				GD.Print($"{PlayerName} won ({bigBlindsWon:F1} BBs). Tilt -{reliefAmount}");
 				break;
 				
 			case HandResult.Neutral:

@@ -9,16 +9,17 @@ public partial class PokerGame
 		if (!handInProgress || !isPlayerTurn) return;
 
 		playerHasActedThisStreet = true;
-
+		
 		ShowMessage("You fold");
 		GD.Print("Player folds");
-		opponentChips += pot;
+
+		int winAmount = pot; 
+		opponentChips += winAmount;
+		aiOpponent.ChipStack = opponentChips;
 		pot = 0;
 		
-		// ai wins so reduce tilt slightly
-		aiOpponent.ProcessHandResult(HandResult.Win);
+		aiOpponent.ProcessHandResult(HandResult.Win, winAmount, bigBlind);
 		
-		// Update visuals immediately (e.g., stops shaking if they calm down)
 		UpdateOpponentVisuals();
 		
 		GD.Print($"Stacks -> Player: {playerChips}, Opponent: {opponentChips}");

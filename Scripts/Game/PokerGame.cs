@@ -625,7 +625,7 @@ public partial class PokerGame : Node2D
 			}
 			
 			playerChips += pot;
-			aiOpponent.ProcessHandResult(aiHandResult);
+			aiOpponent.ProcessHandResult(aiHandResult, finalPot, bigBlind);
 		}
 		else if (result < 0)
 		{
@@ -644,7 +644,7 @@ public partial class PokerGame : Node2D
 			
 			opponentChips += pot;
 			aiOpponent.ChipStack = opponentChips;
-			aiOpponent.ProcessHandResult(HandResult.Win);
+			aiOpponent.ProcessHandResult(HandResult.Win, pot, bigBlind);
 			
 			if (playerRank <= 2467)
 			{
@@ -661,7 +661,7 @@ public partial class PokerGame : Node2D
 			opponentChips += pot - split;
 			aiOpponent.ChipStack = opponentChips;
 			
-			aiOpponent.ProcessHandResult(HandResult.Neutral);
+			aiOpponent.ProcessHandResult(HandResult.Neutral, pot, bigBlind);
 		}
 
 		ShowMessage(message);
@@ -695,7 +695,7 @@ public partial class PokerGame : Node2D
 			GD.Print($"=== VICTORY vs {currentOpponentName} ===");
 			
 			// Process AI tilt for losing
-			aiOpponent.ProcessHandResult(HandResult.Loss);
+			aiOpponent.ProcessHandResult(HandResult.Loss, 0, 0); 
 		}
 		else
 		{
