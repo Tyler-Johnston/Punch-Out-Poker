@@ -28,7 +28,7 @@ public partial class PokerGame
 				{
 					// Calculate total like the raise block
 					int raiseTotal = currentBet + betAmount;
-					betRaiseButton.Text = $"Raise to: {raiseTotal}";
+					betRaiseButton.Text = $"Raise: {raiseTotal}";
 				}
 				else
 				{
@@ -57,7 +57,7 @@ public partial class PokerGame
 			}
 			else
 			{
-				betRaiseButton.Text = $"Raise to: {raiseTotal}";
+				betRaiseButton.Text = $"Raise: {raiseTotal}";
 			}
 		}
 
@@ -93,7 +93,9 @@ public partial class PokerGame
 				checkCallButton.Text = "Next Hand";
 				checkCallButton.Disabled = false;
 			}
-
+			
+			cashOutButton.Disabled = false;
+			cashOutButton.Visible = true;
 			foldButton.Visible = false;
 			betRaiseButton.Visible = false;
 			betSlider.Visible = false;

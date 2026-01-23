@@ -1,4 +1,4 @@
-[gd_scene load_steps=31 format=3 uid="uid://b5sq1675fwcio"]
+[gd_scene load_steps=33 format=3 uid="uid://b5sq1675fwcio"]
 
 [ext_resource type="Script" uid="uid://8k6pqsmgt5pe" path="res://Scripts/Game/PokerGame.cs" id="1_8w0ed"]
 [ext_resource type="FontFile" uid="uid://dmret52s833gh" path="res://Assets/Fonts/Jersey_10/Jersey10-Regular.ttf" id="2_j8upv"]
@@ -163,6 +163,30 @@ corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_34q52"]
+bg_color = Color(0.15965182, 0.58779526, 0.24229228, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.84705883, 0.84705883, 0.84705883, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_h5gdr"]
+bg_color = Color(0.6117647, 0.6117647, 0.6117647, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.84705883, 0.84705883, 0.84705883, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
 [sub_resource type="LabelSettings" id="LabelSettings_eibjp"]
 font = ExtResource("2_j8upv")
 font_size = 48
@@ -240,15 +264,15 @@ texture = SubResource("GradientTexture2D_vtryj")
 
 [node name="ButtonUI" type="VBoxContainer" parent="CanvasLayer/Control"]
 layout_mode = 0
-offset_left = 43.0
-offset_top = 556.0
-offset_right = 201.0
-offset_bottom = 620.5
+offset_left = 24.0
+offset_top = 592.0
+offset_right = 182.0
+offset_bottom = 644.0
 scale = Vector2(2.25, 2.25)
 
 [node name="ActionButtons" type="HBoxContainer" parent="CanvasLayer/Control/ButtonUI"]
+custom_minimum_size = Vector2(0, 25)
 layout_mode = 2
-size_flags_vertical = 3
 alignment = 1
 
 [node name="FoldButton" type="Button" parent="CanvasLayer/Control/ButtonUI/ActionButtons"]
@@ -265,6 +289,7 @@ text = "Fold"
 [node name="CheckCallButton" type="Button" parent="CanvasLayer/Control/ButtonUI/ActionButtons"]
 custom_minimum_size = Vector2(50, 0)
 layout_mode = 2
+size_flags_horizontal = 3
 focus_mode = 0
 theme_override_fonts/font = ExtResource("2_j8upv")
 theme_override_styles/normal = SubResource("StyleBoxFlat_xxe2x")
@@ -285,14 +310,12 @@ theme_override_styles/disabled = SubResource("StyleBoxFlat_bvnvu")
 text = "Bet"
 
 [node name="CashOutButton" type="Button" parent="CanvasLayer/Control/ButtonUI"]
-custom_minimum_size = Vector2(50, 0)
+custom_minimum_size = Vector2(0, 23)
 layout_mode = 2
 focus_mode = 0
 theme_override_fonts/font = ExtResource("2_j8upv")
-theme_override_styles/normal = SubResource("StyleBoxFlat_u1fmj")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_epj03")
-theme_override_styles/hover = SubResource("StyleBoxFlat_p0x7j")
-theme_override_styles/disabled = SubResource("StyleBoxFlat_bvnvu")
+theme_override_styles/normal = SubResource("StyleBoxFlat_34q52")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_h5gdr")
 text = "Cash Out"
 
 [node name="PlayerStackLabel" type="Label" parent="CanvasLayer/Control"]
@@ -351,20 +374,20 @@ label_settings = SubResource("LabelSettings_l4y0v")
 
 [node name="BetSlider" type="HSlider" parent="CanvasLayer/Control"]
 layout_mode = 0
-offset_left = 130.0
-offset_top = 517.0
-offset_right = 401.0
-offset_bottom = 534.0
+offset_left = 120.0
+offset_top = 667.0
+offset_right = 384.0
+offset_bottom = 684.0
 theme_override_styles/slider = SubResource("StyleBoxFlat_vnib4")
 theme_override_styles/grabber_area = SubResource("StyleBoxFlat_hkg01")
 theme_override_styles/grabber_area_highlight = SubResource("StyleBoxFlat_hkg01")
 
 [node name="BetSliderLabel" type="Label" parent="CanvasLayer/Control"]
 layout_mode = 0
-offset_left = 42.0
-offset_top = 508.0
-offset_right = 121.0
-offset_bottom = 542.0
+offset_left = 32.0
+offset_top = 658.0
+offset_right = 111.0
+offset_bottom = 692.0
 text = "Amount"
 label_settings = SubResource("LabelSettings_hkg01")
 

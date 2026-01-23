@@ -29,6 +29,7 @@ public partial class PokerGame : Node2D
 	private Button foldButton;
 	private Button checkCallButton;
 	private Button betRaiseButton;
+	private Button cashOutButton;
 
 	private Label playerStackLabel;
 	private Label opponentStackLabel;
@@ -115,10 +116,12 @@ public partial class PokerGame : Node2D
 		riverCard = communityCardsArea.GetNode<CardVisual>("River");
 
 		// action buttons
-		Control actionButtons = hudControl.GetNode<Control>("ButtonUI/ActionButtons");
+		Control buttonUI = hudControl.GetNode<Control>("ButtonUI");
+		Control actionButtons = buttonUI.GetNode<Control>("ActionButtons");
 		foldButton = actionButtons.GetNode<Button>("FoldButton");
 		checkCallButton = actionButtons.GetNode<Button>("CheckCallButton");
 		betRaiseButton = actionButtons.GetNode<Button>("BetRaiseButton");
+		cashOutButton = buttonUI.GetNode<Button>("CashOutButton");
 
 		// labels
 		playerStackLabel = hudControl.GetNode<Label>("PlayerStackLabel");
@@ -414,6 +417,8 @@ public partial class PokerGame : Node2D
 		GD.Print("\n=== New Hand ===");
 		ShowMessage("");
 
+		cashOutButton.Disabled = true;
+		cashOutButton.Visible = false;
 		checkCallButton.Disabled = false;
 		betSlider.Visible = true;
 		foldButton.Visible = true;
