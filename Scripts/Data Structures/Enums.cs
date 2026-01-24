@@ -112,7 +112,6 @@ public enum TiltState
 	Monkey      // 50+      (Shoving random hands, zero patience)
 }
 
-
 public enum Expression
 {
 	Neutral,
@@ -123,4 +122,11 @@ public enum Expression
 	Annoyed,
 	Worried,
 	Smirk
+}
+
+public enum OpponentExitType
+{
+	None,
+	RageQuit,   // TKO: They leave because of Tilt. YOU WIN (Unlock Next).
+	Surrender   // Escape: They leave to save money. YOU LOSE/DRAW (No Unlock).
 }

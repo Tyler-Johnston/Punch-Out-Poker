@@ -18,7 +18,11 @@ public static class PersonalityPresets
 
 			// Dialogue settings
 			Chattiness = 0.70f,        // Friendly, talks often
-			TellReliability = 0.85f   // Easy to read (beginner)
+			TellReliability = 0.85f,   // Easy to read (beginner)
+
+			// EXIT STRATEGY (Cowardly Beginner)
+			RageQuitThreshold = 15.0f,    // Leaves quickly if bullied
+			SurrenderChipPercent = 0.40f  // Quits to save 40% of his money
 		};
 
 		// === TELLS (behavioral cues) ===
@@ -144,7 +148,11 @@ public static class PersonalityPresets
 			CallTendency = 0.75f,  // Calling station - plays too many hands
 
 			Chattiness = 0.80f,       // Talkative, emotional
-			TellReliability = 0.75f  // Very easy to read
+			TellReliability = 0.75f,  // Very easy to read
+
+			// EXIT STRATEGY (Emotional Maniac)
+			RageQuitThreshold = 25.0f,    // Explodes easily
+			SurrenderChipPercent = 0.18f   // Never surrenders money (Stubborn)
 		};
 
 		personality.Tells["strong_hand"] = new Godot.Collections.Array<string>
@@ -263,7 +271,11 @@ public static class PersonalityPresets
 			CallTendency = 0.40f,  // Low - folds or raises, rarely calls
 
 			Chattiness = 0.7f,       // Cocky, talks a lot
-			TellReliability = 0.53f  // Mischievous, tries to mislead
+			TellReliability = 0.53f,  // Mischievous, tries to mislead
+
+			// EXIT STRATEGY (Arrogant Gambler)
+			RageQuitThreshold = 40.0f,     // Can take some heat
+			SurrenderChipPercent = 0.10f   // Fights until nearly broke
 		};
 
 		personality.Tells["strong_hand"] = new Godot.Collections.Array<string>
@@ -384,7 +396,11 @@ public static class PersonalityPresets
 			CallTendency = 0.45f,          // Prefers raising over calling
 
 			Chattiness = 0.65f,      // Story-teller
-			TellReliability = 0.60f  // Somewhat readable
+			TellReliability = 0.60f,  // Somewhat readable
+
+			// EXIT STRATEGY (Practical Pro)
+			RageQuitThreshold = 30.0f,    // Tough skin
+			SurrenderChipPercent = 0.24f  // Quits when low to save bus fare
 		};
 
 		personality.Tells["strong_hand"] = new Godot.Collections.Array<string>
@@ -502,7 +518,11 @@ public static class PersonalityPresets
 			CallTendency = 0.55f,          // Prefers calling to aggression
 
 			Chattiness = 0.7f,       // Chill talker
-			TellReliability = 0.55f  // Somewhat readable, relaxed
+			TellReliability = 0.55f,  // Somewhat readable, relaxed
+
+			// EXIT STRATEGY (Vibes Player)
+			RageQuitThreshold = 40.0f,    // Very calm
+			SurrenderChipPercent = 0.50f  // Leaves early if not feeling it
 		};
 
 		personality.Tells["strong_hand"] = new Godot.Collections.Array<string>
@@ -620,7 +640,11 @@ public static class PersonalityPresets
 			CallTendency = 0.50f,          // Perfectly balanced
 
 			Chattiness = 0.65f,       // Speaks sometimes, poetic
-			TellReliability = 0.50f  // Balanced, not obvious
+			TellReliability = 0.50f,  // Balanced, not obvious
+
+			// EXIT STRATEGY (Determined Learner)
+			RageQuitThreshold = 35.0f,    // Average
+			SurrenderChipPercent = 0.25f  // Quits when significantly down
 		};
 
 		personality.Tells["strong_hand"] = new Godot.Collections.Array<string>
@@ -740,7 +764,11 @@ public static class PersonalityPresets
 			CallTendency = 0.42f,          // Aggressive - raises more than calls
 
 			Chattiness = 0.55f,      // Regal, measured
-			TellReliability = 0.45f  // Some deception
+			TellReliability = 0.45f, // Some deception
+
+			// EXIT STRATEGY (Prideful Boss)
+			RageQuitThreshold = 90.0f,     // Nearly impossible
+			SurrenderChipPercent = 0.05f   // Pride keeps him in
 		};
 
 		personality.Tells["strong_hand"] = new Godot.Collections.Array<string>
@@ -858,7 +886,11 @@ public static class PersonalityPresets
 			CallTendency = 0.48f,          // Balanced, slight aggression preference
 
 			Chattiness = 0.5f,       // Occasional, wise lines
-			TellReliability = 0.35f  // Hard to read
+			TellReliability = 0.35f,  // Hard to read
+
+			// EXIT STRATEGY (Calculated Sage)
+			RageQuitThreshold = 65.0f,    // Zen Master
+			SurrenderChipPercent = 0.30f   // Leaves when EV is negative
 		};
 
 		personality.Tells["strong_hand"] = new Godot.Collections.Array<string>
@@ -976,7 +1008,11 @@ public static class PersonalityPresets
 			CallTendency = 0.48f,          // GTO-balanced calling frequency
 
 			Chattiness = 0.25f,      // Says little
-			TellReliability = 0.20f  // Very hard to read
+			TellReliability = 0.20f, // Very hard to read
+
+			// EXIT STRATEGY (Robot)
+			RageQuitThreshold = 70.0f,    
+			SurrenderChipPercent = 0.05f
 		};
 
 		personality.Tells["strong_hand"] = new Godot.Collections.Array<string>

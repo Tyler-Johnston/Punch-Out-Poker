@@ -167,6 +167,7 @@ public partial class PokerGame : Node2D
 		aiOpponent.Personality = LoadOpponentPersonality(currentOpponentName);
 		aiOpponent.ChipStack = buyInAmount;
 		aiOpponent.PlayerName = currentOpponentName;
+		aiOpponent.InitializeForMatch(buyInAmount);
 
 		decisionMaker = new PokerDecisionMaker();
 		AddChild(aiOpponent); 
@@ -542,22 +543,54 @@ public partial class PokerGame : Node2D
 		}
 	}
 	
-	private void EndHand()
+	private async void EndHand()
 	{
+		// 1. Reset Pot and Flags
 		pot = 0;
 		handInProgress = false;
 		waitingForNextGame = true;
 
-		if (IsGameOver())
+		// 2. Check Strict Game Over (Bankruptcy) first
+		// If they have 0 chips, standard GameOver rules apply.
+		if (aiOpponent.ChipStack <= 0 || playerChips <= 0)
 		{
 			HandleGameOver();
+			return;
 		}
-		else
+
+		// 3. Check for Personality-Driven Exits (Rage Quit / Surrender)
+		OpponentExitType exitType = aiOpponent.CheckForEarlyExit();
+		if (exitType != OpponentExitType.None)
 		{
-			UpdateHud(); 
-			RefreshBetSlider();
+			await ToSignal(GetTree().CreateTimer(1.5f), SceneTreeTimer.SignalName.Timeout);
+			if (exitType == OpponentExitType.RageQuit)
+			{
+				// TKO: They are furious and leave
+				ShowMessage($"{aiOpponent.PlayerName} RAGE QUITS!");
+				GD.Print($"[GAME OVER] Opponent Rage Quit! Tilt: {aiOpponent.Personality.TiltMeter}");
+			}
+			else if (exitType == OpponentExitType.Surrender)
+			{
+				// TKO: They give up to save remaining chips
+				ShowMessage($"{aiOpponent.PlayerName} SURRENDERS!");
+				GD.Print($"[GAME OVER] Opponent Surrendered. Chips: {aiOpponent.ChipStack}");
+			}
+			return; // Stop here, do not continue to next hand
 		}
+
+		// 4. Continue Game Loop
+		UpdateHud();
+		RefreshBetSlider();
+		
+		// Auto-start next hand after delay? Or wait for player input?
+		// Assuming you have a Start Button or Timer:
+		/*
+		GetTree().CreateTimer(2.0f).Timeout += () => {
+			StartNewHand();
+		};
+		*/
 	}
+
 	
 	private async void ShowDown()
 	{

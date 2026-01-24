@@ -12,7 +12,6 @@ public partial class AIPokerPlayer : Node
 	// Core properties
 	[Export] public PokerPersonality Personality { get; set; }
 	[Export] public string PlayerName { get; set; }
-	[Export] public int StartingChips { get; set; } = 20000;
 	
 	// Random seeds for per-hand variation
 	public float HandRandomnessSeed { get; private set; }
@@ -23,6 +22,8 @@ public partial class AIPokerPlayer : Node
 	public float RiverDecisionSeed { get; private set; }
 	public float TrapDecisionSeed { get; private set; }
 	public float AllInCommitmentSeed { get; private set; }
+	public int StartingChips { get; private set; }
+
 
 	// Game state
 	public int ChipStack { get; set; }
@@ -47,10 +48,12 @@ public partial class AIPokerPlayer : Node
 	[Signal]
 	public delegate void TiltLevelChangedEventHandler(float tiltAmount);
 	
+	[Signal]
+	public delegate void OpponentExitedEventHandler(int exitTypeInt);
+	
 	public override void _Ready()
 	{
 		Hand = new List<Card>();
-		ChipStack = StartingChips;
 		IsFolded = false;
 		IsAllIn = false;
 		CurrentBetThisRound = 0;
@@ -70,6 +73,36 @@ public partial class AIPokerPlayer : Node
 		{
 			PlayerName = Personality.CharacterName;
 		}
+	}
+	
+	public void InitializeForMatch(int buyIn) 
+	{
+		StartingChips = buyIn;
+		ChipStack = buyIn;
+	}
+
+	public OpponentExitType CheckForEarlyExit()
+	{
+		// 1. RAGE QUIT CHECK
+		if (Personality.TiltMeter >= Personality.RageQuitThreshold)
+		{
+			GD.Print($"[OPPONENT EXIT] {PlayerName} is RAGE QUITTING! Tilt: {Personality.TiltMeter}");
+			return OpponentExitType.RageQuit;
+		}
+
+		// 2. SURRENDER CHECK 
+		int surrenderThresholdAmount = (int)(StartingChips * Personality.SurrenderChipPercent);
+
+		bool isCalm = Personality.TiltMeter < 25f; 
+		bool isLowChips = ChipStack <= surrenderThresholdAmount;
+
+		if (isLowChips && isCalm)
+		{
+			GD.Print($"[OPPONENT EXIT] {PlayerName} is Surrendering. Chips: {ChipStack} <= {surrenderThresholdAmount}, Tilt: {Personality.TiltMeter}");
+			return OpponentExitType.Surrender;
+		}
+
+		return OpponentExitType.None;
 	}
 
 	public PlayerAction MakeDecision(GameState gameState)
@@ -169,7 +202,7 @@ public partial class AIPokerPlayer : Node
 				
 				// DYNAMIC RECOVERY LOGIC
 				float bigBlindsWon = (float)potSize / bigBlind;
-				float reliefAmount = 2.0f; // Base relief for any win
+				float reliefAmount = 2.0f;
 				
 				if (bigBlindsWon > 20) 
 				{
