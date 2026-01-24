@@ -420,6 +420,7 @@ offset_right = 1078.0
 offset_bottom = 93.0
 text = "I have a great hand!"
 label_settings = SubResource("LabelSettings_47o1s")
+autowrap_mode = 3
 
 [node name="OpponentPortrait" type="TextureRect" parent="CanvasLayer/Control"]
 visible = false

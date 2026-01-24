@@ -632,6 +632,7 @@ public partial class PokerGame : Node2D
 			GD.Print("\nPLAYER WINS!");
 			message = $"You win ${finalPot} with {playerHandName}!";
 			
+			TriggerOpponentDialogue("OnLosePot");
 			// Definition: AI was Strong (>0.70) when chips went in, but lost.
 			bool isBadBeat = (aiStrengthAtAllIn > 0.70f); 
 			// Definition: AI had a monster hand (Four of a kind, etc) but lost (Cooler)
@@ -666,6 +667,7 @@ public partial class PokerGame : Node2D
 			GD.Print("\nOPPONENT WINS!");
 			message = $"{currentOpponentName} wins ${finalPot} with {opponentHandName}";
 			
+			TriggerOpponentDialogue("OnWinPot");
 			if (aiBluffedThisHand)
 			{
 				GD.Print($"{currentOpponentName} won with a bluff!");
@@ -742,6 +744,24 @@ public partial class PokerGame : Node2D
 		{
 			GetTree().ChangeSceneToFile("res://Scenes/CharacterSelect.tscn");
 		};
+	}
+	
+	private void TriggerOpponentDialogue(string category)
+	{
+		string line = aiOpponent.GetRandomDialogue(category);
+
+		if (string.IsNullOrEmpty(line)) return;
+
+		float chatRoll = GD.Randf();
+		bool alwaysTalk = (aiOpponent.CurrentTiltState >= TiltState.Steaming);
+		
+		float threshold = aiOpponent.Personality.Chattiness;
+		if (category == "OnWinPot" || category == "OnLosePot") threshold += 0.4f;
+
+		if (chatRoll <= threshold || alwaysTalk)
+		{
+			opponentDialogueLabel.Text = line;
+		}
 	}
 	
 	/// <summary>

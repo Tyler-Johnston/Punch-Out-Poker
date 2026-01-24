@@ -984,7 +984,7 @@ public static class PersonalityPresets
 			BaseFoldThreshold = 0.46f,     
 			BaseRiskTolerance = 0.42f,     
 			CallTendency = 0.55f,          
-			Chattiness = 0.25f,      
+			Chattiness = 0.36f,      
 			TellReliability = 0.20f, 
 
 			// BALANCED FOR GAMEPLAY:
@@ -1030,7 +1030,7 @@ public static class PersonalityPresets
 
 		personality.Dialogue["OnRaise"] = new Godot.Collections.Array<string>
 		{
-			"Raise.",
+			"Raising",
 			"Adjusting strategy.",
 			"Equilibrium shift."
 		};
@@ -1044,23 +1044,23 @@ public static class PersonalityPresets
 
 		personality.Dialogue["OnWinPot"] = new Godot.Collections.Array<string>
 		{
-			"Expected outcome.",
-			"Result: favorable.",
-			"..."
+			"Don't worry. Next time I'll go easier on you.",
+			"Hmm? Oh dear did I win?",
+			"Darling, can you help me? I can't seem to move all these chips."
 		};
 
 		personality.Dialogue["OnLosePot"] = new Godot.Collections.Array<string>
 		{
-			"Variance.",
-			"Result: suboptimal.",
-			"Data logged."
+			"I pity you. You think I didn't let you win on purpose?",
+			"Someone needs to throw a dog a bone every now and then.",
+			"Darling, you're better than you look."
 		};
 
 		personality.Dialogue["OnTilt"] = new Godot.Collections.Array<string>
 		{
-			"...",
-			"Emotional deviation detected. Suppressing.",
-			"Recalibrating."
+			"Zip it.",
+			"Good for you. You're actually making me sweat.",
+			"I'm actually starting to loathe you."
 		};
 
 		personality.Dialogue["WhileWaiting"] = new Godot.Collections.Array<string>
@@ -1072,23 +1072,23 @@ public static class PersonalityPresets
 
 		personality.Dialogue["StrongHand"] = new Godot.Collections.Array<string>
 		{
-			"High equity.",
-			"Strong configuration.",
-			"*unblinking stare*"
+			"You should fold darling. I have an incredible hand.",
+			"Oh, dear.",
+			"Might as well end things now."
 		};
 
 		personality.Dialogue["WeakHand"] = new Godot.Collections.Array<string>
 		{
-			"Low equity.",
-			"Marginal configuration.",
-			"*brief pause*"
+			"If I were you, I'd fold now. I have an incredible hand.",
+			"This hand is making me grin ear-to-ear.",
+			"I can tell you don't know what you are doing."
 		};
 
 		personality.Dialogue["Bluffing"] = new Godot.Collections.Array<string>
 		{
-			"Perceived strength adjusted.",
-			"Line: exploitative.",
-			"Signal: misleading."
+			"What are you thinking about, dear?",
+			"Hit. Stand? Darling, I'm messing with you.",
+			"If you fold now, I'd love that very much."
 		};
 
 		personality.ResetCurrentStats();

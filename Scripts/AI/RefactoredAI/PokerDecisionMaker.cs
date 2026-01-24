@@ -427,7 +427,7 @@ public partial class PokerDecisionMaker : Node
 		float handStrength, 
 		float betRatio, 
 		Street street, 
-		PokerPersonality personality, f 
+		PokerPersonality personality,  
 		AIPokerPlayer player,
 		GameState gameState)
 	{

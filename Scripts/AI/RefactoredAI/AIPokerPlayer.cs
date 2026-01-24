@@ -190,25 +190,25 @@ public partial class AIPokerPlayer : Node
 		switch (result)
 		{
 			case HandResult.BadBeat:
-				AddTiltSafe(20f);
+				AddTiltSafe(25f);
 				Personality.ConsecutiveLosses++;
 				GD.Print($"{PlayerName} suffered a bad beat! Tilt: {Personality.TiltMeter}");
 				break;
 				
 			case HandResult.BluffCaught:
-				AddTiltSafe(12f);
+				AddTiltSafe(16f);
 				GD.Print($"{PlayerName}'s bluff was caught! Tilt: {Personality.TiltMeter}");
 				break;
 				
 			case HandResult.Loss:
 				Personality.ConsecutiveLosses++;
-				float lossAmount = 5f * Personality.ConsecutiveLosses; // 5, 10, 15, 20...
+				float lossAmount = 7f * Personality.ConsecutiveLosses; // 5, 10, 15, 20...
 				AddTiltSafe(lossAmount);
 				GD.Print($"{PlayerName} lost (streak: {Personality.ConsecutiveLosses}). Tilt: {Personality.TiltMeter}");
 				break;
 				
 			case HandResult.AllInLoss:
-				AddTiltSafe(25f);
+				AddTiltSafe(30f);
 				Personality.ConsecutiveLosses++;
 				GD.Print($"{PlayerName} lost all-in! Tilt: {Personality.TiltMeter}");
 				break;
@@ -222,7 +222,7 @@ public partial class AIPokerPlayer : Node
 				
 				if (bigBlindsWon > 20) 
 				{
-					reliefAmount = 15.0f; // Huge pot = Huge relief
+					reliefAmount = 12.0f;
 					GD.Print($"{PlayerName} won a MONSTER POT! Major relief.");
 				}
 				else if (bigBlindsWon > 10)
@@ -235,7 +235,7 @@ public partial class AIPokerPlayer : Node
 				break;
 				
 			case HandResult.Neutral:
-				Personality.ReduceTilt(1f);
+				Personality.ReduceTilt(3f);
 				break;
 		}
 		
@@ -498,6 +498,18 @@ public partial class AIPokerPlayer : Node
 			return TiltState.Zen;
 		}
 	}
+	
+	public string GetRandomDialogue(string category)
+	{
+		if (Personality.Dialogue.ContainsKey(category) && Personality.Dialogue[category].Count > 0)
+		{
+			int idx = (int)GD.RandRange(0, Personality.Dialogue[category].Count - 1);
+			return Personality.Dialogue[category][idx];
+		}
+		return "";
+	}
+
+
 	
 	/// <summary>
 	/// Debug information

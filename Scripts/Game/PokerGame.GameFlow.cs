@@ -371,6 +371,7 @@ public partial class PokerGame
 		
 		return true;
 	}
+
 	
 	/// <summary>
 	/// AI decision making using personality + dialogue system
@@ -403,7 +404,6 @@ public partial class PokerGame
 		);
 		
 		// 4) Apply chattiness: chance that they say nothing
-		// Steaming/Monkey players ignore chattiness (DialogueManager handles this logic too, but we double check here)
 		float chatRoll = GD.Randf();
 		bool alwaysTalk = (aiOpponent.CurrentTiltState >= TiltState.Steaming);
 		
