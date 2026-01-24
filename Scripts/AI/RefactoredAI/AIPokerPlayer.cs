@@ -492,9 +492,9 @@ public partial class AIPokerPlayer : Node
 		get
 		{
 			float t = Personality.TiltMeter;
-			if (t >= 50f) return TiltState.Monkey;
-			if (t >= 25f) return TiltState.Steaming;
-			if (t >= 10f) return TiltState.Annoyed;
+			if (t >= 40f) return TiltState.Monkey;    // Was 50f
+			if (t >= 20f) return TiltState.Steaming;  // Was 25f
+			if (t >= 10f) return TiltState.Annoyed;   // Stays 10f
 			return TiltState.Zen;
 		}
 	}

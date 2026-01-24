@@ -3,10 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-// ══════════════════════════════════════════════════════════════
-// CONFIGURATION (Extract magic numbers for easy tuning)
-// ══════════════════════════════════════════════════════════════
-
 public static class PokerAIConfig
 {
 	// Call thresholds by street
@@ -52,10 +48,6 @@ public static class PokerAIConfig
 
 public partial class PokerDecisionMaker : Node
 {
-	// ══════════════════════════════════════════════════════════════
-	// MAIN ENTRY POINT
-	// ══════════════════════════════════════════════════════════════
-	
 	public PlayerAction DecideAction(AIPokerPlayer player, GameState gameState)
 	{
 		float handStrength = EvaluateHandStrength(player.Hand, gameState.CommunityCards, gameState.Street, player.HandRandomnessSeed);
@@ -111,10 +103,6 @@ public partial class PokerDecisionMaker : Node
 		return finalAction;
 	}
 
-	// ══════════════════════════════════════════════════════════════
-	// CENTRAL CALL/FOLD LOGIC (with pot odds check)
-	// ══════════════════════════════════════════════════════════════
-	
 	private Decision DecideCallOrFold(
 		float handStrength,
 		float betRatio,
@@ -164,7 +152,6 @@ public partial class PokerDecisionMaker : Node
 		// 5) HUGE OVERBET RULE (2.5x+ pot)
 		if (betRatio >= 2.5f)
 		{
-			// ✅ ENUM CHECK: If Monkey Tilt, we call huge overbets lighter
 			if (player.CurrentTiltState == TiltState.Monkey)
 			{
 				threshold -= 0.15f; // Calling station mode
@@ -187,11 +174,9 @@ public partial class PokerDecisionMaker : Node
 		// 6) Large bet (0.8x+ pot)
 		if (betRatio > 0.8f)
 		{
-			// === NEW HERO CALL LOGIC ===
 			bool heroCall = false;
 			float heroCallChance = 0.0f;
 
-			// ✅ ENUM CHECK: Higher states = Higher hero call chance
 			if (player.CurrentTiltState >= TiltState.Annoyed) heroCallChance += 0.20f; 
 			if (player.CurrentTiltState >= TiltState.Steaming) heroCallChance += 0.20f;
 			if (personality.CallTendency > 0.6f) heroCallChance += 0.15f; 
@@ -247,10 +232,6 @@ public partial class PokerDecisionMaker : Node
 
 		return Decision.Call;
 	}
-
-	// ══════════════════════════════════════════════════════════════
-	// CENTRAL CHECK/BET LOGIC
-	// ══════════════════════════════════════════════════════════════
 	
 	private (Decision decision, float plannedBetRatio) DecideCheckOrBet(
 		float handStrength,
@@ -304,7 +285,6 @@ public partial class PokerDecisionMaker : Node
 		// ═══════════════════════════════════════════════════════
 		if (handStrength >= valueThreshold)
 		{
-			// ✅ ENUM CHECK: Steaming/Monkey players don't trap. They just bet.
 			bool canTrap = player.CurrentTiltState < TiltState.Steaming;
 			
 			if (canTrap && handStrength > 0.85f && player.TrapDecisionSeed < PokerAIConfig.TRAP_PROBABILITY)
@@ -330,15 +310,11 @@ public partial class PokerDecisionMaker : Node
 			return (Decision.Bet, plannedBetRatio);
 		}
 
-		// ═══════════════════════════════════════════════════════
-		// BLUFF RANGE (<= bluffCeiling)
-		// ═══════════════════════════════════════════════════════
 		if (handStrength <= bluffCeiling)
 		{
 			float bluffProb = PokerAIConfig.BLUFF_BASE_PROB * effBluffFreq + 
 							  PokerAIConfig.BLUFF_AGGRESSION_WEIGHT * effAggression;
 			
-			// ✅ ENUM CHECK: Steaming players bluff way more
 			if (player.CurrentTiltState >= TiltState.Steaming)
 			{
 				bluffProb += 0.20f;
@@ -354,9 +330,6 @@ public partial class PokerDecisionMaker : Node
 			return (Decision.Check, 0f);
 		}
 
-		// ═══════════════════════════════════════════════════════
-		// MEDIUM HANDS
-		// ═══════════════════════════════════════════════════════
 		float mediumBetFreq = street switch
 		{
 			Street.Flop => 0.25f + (0.40f * effAggression), 
@@ -449,11 +422,6 @@ public partial class PokerDecisionMaker : Node
 
 		return baseBetMultiplier * aggressionMultiplier;
 	}
-
-
-	// ══════════════════════════════════════════════════════════════
-	// ALL-IN DECISION LOGIC (UPDATED WITH STACK PROTECTION)
-	// ══════════════════════════════════════════════════════════════
 	
 	private PlayerAction DecideAllIn(
 		float handStrength, 
@@ -467,12 +435,8 @@ public partial class PokerDecisionMaker : Node
 		float effRiskTol = Mathf.Clamp(personality.CurrentRiskTolerance * tiltFactor, 0f, 1f);
 		float effBluffFreq = Mathf.Clamp(personality.CurrentBluffFrequency * tiltFactor, 0f, 1f);
 
-		// -----------------------------------------------------------------------
-		// ✅ STACK PROTECTION FIX: Prevent "Suicide Calls" with trash hands
-		// -----------------------------------------------------------------------
 		if (street == Street.Preflop && player.ChipStack > gameState.BigBlind * 15)
 		{
-			// ✅ ENUM CHECK: Only protect stack if we are NOT Steaming/Monkey
 			if (player.CurrentTiltState < TiltState.Steaming)
 			{
 				// Require decent equity (0.60 = ~pairs or high aces)
@@ -508,7 +472,6 @@ public partial class PokerDecisionMaker : Node
 			_ => effBluffFreq * 0.10f
 		};
 		
-		// ✅ ENUM CHECK: Steaming players shove significantly more often
 		if (player.CurrentTiltState >= TiltState.Steaming)
 		{
 			bluffShoveProb *= 2.0f;
@@ -525,10 +488,6 @@ public partial class PokerDecisionMaker : Node
 		return PlayerAction.Fold;
 	}
 
-	// ══════════════════════════════════════════════════════════════
-	// CALL VS RAISE DECISION LOGIC
-	// ══════════════════════════════════════════════════════════════
-	
 	private PlayerAction DecideCallOrRaise(
 		float handStrength, 
 		float betRatio, 
@@ -566,7 +525,6 @@ public partial class PokerDecisionMaker : Node
 		// Bluff raise
 		float bluffRaiseProb = effBluffFreq * (street == Street.Flop ? 0.35f : 0.20f);
 		
-		// ✅ ENUM CHECK: Steaming players bluff raise more
 		if (player.CurrentTiltState >= TiltState.Steaming)
 		{
 			bluffRaiseProb *= 1.5f;
@@ -582,10 +540,6 @@ public partial class PokerDecisionMaker : Node
 
 		return PlayerAction.Call;
 	}
-
-	// ══════════════════════════════════════════════════════════════
-	// BET SIZE CALCULATION
-	// ══════════════════════════════════════════════════════════════
 	
 	public int CalculateBetSize(AIPokerPlayer player, GameState gameState, float handStrength)
 	{
@@ -597,7 +551,6 @@ public partial class PokerDecisionMaker : Node
 		float baseBetRatio = CalculatePlannedBetRatio(handStrength, personality, gameState.Street, player.BetSizeSeed, player);
 		float betSize = potSize * baseBetRatio;
 		
-		// ✅ ENUM CHECK: Steaming players consistently overbet
 		if (player.CurrentTiltState >= TiltState.Steaming)
 		{
 			betSize *= 1.15f;

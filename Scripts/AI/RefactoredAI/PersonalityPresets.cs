@@ -140,7 +140,7 @@ public static class PersonalityPresets
 			Chattiness = 0.80f,      
 			TellReliability = 0.75f, 
 
-			TiltSensitivity = 0.80f,
+			TiltSensitivity = 0.70f,
 			RageQuitThreshold = 26.0f,
 			SurrenderChipPercent = 0.24f
 		};
