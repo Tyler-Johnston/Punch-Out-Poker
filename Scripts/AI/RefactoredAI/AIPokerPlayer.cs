@@ -166,6 +166,22 @@ public partial class AIPokerPlayer : Node
 		EmitSignal(SignalName.ActionTaken, (int)action, betAmount);
 		return action;
 	}
+	
+	public void OnFolded(float betRatio)
+	{
+		IsFolded = true;
+
+		float tiltPenalty = 0f;
+		if (betRatio >= 1.0f) tiltPenalty = 8.0f;
+		else if (betRatio > 0.6f) tiltPenalty = 4.0f;
+		else if (betRatio > 0.3f) tiltPenalty = 2.0f;
+
+		if (tiltPenalty > 0)
+		{
+			GD.Print($"[TILT] Bullied. Ratio {betRatio:F2}. Tilt +{tiltPenalty}");
+			Personality.AddTilt(tiltPenalty);
+		}
+	}
 
 	public void ProcessHandResult(HandResult result, int potSize, int bigBlind)
 	{

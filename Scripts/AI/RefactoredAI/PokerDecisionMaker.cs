@@ -34,9 +34,9 @@ public static class PokerAIConfig
 	public const float OOP_BLUFF_REDUCE = 0.03f;
 	
 	public const float PREFLOP_BET_MULTIPLIER = 1.0f;
-	public const float FLOP_BET_MULTIPLIER = 1.15f;
-	public const float TURN_BET_MULTIPLIER = 1.25f;
-	public const float RIVER_BET_MULTIPLIER = 1.20f;
+	public const float FLOP_BET_MULTIPLIER = 1.12f;
+	public const float TURN_BET_MULTIPLIER = 1.10f;
+	public const float RIVER_BET_MULTIPLIER = 1.15f;
 	
 	public const float SIZE_FACTOR_VALUE_ADJUST = 0.03f;
 	public const float SIZE_FACTOR_BLUFF_ADJUST = 0.04f;
@@ -440,11 +440,8 @@ public partial class PokerDecisionMaker : Node
 		};
 		
 		baseBetMultiplier *= streetMultiplier;
+		float aggressionMultiplier = 0.9f + (personality.CurrentAggression * 0.3f);
 		
-		// Apply aggression multiplier
-		float aggressionMultiplier = 0.8f + (personality.CurrentAggression * 0.5f);
-		
-		// ✅ ENUM CHECK: Steaming players bet bigger
 		if (player.CurrentTiltState >= TiltState.Steaming)
 		{
 			aggressionMultiplier *= 1.25f;
@@ -462,7 +459,7 @@ public partial class PokerDecisionMaker : Node
 		float handStrength, 
 		float betRatio, 
 		Street street, 
-		PokerPersonality personality, 
+		PokerPersonality personality, f 
 		AIPokerPlayer player,
 		GameState gameState)
 	{

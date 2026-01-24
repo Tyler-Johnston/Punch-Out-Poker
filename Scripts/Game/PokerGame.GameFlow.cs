@@ -191,36 +191,8 @@ public partial class PokerGame
 		ShowMessage($"{currentOpponentName} folds");
 		GD.Print($"{currentOpponentName} folds");
 		
-		// --- NEW DYNAMIC BULLY LOGIC ---
-		if (pot > 0 && currentBet > 0)
-		{
-			float betRatio = (float)currentBet / pot;
-			float tiltPenalty = 0f;
-
-			// Tiered Tilt Penalties
-			if (betRatio >= 1.0f) // Overbet or Pot-Sized Shove
-			{
-				tiltPenalty = 8.0f;
-				GD.Print($"[TILT] MAJOR BULLY! Ratio {betRatio:F2}. Tilt +{tiltPenalty}");
-			}
-			else if (betRatio > 0.6f) // Strong Bet
-			{
-				tiltPenalty = 4.0f;
-				GD.Print($"[TILT] Bullied. Ratio {betRatio:F2}. Tilt +{tiltPenalty}");
-			}
-			else if (betRatio > 0.3f) // Standard Bet (Annoyance)
-			{
-				tiltPenalty = 2.0f; 
-				GD.Print($"[TILT] Mild pressure. Ratio {betRatio:F2}. Tilt +{tiltPenalty}");
-			}
-
-			// Apply Penalty
-			if (tiltPenalty > 0)
-			{
-				aiOpponent.Personality.AddTilt(tiltPenalty);
-			}
-		}
-		// -------------------------------
+		float betRatio = (pot > 0) ? (float)currentBet / pot : 0;
+		aiOpponent.OnFolded(betRatio);
 
 		int winAmount = pot;
 		playerChips += pot;

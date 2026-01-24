@@ -13,16 +13,14 @@ public static class PersonalityPresets
 			BaseBluffFrequency = 0.33f,
 			BaseFoldThreshold = 0.55f,
 			BaseRiskTolerance = 0.60f,
-			TiltSensitivity = 0.20f,
+			
+			TiltSensitivity = 0.50f,
+			RageQuitThreshold = 20.0f,
+			SurrenderChipPercent = 0.40f,
+			
 			CallTendency = 0.50f,
-
-			// Dialogue settings
-			Chattiness = 0.70f,        // Friendly, talks often
-			TellReliability = 0.85f,   // Easy to read (beginner)
-
-			// EXIT STRATEGY (Cowardly Beginner)
-			RageQuitThreshold = 15.0f,    // Leaves quickly if bullied
-			SurrenderChipPercent = 0.40f  // Quits to save 40% of his money
+			Chattiness = 0.70f,        
+			TellReliability = 0.85f   
 		};
 
 		// === TELLS (behavioral cues) ===
@@ -34,8 +32,6 @@ public static class PersonalityPresets
 			{ "nervous_laugh", "quick_decision" };
 
 		// === DIALOGUE LINES ===
-
-		// Action comments
 		personality.Dialogue["OnFold"] = new Godot.Collections.Array<string>
 		{
 			"Yeah, I'll let this one go.",
@@ -78,7 +74,6 @@ public static class PersonalityPresets
 			"Everything I've got!"
 		};
 
-		// Win/Loss reactions
 		personality.Dialogue["OnWinPot"] = new Godot.Collections.Array<string>
 		{
 			"Nice! I'll take that.",
@@ -93,7 +88,6 @@ public static class PersonalityPresets
 			"Well played."
 		};
 
-		// Tilt comments
 		personality.Dialogue["OnTilt"] = new Godot.Collections.Array<string>
 		{
 			"Come on, really?",
@@ -101,7 +95,6 @@ public static class PersonalityPresets
 			"This is frustrating."
 		};
 
-		// Waiting/pressure
 		personality.Dialogue["WhileWaiting"] = new Godot.Collections.Array<string>
 		{
 			"Take your time.",
@@ -109,7 +102,6 @@ public static class PersonalityPresets
 			"Tough decision?"
 		};
 
-		// Hand strength tells (spoken)
 		personality.Dialogue["StrongHand"] = new Godot.Collections.Array<string>
 		{
 			"I like this hand.",
@@ -144,15 +136,13 @@ public static class PersonalityPresets
 			BaseBluffFrequency = 0.25f,
 			BaseFoldThreshold = 0.40f,
 			BaseRiskTolerance = 0.35f,
-			TiltSensitivity = 0.50f,
-			CallTendency = 0.75f,  // Calling station - plays too many hands
+			CallTendency = 0.75f, 
+			Chattiness = 0.80f,      
+			TellReliability = 0.75f, 
 
-			Chattiness = 0.80f,       // Talkative, emotional
-			TellReliability = 0.75f,  // Very easy to read
-
-			// EXIT STRATEGY (Emotional Maniac)
-			RageQuitThreshold = 25.0f,    // Explodes easily
-			SurrenderChipPercent = 0.18f   // Never surrenders money (Stubborn)
+			TiltSensitivity = 0.80f,
+			RageQuitThreshold = 26.0f,
+			SurrenderChipPercent = 0.24f
 		};
 
 		personality.Tells["strong_hand"] = new Godot.Collections.Array<string>
@@ -162,7 +152,6 @@ public static class PersonalityPresets
 		personality.Tells["bluffing"] = new Godot.Collections.Array<string>
 			{ "avoids_eye_contact", "fidgets" };
 
-		// Action comments
 		personality.Dialogue["OnFold"] = new Godot.Collections.Array<string>
 		{
 			"Okay, fine, you can have this one.",
@@ -267,15 +256,14 @@ public static class PersonalityPresets
 			BaseBluffFrequency = 0.70f,
 			BaseFoldThreshold = 0.65f,
 			BaseRiskTolerance = 0.80f,
-			TiltSensitivity = 0.60f,
-			CallTendency = 0.40f,  // Low - folds or raises, rarely calls
+			CallTendency = 0.40f, 
+			Chattiness = 0.7f,      
+			TellReliability = 0.53f,
 
-			Chattiness = 0.7f,       // Cocky, talks a lot
-			TellReliability = 0.53f,  // Mischievous, tries to mislead
-
-			// EXIT STRATEGY (Arrogant Gambler)
-			RageQuitThreshold = 40.0f,     // Can take some heat
-			SurrenderChipPercent = 0.10f   // Fights until nearly broke
+			// BALANCED FOR GAMEPLAY: The Ego-Tilter
+			TiltSensitivity = 0.70f,
+			RageQuitThreshold = 35.0f,
+			SurrenderChipPercent = 0.10f
 		};
 
 		personality.Tells["strong_hand"] = new Godot.Collections.Array<string>
@@ -285,7 +273,6 @@ public static class PersonalityPresets
 		personality.Tells["bluffing"] = new Godot.Collections.Array<string>
 			{ "overconfident_speech", "aggressive_posture" };
 
-		// Action comments
 		personality.Dialogue["OnFold"] = new Godot.Collections.Array<string>
 		{
 			"I’ll let you have this one... for now.",
@@ -388,19 +375,16 @@ public static class PersonalityPresets
 		var personality = new PokerPersonality
 		{
 			CharacterName = "Cowboy",
-			BaseAggression = 0.55f,        // Selective aggression
-			BaseBluffFrequency = 0.30f,    // Occasional strategic bluffs
-			BaseFoldThreshold = 0.50f,     // Tighter - folds marginal hands
-			BaseRiskTolerance = 0.55f,     // Moderate risk-taking
-			TiltSensitivity = 0.40f,       // Moderately tilts
-			CallTendency = 0.45f,          // Prefers raising over calling
-
-			Chattiness = 0.65f,      // Story-teller
-			TellReliability = 0.60f,  // Somewhat readable
-
-			// EXIT STRATEGY (Practical Pro)
-			RageQuitThreshold = 30.0f,    // Tough skin
-			SurrenderChipPercent = 0.24f  // Quits when low to save bus fare
+			BaseAggression = 0.55f,        
+			BaseBluffFrequency = 0.30f,   
+			BaseFoldThreshold = 0.50f,     
+			BaseRiskTolerance = 0.55f,     
+			CallTendency = 0.45f,          
+			Chattiness = 0.65f,      
+			TellReliability = 0.60f,  
+			TiltSensitivity = 0.55f,
+			RageQuitThreshold = 35.0f,
+			SurrenderChipPercent = 0.25f  
 		};
 
 		personality.Tells["strong_hand"] = new Godot.Collections.Array<string>
@@ -510,19 +494,18 @@ public static class PersonalityPresets
 		var personality = new PokerPersonality
 		{
 			CharacterName = "Hippie",
-			BaseAggression = 0.45f,        // Balanced, peaceful play
-			BaseBluffFrequency = 0.25f,    // Occasional bluffs
-			BaseFoldThreshold = 0.48f,     // Moderately tight
-			BaseRiskTolerance = 0.50f,     // Balanced risk
-			TiltSensitivity = 0.25f,       // Hard to tilt (zen mindset)
-			CallTendency = 0.55f,          // Prefers calling to aggression
+			BaseAggression = 0.45f,        
+			BaseBluffFrequency = 0.25f,    
+			BaseFoldThreshold = 0.48f,     
+			BaseRiskTolerance = 0.50f,     
+			CallTendency = 0.55f,          
+			Chattiness = 0.7f,       
+			TellReliability = 0.55f,  
 
-			Chattiness = 0.7f,       // Chill talker
-			TellReliability = 0.55f,  // Somewhat readable, relaxed
-
-			// EXIT STRATEGY (Vibes Player)
-			RageQuitThreshold = 40.0f,    // Very calm
-			SurrenderChipPercent = 0.50f  // Leaves early if not feeling it
+			// BALANCED FOR GAMEPLAY: The Vibe Check
+			TiltSensitivity = 0.25f,
+			RageQuitThreshold = 25.0f,
+			SurrenderChipPercent = 0.45f  
 		};
 
 		personality.Tells["strong_hand"] = new Godot.Collections.Array<string>
@@ -632,19 +615,18 @@ public static class PersonalityPresets
 		var personality = new PokerPersonality
 		{
 			CharacterName = "Apprentice",
-			BaseAggression = 0.50f,        // Balanced aggression
-			BaseBluffFrequency = 0.35f,    // Strategic bluffs
-			BaseFoldThreshold = 0.47f,     // Balanced range
-			BaseRiskTolerance = 0.52f,     // Slightly risk-tolerant
-			TiltSensitivity = 0.35f,       // Moderate tilt resistance
-			CallTendency = 0.50f,          // Perfectly balanced
+			BaseAggression = 0.50f,        
+			BaseBluffFrequency = 0.35f,    
+			BaseFoldThreshold = 0.47f,     
+			BaseRiskTolerance = 0.52f,     
+			CallTendency = 0.50f,          
+			Chattiness = 0.65f,       
+			TellReliability = 0.50f,  
 
-			Chattiness = 0.65f,       // Speaks sometimes, poetic
-			TellReliability = 0.50f,  // Balanced, not obvious
-
-			// EXIT STRATEGY (Determined Learner)
-			RageQuitThreshold = 35.0f,    // Average
-			SurrenderChipPercent = 0.25f  // Quits when significantly down
+			// BALANCED FOR GAMEPLAY: Standard
+			TiltSensitivity = 0.40f,
+			RageQuitThreshold = 45.0f,
+			SurrenderChipPercent = 0.30f
 		};
 
 		personality.Tells["strong_hand"] = new Godot.Collections.Array<string>
@@ -756,19 +738,18 @@ public static class PersonalityPresets
 		var personality = new PokerPersonality
 		{
 			CharacterName = "King",
-			BaseAggression = 0.65f,        // Strong aggression
-			BaseBluffFrequency = 0.45f,    // Frequent strategic bluffs
-			BaseFoldThreshold = 0.52f,     // Disciplined folding
-			BaseRiskTolerance = 0.60f,     // Calculated risks
-			TiltSensitivity = 0.30f,       // Good emotional control
-			CallTendency = 0.42f,          // Aggressive - raises more than calls
+			BaseAggression = 0.65f,        
+			BaseBluffFrequency = 0.45f,    
+			BaseFoldThreshold = 0.52f,     
+			BaseRiskTolerance = 0.55f,     
+			CallTendency = 0.42f,          
+			Chattiness = 0.55f,      
+			TellReliability = 0.45f, 
 
-			Chattiness = 0.55f,      // Regal, measured
-			TellReliability = 0.45f, // Some deception
-
-			// EXIT STRATEGY (Prideful Boss)
-			RageQuitThreshold = 90.0f,     // Nearly impossible
-			SurrenderChipPercent = 0.05f   // Pride keeps him in
+			// BALANCED FOR GAMEPLAY: The Entitled Boss
+			TiltSensitivity = 0.65f,
+			RageQuitThreshold = 65.0f,
+			SurrenderChipPercent = 0.175f 
 		};
 
 		personality.Tells["strong_hand"] = new Godot.Collections.Array<string>
@@ -878,19 +859,17 @@ public static class PersonalityPresets
 		var personality = new PokerPersonality
 		{
 			CharacterName = "Old Wizard",
-			BaseAggression = 0.55f,        // Calculated aggression
-			BaseBluffFrequency = 0.40f,    // Well-timed bluffs
-			BaseFoldThreshold = 0.45f,     // Tight-aggressive
-			BaseRiskTolerance = 0.58f,     // Exploits edges
-			TiltSensitivity = 0.15f,       // Rarely tilts (wisdom)
-			CallTendency = 0.48f,          // Balanced, slight aggression preference
+			BaseAggression = 0.55f,        
+			BaseBluffFrequency = 0.40f,    
+			BaseFoldThreshold = 0.45f,     
+			BaseRiskTolerance = 0.58f,     
+			CallTendency = 0.48f,          
+			Chattiness = 0.5f,       
+			TellReliability = 0.35f,  
 
-			Chattiness = 0.5f,       // Occasional, wise lines
-			TellReliability = 0.35f,  // Hard to read
-
-			// EXIT STRATEGY (Calculated Sage)
-			RageQuitThreshold = 65.0f,    // Zen Master
-			SurrenderChipPercent = 0.30f   // Leaves when EV is negative
+			TiltSensitivity = 0.25f,
+			RageQuitThreshold = 50.0f,
+			SurrenderChipPercent = 0.30f 
 		};
 
 		personality.Tells["strong_hand"] = new Godot.Collections.Array<string>
@@ -1000,19 +979,18 @@ public static class PersonalityPresets
 		var personality = new PokerPersonality
 		{
 			CharacterName = "Akalite",
-			BaseAggression = 0.60f,        // Solver-based balanced aggression
-			BaseBluffFrequency = 0.50f,    // Optimal bluff frequency
-			BaseFoldThreshold = 0.46f,     // Mathematically sound
-			BaseRiskTolerance = 0.55f,     // Calculated risk-taking
-			TiltSensitivity = 0.10f,       // Nearly impossible to tilt (final boss)
-			CallTendency = 0.48f,          // GTO-balanced calling frequency
+			BaseAggression = 0.48f,        
+			BaseBluffFrequency = 0.50f,    
+			BaseFoldThreshold = 0.46f,     
+			BaseRiskTolerance = 0.42f,     
+			CallTendency = 0.55f,          
+			Chattiness = 0.25f,      
+			TellReliability = 0.20f, 
 
-			Chattiness = 0.25f,      // Says little
-			TellReliability = 0.20f, // Very hard to read
-
-			// EXIT STRATEGY (Robot)
-			RageQuitThreshold = 70.0f,    
-			SurrenderChipPercent = 0.05f
+			// BALANCED FOR GAMEPLAY:
+			TiltSensitivity = 0.10f,
+			RageQuitThreshold = 80.0f,    
+			SurrenderChipPercent = 0.10f
 		};
 
 		personality.Tells["strong_hand"] = new Godot.Collections.Array<string>
