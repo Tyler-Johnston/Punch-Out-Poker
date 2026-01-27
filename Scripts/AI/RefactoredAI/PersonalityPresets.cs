@@ -24,12 +24,9 @@ public static class PersonalityPresets
 		};
 
 		// === TELLS (behavioral cues) ===
-		personality.Tells["strong_hand"] = new Godot.Collections.Array<string>
-			{ "relaxed_posture", "casual_bet" };
-		personality.Tells["weak_hand"] = new Godot.Collections.Array<string>
-			{ "checks_cards_again", "hesitant" };
-		personality.Tells["bluffing"] = new Godot.Collections.Array<string>
-			{ "nervous_laugh", "quick_decision" };
+		personality.Tells["strong_hand"] = new Godot.Collections.Array<string> { "Happy", "Smirk" };
+		personality.Tells["weak_hand"] = new Godot.Collections.Array<string> { "Worried", "Sad" };
+		personality.Tells["bluffing"] = new Godot.Collections.Array<string> { "Worried", "Neutral" };
 
 		// === DIALOGUE LINES ===
 		personality.Dialogue["OnFold"] = new Godot.Collections.Array<string>
@@ -145,12 +142,9 @@ public static class PersonalityPresets
 			SurrenderChipPercent = 0.24f
 		};
 
-		personality.Tells["strong_hand"] = new Godot.Collections.Array<string>
-			{ "excited_expression", "confident_smile" };
-		personality.Tells["weak_hand"] = new Godot.Collections.Array<string>
-			{ "uncertain_look", "bites_lip" };
-		personality.Tells["bluffing"] = new Godot.Collections.Array<string>
-			{ "avoids_eye_contact", "fidgets" };
+		personality.Tells["strong_hand"] = new Godot.Collections.Array<string> { "Happy", "Surprised" };
+		personality.Tells["weak_hand"] = new Godot.Collections.Array<string> { "Sad", "Worried" };
+		personality.Tells["bluffing"] = new Godot.Collections.Array<string> { "Worried", "Annoyed" };
 
 		personality.Dialogue["OnFold"] = new Godot.Collections.Array<string>
 		{
@@ -265,12 +259,9 @@ public static class PersonalityPresets
 			SurrenderChipPercent = 0.10f
 		};
 
-		personality.Tells["strong_hand"] = new Godot.Collections.Array<string>
-			{ "smirks", "pushes_chips_forward_confidently" };
-		personality.Tells["weak_hand"] = new Godot.Collections.Array<string>
-			{ "taps_fingers", "looks_away" };
-		personality.Tells["bluffing"] = new Godot.Collections.Array<string>
-			{ "overconfident_speech", "aggressive_posture" };
+		personality.Tells["strong_hand"] = new Godot.Collections.Array<string> { "Smirk", "Happy" };
+		personality.Tells["weak_hand"] = new Godot.Collections.Array<string> { "Annoyed", "Neutral" };
+		personality.Tells["bluffing"] = new Godot.Collections.Array<string> { "Smirk", "Angry" }; 
 
 		personality.Dialogue["OnFold"] = new Godot.Collections.Array<string>
 		{
@@ -386,12 +377,9 @@ public static class PersonalityPresets
 			SurrenderChipPercent = 0.25f  
 		};
 
-		personality.Tells["strong_hand"] = new Godot.Collections.Array<string>
-			{ "tips_hat", "leans_back_confidently" };
-		personality.Tells["weak_hand"] = new Godot.Collections.Array<string>
-			{ "adjusts_hat", "shifts_weight" };
-		personality.Tells["bluffing"] = new Godot.Collections.Array<string>
-			{ "stone_faced", "deliberate_bet" };
+		personality.Tells["strong_hand"] = new Godot.Collections.Array<string> { "Smirk", "Neutral" };
+		personality.Tells["weak_hand"] = new Godot.Collections.Array<string> { "Worried", "Neutral" };
+		personality.Tells["bluffing"] = new Godot.Collections.Array<string> { "Neutral", "Angry" }; // Stone faced
 
 		personality.Dialogue["OnFold"] = new Godot.Collections.Array<string>
 		{
@@ -507,12 +495,9 @@ public static class PersonalityPresets
 			SurrenderChipPercent = 0.45f  
 		};
 
-		personality.Tells["strong_hand"] = new Godot.Collections.Array<string>
-			{ "peaceful_smile", "relaxed_breathing" };
-		personality.Tells["weak_hand"] = new Godot.Collections.Array<string>
-			{ "sighs", "scratches_beard" };
-		personality.Tells["bluffing"] = new Godot.Collections.Array<string>
-			{ "forced_calmness", "closes_eyes_briefly" };
+		personality.Tells["strong_hand"] = new Godot.Collections.Array<string> { "Happy", "Neutral" };
+		personality.Tells["weak_hand"] = new Godot.Collections.Array<string> { "Sad", "Neutral" };
+		personality.Tells["bluffing"] = new Godot.Collections.Array<string> { "Happy", "Neutral" }; // Tries to look chill
 
 		personality.Dialogue["OnFold"] = new Godot.Collections.Array<string>
 		{
@@ -628,12 +613,9 @@ public static class PersonalityPresets
 			SurrenderChipPercent = 0.30f
 		};
 
-		personality.Tells["strong_hand"] = new Godot.Collections.Array<string>
-			{ "steady_gaze", "controlled_breathing" };
-		personality.Tells["weak_hand"] = new Godot.Collections.Array<string>
-			{ "glances_at_chips", "subtle_frown" };
-		personality.Tells["bluffing"] = new Godot.Collections.Array<string>
-			{ "maintains_composure", "measured_speech" };
+		personality.Tells["strong_hand"] = new Godot.Collections.Array<string> { "Happy", "Neutral" };
+		personality.Tells["weak_hand"] = new Godot.Collections.Array<string> { "Worried", "Sad" };
+		personality.Tells["bluffing"] = new Godot.Collections.Array<string> { "Neutral", "Surprised" };
 
 		personality.Dialogue["OnFold"] = new Godot.Collections.Array<string>
 		{
@@ -751,12 +733,9 @@ public static class PersonalityPresets
 			SurrenderChipPercent = 0.175f 
 		};
 
-		personality.Tells["strong_hand"] = new Godot.Collections.Array<string>
-			{ "regal_posture", "dismissive_gesture" };
-		personality.Tells["weak_hand"] = new Godot.Collections.Array<string>
-			{ "fingers_drumming", "glances_at_exit" };
-		personality.Tells["bluffing"] = new Godot.Collections.Array<string>
-			{ "authoritative_tone", "commanding_stare" };
+		personality.Tells["strong_hand"] = new Godot.Collections.Array<string> { "Smirk", "Angry" }; // Arrogant
+		personality.Tells["weak_hand"] = new Godot.Collections.Array<string> { "Annoyed", "Angry" };
+		personality.Tells["bluffing"] = new Godot.Collections.Array<string> { "Smirk", "Neutral" };
 
 		personality.Dialogue["OnFold"] = new Godot.Collections.Array<string>
 		{
@@ -871,12 +850,9 @@ public static class PersonalityPresets
 			SurrenderChipPercent = 0.30f 
 		};
 
-		personality.Tells["strong_hand"] = new Godot.Collections.Array<string>
-			{ "knowing_smile", "strokes_beard_confidently" };
-		personality.Tells["weak_hand"] = new Godot.Collections.Array<string>
-			{ "contemplative_pause", "adjusts_spectacles" };
-		personality.Tells["bluffing"] = new Godot.Collections.Array<string>
-			{ "mysterious_chuckle", "cryptic_comment" };
+		personality.Tells["strong_hand"] = new Godot.Collections.Array<string> { "Happy", "Neutral" };
+		personality.Tells["weak_hand"] = new Godot.Collections.Array<string> { "Neutral", "Worried" };
+		personality.Tells["bluffing"] = new Godot.Collections.Array<string> { "Happy", "Neutral" };
 
 		personality.Dialogue["OnFold"] = new Godot.Collections.Array<string>
 		{
@@ -992,12 +968,9 @@ public static class PersonalityPresets
 			SurrenderChipPercent = 0.10f
 		};
 
-		personality.Tells["strong_hand"] = new Godot.Collections.Array<string>
-			{ "emotionless_stare", "precise_chip_placement" };
-		personality.Tells["weak_hand"] = new Godot.Collections.Array<string>
-			{ "micro_hesitation", "calculated_pause" };
-		personality.Tells["bluffing"] = new Godot.Collections.Array<string>
-			{ "perfect_timing", "unwavering_focus" };
+		personality.Tells["strong_hand"] = new Godot.Collections.Array<string> { "Neutral", "Neutral" }; // Hard to read
+		personality.Tells["weak_hand"] = new Godot.Collections.Array<string> { "Neutral", "Annoyed" };
+		personality.Tells["bluffing"] = new Godot.Collections.Array<string> { "Neutral", "Smirk" };
 
 		personality.Dialogue["OnFold"] = new Godot.Collections.Array<string>
 		{

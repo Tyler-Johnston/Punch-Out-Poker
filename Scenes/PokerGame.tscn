@@ -433,7 +433,7 @@ texture = ExtResource("3_xxe2x")
 expand_mode = 5
 stretch_mode = 4
 
-[node name="Sprite2D" type="Sprite2D" parent="CanvasLayer"]
+[node name="FaceSprite" type="Sprite2D" parent="CanvasLayer/Control"]
 position = Vector2(1142, 127)
 scale = Vector2(1.5, 1.5)
 texture = ExtResource("4_u1fmj")

@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 
 public partial class PokerGame : Node2D
 {
-
 	private PackedScene cardVisualScene;
 	private Deck deck;
 	private List<Card> playerHand = new List<Card>();
@@ -52,6 +51,7 @@ public partial class PokerGame : Node2D
 	private TextureRect tableColor;
 	
 	private AtlasTexture _opponentAtlas;
+	private Sprite2D faceSprite;
 	
 	// game flow
 	private Street currentStreet = Street.Preflop;
@@ -103,6 +103,9 @@ public partial class PokerGame : Node2D
 	private SFXPlayer sfxPlayer;
 	private AudioStreamPlayer musicPlayer;
 
+	// Timer for idle tells
+	private Timer tellTimer;
+
 	public override void _Ready()
 	{
 		Control hudControl = GetNode<Control>("CanvasLayer/Control");
@@ -153,6 +156,9 @@ public partial class PokerGame : Node2D
 		// slider
 		betSlider = hudControl.GetNode<HSlider>("BetSlider");
 		
+		// faceSprite
+		faceSprite = hudControl.GetNode<Sprite2D>("FaceSprite");
+		
 		// audio players
 		sfxPlayer = GetNode<SFXPlayer>("SFXPlayer");
 		musicPlayer = GetNode<AudioStreamPlayer>("MusicPlayer");  
@@ -162,6 +168,13 @@ public partial class PokerGame : Node2D
 		checkCallButton.Pressed += OnCheckCallPressed;
 		betRaiseButton.Pressed += OnBetRaisePressed;
 		betSlider.ValueChanged += OnBetSliderValueChanged;
+
+		// Initialize Tell Timer
+		tellTimer = new Timer();
+		tellTimer.WaitTime = 2.0f; // Check for tells every 2 seconds
+		tellTimer.OneShot = false;
+		tellTimer.Timeout += OnTellTimerTimeout;
+		AddChild(tellTimer);
 
 		// initialize opponent information
 		currentOpponentName = GameManager.Instance.CurrentOpponentName;
@@ -215,6 +228,15 @@ public partial class PokerGame : Node2D
 		SetTableColor();
 		UpdateHud();
 		StartNewHand();
+	}
+
+	public override void _ExitTree()
+	{
+		if (tellTimer != null)
+		{
+			tellTimer.Stop();
+			tellTimer.QueueFree();
+		}
 	}
 	
 	private (int minBet, int maxBet) GetLegalBetRange()
@@ -292,6 +314,20 @@ public partial class PokerGame : Node2D
 		}
 		return false;
 	}
+
+	// Tell Logic: Timer Callback
+	private void OnTellTimerTimeout()
+	{
+		// Only run if hand is live, player is thinking (AI waiting), and not in showdown
+		if (!handInProgress || isShowdownInProgress || aiOpponent.IsFolded || aiOpponent.IsAllIn) return;
+		if (isProcessingAIAction) return; // Don't interrupt if they are acting
+		
+		// Only show idle tells if it is the PLAYER'S turn
+		if (isPlayerTurn)
+		{
+			ShowTell(false);
+		}
+	}
 	
 	private async void StartNewHand()
 	{
@@ -309,7 +345,7 @@ public partial class PokerGame : Node2D
 		aiOpponent.ResetForNewHand();
 		aiOpponent.ChipStack = opponentChips;
 
-		GD.Print("\n=== New Hand ===");
+		GD.Print("\\n=== New Hand ===");
 		ShowMessage("");
 
 		cashOutButton.Disabled = true;
@@ -364,6 +400,10 @@ public partial class PokerGame : Node2D
 		riverCard.ShowBack();
 
 		await DealInitialHands();
+		
+		// Start tell timer for the new hand
+		tellTimer.Start();
+		
 		currentStreet = Street.Preflop;
 		handInProgress = true;
 		
@@ -436,6 +476,9 @@ public partial class PokerGame : Node2D
 
 	private async void EndHand()
 	{
+		// Stop timer when hand ends
+		tellTimer.Stop();
+		
 		if (isShowdownInProgress) return;
 		
 		pot = 0;
@@ -497,6 +540,57 @@ public partial class PokerGame : Node2D
 		}
 	}
 	
+	// NEW: Tell Logic (Hand Reaction + Idle Tells)
+	private void ShowTell(bool forceTell = false)
+	{
+		float baseTellChance = 0.20f;
+		float tiltModifier = (float)aiOpponent.CurrentTiltState * 0.15f; 
+		
+		if (!forceTell && GD.Randf() > (baseTellChance + tiltModifier))
+		{
+			if (!isProcessingAIAction) SetExpression(Expression.Neutral);
+			return;
+		}
+
+		GameState state = new GameState 
+		{ 
+			CommunityCards = new List<Card>(communityCards),
+			Street = currentStreet 
+		};
+		HandStrength strength = aiOpponent.DetermineHandStrengthCategory(state);
+		
+		// Determine tell category
+		string tellCategory = "weak_hand";
+		if (strength == HandStrength.Strong) tellCategory = "strong_hand";
+		else if (strength == HandStrength.Bluffing) tellCategory = "bluffing";
+		else if (strength == HandStrength.Medium) tellCategory = "weak_hand"; 
+
+		// Acting (Deception) Logic
+		bool isActing = GD.Randf() < aiOpponent.Personality.BaseBluffFrequency;
+		if (aiOpponent.CurrentTiltState >= TiltState.Steaming) isActing = false; // Tilted players can't act
+
+		if (isActing)
+		{
+			if (tellCategory == "strong_hand") tellCategory = "weak_hand"; // Act weak
+			else if (tellCategory == "weak_hand") tellCategory = "strong_hand"; // Act strong
+		}
+
+		// Retrieve expression from personality map
+		if (aiOpponent.Personality.Tells.ContainsKey(tellCategory))
+		{
+			var possibleTells = aiOpponent.Personality.Tells[tellCategory];
+			if (possibleTells.Count > 0)
+			{
+				string tellString = possibleTells[GD.RandRange(0, possibleTells.Count - 1)];
+				if (Enum.TryParse(tellString, true, out Expression expr))
+				{
+					SetExpression(expr);
+					// GD.Print($"[TELL] {currentOpponentName} shows {tellString} ({tellCategory}) Acting={isActing}");
+				}
+			}
+		}
+	}
+
 	private PokerPersonality LoadOpponentPersonality(string opponentName)
 	{
 		return opponentName switch

@@ -7,7 +7,7 @@ public partial class PokerGame
 {
 	private async Task DealInitialHands()
 	{
-		GD.Print("\n=== Dealing Initial Hands ===");
+		GD.Print("\\n=== Dealing Initial Hands ===");
 		playerHand.Clear();
 		opponentHand.Clear();
 		communityCards.Clear();
@@ -41,11 +41,14 @@ public partial class PokerGame
 		// opponent cards stay face down
 		opponentCard1.ShowBack();
 		opponentCard2.ShowBack();
+		
+		// Show reaction to hole cards
+		ShowTell(true);
 	}
 
 	public async Task DealCommunityCards(Street street)
 	{
-		GD.Print($"\n=== Community Cards: {street} ===");
+		GD.Print($"\\n=== Community Cards: {street} ===");
 		switch (street)
 		{
 			case Street.Flop:
@@ -85,6 +88,9 @@ public partial class PokerGame
 				await ToSignal(GetTree().CreateTimer(0.25f), SceneTreeTimer.SignalName.Timeout);
 				break;
 		}
+		
+		// Show reaction to the board
+		ShowTell(true);
 	}
 
 	private async void AdvanceStreet()
@@ -152,10 +158,13 @@ public partial class PokerGame
 	
 	private async void ShowDown()
 	{
+		// Stop tells during showdown
+		if (tellTimer != null) tellTimer.Stop();
+		
 		if (isShowdownInProgress) return;
 		isShowdownInProgress = true;
 		
-		GD.Print("\n=== Showdown ===");
+		GD.Print("\\n=== Showdown ===");
 		
 		// process refunds first
 		bool refundOccurred = ReturnUncalledChips();
@@ -190,7 +199,7 @@ public partial class PokerGame
 		
 		if (result > 0)
 		{
-			GD.Print("\nPLAYER WINS!");
+			GD.Print("\\nPLAYER WINS!");
 			message = $"You win ${finalPot} with {playerHandName}!";
 			
 			TriggerOpponentDialogue("OnLosePot");
@@ -201,20 +210,24 @@ public partial class PokerGame
 			{
 				GD.Print($"{currentOpponentName} suffered a BAD BEAT! (Strength was {aiStrengthAtAllIn:F2})");
 				aiHandResult = HandResult.BadBeat;
+				SetExpression(Expression.Angry);
 			}
 			else if (isCooler)
 			{
 				GD.Print($"{currentOpponentName} suffered a COOLER!");
 				aiHandResult = HandResult.BadBeat;
+				SetExpression(Expression.Sad);
 			}
 			else if (aiBluffedThisHand && opponentRank > 6185)
 			{
 				GD.Print($"{currentOpponentName} was bluffing!");
 				aiHandResult = HandResult.BluffCaught;
+				SetExpression(Expression.Surprised); // Caught bluffing
 			}
 			else
 			{
 				aiHandResult = HandResult.Loss; 
+				SetExpression(Expression.Sad);
 			}
 			
 			playerChips += pot;
@@ -222,17 +235,23 @@ public partial class PokerGame
 		}
 		else if (result < 0)
 		{
-			GD.Print("\nOPPONENT WINS!");
+			GD.Print("\\nOPPONENT WINS!");
 			message = $"{currentOpponentName} wins ${finalPot} with {opponentHandName}";
 			
 			TriggerOpponentDialogue("OnWinPot");
 			if (aiBluffedThisHand)
 			{
 				GD.Print($"{currentOpponentName} won with a bluff!");
+				SetExpression(Expression.Smirk);
 			}
 			else if (opponentRank < 1609)
 			{
 				GD.Print($"{currentOpponentName} had a strong hand!");
+				SetExpression(Expression.Happy);
+			}
+			else
+			{
+				SetExpression(Expression.Happy);
 			}
 			
 			opponentChips += pot;
@@ -246,7 +265,7 @@ public partial class PokerGame
 		}
 		else
 		{
-			GD.Print("\nSPLIT POT!");
+			GD.Print("\\nSPLIT POT!");
 			int split = pot / 2;
 			message = $"Split pot - ${split} each!";
 			playerChips += split;
@@ -254,6 +273,7 @@ public partial class PokerGame
 			aiOpponent.ChipStack = opponentChips;
 			
 			aiOpponent.ProcessHandResult(HandResult.Neutral, pot, bigBlind);
+			SetExpression(Expression.Neutral);
 		}
 
 		ShowMessage(message);
@@ -345,6 +365,10 @@ public partial class PokerGame
 	{
 		GD.Print($"[AI ACTION] {currentOpponentName}: {action}");
 		
+		// --- VISUAL FEEDBACK: Set Expression based on Action ---
+		UpdateOpponentExpression(action);
+		if (tellTimer != null) tellTimer.Start(); // Reset idle tell timer after acting
+		
 		switch (action)
 		{
 			case PlayerAction.Fold:
@@ -370,6 +394,43 @@ public partial class PokerGame
 		
 		UpdateHud();
 		UpdateOpponentVisuals();
+	}
+
+	private void UpdateOpponentExpression(PlayerAction action)
+	{
+		// 1. Heavy Tilt Overrides (Angry/Monkey)
+		if (aiOpponent.CurrentTiltState == TiltState.Steaming || aiOpponent.CurrentTiltState == TiltState.Monkey)
+		{
+			SetExpression(Expression.Angry);
+			return;
+		}
+
+		// 2. Action-based Expressions
+		switch (action)
+		{
+			case PlayerAction.Fold:
+				SetExpression(Expression.Sad);
+				break;
+			case PlayerAction.Check:
+				SetExpression(Expression.Neutral);
+				break;
+			case PlayerAction.Call:
+				SetExpression(Expression.Neutral); 
+				break;
+			case PlayerAction.Raise:
+				SetExpression(Expression.Neutral); 
+				break;
+			case PlayerAction.AllIn:
+				SetExpression(Expression.Smirk);
+				break;
+		}
+
+		//// 3. Bluff Override
+		//// If they raised and it was flagged as a bluff
+		//if (aiBluffedThisHand && action == PlayerAction.Raise)
+		//{
+			//SetExpression(Expression.Smirk);
+		//}
 	}
 
 	/// <summary>
@@ -603,6 +664,9 @@ public partial class PokerGame
 	/// </summary>
 	private void HandleGameOver(bool opponentSurrendered = false)
 	{
+		// Stop tells
+		if (tellTimer != null) tellTimer.Stop();
+
 		bool playerWon = opponentSurrendered || (opponentChips <= 0);
 		
 		if (playerWon)

@@ -206,6 +206,15 @@ public partial class PokerGame
 		UpdateButtonLabels();
 	}
 	
+	public void SetExpression(Expression expression)
+	{
+		if (faceSprite != null)
+		{
+			// Cast the enum to int to set the frame index
+			faceSprite.Frame = (int)expression;
+		}
+	}
+	
 	private void UpdateOpponentVisuals()
 	{
 		TiltState state = aiOpponent.CurrentTiltState;
