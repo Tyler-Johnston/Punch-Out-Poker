@@ -126,7 +126,6 @@ public partial class PokerGame
 			GD.Print($"Betting round complete: Opponent All-In (Short).");
 			GetTree().CreateTimer(0.8).Timeout += AdvanceStreet;
 		}
-		// 5. CONTINUE BETTING (AI MUST ACT)
 		else
 		{
 			GetTree().CreateTimer(1.2).Timeout += CheckAndProcessAITurn;
@@ -194,7 +193,7 @@ public partial class PokerGame
 
 		isPlayerTurn = false;
 		UpdateHud();
-		UpdateOpponentVisuals(); // Ensure visuals are current
+		UpdateOpponentVisuals();
 		RefreshBetSlider();
 
 		bool betsAreEqual = (playerBet == opponentBet);
@@ -225,22 +224,9 @@ public partial class PokerGame
 			GD.Print($"Betting round complete: Opponent All-In (Short).");
 			GetTree().CreateTimer(0.8).Timeout += AdvanceStreet;
 		}
-		// 5. CONTINUE BETTING (AI MUST ACT)
 		else
 		{
 			GetTree().CreateTimer(1.2).Timeout += CheckAndProcessAITurn;
 		}
-	}
-
-	private void OnBetSliderValueChanged(double value)
-	{
-		int sliderValue = (int)Math.Round(value);
-
-		var (minBet, maxBet) = GetLegalBetRange();
-		sliderValue = Math.Clamp(sliderValue, minBet, maxBet);
-
-		betAmount = sliderValue;
-		betSlider.Value = betAmount;
-		UpdateButtonLabels();
 	}
 }

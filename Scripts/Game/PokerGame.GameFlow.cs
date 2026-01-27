@@ -5,20 +5,15 @@ using System.Threading.Tasks;
 
 public partial class PokerGame
 {
-	// Game state fields
-	private bool isMatchComplete = false;
 
 	private async void AdvanceStreet()
 	{
 		ResetBettingRound();
+		UpdateOpponentVisuals();
 		aiBluffedThisHand = false;
 		isProcessingAIAction = false;
-		
-		// Ensure visuals are fresh for new street
-		UpdateOpponentVisuals();
 
 		Street nextStreet;
-		
 		switch (currentStreet)
 		{
 			case Street.Preflop:
@@ -40,7 +35,7 @@ public partial class PokerGame
 		await DealCommunityCards(nextStreet);
 		currentStreet = nextStreet;
 
-		// All-in scenarios
+		// all-in scenarios
 		if (playerIsAllIn && opponentIsAllIn)
 		{
 			GetTree().CreateTimer(1.5).Timeout += AdvanceStreet;
@@ -53,7 +48,7 @@ public partial class PokerGame
 			return;
 		}
 
-		// Post-flop: non-button acts first
+		// post-flop: non-button acts first
 		isPlayerTurn = !playerHasButton;
 		
 		double waitTime = 0;
@@ -67,7 +62,6 @@ public partial class PokerGame
 			UpdateButtonLabels();
 			RefreshBetSlider();
 			
-			// Only call AI if it's their turn
 			if (!isPlayerTurn)
 			{
 				CheckAndProcessAITurn();
@@ -403,5 +397,16 @@ public partial class PokerGame
 		
 		return action;
 	}
-
+	
+	private bool DetermineAIPosition()
+	{
+		if (currentStreet == Street.Preflop)
+		{
+			return playerHasButton;
+		}
+		else
+		{
+			return !playerHasButton;
+		}
+	}
 }

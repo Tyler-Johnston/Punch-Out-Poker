@@ -4,6 +4,44 @@ using System;
 
 public partial class PokerGame
 {
+	
+	private void ShowMessage(string text)
+	{
+		gameStateLabel.Text = text;
+	}
+	
+	private void SetTableColor()
+	{
+		// get table color depending on the circuit we are in
+		Color middleColor = new Color("#52a67f"); 
+		switch (GameManager.Instance.GetCircuitType())
+		{
+			case 0:
+				middleColor = new Color("#52a67f"); 
+				break;
+			case 1:
+				middleColor = new Color("b0333dff"); 
+				break;
+			case 2:
+				middleColor = new Color("#127AE3"); 
+				break;
+		}
+		
+		// set the table color
+		var gradientTexture = tableColor.Texture as GradientTexture2D;
+		if (gradientTexture != null)
+		{
+			gradientTexture.Gradient = (Gradient)gradientTexture.Gradient.Duplicate();
+			Color cornerColor = middleColor.Darkened(0.3f);
+
+			gradientTexture.Gradient.SetColor(0, middleColor);
+			gradientTexture.Gradient.SetColor(1, cornerColor);
+		}
+		ShaderMaterial retroMat = new ShaderMaterial();
+		retroMat.Shader = GD.Load<Shader>("res://Assets/Shaders/Pixelate.gdshader");
+		tableColor.Material = retroMat;
+	}
+	
 	private void UpdateButtonLabels()
 	{
 		if (waitingForNextGame) return;
@@ -154,5 +192,59 @@ public partial class PokerGame
 
 		betAmount = Math.Clamp(betAmount, minBet, maxBet);
 		betSlider.Value = betAmount;
+	}
+	
+	private void OnBetSliderValueChanged(double value)
+	{
+		int sliderValue = (int)Math.Round(value);
+
+		var (minBet, maxBet) = GetLegalBetRange();
+		sliderValue = Math.Clamp(sliderValue, minBet, maxBet);
+
+		betAmount = sliderValue;
+		betSlider.Value = betAmount;
+		UpdateButtonLabels();
+	}
+	
+	private void UpdateOpponentVisuals()
+	{
+		TiltState state = aiOpponent.CurrentTiltState;
+		
+		switch (state)
+		{
+			case TiltState.Zen:
+				opponentStackLabel.Modulate = Colors.White;
+				break;
+			case TiltState.Annoyed:
+				opponentStackLabel.Modulate = Colors.Yellow;
+				break;
+			case TiltState.Steaming:
+				opponentStackLabel.Modulate = Colors.Orange;
+				ApplyShake(opponentPortrait, 2.0f);
+				break;
+			case TiltState.Monkey:
+				opponentStackLabel.Modulate = Colors.Red;
+				ApplyShake(opponentPortrait, 5.0f);
+				break;
+		}
+
+		// trigger tilt dialogue
+		if (handInProgress && !waitingForNextGame)
+		{
+			string tiltLine = dialogueManager.GetTiltDialogue(state);
+			if (!string.IsNullOrEmpty(tiltLine))
+			{
+				opponentDialogueLabel.Text = tiltLine;
+			}
+		}
+	}
+	
+	private void ApplyShake(Control node, float intensity)
+	{
+		var tween = CreateTween();
+		Vector2 originalPos = node.Position;
+		tween.TweenProperty(node, "position", originalPos + new Vector2(intensity, 0), 0.05f);
+		tween.TweenProperty(node, "position", originalPos - new Vector2(intensity, 0), 0.05f);
+		tween.TweenProperty(node, "position", originalPos, 0.05f);
 	}
 }

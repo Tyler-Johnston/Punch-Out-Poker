@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 public partial class PokerGame : Node2D
 {
-	// core game data
+
 	private PackedScene cardVisualScene;
 	private Deck deck;
 	private List<Card> playerHand = new List<Card>();
@@ -57,8 +57,17 @@ public partial class PokerGame : Node2D
 	private Street currentStreet = Street.Preflop;
 	private int playerChips = 100;
 	private int opponentChips = 100;
-	
-	// track AI strength when they commit to all-in (for bad beat detection)
+	private int pot = 0;
+	private int betAmount = 20;
+	private int currentBet = 0;
+	private int playerBet = 0;
+	private int opponentBet = 0;
+	private int smallBlind = 5;
+	private int bigBlind = 10;
+	private int raisesThisStreet = 0;
+	private const int MAX_RAISES_PER_STREET = 4;
+
+	// tracking
 	public float aiStrengthAtAllIn = 0f; 
 
 	// side pot and contribution tracking
@@ -67,6 +76,7 @@ public partial class PokerGame : Node2D
 	private int playerTotalBetsThisHand = 0;
 	
 	// game state flags
+	private bool isMatchComplete = false;
 	private bool isPlayerTurn = true;
 	private bool playerHasButton = false;
 	private bool handInProgress = false;
@@ -76,6 +86,8 @@ public partial class PokerGame : Node2D
 	private bool isProcessingAIAction = false;
 	private bool aiBluffedThisHand = false;
 	private bool isShowdownInProgress = false;
+	private bool playerHasActedThisStreet = false;
+	private bool opponentHasActedThisStreet = false;
 	
 	private Dictionary<Street, bool> playerBetOnStreet = new Dictionary<Street, bool>();
 	private Dictionary<Street, int> playerBetSizeOnStreet = new Dictionary<Street, int>();
@@ -87,7 +99,7 @@ public partial class PokerGame : Node2D
 	private string currentOpponentName;
 	private int buyInAmount;
 	
-	// Audio
+	// audio
 	private SFXPlayer sfxPlayer;
 	private AudioStreamPlayer musicPlayer;
 
@@ -142,7 +154,7 @@ public partial class PokerGame : Node2D
 		sfxPlayer = GetNode<SFXPlayer>("SFXPlayer");
 		musicPlayer = GetNode<AudioStreamPlayer>("MusicPlayer");  
 		
-		// set on-press handlers (Assumes implementation exists elsewhere in file)
+		// set on-press handlers
 		foldButton.Pressed += OnFoldPressed;
 		checkCallButton.Pressed += OnCheckCallPressed;
 		betRaiseButton.Pressed += OnBetRaisePressed;
@@ -195,44 +207,53 @@ public partial class PokerGame : Node2D
 		betAmount = bigBlind; 
 		playerHasButton = false; 
 		GD.Print($"Blinds: {smallBlind}/{bigBlind}");
-		
-		// get table color depending on the circuit we are in
-		Color middleColor = new Color("#52a67f"); 
-		switch (GameManager.Instance.GetCircuitType())
-		{
-			case 0:
-				middleColor = new Color("#52a67f"); 
-				break;
-			case 1:
-				middleColor = new Color("b0333dff"); 
-				break;
-			case 2:
-				middleColor = new Color("#127AE3"); 
-				break;
-		}
-		
-		// set the table color
-		var gradientTexture = tableColor.Texture as GradientTexture2D;
-		if (gradientTexture != null)
-		{
-			gradientTexture.Gradient = (Gradient)gradientTexture.Gradient.Duplicate();
-			Color cornerColor = middleColor.Darkened(0.3f);
-
-			gradientTexture.Gradient.SetColor(0, middleColor);
-			gradientTexture.Gradient.SetColor(1, cornerColor);
-		}
-		ShaderMaterial retroMat = new ShaderMaterial();
-		retroMat.Shader = GD.Load<Shader>("res://Assets/Shaders/Pixelate.gdshader");
-		tableColor.Material = retroMat;
 
 		//musicPlayer.Play();
+		SetTableColor();
 		UpdateHud();
 		StartNewHand();
 	}
-
-	private void ShowMessage(string text)
+	
+	private (int minBet, int maxBet) GetLegalBetRange()
 	{
-		gameStateLabel.Text = text;
+		int amountToCall = currentBet - playerBet;
+		int maxBet = playerChips - amountToCall; 
+		
+		if (maxBet <= 0) return (0, 0);
+
+		bool opening = currentBet == 0;
+		int minBet;
+
+		if (opening)
+		{
+			minBet = Math.Min(bigBlind, maxBet);
+		}
+		else
+		{
+			int minRaiseIncrement = (amountToCall == 0) ? bigBlind : amountToCall;
+			minRaiseIncrement = Math.Max(minRaiseIncrement, bigBlind);
+
+			minBet = minRaiseIncrement;
+			
+			// Cap at calculated maxBet
+			if (minBet > maxBet)
+			{
+				minBet = maxBet; 
+			}
+		}
+
+		if (minBet > maxBet) minBet = maxBet;
+		return (minBet, maxBet);
+	}
+
+	private void ResetBettingRound()
+	{
+		playerBet = 0;
+		opponentBet = 0;
+		currentBet = 0;
+		raisesThisStreet = 0;
+		playerHasActedThisStreet = false;
+		opponentHasActedThisStreet = false;
 	}
 
 	public void AddToPot(bool isPlayer, int amount)
@@ -242,48 +263,6 @@ public partial class PokerGame : Node2D
 			playerContributed += amount;
 		else
 			opponentContributed += amount;
-	}
-	
-	private void UpdateOpponentVisuals()
-	{
-		TiltState state = aiOpponent.CurrentTiltState;
-		
-		switch (state)
-		{
-			case TiltState.Zen:
-				opponentStackLabel.Modulate = Colors.White;
-				break;
-			case TiltState.Annoyed:
-				opponentStackLabel.Modulate = Colors.Yellow;
-				break;
-			case TiltState.Steaming:
-				opponentStackLabel.Modulate = Colors.Orange;
-				ApplyShake(opponentPortrait, 2.0f);
-				break;
-			case TiltState.Monkey:
-				opponentStackLabel.Modulate = Colors.Red;
-				ApplyShake(opponentPortrait, 5.0f);
-				break;
-		}
-
-		// trigger tilt dialogue
-		if (handInProgress && !waitingForNextGame)
-		{
-			string tiltLine = dialogueManager.GetTiltDialogue(state);
-			if (!string.IsNullOrEmpty(tiltLine))
-			{
-				opponentDialogueLabel.Text = tiltLine;
-			}
-		}
-	}
-	
-	private void ApplyShake(Control node, float intensity)
-	{
-		var tween = CreateTween();
-		Vector2 originalPos = node.Position;
-		tween.TweenProperty(node, "position", originalPos + new Vector2(intensity, 0), 0.05f);
-		tween.TweenProperty(node, "position", originalPos - new Vector2(intensity, 0), 0.05f);
-		tween.TweenProperty(node, "position", originalPos, 0.05f);
 	}
 
 	private bool ReturnUncalledChips()
@@ -467,14 +446,12 @@ public partial class PokerGame : Node2D
 		currentStreet = Street.Preflop;
 		handInProgress = true;
 		
-		// Update visuals at start of hand
 		UpdateOpponentVisuals();
 
-		// Button Rotation
 		playerHasButton = !playerHasButton;
 		if (playerHasButton)
 		{
-			// Player is Small Blind
+			// human player is Small Blind
 			int sbAmount = Math.Min(smallBlind, playerChips); 
 			playerChips -= sbAmount;
 			AddToPot(true, sbAmount);
@@ -496,14 +473,14 @@ public partial class PokerGame : Node2D
 		}
 		else
 		{
-			// Player is Big Blind
+			// human player is Big Blind
 			int bbAmount = Math.Min(bigBlind, playerChips); 
 			playerChips -= bbAmount;
 			AddToPot(true, bbAmount);
 			playerBet = bbAmount;
 			if (playerChips == 0) playerIsAllIn = true;
 
-			// Opponent is Small Blind
+			// opponent is Small Blind
 			int sbAmount = Math.Min(smallBlind, opponentChips); 
 			opponentChips -= sbAmount;
 			aiOpponent.ChipStack = opponentChips;
@@ -740,22 +717,6 @@ public partial class PokerGame : Node2D
 		if (chatRoll <= threshold || alwaysTalk)
 		{
 			opponentDialogueLabel.Text = line;
-		}
-	}
-	
-	/// <summary>
-	/// Determine if AI is in position (acts last postflop)
-	/// In heads-up: button posts SB and acts last postflop = in position
-	/// </summary>
-	private bool DetermineAIPosition()
-	{
-		if (currentStreet == Street.Preflop)
-		{
-			return playerHasButton;
-		}
-		else
-		{
-			return !playerHasButton;
 		}
 	}
 	
