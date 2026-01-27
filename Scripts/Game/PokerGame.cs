@@ -58,13 +58,13 @@ public partial class PokerGame : Node2D
 	private int playerChips = 100;
 	private int opponentChips = 100;
 	
-	// Track AI strength when they commit to all-in (for bad beat detection)
-	// This must be set in OnOpponentAllIn / OnOpponentCall logic!
+	// track AI strength when they commit to all-in (for bad beat detection)
 	public float aiStrengthAtAllIn = 0f; 
 
 	// side pot and contribution tracking
 	private int playerContributed = 0;
 	private int opponentContributed = 0;
+	private int playerTotalBetsThisHand = 0;
 	
 	// game state flags
 	private bool isPlayerTurn = true;
@@ -75,8 +75,7 @@ public partial class PokerGame : Node2D
 	private bool opponentIsAllIn = false;
 	private bool isProcessingAIAction = false;
 	private bool aiBluffedThisHand = false;
-	
-	private int playerTotalBetsThisHand = 0;
+	private bool isShowdownInProgress = false;
 	
 	private Dictionary<Street, bool> playerBetOnStreet = new Dictionary<Street, bool>();
 	private Dictionary<Street, int> playerBetSizeOnStreet = new Dictionary<Street, int>();
@@ -84,7 +83,7 @@ public partial class PokerGame : Node2D
 	// ais
 	private AIPokerPlayer aiOpponent;
 	private PokerDecisionMaker decisionMaker;
-	private DialogueManager dialogueManager; // New dialogue manager
+	private DialogueManager dialogueManager; 
 	private string currentOpponentName;
 	private int buyInAmount;
 	
@@ -143,7 +142,7 @@ public partial class PokerGame : Node2D
 		sfxPlayer = GetNode<SFXPlayer>("SFXPlayer");
 		musicPlayer = GetNode<AudioStreamPlayer>("MusicPlayer");  
 		
-		// set on-press handlers
+		// set on-press handlers (Assumes implementation exists elsewhere in file)
 		foldButton.Pressed += OnFoldPressed;
 		checkCallButton.Pressed += OnCheckCallPressed;
 		betRaiseButton.Pressed += OnBetRaisePressed;
@@ -205,12 +204,11 @@ public partial class PokerGame : Node2D
 				middleColor = new Color("#52a67f"); 
 				break;
 			case 1:
-				middleColor = new Color("a80054ff"); 
+				middleColor = new Color("b0333dff"); 
 				break;
 			case 2:
 				middleColor = new Color("#127AE3"); 
 				break;
-				
 		}
 		
 		// set the table color
@@ -237,7 +235,6 @@ public partial class PokerGame : Node2D
 		gameStateLabel.Text = text;
 	}
 
-	// Helper to track contributions accurately
 	public void AddToPot(bool isPlayer, int amount)
 	{
 		pot += amount;
@@ -269,7 +266,7 @@ public partial class PokerGame : Node2D
 				break;
 		}
 
-		// Trigger Random Tilt Dialogue
+		// trigger tilt dialogue
 		if (handInProgress && !waitingForNextGame)
 		{
 			string tiltLine = dialogueManager.GetTiltDialogue(state);
@@ -326,7 +323,7 @@ public partial class PokerGame : Node2D
 		opponentHand.Add(deck.Deal());
 		opponentHand.Add(deck.Deal());
 
-		// Deal cards to AI opponent
+		// deal cards to AI opponent
 		aiOpponent.Hand.Clear();
 		foreach (var card in opponentHand)
 		{
@@ -337,17 +334,17 @@ public partial class PokerGame : Node2D
 		GD.Print($"Opponent hand: {opponentHand[0]}, {opponentHand[1]}");
 		await ToSignal(GetTree().CreateTimer(0.25f), SceneTreeTimer.SignalName.Timeout);
 		
-		// Animate Player Card 1
+		// animate player Card 1
 		sfxPlayer.PlaySound("card_flip");
 		await playerCard1.RevealCard(playerHand[0]);
 		await ToSignal(GetTree().CreateTimer(0.25f), SceneTreeTimer.SignalName.Timeout);
 
-		// Animate Player Card 2
+		// animate player Card 2
 		sfxPlayer.PlaySound("card_flip");
 		await playerCard2.RevealCard(playerHand[1]);
 		await ToSignal(GetTree().CreateTimer(0.25f), SceneTreeTimer.SignalName.Timeout);
 
-		// Opponent cards stay face down
+		// opponent cards stay face down
 		opponentCard1.ShowBack();
 		opponentCard2.ShowBack();
 	}
@@ -414,7 +411,6 @@ public partial class PokerGame : Node2D
 
 		GD.Print("\n=== New Hand ===");
 		ShowMessage("");
-
 
 		cashOutButton.Disabled = true;
 		cashOutButton.Visible = false;
@@ -527,80 +523,71 @@ public partial class PokerGame : Node2D
 		UpdateButtonLabels();
 		RefreshBetSlider();
 		
-		if (playerIsAllIn && opponentIsAllIn)
+		// If both are all-in (or player is forced all-in), skip betting logic
+		if (playerIsAllIn || opponentIsAllIn)
 		{
-			GetTree().CreateTimer(1.0).Timeout += AdvanceStreet;
+			GD.Print("[START HAND] Blind forced All-In! Skipping to next street.");
+			GetTree().CreateTimer(1.5).Timeout += AdvanceStreet;
 		}
-		else if (!isPlayerTurn && !opponentIsAllIn)
+		else if (!isPlayerTurn)
 		{
+			// Standard AI turn
 			GetTree().CreateTimer(1.15).Timeout += () => CheckAndProcessAITurn();
 		}
-		else if (!isPlayerTurn && opponentIsAllIn)
-		{
-			isPlayerTurn = true;
-			ShowMessage($"{currentOpponentName} is All-In");
-			UpdateHud();
-		}
 	}
-	
+
 	private async void EndHand()
 	{
-		// 1. Reset Pot and Flags
+		if (isShowdownInProgress) return;
+		
 		pot = 0;
 		handInProgress = false;
 		waitingForNextGame = true;
 
-		// 2. Check Strict Game Over (Bankruptcy) first
-		// If they have 0 chips, standard GameOver rules apply.
+		// check if chip balance is 0 for AI or human player
 		if (aiOpponent.ChipStack <= 0 || playerChips <= 0)
 		{
 			HandleGameOver();
 			return;
 		}
 
-		// 3. Check for Personality-Driven Exits (Rage Quit / Surrender)
+		// check for rage quit or surrender
 		OpponentExitType exitType = aiOpponent.CheckForEarlyExit();
 		if (exitType != OpponentExitType.None)
 		{
 			await ToSignal(GetTree().CreateTimer(1.5f), SceneTreeTimer.SignalName.Timeout);
 			if (exitType == OpponentExitType.RageQuit)
 			{
-				// TKO: They are furious and leave
 				ShowMessage($"{aiOpponent.PlayerName} RAGE QUITS!");
 				GD.Print($"[GAME OVER] Opponent Rage Quit! Tilt: {aiOpponent.Personality.TiltMeter}");
 			}
 			else if (exitType == OpponentExitType.Surrender)
 			{
-				// TKO: They give up to save remaining chips
 				ShowMessage($"{aiOpponent.PlayerName} SURRENDERS!");
 				GD.Print($"[GAME OVER] Opponent Surrendered. Chips: {aiOpponent.ChipStack}");
 			}
-			return; // Stop here, do not continue to next hand
+			await ToSignal(GetTree().CreateTimer(3.0f), SceneTreeTimer.SignalName.Timeout);
+			HandleGameOver(opponentSurrendered: true);
+			return;
 		}
 
-		// 4. Continue Game Loop
 		UpdateHud();
 		RefreshBetSlider();
-		
-		// Auto-start next hand after delay? Or wait for player input?
-		// Assuming you have a Start Button or Timer:
-		/*
-		GetTree().CreateTimer(2.0f).Timeout += () => {
-			StartNewHand();
-		};
-		*/
 	}
 
-	
 	private async void ShowDown()
 	{
+		if (isShowdownInProgress) return;
+		isShowdownInProgress = true;
+		
 		GD.Print("\n=== Showdown ===");
 		
-		// 1. Process Refunds First
+		// process refunds first
 		bool refundOccurred = ReturnUncalledChips();
 
 		if (refundOccurred)
 		{
+			UpdateHud();
 			await ToSignal(GetTree().CreateTimer(1.5f), SceneTreeTimer.SignalName.Timeout);
 		}
 
@@ -628,14 +615,11 @@ public partial class PokerGame : Node2D
 		
 		if (result > 0)
 		{
-			// Player wins
 			GD.Print("\nPLAYER WINS!");
 			message = $"You win ${finalPot} with {playerHandName}!";
 			
 			TriggerOpponentDialogue("OnLosePot");
-			// Definition: AI was Strong (>0.70) when chips went in, but lost.
 			bool isBadBeat = (aiStrengthAtAllIn > 0.70f); 
-			// Definition: AI had a monster hand (Four of a kind, etc) but lost (Cooler)
 			bool isCooler = (opponentRank <= 1609); 
 			
 			if (isBadBeat)
@@ -663,7 +647,6 @@ public partial class PokerGame : Node2D
 		}
 		else if (result < 0)
 		{
-			// Opponent wins
 			GD.Print("\nOPPONENT WINS!");
 			message = $"{currentOpponentName} wins ${finalPot} with {opponentHandName}";
 			
@@ -688,7 +671,6 @@ public partial class PokerGame : Node2D
 		}
 		else
 		{
-			// Split pot
 			GD.Print("\nSPLIT POT!");
 			int split = pot / 2;
 			message = $"Split pot - ${split} each!";
@@ -703,34 +685,31 @@ public partial class PokerGame : Node2D
 		GD.Print($"Stacks -> Player: {playerChips}, Opponent: {opponentChips}");
 		GD.Print($"AI Tilt Level: {aiOpponent.Personality.TiltMeter:F1}");
 		
+		isShowdownInProgress = false;
 		EndHand();
 	}
 
-	
-	/// <summary>
-	/// Check if game is over
-	/// </summary>
 	private bool IsGameOver()
 	{
+		if (isShowdownInProgress) return false;
 		return playerChips <= 0 || opponentChips <= 0;
 	}
 	
 	/// <summary>
 	/// Handle game over state
 	/// </summary>
-	private void HandleGameOver()
+	private void HandleGameOver(bool opponentSurrendered = false)
 	{
-		bool playerWon = opponentChips <= 0;
+		bool playerWon = opponentSurrendered || (opponentChips <= 0);
 		
 		if (playerWon)
 		{
 			int winnings = buyInAmount * 2; // Winner takes all
 			GameManager.Instance.OnMatchWon(currentOpponentName, winnings);
-			ShowMessage($"You defeated {currentOpponentName}!");
-			GD.Print($"=== VICTORY vs {currentOpponentName} ===");
 			
-			// Process AI tilt for losing
-			aiOpponent.ProcessHandResult(HandResult.Loss, 0, 0); 
+			string reason = opponentSurrendered ? "surrendered!" : "went bust!";
+			ShowMessage($"VICTORY! {currentOpponentName} {reason}");
+			GD.Print($"=== VICTORY vs {currentOpponentName} ===");
 		}
 		else
 		{
@@ -739,8 +718,8 @@ public partial class PokerGame : Node2D
 			GD.Print($"=== DEFEAT vs {currentOpponentName} ===");
 		}
 		
-		// Return to menu after delay
-		GetTree().CreateTimer(3.0).Timeout += () => 
+		// return to menu after delay
+		GetTree().CreateTimer(6.0).Timeout += () => 
 		{
 			GetTree().ChangeSceneToFile("res://Scenes/CharacterSelect.tscn");
 		};
@@ -770,17 +749,13 @@ public partial class PokerGame : Node2D
 	/// </summary>
 	private bool DetermineAIPosition()
 	{
-		// Preflop: button acts first, so AI is OOP if they have button
-		// Postflop: button acts last, so AI is IP if they have button
 		if (currentStreet == Street.Preflop)
 		{
-			// Preflop in HU: button = OOP (acts first)
-			return playerHasButton; // If player has button, AI is IP (acts last preflop)
+			return playerHasButton;
 		}
 		else
 		{
-			// Postflop: button = IP (acts last)
-			return !playerHasButton; // If player doesn't have button, AI has button = IP
+			return !playerHasButton;
 		}
 	}
 	

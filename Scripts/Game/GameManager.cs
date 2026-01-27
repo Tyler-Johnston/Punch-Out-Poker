@@ -6,18 +6,17 @@ public partial class GameManager : Node
 {
 	public static GameManager Instance { get; private set; }
 
-	// --- DEV TEST MODE ---
 	[Export] public bool DevTestMode = true;
 	public int circuitType = 0; // 0 = Minor, 1 = Major, 2 = World
 
-	// --- GAME DATA ---
+	// game data
 	public int PlayerMoney { get; set; } = 1000;
 	
 	// Track which AI opponents have been defeated
 	private HashSet<string> _unlockedOpponents = new HashSet<string>();
 	private HashSet<string> _defeatedOpponents = new HashSet<string>();
 	
-	// Current match data
+	// current match data
 	public string CurrentOpponentName { get; set; }
 	public int CurrentBuyIn { get; set; }
 
@@ -218,7 +217,7 @@ public partial class GameManager : Node
 	}
 	
 	/// <summary>
-	/// Save/Load helpers (for future persistence)
+	/// Save/Load helpers
 	/// </summary>
 	public Dictionary<string, Variant> GetSaveData()
 	{

@@ -357,22 +357,7 @@ public partial class PokerGame
 		ShowMessage($"{currentOpponentName} goes ALL-IN for ${allInAmount}!");
 		GD.Print($"{currentOpponentName} ALL-IN: {allInAmount}");
 	}
-	
-	public bool IsTrueBadBeat(float equityWhenMoneyWentIn, bool aiLostHand, float aiFinalHandStrength)
-	{
-		// Must have been ahead when committing chips
-		if (equityWhenMoneyWentIn < 0.65f) return false;
-		
-		// Must have lost
-		if (!aiLostHand) return false;
-		
-		// Must have ended with a legitimately strong hand (got outdrawn, not just whiffed)
-		if (aiFinalHandStrength < 0.65f) return false;
-		
-		return true;
-	}
 
-	
 	/// <summary>
 	/// AI decision making using personality + dialogue system
 	/// </summary>

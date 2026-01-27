@@ -38,7 +38,7 @@ public partial class CharacterSelect : Control
 			PersonalityPreset = preset ?? name;
 		}
 	}
-	// 1. The Opponent Data (List of Lists)
+
 	private readonly List<List<OpponentData>> _circuitData = new List<List<OpponentData>>
 	{
 		// Index 0: Minor Circuit
@@ -69,7 +69,7 @@ public partial class CharacterSelect : Control
 	private readonly Color[] _circuitColors = new Color[]
 	{
 		new Color("3a7d5e97"), // 0: Green (Minor)
-		new Color("ed676397"), // 1: Red (Major)
+		new Color("b7353797"), // 1: Red (Major)
 		new Color("5f62cd97")  // 2: Blue (World)
 	};
 

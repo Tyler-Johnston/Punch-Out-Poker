@@ -31,11 +31,11 @@ public enum HandStrength
 /// </summary>
 public enum PlayerAction
 {
-	Fold,             // Give up the hand
-	Check,            // Pass action when no bet is facing (0 to call)
-	Call,             // Match the current bet
-	Raise,            // Increase the bet amount
-	AllIn             // Bet all remaining chips
+	Fold,
+	Check,
+	Call,
+	Raise,
+	AllIn
 }
 
 public enum Decision 
@@ -68,7 +68,7 @@ public enum HandRank
 /// </summary>
 public enum Suit
 {
-	Clubs,            // Order matches your ToEvaluatorFormat() method
+	Clubs,
 	Diamonds,
 	Hearts,
 	Spades
@@ -77,7 +77,6 @@ public enum Suit
 /// <summary>
 /// Card ranks from lowest to highest
 /// Numeric values align with poker hand evaluation
-/// Note: In your ToEvaluatorFormat, this uses 0-12 range (Ace=12)
 /// </summary>
 public enum Rank
 {

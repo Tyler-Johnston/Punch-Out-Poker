@@ -107,17 +107,16 @@ public partial class AIPokerPlayer : Node
 
 	public PlayerAction MakeDecision(GameState gameState)
 	{
-		// Debug logging
 		GD.Print($"[{PlayerName}] MakeDecision called - IsFolded: {IsFolded}, IsAllIn: {IsAllIn}, ChipStack: {ChipStack}");
 		
-		// Safety check: If IsAllIn but we have chips, reset it
+		// if IsAllIn but we have chips, reset it
 		if (IsAllIn && ChipStack > 0)
 		{
 			GD.PrintErr($"[{PlayerName}] ERROR: IsAllIn=true but ChipStack={ChipStack}! Resetting IsAllIn.");
 			IsAllIn = false;
 		}
 		
-		// Only return early if actually folded/all-in
+		// only return early if actually folded/all-in
 		if (IsFolded)
 		{
 			GD.Print($"[{PlayerName}] Folded - returning Check");
@@ -130,7 +129,6 @@ public partial class AIPokerPlayer : Node
 			return PlayerAction.Check;
 		}
 		
-		// Safety: ensure decision maker exists
 		if (decisionMaker == null)
 		{
 			GD.PrintErr($"[{PlayerName}] DecisionMaker is null! Folding as fallback.");
@@ -192,7 +190,6 @@ public partial class AIPokerPlayer : Node
 			case HandResult.BadBeat:
 				AddTiltSafe(25f);
 				Personality.ConsecutiveLosses++;
-				GD.Print($"{PlayerName} suffered a bad beat! Tilt: {Personality.TiltMeter}");
 				break;
 				
 			case HandResult.BluffCaught:
@@ -328,7 +325,6 @@ public partial class AIPokerPlayer : Node
 		var p = Personality;
 		var dialog = p.Dialogue;
 
-		// 1) Sometimes use spoken tells (StrongHand / WeakHand / Bluffing)
 		float roll = GD.Randf();
 		bool useTell = roll < p.TellReliability;
 		string spokenLine;
@@ -357,7 +353,6 @@ public partial class AIPokerPlayer : Node
 			}
 		}
 
-		// 2) Action-specific lines
 		string key = action switch
 		{
 			PlayerAction.Fold  => "OnFold",
@@ -375,7 +370,6 @@ public partial class AIPokerPlayer : Node
 			return spokenLine;
 		}
 
-		// 3) No line this turn
 		return "";
 	}
 
@@ -492,9 +486,9 @@ public partial class AIPokerPlayer : Node
 		get
 		{
 			float t = Personality.TiltMeter;
-			if (t >= 40f) return TiltState.Monkey;    // Was 50f
-			if (t >= 20f) return TiltState.Steaming;  // Was 25f
-			if (t >= 10f) return TiltState.Annoyed;   // Stays 10f
+			if (t >= 40f) return TiltState.Monkey;
+			if (t >= 20f) return TiltState.Steaming;
+			if (t >= 10f) return TiltState.Annoyed;
 			return TiltState.Zen;
 		}
 	}
@@ -509,8 +503,6 @@ public partial class AIPokerPlayer : Node
 		return "";
 	}
 
-
-	
 	/// <summary>
 	/// Debug information
 	/// </summary>

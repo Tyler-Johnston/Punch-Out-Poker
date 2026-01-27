@@ -112,22 +112,27 @@ public partial class PokerDecisionMaker : Node
 		PokerPersonality personality,
 		AIPokerPlayer player)
 	{
-		// Only use pot odds override for clear value spots
+		// 1) POT ODDS CHECK (Revised for Sticky Defense)
 		float potOdds = toCall / (potSize + toCall);
+		
+		// FIX: For small bets (< 40% pot), don't demand a premium. Trust the math.
+		// If bet is small, use 1.0x multiplier. If large, keep the conservative 1.25x buffer.
+		float oddsMultiplier = (betRatio < 0.40f) ? 1.0f : PokerAIConfig.POT_ODDS_MULTIPLIER;
+		
 		if (potOdds < PokerAIConfig.POT_ODDS_OVERRIDE_THRESHOLD && 
-			handStrength > potOdds * PokerAIConfig.POT_ODDS_MULTIPLIER)
+			handStrength > potOdds * oddsMultiplier)
 		{
-			GD.Print($"[AI] Easy call - pot odds: {potOdds:F2}, equity: {handStrength:F2}");
+			GD.Print($"[AI] Easy call - pot odds: {potOdds:F2}, equity: {handStrength:F2} (Sticky Mode: {betRatio < 0.40f})");
 			return Decision.Call;
 		}
 		
-		// 1) Effective stats under tilt
+		// 2) Effective stats under tilt
 		float tiltFactor = 1f + (personality.TiltMeter / 100f);
 		float effCallTend = Mathf.Clamp(personality.CallTendency * (1f + personality.TiltMeter / 200f), 0f, 1f);
 		float effRiskTol = Mathf.Clamp(personality.CurrentRiskTolerance * tiltFactor, 0f, 1f);
 		float effBluffFreq = Mathf.Clamp(personality.CurrentBluffFrequency * tiltFactor, 0f, 1f);
 
-		// 2) Base call thresholds per street
+		// 3) Base call thresholds per street
 		float baseThreshold = street switch
 		{
 			Street.Flop => PokerAIConfig.FLOP_BASE_THRESHOLD,
@@ -136,11 +141,11 @@ public partial class PokerDecisionMaker : Node
 			_ => PokerAIConfig.PREFLOP_BASE_THRESHOLD
 		};
 
-		// 3) Personality shift
+		// 4) Personality shift
 		float callShift = Mathf.Lerp(0.06f, -0.06f, effCallTend);
 		baseThreshold += callShift;
 
-		// 4) Bet size scaling
+		// 5) Bet size scaling
 		float sizeFactor = Mathf.Clamp(betRatio, 0f, 3f);
 		float sizeBump = street == Street.Flop 
 			? PokerAIConfig.FLOP_SIZE_BUMP * sizeFactor
@@ -149,29 +154,25 @@ public partial class PokerDecisionMaker : Node
 		sizeBump *= (1f - 0.5f * effRiskTol);
 		float threshold = Mathf.Clamp(baseThreshold + sizeBump, 0f, 1f);
 
-		// 5) HUGE OVERBET RULE (2.5x+ pot)
+		// 6) HUGE OVERBET RULE (2.5x+ pot) - Unchanged
 		if (betRatio >= 2.5f)
 		{
-			if (player.CurrentTiltState == TiltState.Monkey)
-			{
-				threshold -= 0.15f; // Calling station mode
-			}
-			else
-			{
-				float overbetTighten = Mathf.Lerp(0.08f, 0.18f, 1f - effRiskTol);
-				float overbetThreshold = Mathf.Clamp(0.58f + overbetTighten, 0f, 1f);
-				float bluffDiscount = 0.04f * effBluffFreq;
-				overbetThreshold -= bluffDiscount;
+			if (player.CurrentTiltState == TiltState.Monkey) return Decision.Call; // Calling station mode
+			
+			float overbetTighten = Mathf.Lerp(0.08f, 0.18f, 1f - effRiskTol);
+			float overbetThreshold = Mathf.Clamp(0.58f + overbetTighten, 0f, 1f);
+			float bluffDiscount = 0.04f * effBluffFreq;
+			overbetThreshold -= bluffDiscount;
 
-				if (handStrength < overbetThreshold)
-				{
-					GD.Print($"[AI] Folding to huge overbet ({betRatio:F1}x pot) - need {overbetThreshold:F2}, have {handStrength:F2}");
-					return Decision.Fold;
-				}
+			if (handStrength < overbetThreshold)
+			{
+				GD.Print($"[AI] Folding to huge overbet ({betRatio:F1}x pot) - need {overbetThreshold:F2}, have {handStrength:F2}");
+				return Decision.Fold;
 			}
+			return Decision.Call;
 		}
 
-		// 6) Large bet (0.8x+ pot)
+		// 7) Large bet (0.8x+ pot) - Unchanged
 		if (betRatio > 0.8f)
 		{
 			bool heroCall = false;
@@ -202,22 +203,31 @@ public partial class PokerDecisionMaker : Node
 		}
 		else
 		{
-			// Small/medium bets - tiered defense
+			// ====================================================================
+			// FIX: Adjusted Thresholds for Small/Medium Bets
+			// ====================================================================
 			float lightThreshold;
 			
+			// Tier 1: Micro/Small Bets (< 33% pot)
 			if (betRatio < 0.33f)
 			{
-				lightThreshold = threshold - 0.10f;
-				if (street == Street.Flop) lightThreshold -= 0.05f;
+				// Was -0.10f. Increased to -0.15f to defend wider.
+				lightThreshold = threshold - 0.15f; 
+				
+				// Flop is loose, defend even wider (-0.08f extra)
+				if (street == Street.Flop) lightThreshold -= 0.08f; 
 			}
+			// Tier 2: Medium Bets (< 55% pot)
 			else if (betRatio < 0.55f)
 			{
-				lightThreshold = threshold - 0.06f;
-				if (street == Street.Flop) lightThreshold -= 0.04f;
+				// Was -0.06f. Increased to -0.10f to match pot odds better.
+				lightThreshold = threshold - 0.10f; 
+				if (street == Street.Flop) lightThreshold -= 0.05f;
 			}
+			// Tier 3: Standard Bets (0.55 - 0.80 pot)
 			else
 			{
-				lightThreshold = threshold - 0.03f;
+				lightThreshold = threshold - 0.04f; // Slight tweak from -0.03f
 				if (street == Street.Flop) lightThreshold -= 0.02f;
 			}
 			
@@ -225,13 +235,14 @@ public partial class PokerDecisionMaker : Node
 
 			if (handStrength < lightThreshold)
 			{
-				GD.Print($"[AI] Folding to small bet ({betRatio:F1}x pot) - need {lightThreshold:F2}, have {handStrength:F2}");
+				GD.Print($"[AI] Folding to small/mid bet ({betRatio:F1}x pot) - need {lightThreshold:F2}, have {handStrength:F2}");
 				return Decision.Fold;
 			}
 		}
 
 		return Decision.Call;
 	}
+
 	
 	private (Decision decision, float plannedBetRatio) DecideCheckOrBet(
 		float handStrength,
