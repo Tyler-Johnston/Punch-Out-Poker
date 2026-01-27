@@ -5,6 +5,87 @@ using System.Threading.Tasks;
 
 public partial class PokerGame
 {
+	private async Task DealInitialHands()
+	{
+		GD.Print("\n=== Dealing Initial Hands ===");
+		playerHand.Clear();
+		opponentHand.Clear();
+		communityCards.Clear();
+
+		playerHand.Add(deck.Deal());
+		playerHand.Add(deck.Deal());
+		opponentHand.Add(deck.Deal());
+		opponentHand.Add(deck.Deal());
+
+		// deal cards to AI opponent
+		aiOpponent.Hand.Clear();
+		foreach (var card in opponentHand)
+		{
+			aiOpponent.DealCard(card);
+		}
+
+		GD.Print($"Player hand: {playerHand[0]}, {playerHand[1]}");
+		GD.Print($"Opponent hand: {opponentHand[0]}, {opponentHand[1]}");
+		await ToSignal(GetTree().CreateTimer(0.25f), SceneTreeTimer.SignalName.Timeout);
+		
+		// animate player Card 1
+		sfxPlayer.PlaySound("card_flip");
+		await playerCard1.RevealCard(playerHand[0]);
+		await ToSignal(GetTree().CreateTimer(0.25f), SceneTreeTimer.SignalName.Timeout);
+
+		// animate player Card 2
+		sfxPlayer.PlaySound("card_flip");
+		await playerCard2.RevealCard(playerHand[1]);
+		await ToSignal(GetTree().CreateTimer(0.25f), SceneTreeTimer.SignalName.Timeout);
+
+		// opponent cards stay face down
+		opponentCard1.ShowBack();
+		opponentCard2.ShowBack();
+	}
+
+	public async Task DealCommunityCards(Street street)
+	{
+		GD.Print($"\n=== Community Cards: {street} ===");
+		switch (street)
+		{
+			case Street.Flop:
+				communityCards.Add(deck.Deal());
+				communityCards.Add(deck.Deal());
+				communityCards.Add(deck.Deal());
+				GD.Print($"Flop: {communityCards[0]}, {communityCards[1]}, {communityCards[2]}");
+				ShowMessage("Flop dealt");
+				
+				sfxPlayer.PlaySound("card_flip");
+				await flop1.RevealCard(communityCards[0]);
+				await ToSignal(GetTree().CreateTimer(0.25f), SceneTreeTimer.SignalName.Timeout);
+				sfxPlayer.PlaySound("card_flip");
+				await flop2.RevealCard(communityCards[1]);
+				await ToSignal(GetTree().CreateTimer(0.25f), SceneTreeTimer.SignalName.Timeout);
+				sfxPlayer.PlaySound("card_flip");
+				await flop3.RevealCard(communityCards[2]);
+				break;
+				
+			case Street.Turn:
+				communityCards.Add(deck.Deal());
+				GD.Print($"Turn: {communityCards[3]}");
+				ShowMessage("Turn card");
+				
+				sfxPlayer.PlaySound("card_flip");
+				await turnCard.RevealCard(communityCards[3]);
+				await ToSignal(GetTree().CreateTimer(0.25f), SceneTreeTimer.SignalName.Timeout);
+				break;
+				
+			case Street.River:
+				communityCards.Add(deck.Deal());
+				GD.Print($"River: {communityCards[4]}");
+				ShowMessage("River card");
+				
+				sfxPlayer.PlaySound("card_flip");
+				await riverCard.RevealCard(communityCards[4]);
+				await ToSignal(GetTree().CreateTimer(0.25f), SceneTreeTimer.SignalName.Timeout);
+				break;
+		}
+	}
 
 	private async void AdvanceStreet()
 	{
@@ -67,6 +148,120 @@ public partial class PokerGame
 				CheckAndProcessAITurn();
 			}
 		};
+	}
+	
+	private async void ShowDown()
+	{
+		if (isShowdownInProgress) return;
+		isShowdownInProgress = true;
+		
+		GD.Print("\n=== Showdown ===");
+		
+		// process refunds first
+		bool refundOccurred = ReturnUncalledChips();
+
+		if (refundOccurred)
+		{
+			UpdateHud();
+			await ToSignal(GetTree().CreateTimer(1.5f), SceneTreeTimer.SignalName.Timeout);
+		}
+
+		// reveal opponent hand
+		sfxPlayer.PlaySound("card_flip");
+		await opponentCard1.RevealCard(opponentHand[0]);
+		await ToSignal(GetTree().CreateTimer(0.30f), SceneTreeTimer.SignalName.Timeout);
+		sfxPlayer.PlaySound("card_flip");
+		await opponentCard2.RevealCard(opponentHand[1]);
+		await ToSignal(GetTree().CreateTimer(1.0f), SceneTreeTimer.SignalName.Timeout);
+
+		int playerRank = HandEvaluator.EvaluateHand(playerHand, communityCards);
+		int opponentRank = HandEvaluator.EvaluateHand(opponentHand, communityCards);
+
+		string playerHandName = HandEvaluator.GetHandDescription(playerHand, communityCards);
+		string opponentHandName = HandEvaluator.GetHandDescription(opponentHand, communityCards);
+		
+		playerHandType.Text = playerHandName;
+		opponentHandType.Text = opponentHandName;
+
+		int result = HandEvaluator.CompareHands(playerRank, opponentRank);
+		string message;
+		HandResult aiHandResult;
+		int finalPot = pot;
+		
+		if (result > 0)
+		{
+			GD.Print("\nPLAYER WINS!");
+			message = $"You win ${finalPot} with {playerHandName}!";
+			
+			TriggerOpponentDialogue("OnLosePot");
+			bool isBadBeat = (aiStrengthAtAllIn > 0.70f); 
+			bool isCooler = (opponentRank <= 1609); 
+			
+			if (isBadBeat)
+			{
+				GD.Print($"{currentOpponentName} suffered a BAD BEAT! (Strength was {aiStrengthAtAllIn:F2})");
+				aiHandResult = HandResult.BadBeat;
+			}
+			else if (isCooler)
+			{
+				GD.Print($"{currentOpponentName} suffered a COOLER!");
+				aiHandResult = HandResult.BadBeat;
+			}
+			else if (aiBluffedThisHand && opponentRank > 6185)
+			{
+				GD.Print($"{currentOpponentName} was bluffing!");
+				aiHandResult = HandResult.BluffCaught;
+			}
+			else
+			{
+				aiHandResult = HandResult.Loss; 
+			}
+			
+			playerChips += pot;
+			aiOpponent.ProcessHandResult(aiHandResult, finalPot, bigBlind);
+		}
+		else if (result < 0)
+		{
+			GD.Print("\nOPPONENT WINS!");
+			message = $"{currentOpponentName} wins ${finalPot} with {opponentHandName}";
+			
+			TriggerOpponentDialogue("OnWinPot");
+			if (aiBluffedThisHand)
+			{
+				GD.Print($"{currentOpponentName} won with a bluff!");
+			}
+			else if (opponentRank < 1609)
+			{
+				GD.Print($"{currentOpponentName} had a strong hand!");
+			}
+			
+			opponentChips += pot;
+			aiOpponent.ChipStack = opponentChips;
+			aiOpponent.ProcessHandResult(HandResult.Win, pot, bigBlind);
+			
+			if (playerRank <= 2467)
+			{
+				GD.Print("You suffered a bad beat!");
+			}
+		}
+		else
+		{
+			GD.Print("\nSPLIT POT!");
+			int split = pot / 2;
+			message = $"Split pot - ${split} each!";
+			playerChips += split;
+			opponentChips += pot - split;
+			aiOpponent.ChipStack = opponentChips;
+			
+			aiOpponent.ProcessHandResult(HandResult.Neutral, pot, bigBlind);
+		}
+
+		ShowMessage(message);
+		GD.Print($"Stacks -> Player: {playerChips}, Opponent: {opponentChips}");
+		GD.Print($"AI Tilt Level: {aiOpponent.Personality.TiltMeter:F1}");
+		
+		isShowdownInProgress = false;
+		EndHand();
 	}
 
 	private void CheckAndProcessAITurn()
@@ -174,7 +369,7 @@ public partial class PokerGame
 		}
 		
 		UpdateHud();
-		UpdateOpponentVisuals(); // Update visuals (shake if steaming, etc)
+		UpdateOpponentVisuals();
 	}
 
 	/// <summary>
@@ -230,15 +425,12 @@ public partial class PokerGame
 			opponentIsAllIn = true;
 			aiOpponent.IsAllIn = true;
 			
-			// --- SNAPSHOT CAPTURE FOR BAD BEAT ---
 			GameState snapState = new GameState 
 			{ 
 				CommunityCards = new List<Card>(communityCards),
 				Street = currentStreet
 			};
 			aiStrengthAtAllIn = aiOpponent.EvaluateCurrentHandStrength(snapState);
-			GD.Print($"[SNAPSHOT] AI Called All-In. Strength: {aiStrengthAtAllIn:F2}");
-			// ------------------------------------
 			
 			ShowMessage($"{currentOpponentName} calls all-in for ${callAmount}");
 			GD.Print($"{currentOpponentName} calls all-in: {callAmount}");
@@ -279,7 +471,6 @@ public partial class PokerGame
 		
 		int raiseAmount = decisionMaker.CalculateBetSize(aiOpponent, gameState, handStrength);
 		
-		// Ensure valid raise
 		int minRaise = (currentBet - opponentBet) + bigBlind;
 		raiseAmount = Math.Max(raiseAmount, minRaise);
 		raiseAmount = Math.Min(raiseAmount, opponentChips);
@@ -313,7 +504,7 @@ public partial class PokerGame
 			GD.Print($"{currentOpponentName} raises to: {currentBet}");
 		}
 		
-		// Track if this might be a bluff
+		// track if this might be a bluff
 		if (handStrength < 0.4f)
 		{
 			aiBluffedThisHand = true;
@@ -338,15 +529,12 @@ public partial class PokerGame
 		currentBet = Math.Max(currentBet, opponentBet);
 		playerHasActedThisStreet = false;
 		
-		// --- SNAPSHOT CAPTURE FOR BAD BEAT ---
 		GameState snapState = new GameState 
 		{ 
 			CommunityCards = new List<Card>(communityCards),
 			Street = currentStreet
 		};
 		aiStrengthAtAllIn = aiOpponent.EvaluateCurrentHandStrength(snapState);
-		GD.Print($"[SNAPSHOT] AI Pushed All-In. Strength: {aiStrengthAtAllIn:F2}");
-		// ------------------------------------
 		
 		ShowMessage($"{currentOpponentName} goes ALL-IN for ${allInAmount}!");
 		GD.Print($"{currentOpponentName} ALL-IN: {allInAmount}");
@@ -408,5 +596,35 @@ public partial class PokerGame
 		{
 			return !playerHasButton;
 		}
+	}
+	
+	/// <summary>
+	/// Handle game over state
+	/// </summary>
+	private void HandleGameOver(bool opponentSurrendered = false)
+	{
+		bool playerWon = opponentSurrendered || (opponentChips <= 0);
+		
+		if (playerWon)
+		{
+			int winnings = buyInAmount * 2;
+			GameManager.Instance.OnMatchWon(currentOpponentName, winnings);
+			
+			string reason = opponentSurrendered ? "surrendered!" : "went bust!";
+			ShowMessage($"VICTORY! {currentOpponentName} {reason}");
+			GD.Print($"=== VICTORY vs {currentOpponentName} ===");
+		}
+		else
+		{
+			GameManager.Instance.OnMatchLost(currentOpponentName);
+			ShowMessage($"{currentOpponentName} wins!");
+			GD.Print($"=== DEFEAT vs {currentOpponentName} ===");
+		}
+		
+		// return to menu after delay
+		GetTree().CreateTimer(6.0).Timeout += () => 
+		{
+			GetTree().ChangeSceneToFile("res://Scenes/CharacterSelect.tscn");
+		};
 	}
 }

@@ -414,9 +414,9 @@ offset_bottom = 393.0
 
 [node name="OpponentDialogue" type="Label" parent="CanvasLayer/Control"]
 layout_mode = 0
-offset_left = 687.0
+offset_left = 626.0
 offset_top = 41.0
-offset_right = 1078.0
+offset_right = 945.0
 offset_bottom = 93.0
 text = "I have a great hand!"
 label_settings = SubResource("LabelSettings_47o1s")

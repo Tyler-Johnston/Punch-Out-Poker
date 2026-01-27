@@ -83,25 +83,23 @@ public partial class AIPokerPlayer : Node
 
 	public OpponentExitType CheckForEarlyExit()
 	{
-		// 1. RAGE QUIT CHECK
+		// RAGE QUIT CHECK
 		if (Personality.TiltMeter >= Personality.RageQuitThreshold)
 		{
 			GD.Print($"[OPPONENT EXIT] {PlayerName} is RAGE QUITTING! Tilt: {Personality.TiltMeter}");
 			return OpponentExitType.RageQuit;
 		}
 
-		// 2. SURRENDER CHECK 
+		// SURRENDER CHECK 
 		int surrenderThresholdAmount = (int)(StartingChips * Personality.SurrenderChipPercent);
-
-		bool isCalm = Personality.TiltMeter < 25f; 
 		bool isLowChips = ChipStack <= surrenderThresholdAmount;
+		bool isCalm = CurrentTiltState == TiltState.Zen; 
 
 		if (isLowChips && isCalm)
 		{
 			GD.Print($"[OPPONENT EXIT] {PlayerName} is Surrendering. Chips: {ChipStack} <= {surrenderThresholdAmount}, Tilt: {Personality.TiltMeter}");
 			return OpponentExitType.Surrender;
 		}
-
 		return OpponentExitType.None;
 	}
 
