@@ -186,24 +186,24 @@ public partial class AIPokerPlayer : Node
 		switch (result)
 		{
 			case HandResult.BadBeat:
-				AddTiltSafe(25f);
+				AddTiltSafe(20f);
 				Personality.ConsecutiveLosses++;
 				break;
 				
 			case HandResult.BluffCaught:
-				AddTiltSafe(16f);
+				AddTiltSafe(12f);
 				GD.Print($"{PlayerName}'s bluff was caught! Tilt: {Personality.TiltMeter}");
 				break;
 				
 			case HandResult.Loss:
 				Personality.ConsecutiveLosses++;
-				float lossAmount = 7f * Personality.ConsecutiveLosses; // 5, 10, 15, 20...
+				float lossAmount = 7f * Personality.ConsecutiveLosses;
 				AddTiltSafe(lossAmount);
 				GD.Print($"{PlayerName} lost (streak: {Personality.ConsecutiveLosses}). Tilt: {Personality.TiltMeter}");
 				break;
 				
 			case HandResult.AllInLoss:
-				AddTiltSafe(30f);
+				AddTiltSafe(26f);
 				Personality.ConsecutiveLosses++;
 				GD.Print($"{PlayerName} lost all-in! Tilt: {Personality.TiltMeter}");
 				break;
@@ -211,22 +211,20 @@ public partial class AIPokerPlayer : Node
 			case HandResult.Win:
 				Personality.ConsecutiveLosses = 0;
 				
-				// DYNAMIC RECOVERY LOGIC
 				float bigBlindsWon = (float)potSize / bigBlind;
 				float reliefAmount = 2.0f;
 				
 				if (bigBlindsWon > 20) 
 				{
 					reliefAmount = 12.0f;
-					GD.Print($"{PlayerName} won a MONSTER POT! Major relief.");
 				}
 				else if (bigBlindsWon > 10)
 				{
-					reliefAmount = 8.0f; // Big pot = Good relief
+					reliefAmount = 8.0f;
 				}
 				
 				Personality.ReduceTilt(reliefAmount);
-				GD.Print($"{PlayerName} won ({bigBlindsWon:F1} BBs). Tilt reduced by {reliefAmount}");
+				GD.Print($"{PlayerName} won ({bigBlindsWon:F1} chips). Tilt reduced by {reliefAmount}");
 				break;
 				
 			case HandResult.Neutral:

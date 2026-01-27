@@ -14,8 +14,8 @@ public static class PersonalityPresets
 			BaseFoldThreshold = 0.55f,
 			BaseRiskTolerance = 0.60f,
 			
-			TiltSensitivity = 0.50f,
-			RageQuitThreshold = 20.0f,
+			TiltSensitivity = 1.0f,
+			RageQuitThreshold = 30.0f,
 			SurrenderChipPercent = 0.40f,
 			
 			CallTendency = 0.50f,
@@ -140,8 +140,8 @@ public static class PersonalityPresets
 			Chattiness = 0.80f,      
 			TellReliability = 0.75f, 
 
-			TiltSensitivity = 0.70f,
-			RageQuitThreshold = 26.0f,
+			TiltSensitivity = 0.875f,
+			RageQuitThreshold = 30f,
 			SurrenderChipPercent = 0.24f
 		};
 
@@ -260,9 +260,8 @@ public static class PersonalityPresets
 			Chattiness = 0.7f,      
 			TellReliability = 0.53f,
 
-			// BALANCED FOR GAMEPLAY: The Ego-Tilter
-			TiltSensitivity = 0.70f,
-			RageQuitThreshold = 35.0f,
+			TiltSensitivity = 0.90f,
+			RageQuitThreshold = 28.0f,
 			SurrenderChipPercent = 0.10f
 		};
 
@@ -382,7 +381,7 @@ public static class PersonalityPresets
 			CallTendency = 0.45f,          
 			Chattiness = 0.65f,      
 			TellReliability = 0.60f,  
-			TiltSensitivity = 0.55f,
+			TiltSensitivity = 0.65f,
 			RageQuitThreshold = 35.0f,
 			SurrenderChipPercent = 0.25f  
 		};
@@ -503,7 +502,7 @@ public static class PersonalityPresets
 			TellReliability = 0.55f,  
 
 			// BALANCED FOR GAMEPLAY: The Vibe Check
-			TiltSensitivity = 0.25f,
+			TiltSensitivity = 0.50f,
 			RageQuitThreshold = 25.0f,
 			SurrenderChipPercent = 0.45f  
 		};
@@ -624,8 +623,8 @@ public static class PersonalityPresets
 			TellReliability = 0.50f,  
 
 			// BALANCED FOR GAMEPLAY: Standard
-			TiltSensitivity = 0.40f,
-			RageQuitThreshold = 45.0f,
+			TiltSensitivity = 0.70f,
+			RageQuitThreshold = 40.0f,
 			SurrenderChipPercent = 0.30f
 		};
 
@@ -748,7 +747,7 @@ public static class PersonalityPresets
 
 			// BALANCED FOR GAMEPLAY: The Entitled Boss
 			TiltSensitivity = 0.65f,
-			RageQuitThreshold = 65.0f,
+			RageQuitThreshold = 50.0f,
 			SurrenderChipPercent = 0.175f 
 		};
 
@@ -867,8 +866,8 @@ public static class PersonalityPresets
 			Chattiness = 0.5f,       
 			TellReliability = 0.35f,  
 
-			TiltSensitivity = 0.25f,
-			RageQuitThreshold = 50.0f,
+			TiltSensitivity = 0.50f,
+			RageQuitThreshold = 55.0f,
 			SurrenderChipPercent = 0.30f 
 		};
 
@@ -988,8 +987,8 @@ public static class PersonalityPresets
 			TellReliability = 0.20f, 
 
 			// BALANCED FOR GAMEPLAY:
-			TiltSensitivity = 0.10f,
-			RageQuitThreshold = 80.0f,    
+			TiltSensitivity = 0.40f,
+			RageQuitThreshold = 60.0f,    
 			SurrenderChipPercent = 0.10f
 		};
 
