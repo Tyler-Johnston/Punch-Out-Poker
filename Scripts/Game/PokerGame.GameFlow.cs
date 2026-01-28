@@ -7,7 +7,7 @@ public partial class PokerGame
 {
 	private async Task DealInitialHands()
 	{
-		GD.Print("\\n=== Dealing Initial Hands ===");
+		GD.Print("\\\\n=== Dealing Initial Hands ===");
 		playerHand.Clear();
 		opponentHand.Clear();
 		communityCards.Clear();
@@ -48,7 +48,7 @@ public partial class PokerGame
 
 	public async Task DealCommunityCards(Street street)
 	{
-		GD.Print($"\\n=== Community Cards: {street} ===");
+		GD.Print($"\\\\n=== Community Cards: {street} ===");
 		switch (street)
 		{
 			case Street.Flop:
@@ -157,7 +157,6 @@ public partial class PokerGame
 		};
 	}
 
-	
 	private async void ShowDown()
 	{
 		// Stop tells during showdown
@@ -166,7 +165,7 @@ public partial class PokerGame
 		if (isShowdownInProgress) return;
 		isShowdownInProgress = true;
 		
-		GD.Print("\\n=== Showdown ===");
+		GD.Print("\\\\n=== Showdown ===");
 		
 		// process refunds first
 		bool refundOccurred = ReturnUncalledChips();
@@ -201,10 +200,11 @@ public partial class PokerGame
 		
 		if (result > 0)
 		{
-			GD.Print("\\nPLAYER WINS!");
+			GD.Print("\\\\nPLAYER WINS!");
 			message = $"You win ${finalPot} with {playerHandName}!";
 			
-			TriggerOpponentDialogue("OnLosePot");
+			PlayReactionDialogue("OnLosePot");
+
 			bool isBadBeat = (aiStrengthAtAllIn > 0.70f); 
 			bool isCooler = (opponentRank <= 1609); 
 			
@@ -237,10 +237,11 @@ public partial class PokerGame
 		}
 		else if (result < 0)
 		{
-			GD.Print("\\nOPPONENT WINS!");
+			GD.Print("\\\\nOPPONENT WINS!");
 			message = $"{currentOpponentName} wins ${finalPot} with {opponentHandName}";
 			
-			TriggerOpponentDialogue("OnWinPot");
+			PlayReactionDialogue("OnWinPot");
+
 			if (aiBluffedThisHand)
 			{
 				GD.Print($"{currentOpponentName} won with a bluff!");
@@ -267,7 +268,7 @@ public partial class PokerGame
 		}
 		else
 		{
-			GD.Print("\\nSPLIT POT!");
+			GD.Print("\\\\nSPLIT POT!");
 			int split = pot / 2;
 			message = $"Split pot - ${split} each!";
 			playerChips += split;
@@ -304,27 +305,33 @@ public partial class PokerGame
 		}
 	}
 
-	private void ProcessOpponentTurn()
+	private async void ProcessOpponentTurn()
 	{
 		GD.Print($"[ProcessOpponentTurn] isProcessing={isProcessingAIAction}, isPlayerTurn={isPlayerTurn}");
 		
-		if (isProcessingAIAction)
-		{
-			GD.Print("ProcessOpponentTurn blocked: already processing");
-			return;
-		}
-		
-		if (isPlayerTurn || !handInProgress || waitingForNextGame)
-		{
-			GD.Print("ProcessOpponentTurn aborted: invalid state");
-			return;
-		}
+		if (isProcessingAIAction) return;
+		if (isPlayerTurn || !handInProgress || waitingForNextGame) return;
 
 		// Lock to prevent re-entry
 		isProcessingAIAction = true;
 		opponentHasActedThisStreet = true;
 
-		PlayerAction action = DecideAIAction();
+		// 1. Prepare Game State
+		GameState gameState = CreateGameState();
+
+		// 2. Decide Action (No side effects)
+		PlayerAction action = DecideAIAction(gameState);
+
+		// 3. Trigger Dialogue (And wait for it)
+		float waitTime = PlayActionDialogue(action, gameState);
+		
+		if (waitTime > 0)
+		{
+			// Wait for text to type + reading time + small pause
+			await ToSignal(GetTree().CreateTimer(waitTime + 1.0f), SceneTreeTimer.SignalName.Timeout);
+		}
+		
+		// 4. Execute the Action (Chips move, Sound plays)
 		ExecuteAIAction(action);
 
 		if (action == PlayerAction.Fold || !handInProgress)
@@ -360,7 +367,7 @@ public partial class PokerGame
 			RefreshBetSlider();
 		}
 	}
-	
+
 	/// <summary>
 	/// Execute the AI's chosen action and update game state
 	/// </summary>
@@ -368,9 +375,8 @@ public partial class PokerGame
 	{
 		GD.Print($"[AI ACTION] {currentOpponentName}: {action}");
 		
-		// --- VISUAL FEEDBACK: Set Expression based on Action ---
 		UpdateOpponentExpression(action);
-		if (tellTimer != null) tellTimer.Start(); // Reset idle tell timer after acting
+		if (tellTimer != null) tellTimer.Start();
 		
 		switch (action)
 		{
@@ -397,43 +403,6 @@ public partial class PokerGame
 		
 		UpdateHud();
 		UpdateOpponentVisuals();
-	}
-
-	private void UpdateOpponentExpression(PlayerAction action)
-	{
-		// 1. Heavy Tilt Overrides (Angry/Monkey)
-		if (aiOpponent.CurrentTiltState == TiltState.Steaming || aiOpponent.CurrentTiltState == TiltState.Monkey)
-		{
-			SetExpression(Expression.Angry);
-			return;
-		}
-
-		// 2. Action-based Expressions
-		switch (action)
-		{
-			case PlayerAction.Fold:
-				SetExpression(Expression.Sad);
-				break;
-			case PlayerAction.Check:
-				SetExpression(Expression.Neutral);
-				break;
-			case PlayerAction.Call:
-				SetExpression(Expression.Neutral); 
-				break;
-			case PlayerAction.Raise:
-				SetExpression(Expression.Neutral); 
-				break;
-			case PlayerAction.AllIn:
-				SetExpression(Expression.Smirk);
-				break;
-		}
-
-		//// 3. Bluff Override
-		//// If they raised and it was flagged as a bluff
-		//if (aiBluffedThisHand && action == PlayerAction.Raise)
-		//{
-			//SetExpression(Expression.Smirk);
-		//}
 	}
 
 	/// <summary>
@@ -511,17 +480,7 @@ public partial class PokerGame
 	/// </summary>
 	private void OnOpponentRaise()
 	{
-		// Create game state for bet size calculation
-		GameState gameState = new GameState
-		{
-			CommunityCards = new List<Card>(communityCards),
-			PotSize = pot,
-			CurrentBet = currentBet,
-			Street = currentStreet,
-			BigBlind = bigBlind,
-		 	IsAIInPosition = DetermineAIPosition()
-		};
-		gameState.SetPlayerBet(aiOpponent, opponentBet);
+		GameState gameState = CreateGameState();
 		
 		// Calculate bet size
 		float handStrength = aiOpponent.DetermineHandStrengthCategory(gameState) switch
@@ -554,8 +513,7 @@ public partial class PokerGame
 		raisesThisStreet++;
 		playerHasActedThisStreet = false;
 		
-		bool isOpening = (currentBet == bigBlind && currentStreet == Street.Preflop) || 
-						 (currentBet == 0 && currentStreet != Street.Preflop);
+		bool isOpening = (currentBet == bigBlind && currentStreet == Street.Preflop) || (currentBet == 0 && currentStreet != Street.Preflop);
 		
 		if (isOpening)
 		{
@@ -605,49 +563,11 @@ public partial class PokerGame
 	}
 
 	/// <summary>
-	/// AI decision making using personality + dialogue system
+	/// AI decision making using personality. Returns Action only.
 	/// </summary>
-	private PlayerAction DecideAIAction()
+	private PlayerAction DecideAIAction(GameState gameState)
 	{
-		// Create game state for AI decision maker
-		GameState gameState = new GameState
-		{
-			CommunityCards = new List<Card>(communityCards),
-			PotSize = pot,
-			CurrentBet = currentBet,
-			Street = currentStreet,
-			BigBlind = bigBlind,
-			IsAIInPosition = DetermineAIPosition()
-		};
-		gameState.SetPlayerBet(aiOpponent, opponentBet);
-		
-		// 1) Get AI decision (Fold/Check/Call/Raise/AllIn)
-		PlayerAction action = aiOpponent.MakeDecision(gameState);
-		
-		// 2) Evaluate hand strength category for tells / dialogue
-		HandStrength strength = aiOpponent.DetermineHandStrengthCategory(gameState);
-		
-		// 3) Get a spoken dialogue line (what appears in the label)
-		string dialogueLine = aiOpponent.GetDialogueForAction(
-			action,
-			strength,
-			aiBluffedThisHand 
-		);
-		
-		// 4) Apply chattiness: chance that they say nothing
-		float chatRoll = GD.Randf();
-		bool alwaysTalk = (aiOpponent.CurrentTiltState >= TiltState.Steaming);
-		
-		if ((chatRoll <= aiOpponent.Personality.Chattiness || alwaysTalk) && !string.IsNullOrEmpty(dialogueLine))
-		{
-			AnimateText(opponentDialogueLabel, dialogueLine);
-		}
-		else
-		{
-			opponentDialogueLabel.Text = "";
-		}
-		
-		return action;
+		return aiOpponent.MakeDecision(gameState);
 	}
 	
 	private bool DetermineAIPosition()

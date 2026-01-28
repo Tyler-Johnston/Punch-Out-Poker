@@ -38,7 +38,8 @@ public static class PersonalityPresets
 		{
 			"Check.",
 			"I'll check it.",
-			"Let's see what happens."
+			"Let's see what happens.",
+			"Checking"
 		};
 
 		personality.Dialogue["OnCall"] = new Godot.Collections.Array<string>
@@ -59,7 +60,9 @@ public static class PersonalityPresets
 		{
 			"Raise!",
 			"I'm gonna bump it up.",
-			"Let's see if you mean it."
+			"Let's see if you mean it.",
+			"More chip!",
+			"Not enough chips on the table"
 		};
 
 		personality.Dialogue["OnAllIn"] = new Godot.Collections.Array<string>

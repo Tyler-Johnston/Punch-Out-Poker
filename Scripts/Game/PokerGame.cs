@@ -52,6 +52,7 @@ public partial class PokerGame : Node2D
 	
 	private AtlasTexture _opponentAtlas;
 	private Sprite2D faceSprite;
+	private PanelContainer speechBubble;
 	
 	// game flow
 	private Street currentStreet = Street.Preflop;
@@ -149,6 +150,9 @@ public partial class PokerGame : Node2D
 		
 		// opponent picture
 		opponentPortrait = hudControl.GetNode<TextureRect>("OpponentPortrait");
+		
+		// speech bubble
+		speechBubble = hudControl.GetNode<PanelContainer>("SpeechBubble");
 		
 		// table color
 		tableColor = hudControl.GetNode<TextureRect>("ColorRect");
@@ -357,6 +361,7 @@ public partial class PokerGame : Node2D
 
 		cashOutButton.Disabled = true;
 		cashOutButton.Visible = false;
+		speechBubble.Visible = false;
 		betSlider.Visible = true;
 		betSliderLabel.Visible = true;
 		foldButton.Visible = true;
@@ -483,7 +488,6 @@ public partial class PokerGame : Node2D
 
 	private async void EndHand()
 	{
-		// Stop timer when hand ends
 		tellTimer.Stop();
 		
 		if (isShowdownInProgress) return;
@@ -492,7 +496,6 @@ public partial class PokerGame : Node2D
 		handInProgress = false;
 		waitingForNextGame = true;
 
-		// check if chip balance is 0 for AI or human player
 		if (IsGameOver())
 		{
 			HandleGameOver();
@@ -529,24 +532,6 @@ public partial class PokerGame : Node2D
 		return playerChips <= 0 || opponentChips <= 0;
 	}
 	
-	private void TriggerOpponentDialogue(string category)
-	{
-		string line = aiOpponent.GetRandomDialogue(category);
-
-		if (string.IsNullOrEmpty(line)) return;
-
-		float chatRoll = GD.Randf();
-		bool alwaysTalk = (aiOpponent.CurrentTiltState >= TiltState.Steaming);
-		
-		float threshold = aiOpponent.Personality.Chattiness;
-		if (category == "OnWinPot" || category == "OnLosePot") threshold += 0.4f;
-
-		if (chatRoll <= threshold || alwaysTalk)
-		{
-			AnimateText(opponentDialogueLabel, line);
-		}
-	}
-	
 	// Helper to show emotion momentarily then reset to neutral
 	private async void ShowMomentaryExpression(Expression expr, float duration)
 	{
@@ -565,20 +550,11 @@ public partial class PokerGame : Node2D
 
 	private void ShowTell(bool forceTell = false)
 	{
-		// 1. Evaluate Strength FIRST (before any RNG)
-		GameState state = new GameState 
-		{ 
-			CommunityCards = new List<Card>(communityCards),
-			Street = currentStreet 
-		};
-		HandStrength strength = aiOpponent.DetermineHandStrengthCategory(state);
+		GameState gameState = CreateGameState();
+		HandStrength strength = aiOpponent.DetermineHandStrengthCategory(gameState);
 
-		// ---------------------------------------------------------
-		// PREFLOP REACTION (Forced)
-		// ---------------------------------------------------------
 		if (currentStreet == Street.Preflop && forceTell)
 		{
-			// Preflop tells last longer (3.0s) as they read cards
 			float duration = 3.0f; 
 
 			bool isTilted = aiOpponent.CurrentTiltState != TiltState.Zen;
@@ -732,7 +708,24 @@ public partial class PokerGame : Node2D
 			}
 		}
 	}
-
+	
+	/// <summary>
+	/// Creates current game state snapshot
+	/// </summary>
+	private GameState CreateGameState()
+	{
+		var state = new GameState
+		{
+			CommunityCards = new List<Card>(communityCards),
+			PotSize = pot,
+			CurrentBet = currentBet,
+			Street = currentStreet,
+			BigBlind = bigBlind,
+			IsAIInPosition = DetermineAIPosition()
+		};
+		state.SetPlayerBet(aiOpponent, opponentBet);
+		return state;
+	}
 
 	private PokerPersonality LoadOpponentPersonality(string opponentName)
 	{

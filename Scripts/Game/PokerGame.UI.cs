@@ -10,19 +10,31 @@ public partial class PokerGame
 		gameStateLabel.Text = text;
 	}
 	
-	private void AnimateText(Label label, string text, float speed = 0.03f)
+	private float AnimateText(Label label, string text, float speed = 0.03f)
 	{
+		if (string.IsNullOrWhiteSpace(text) || text.Length <= 1) 
+			return 0f; // No wait time
+
+		speechBubble.Visible = true; 
 		label.Text = text;
 		label.VisibleRatio = 0;
 		
-		Tween tween = GetTree().CreateTween();
-		float duration = text.Length * speed;
+		float typeDuration = text.Length * speed;
 		
-		tween.TweenProperty(label, "visible_ratio", 1.0f, duration);
-		// sfxPlayer.Play("typing_sound"); 
+		Tween tween = GetTree().CreateTween();
+		tween.TweenProperty(label, "visible_ratio", 1.0f, typeDuration);
+		
+		float readTime = 2.0f + (text.Length * 0.05f);
+		tween.TweenInterval(readTime);
+		
+		tween.TweenCallback(Callable.From(() => {
+			label.Text = "";           
+			speechBubble.Visible = false;
+		}));
+
+		return typeDuration; // Return how long typing takes
 	}
 
-	
 	private void SetTableColor()
 	{
 		// get table color depending on the circuit we are in
@@ -53,6 +65,36 @@ public partial class PokerGame
 		ShaderMaterial retroMat = new ShaderMaterial();
 		retroMat.Shader = GD.Load<Shader>("res://Assets/Shaders/Pixelate.gdshader");
 		tableColor.Material = retroMat;
+	}
+	
+	private void UpdateOpponentExpression(PlayerAction action)
+	{
+		// 1. Heavy Tilt Overrides (Angry/Monkey)
+		if (aiOpponent.CurrentTiltState == TiltState.Steaming || aiOpponent.CurrentTiltState == TiltState.Monkey)
+		{
+			SetExpression(Expression.Angry);
+			return;
+		}
+
+		// 2. Action-based Expressions
+		switch (action)
+		{
+			case PlayerAction.Fold:
+				SetExpression(Expression.Sad);
+				break;
+			case PlayerAction.Check:
+				SetExpression(Expression.Neutral);
+				break;
+			case PlayerAction.Call:
+				SetExpression(Expression.Neutral); 
+				break;
+			case PlayerAction.Raise:
+				SetExpression(Expression.Neutral); 
+				break;
+			case PlayerAction.AllIn:
+				SetExpression(Expression.Smirk);
+				break;
+		}
 	}
 	
 	private void UpdateButtonLabels()
@@ -268,5 +310,66 @@ public partial class PokerGame
 		tween.TweenProperty(node, "position", originalPos + new Vector2(intensity, 0), 0.05f);
 		tween.TweenProperty(node, "position", originalPos - new Vector2(intensity, 0), 0.05f);
 		tween.TweenProperty(node, "position", originalPos, 0.05f);
+	}
+	
+	/// <summary>
+	/// Core helper to manage Bubble visibility and Animation.
+	/// Returns the duration of the typing animation.
+	/// </summary>
+	private float PlayDialogue(string text)
+	{
+		if (string.IsNullOrEmpty(text))
+		{
+			opponentDialogueLabel.Text = "";
+			speechBubble.Visible = false;
+			return 0f;
+		}
+		
+		return AnimateText(opponentDialogueLabel, text);
+	}
+
+	/// <summary>
+	/// Gets dialogue specific to the AI's Action (Call/Raise/Fold).
+	/// Returns the duration to wait.
+	/// </summary>
+	private float PlayActionDialogue(PlayerAction action, GameState state)
+	{
+		HandStrength strength = aiOpponent.DetermineHandStrengthCategory(state);
+		string dialogueLine = aiOpponent.GetDialogueForAction(action, strength, aiBluffedThisHand);
+		
+		float chatRoll = GD.Randf();
+		bool alwaysTalk = (aiOpponent.CurrentTiltState >= TiltState.Steaming);
+		
+		if ((chatRoll <= aiOpponent.Personality.Chattiness || alwaysTalk))
+		{
+			return PlayDialogue(dialogueLine);
+		}
+		
+		return PlayDialogue(null);
+	}
+
+	/// <summary>
+	/// Gets dialogue for reaction events (Win/Loss). 
+	/// Fire-and-forget (void).
+	/// </summary>
+	private void PlayReactionDialogue(string category)
+	{
+		string line = aiOpponent.GetRandomDialogue(category);
+		
+		float chatRoll = GD.Randf();
+		bool alwaysTalk = (aiOpponent.CurrentTiltState >= TiltState.Steaming);
+		
+		// Reaction thresholds can be slightly higher
+		float threshold = aiOpponent.Personality.Chattiness;
+		if (category == "OnWinPot" || category == "OnLosePot") threshold += 0.4f;
+
+		if (chatRoll <= threshold || alwaysTalk)
+		{
+			PlayDialogue(line);
+		}
+		else
+		{
+			PlayDialogue(null);
+		}
 	}
 }

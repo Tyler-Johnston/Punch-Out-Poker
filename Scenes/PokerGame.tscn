@@ -412,6 +412,13 @@ offset_top = 353.0
 offset_right = 79.0
 offset_bottom = 393.0
 
+[node name="SpeechBubble" type="PanelContainer" parent="CanvasLayer/Control"]
+layout_mode = 0
+offset_left = 622.0
+offset_top = 40.0
+offset_right = 891.0
+offset_bottom = 89.0
+
 [node name="OpponentDialogue" type="Label" parent="CanvasLayer/Control"]
 layout_mode = 0
 offset_left = 626.0
