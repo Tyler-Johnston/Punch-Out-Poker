@@ -319,20 +319,13 @@ public partial class PokerGame : Node2D
 		return false;
 	}
 
-	// Tell Timer Callback - Fixed to block All-In scenarios
 	private void OnTellTimerTimeout()
 	{
-		// 1. Basic Safety Checks
 		if (!handInProgress || isShowdownInProgress || aiOpponent.IsFolded) return;
 		if (isProcessingAIAction) return; 
-		
-		// 2. FIX: Don't show tells if ANYONE is all-in (they freeze/stare)
 		if (aiOpponent.IsAllIn || playerIsAllIn) return;
-		
-		// 3. Disable Idle Tells during Preflop 
 		if (currentStreet == Street.Preflop) return;
 
-		// 4. Only show idle tells if it is the PLAYER'S turn (AI is waiting)
 		if (isPlayerTurn)
 		{
 			ShowTell(false);
@@ -413,7 +406,6 @@ public partial class PokerGame : Node2D
 
 		await DealInitialHands();
 		
-		// Start tell timer for the new hand
 		tellTimer.Start();
 		
 		currentStreet = Street.Preflop;
@@ -535,13 +527,10 @@ public partial class PokerGame : Node2D
 	// Helper to show emotion momentarily then reset to neutral
 	private async void ShowMomentaryExpression(Expression expr, float duration)
 	{
-		// 1. Set the emotion immediately
 		SetExpression(expr);
 		
-		// 2. Wait for the duration (allows the player to see it)
 		await ToSignal(GetTree().CreateTimer(duration), SceneTreeTimer.SignalName.Timeout);
 		
-		// 3. Safety Check: Don't reset if the hand ended, or we are in critical state
 		if (handInProgress && !isShowdownInProgress && !isProcessingAIAction && !aiOpponent.IsFolded)
 		{
 			SetExpression(Expression.Neutral);
@@ -567,7 +556,6 @@ public partial class PokerGame : Node2D
 				bool hasHighCard = opponentHand.Exists(c => c.Rank >= Rank.King);
 				bool isSuited = (opponentHand.Count == 2) && (opponentHand[0].Suit == opponentHand[1].Suit);
 				
-				// If playable (High Card OR Suited), don't look sad.
 				if (hasHighCard || isSuited)
 				{
 					SetExpression(Expression.Neutral);
@@ -616,11 +604,16 @@ public partial class PokerGame : Node2D
 					return;
 				}
 				
-				// Path 2: GENUINE (Uncertainty)
-				// If not acting, Medium hands often cause genuine worry/hesitation.
-				// (Assuming you have a 'Worried' expression, otherwise default to Neutral)
-				ShowMomentaryExpression(Expression.Worried, duration); 
-				GD.Print($"[TELL-PREFLOP] {currentOpponentName} is WORRIED (Medium Hand - genuine uncertainty)");
+				if (GD.Randf() < 0.35f)
+				{
+					ShowMomentaryExpression(Expression.Worried, duration); 
+					GD.Print($"[TELL-PREFLOP] {currentOpponentName} is WORRIED (Medium Hand - genuine uncertainty)");
+				}
+				else
+				{
+					SetExpression(Expression.Neutral);
+					GD.Print($"[TELL-PREFLOP] {currentOpponentName} is NEUTRAL (Medium Hand - stoic)");
+				}
 				return;
 			}
 
