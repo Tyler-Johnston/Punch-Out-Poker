@@ -119,8 +119,9 @@ public partial class PokerGame
 				return;
 		}
 
-		await DealCommunityCards(nextStreet);
 		currentStreet = nextStreet;
+		
+		await DealCommunityCards(nextStreet);
 
 		// all-in scenarios
 		if (playerIsAllIn && opponentIsAllIn)
@@ -155,6 +156,7 @@ public partial class PokerGame
 			}
 		};
 	}
+
 	
 	private async void ShowDown()
 	{
@@ -275,12 +277,13 @@ public partial class PokerGame
 			aiOpponent.ProcessHandResult(HandResult.Neutral, pot, bigBlind);
 			SetExpression(Expression.Neutral);
 		}
-
+		pot = 0;
 		ShowMessage(message);
 		GD.Print($"Stacks -> Player: {playerChips}, Opponent: {opponentChips}");
 		GD.Print($"AI Tilt Level: {aiOpponent.Personality.TiltMeter:F1}");
 		
 		isShowdownInProgress = false;
+		UpdateHud(); 
 		EndHand();
 	}
 

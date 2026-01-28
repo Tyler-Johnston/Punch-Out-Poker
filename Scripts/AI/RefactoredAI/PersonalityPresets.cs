@@ -20,7 +20,7 @@ public static class PersonalityPresets
 			
 			CallTendency = 0.50f,
 			Chattiness = 0.70f,        
-			TellReliability = 0.85f   
+			TellReliability = 0.95f   
 		};
 
 		// === TELLS (behavioral cues) ===
@@ -135,7 +135,7 @@ public static class PersonalityPresets
 			BaseRiskTolerance = 0.35f,
 			CallTendency = 0.75f, 
 			Chattiness = 0.80f,      
-			TellReliability = 0.75f, 
+			TellReliability = 0.90f, 
 
 			TiltSensitivity = 0.875f,
 			RageQuitThreshold = 30f,
@@ -252,7 +252,7 @@ public static class PersonalityPresets
 			BaseRiskTolerance = 0.80f,
 			CallTendency = 0.40f, 
 			Chattiness = 0.7f,      
-			TellReliability = 0.53f,
+			TellReliability = 0.85f,
 
 			TiltSensitivity = 0.90f,
 			RageQuitThreshold = 28.0f,
@@ -371,7 +371,7 @@ public static class PersonalityPresets
 			BaseRiskTolerance = 0.55f,     
 			CallTendency = 0.45f,          
 			Chattiness = 0.65f,      
-			TellReliability = 0.60f,  
+			TellReliability = 0.75f,  
 			TiltSensitivity = 0.65f,
 			RageQuitThreshold = 35.0f,
 			SurrenderChipPercent = 0.25f  
@@ -487,9 +487,7 @@ public static class PersonalityPresets
 			BaseRiskTolerance = 0.50f,     
 			CallTendency = 0.55f,          
 			Chattiness = 0.7f,       
-			TellReliability = 0.55f,  
-
-			// BALANCED FOR GAMEPLAY: The Vibe Check
+			TellReliability = 0.75f,  
 			TiltSensitivity = 0.50f,
 			RageQuitThreshold = 25.0f,
 			SurrenderChipPercent = 0.45f  
@@ -605,9 +603,7 @@ public static class PersonalityPresets
 			BaseRiskTolerance = 0.52f,     
 			CallTendency = 0.50f,          
 			Chattiness = 0.65f,       
-			TellReliability = 0.50f,  
-
-			// BALANCED FOR GAMEPLAY: Standard
+			TellReliability = 0.70f,  
 			TiltSensitivity = 0.70f,
 			RageQuitThreshold = 40.0f,
 			SurrenderChipPercent = 0.30f
@@ -725,7 +721,7 @@ public static class PersonalityPresets
 			BaseRiskTolerance = 0.55f,     
 			CallTendency = 0.42f,          
 			Chattiness = 0.55f,      
-			TellReliability = 0.45f, 
+			TellReliability = 0.675f, 
 
 			// BALANCED FOR GAMEPLAY: The Entitled Boss
 			TiltSensitivity = 0.65f,
@@ -843,7 +839,7 @@ public static class PersonalityPresets
 			BaseRiskTolerance = 0.58f,     
 			CallTendency = 0.48f,          
 			Chattiness = 0.5f,       
-			TellReliability = 0.35f,  
+			TellReliability = 0.65f,  
 
 			TiltSensitivity = 0.50f,
 			RageQuitThreshold = 55.0f,
@@ -960,7 +956,7 @@ public static class PersonalityPresets
 			BaseRiskTolerance = 0.42f,     
 			CallTendency = 0.55f,          
 			Chattiness = 0.36f,      
-			TellReliability = 0.20f, 
+			TellReliability = 0.50f, 
 
 			// BALANCED FOR GAMEPLAY:
 			TiltSensitivity = 0.40f,

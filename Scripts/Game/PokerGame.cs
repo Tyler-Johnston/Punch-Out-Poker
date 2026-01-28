@@ -171,7 +171,7 @@ public partial class PokerGame : Node2D
 
 		// Initialize Tell Timer
 		tellTimer = new Timer();
-		tellTimer.WaitTime = 2.0f; // Check for tells every 2 seconds
+		tellTimer.WaitTime = 4.0f;
 		tellTimer.OneShot = false;
 		tellTimer.Timeout += OnTellTimerTimeout;
 		AddChild(tellTimer);
@@ -315,25 +315,32 @@ public partial class PokerGame : Node2D
 		return false;
 	}
 
-	// Tell Logic: Timer Callback
+	// Tell Timer Callback - Fixed to block All-In scenarios
 	private void OnTellTimerTimeout()
 	{
-		// Only run if hand is live, player is thinking (AI waiting), and not in showdown
-		if (!handInProgress || isShowdownInProgress || aiOpponent.IsFolded || aiOpponent.IsAllIn) return;
-		if (isProcessingAIAction) return; // Don't interrupt if they are acting
+		// 1. Basic Safety Checks
+		if (!handInProgress || isShowdownInProgress || aiOpponent.IsFolded) return;
+		if (isProcessingAIAction) return; 
 		
-		// Only show idle tells if it is the PLAYER'S turn
+		// 2. FIX: Don't show tells if ANYONE is all-in (they freeze/stare)
+		if (aiOpponent.IsAllIn || playerIsAllIn) return;
+		
+		// 3. Disable Idle Tells during Preflop 
+		if (currentStreet == Street.Preflop) return;
+
+		// 4. Only show idle tells if it is the PLAYER'S turn (AI is waiting)
 		if (isPlayerTurn)
 		{
 			ShowTell(false);
 		}
 	}
-	
+
 	private async void StartNewHand()
 	{
 		if (!waitingForNextGame && handInProgress) return; 
 		waitingForNextGame = false;
 		opponentDialogueLabel.Text = "";
+		SetExpression(Expression.Neutral);
 
 		if (IsGameOver())
 		{
@@ -345,7 +352,7 @@ public partial class PokerGame : Node2D
 		aiOpponent.ResetForNewHand();
 		aiOpponent.ChipStack = opponentChips;
 
-		GD.Print("\\n=== New Hand ===");
+		GD.Print("\\\\n=== New Hand ===");
 		ShowMessage("");
 
 		cashOutButton.Disabled = true;
@@ -540,41 +547,166 @@ public partial class PokerGame : Node2D
 		}
 	}
 	
-	// NEW: Tell Logic (Hand Reaction + Idle Tells)
+	// Helper to show emotion momentarily then reset to neutral
+	private async void ShowMomentaryExpression(Expression expr, float duration)
+	{
+		// 1. Set the emotion immediately
+		SetExpression(expr);
+		
+		// 2. Wait for the duration (allows the player to see it)
+		await ToSignal(GetTree().CreateTimer(duration), SceneTreeTimer.SignalName.Timeout);
+		
+		// 3. Safety Check: Don't reset if the hand ended, or we are in critical state
+		if (handInProgress && !isShowdownInProgress && !isProcessingAIAction && !aiOpponent.IsFolded)
+		{
+			SetExpression(Expression.Neutral);
+		}
+	}
+
 	private void ShowTell(bool forceTell = false)
 	{
-		float baseTellChance = 0.20f;
-		float tiltModifier = (float)aiOpponent.CurrentTiltState * 0.15f; 
-		
-		if (!forceTell && GD.Randf() > (baseTellChance + tiltModifier))
-		{
-			if (!isProcessingAIAction) SetExpression(Expression.Neutral);
-			return;
-		}
-
+		// 1. Evaluate Strength FIRST (before any RNG)
 		GameState state = new GameState 
 		{ 
 			CommunityCards = new List<Card>(communityCards),
 			Street = currentStreet 
 		};
 		HandStrength strength = aiOpponent.DetermineHandStrengthCategory(state);
-		
-		// Determine tell category
-		string tellCategory = "weak_hand";
-		if (strength == HandStrength.Strong) tellCategory = "strong_hand";
-		else if (strength == HandStrength.Bluffing) tellCategory = "bluffing";
-		else if (strength == HandStrength.Medium) tellCategory = "weak_hand"; 
 
-		// Acting (Deception) Logic
-		bool isActing = GD.Randf() < aiOpponent.Personality.BaseBluffFrequency;
-		if (aiOpponent.CurrentTiltState >= TiltState.Steaming) isActing = false; // Tilted players can't act
+		// ---------------------------------------------------------
+		// PREFLOP REACTION (Forced)
+		// ---------------------------------------------------------
+		if (currentStreet == Street.Preflop && forceTell)
+		{
+			// Preflop tells last longer (3.0s) as they read cards
+			float duration = 3.0f; 
+
+			bool isTilted = aiOpponent.CurrentTiltState != TiltState.Zen;
+			bool isSteaming = aiOpponent.CurrentTiltState == TiltState.Steaming || 
+							  aiOpponent.CurrentTiltState == TiltState.Monkey;
+
+			// --- Scenario A: Weak Hand ---
+			if (strength == HandStrength.Weak)
+			{
+				// FIX #2: Check if they have a playable high card (K or A)
+				// If so, don't look SAD, look NEUTRAL (Contemplative)
+				bool hasHighCard = opponentHand.Exists(c => c.Rank >= Rank.King);
+				
+				if (hasHighCard)
+				{
+					// K-x, A-x is playable heads-up, don't look disappointed
+					SetExpression(Expression.Neutral);
+					GD.Print($"[TELL-PREFLOP] {currentOpponentName} is NEUTRAL (weak but high card)");
+					return;
+				}
+
+				// Tilted reaction to genuine trash
+				if (isSteaming || (isTilted && GD.Randf() < 0.7f))
+				{
+					ShowMomentaryExpression(Expression.Angry, duration);
+					GD.Print($"[TELL-PREFLOP] {currentOpponentName} is ANGRY (bad cards + tilt)");
+					return;
+				}
+
+				// Normal disappointment
+				if (GD.Randf() < 0.4f)
+				{
+					ShowMomentaryExpression(Expression.Sad, duration);
+					GD.Print($"[TELL-PREFLOP] {currentOpponentName} is SAD (bad cards)");
+					return;
+				}
+			}
+			
+			// --- Scenario B: Medium Hand "Acting" ---
+			if (strength == HandStrength.Medium)
+			{
+				float bluffExpressionChance = aiOpponent.Personality.BaseBluffFrequency;
+
+				if (GD.Randf() < bluffExpressionChance)
+				{
+					if (GD.Randf() > 0.5f) {
+						ShowMomentaryExpression(Expression.Happy, duration);
+						GD.Print($"[TELL-PREFLOP] {currentOpponentName} is ACTING HAPPY (Medium Hand)");
+					} else {
+						ShowMomentaryExpression(Expression.Sad, duration);
+						GD.Print($"[TELL-PREFLOP] {currentOpponentName} is ACTING SAD (Medium Hand)");
+					}
+					return;
+				}
+			}
+
+			// --- Scenario C: Strong Hand (Premium) ---
+			if (strength == HandStrength.Strong)
+			{
+				bool attemptsPokerFace = GD.Randf() > aiOpponent.Personality.BaseBluffFrequency;
+				
+				if (!attemptsPokerFace) 
+				{
+					 ShowMomentaryExpression(Expression.Happy, duration);
+					 GD.Print($"[TELL-PREFLOP] {currentOpponentName} is HAPPY (premium hand leaked)");
+					 return;
+				}
+				else
+				{
+					GD.Print($"[TELL-PREFLOP] {currentOpponentName} maintained poker face (premium hand hidden)");
+					SetExpression(Expression.Neutral);
+					return;
+				}
+			}
+			
+			// Default: No strong reaction
+			SetExpression(Expression.Neutral);
+			return;
+		}
+
+		// ---------------------------------------------------------
+		// IDLE TELLS (Post-Flop / Timer)
+		// ---------------------------------------------------------
+		float idleDuration = 1.5f; 
+		float baseTellChance = 0.20f;
+		float tiltModifier = (float)aiOpponent.CurrentTiltState * 0.15f; 
+		
+		if (!forceTell && GD.Randf() > (baseTellChance + tiltModifier))
+		{
+			return;
+		}
+
+		// Determine base tell category
+		string tellCategory = "weak_hand";
+		
+		if (strength == HandStrength.Strong) 
+		{
+			tellCategory = "strong_hand";
+		}
+		else if (strength == HandStrength.Bluffing) 
+		{
+			tellCategory = "bluffing";
+		}
+		else if (strength == HandStrength.Medium) 
+		{
+			// FIX #1: Medium hands shouldn't always look weak.
+			// Randomize "uncertainty" -> 40% look confident, 60% look worried.
+			tellCategory = (GD.Randf() > 0.6f) ? "strong_hand" : "weak_hand";
+		}
+
+		bool canAct = aiOpponent.CurrentTiltState < TiltState.Steaming;
+		float actingChance = 1.0f - aiOpponent.Personality.TellReliability;
+	
+		if (strength == HandStrength.Bluffing) actingChance += 0.10f;
+		
+		bool isActing = canAct && (GD.Randf() < actingChance);
 
 		if (isActing)
 		{
-			if (tellCategory == "strong_hand") tellCategory = "weak_hand"; // Act weak
-			else if (tellCategory == "weak_hand") tellCategory = "strong_hand"; // Act strong
+			// FIX #3: Acting logic refinement
+			if (tellCategory == "strong_hand") 
+				tellCategory = "weak_hand"; // Trapping
+			else if (tellCategory == "weak_hand") 
+				tellCategory = "strong_hand"; // Bluffing
+			else if (tellCategory == "bluffing")
+				tellCategory = "strong_hand"; // Selling the bluff
 		}
-
+		
 		// Retrieve expression from personality map
 		if (aiOpponent.Personality.Tells.ContainsKey(tellCategory))
 		{
@@ -584,8 +716,8 @@ public partial class PokerGame : Node2D
 				string tellString = possibleTells[GD.RandRange(0, possibleTells.Count - 1)];
 				if (Enum.TryParse(tellString, true, out Expression expr))
 				{
-					SetExpression(expr);
-					// GD.Print($"[TELL] {currentOpponentName} shows {tellString} ({tellCategory}) Acting={isActing}");
+					ShowMomentaryExpression(expr, idleDuration);
+					GD.Print($"[TELL] {currentOpponentName} shows {tellString} ({tellCategory}) Acting={isActing}");
 				}
 			}
 		}
