@@ -588,15 +588,15 @@ public partial class PokerGame : Node2D
 			// --- Scenario A: Weak Hand ---
 			if (strength == HandStrength.Weak)
 			{
-				// FIX #2: Check if they have a playable high card (K or A)
-				// If so, don't look SAD, look NEUTRAL (Contemplative)
 				bool hasHighCard = opponentHand.Exists(c => c.Rank >= Rank.King);
+				bool isSuited = (opponentHand.Count == 2) && (opponentHand[0].Suit == opponentHand[1].Suit);
 				
-				if (hasHighCard)
+				// If playable (High Card OR Suited), don't look sad.
+				if (hasHighCard || isSuited)
 				{
-					// K-x, A-x is playable heads-up, don't look disappointed
 					SetExpression(Expression.Neutral);
-					GD.Print($"[TELL-PREFLOP] {currentOpponentName} is NEUTRAL (weak but high card)");
+					string reason = hasHighCard ? "high card" : "suited";
+					GD.Print($"[TELL-PREFLOP] {currentOpponentName} is NEUTRAL (weak but {reason})");
 					return;
 				}
 
@@ -608,20 +608,26 @@ public partial class PokerGame : Node2D
 					return;
 				}
 
-				// Normal disappointment
-				if (GD.Randf() < 0.4f)
+				// Normal disappointment for trash hands (increased to 60% for readability)
+				if (GD.Randf() < 0.6f)
 				{
 					ShowMomentaryExpression(Expression.Sad, duration);
 					GD.Print($"[TELL-PREFLOP] {currentOpponentName} is SAD (bad cards)");
 					return;
 				}
+				
+				// Remaining 40% maintains poker face (Neutral)
+				SetExpression(Expression.Neutral);
+				GD.Print($"[TELL-PREFLOP] {currentOpponentName} maintained poker face (trash hand hidden)");
+				return;
 			}
 			
-			// --- Scenario B: Medium Hand "Acting" ---
+			// --- Scenario B: Medium Hand ---
 			if (strength == HandStrength.Medium)
 			{
 				float bluffExpressionChance = aiOpponent.Personality.BaseBluffFrequency;
 
+				// Path 1: ACTING (Bluffing / Deception)
 				if (GD.Randf() < bluffExpressionChance)
 				{
 					if (GD.Randf() > 0.5f) {
@@ -633,6 +639,13 @@ public partial class PokerGame : Node2D
 					}
 					return;
 				}
+				
+				// Path 2: GENUINE (Uncertainty)
+				// If not acting, Medium hands often cause genuine worry/hesitation.
+				// (Assuming you have a 'Worried' expression, otherwise default to Neutral)
+				ShowMomentaryExpression(Expression.Worried, duration); 
+				GD.Print($"[TELL-PREFLOP] {currentOpponentName} is WORRIED (Medium Hand - genuine uncertainty)");
+				return;
 			}
 
 			// --- Scenario C: Strong Hand (Premium) ---
@@ -671,9 +684,7 @@ public partial class PokerGame : Node2D
 			return;
 		}
 
-		// Determine base tell category
 		string tellCategory = "weak_hand";
-		
 		if (strength == HandStrength.Strong) 
 		{
 			tellCategory = "strong_hand";
@@ -684,7 +695,6 @@ public partial class PokerGame : Node2D
 		}
 		else if (strength == HandStrength.Medium) 
 		{
-			// FIX #1: Medium hands shouldn't always look weak.
 			// Randomize "uncertainty" -> 40% look confident, 60% look worried.
 			tellCategory = (GD.Randf() > 0.6f) ? "strong_hand" : "weak_hand";
 		}
@@ -698,7 +708,7 @@ public partial class PokerGame : Node2D
 
 		if (isActing)
 		{
-			// FIX #3: Acting logic refinement
+			// Acting logic refinement
 			if (tellCategory == "strong_hand") 
 				tellCategory = "weak_hand"; // Trapping
 			else if (tellCategory == "weak_hand") 
@@ -722,6 +732,7 @@ public partial class PokerGame : Node2D
 			}
 		}
 	}
+
 
 	private PokerPersonality LoadOpponentPersonality(string opponentName)
 	{
