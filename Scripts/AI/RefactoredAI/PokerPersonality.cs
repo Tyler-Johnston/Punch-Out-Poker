@@ -4,7 +4,6 @@ using Godot.Collections;
 
 public partial class PokerPersonality : Resource
 {
-	// Base personality traits (0.0 to 1.0)
 	[Export] public string CharacterName { get; set; }
 	[Export] public float BaseAggression { get; set; }
 	[Export] public float BaseBluffFrequency { get; set; }

@@ -10,7 +10,7 @@ public static class PersonalityPresets
 		{
 			CharacterName = "Steve",
 			BaseAggression = 0.45f,
-			BaseBluffFrequency = 0.33f,
+			BaseBluffFrequency = 0.20f,
 			BaseFoldThreshold = 0.55f,
 			BaseRiskTolerance = 0.60f,
 			
@@ -23,12 +23,10 @@ public static class PersonalityPresets
 			TellReliability = 0.95f   
 		};
 
-		// === TELLS (behavioral cues) ===
 		personality.Tells["strong_hand"] = new Godot.Collections.Array<string> { "Happy", "Smirk" };
 		personality.Tells["weak_hand"] = new Godot.Collections.Array<string> { "Worried", "Sad" };
 		personality.Tells["bluffing"] = new Godot.Collections.Array<string> { "Worried", "Neutral" };
 
-		// === DIALOGUE LINES ===
 		personality.Dialogue["OnFold"] = new Godot.Collections.Array<string>
 		{
 			"Yeah, I'll let this one go.",
@@ -103,21 +101,21 @@ public static class PersonalityPresets
 		{
 			"I like this hand.",
 			"Finally, something good!",
-			"*smiles confidently*"
+			"Not gonna lie, I'd fold if I were you."
 		};
 
 		personality.Dialogue["WeakHand"] = new Godot.Collections.Array<string>
 		{
 			"Hmm, not sure about this...",
-			"*sighs*",
+			"Is this good?",
 			"Well, let's see..."
 		};
 
 		personality.Dialogue["Bluffing"] = new Godot.Collections.Array<string>
 		{
-			"*clears throat nervously*",
-			"Uh, yeah, I bet.",
-			"*fidgets with chips*"
+			"I totally need to reunite these cards with their royal buddies.",
+			"Hahahahaha",
+			"I am in loveee with these cards."
 		};
 
 		personality.ResetCurrentStats();
@@ -183,22 +181,22 @@ public static class PersonalityPresets
 
 		personality.Dialogue["OnAllIn"] = new Godot.Collections.Array<string>
 		{
-			"All in! Oh no, what am I doing?",
+			"All in!!!",
 			"I’m putting it all in!",
-			"Everything! Please don’t have it..."
+			"HAHA! ALL IN!"
 		};
 
 		personality.Dialogue["OnWinPot"] = new Godot.Collections.Array<string>
 		{
 			"Wait, I actually won?!",
-			"Yesss! That was awesome!",
-			"See? I kinda know what I’m doing!"
+			"Yessss! That was awesome!",
+			"Things are finally looking up."
 		};
 
 		personality.Dialogue["OnLosePot"] = new Godot.Collections.Array<string>
 		{
-			"Aw man, I really wanted that pot.",
-			"Okay, that hurt.",
+			"Aw man, I really thought I'd win that time.",
+			"It's okay, next time I'll get you.",
 			"Why do I always lose the fun ones?"
 		};
 
@@ -220,21 +218,21 @@ public static class PersonalityPresets
 		{
 			"Ohhh, this looks good!",
 			"Finally, some real cards!",
-			"*grins way too big*"
+			"Love Love Love"
 		};
 
 		personality.Dialogue["WeakHand"] = new Godot.Collections.Array<string>
 		{
 			"Ehh, this is kinda bad.",
-			"*chews lip nervously*",
+			"Can we trade cards?",
 			"I should probably fold this..."
 		};
 
 		personality.Dialogue["Bluffing"] = new Godot.Collections.Array<string>
 		{
-			"*avoids eye contact*",
-			"Yeah, sure, I’m totally strong.",
-			"*fidgets with chips a lot*"
+			"You should fold. Please?",
+			"Yeah, sure, I’ll win this one.",
+			"I've never been dealt better cards before."
 		};
 
 		personality.ResetCurrentStats();
@@ -247,7 +245,7 @@ public static class PersonalityPresets
 		{
 			CharacterName = "Boy Wizard",
 			BaseAggression = 0.85f,
-			BaseBluffFrequency = 0.70f,
+			BaseBluffFrequency = 0.80f,
 			BaseFoldThreshold = 0.65f,
 			BaseRiskTolerance = 0.80f,
 			CallTendency = 0.40f, 
@@ -265,9 +263,9 @@ public static class PersonalityPresets
 
 		personality.Dialogue["OnFold"] = new Godot.Collections.Array<string>
 		{
-			"I’ll let you have this one... for now.",
-			"Even I can’t magic this hand into a winner.",
-			"Fine, I fold. Enjoy it."
+			"You look weird.",
+			"Aw man.",
+			"I'm only folding to make you feel better."
 		};
 
 		personality.Dialogue["OnCheck"] = new Godot.Collections.Array<string>
@@ -293,14 +291,14 @@ public static class PersonalityPresets
 
 		personality.Dialogue["OnRaise"] = new Godot.Collections.Array<string>
 		{
-			"Raise. Let’s see if you’re brave.",
+			"Susi would tell me not to raise here. Oh well!",
 			"I’m not done yet—raise.",
 			"Up we go!"
 		};
 
 		personality.Dialogue["OnAllIn"] = new Godot.Collections.Array<string>
 		{
-			"All in. Time for a miracle.",
+			"",
 			"I’m going all in—try and stop me.",
 			"This is my ultimate spell!"
 		};
@@ -314,7 +312,7 @@ public static class PersonalityPresets
 
 		personality.Dialogue["OnLosePot"] = new Godot.Collections.Array<string>
 		{
-			"Huh. That wasn’t in the prophecy.",
+			"Every time I lose, I unleash a curse on you. You know that?",
 			"Okay, that one stung.",
 			"Enjoy it while it lasts."
 		};
@@ -328,14 +326,14 @@ public static class PersonalityPresets
 
 		personality.Dialogue["WhileWaiting"] = new Godot.Collections.Array<string>
 		{
-			"Thinking hard, are we?",
-			"Need a spell to help decide?",
+			"Have you met my trainee? She's still learning all I know.",
+			"Where I'm from, I'm pretty feared you know.",
 			"I already know what you’re going to do."
 		};
 
 		personality.Dialogue["StrongHand"] = new Godot.Collections.Array<string>
 		{
-			"This hand is pure magic.",
+			"Oh? It finally manifested.",
 			"Oh, this is going to be fun.",
 			"*smirks knowingly*"
 		};
@@ -349,9 +347,9 @@ public static class PersonalityPresets
 
 		personality.Dialogue["Bluffing"] = new Godot.Collections.Array<string>
 		{
-			"Let’s see if you believe in magic.",
-			"*overconfident grin*",
-			"Nothing up my sleeve. Probably."
+			"Yes! I mean no! What are we talking about?",
+			"Hmm, why are there pictures on these cards?",
+			"Nothin' up my sleeve."
 		};
 
 		personality.ResetCurrentStats();
@@ -366,7 +364,7 @@ public static class PersonalityPresets
 		{
 			CharacterName = "Cowboy",
 			BaseAggression = 0.55f,        
-			BaseBluffFrequency = 0.30f,   
+			BaseBluffFrequency = 0.35f,   
 			BaseFoldThreshold = 0.50f,     
 			BaseRiskTolerance = 0.55f,     
 			CallTendency = 0.45f,          
@@ -379,7 +377,7 @@ public static class PersonalityPresets
 
 		personality.Tells["strong_hand"] = new Godot.Collections.Array<string> { "Smirk", "Neutral" };
 		personality.Tells["weak_hand"] = new Godot.Collections.Array<string> { "Worried", "Neutral" };
-		personality.Tells["bluffing"] = new Godot.Collections.Array<string> { "Neutral", "Angry" }; // Stone faced
+		personality.Tells["bluffing"] = new Godot.Collections.Array<string> { "Neutral", "Happy" };
 
 		personality.Dialogue["OnFold"] = new Godot.Collections.Array<string>
 		{
@@ -598,7 +596,7 @@ public static class PersonalityPresets
 		{
 			CharacterName = "Apprentice",
 			BaseAggression = 0.50f,        
-			BaseBluffFrequency = 0.35f,    
+			BaseBluffFrequency = 0.28f,    
 			BaseFoldThreshold = 0.47f,     
 			BaseRiskTolerance = 0.52f,     
 			CallTendency = 0.50f,          
@@ -716,7 +714,7 @@ public static class PersonalityPresets
 		{
 			CharacterName = "King",
 			BaseAggression = 0.65f,        
-			BaseBluffFrequency = 0.45f,    
+			BaseBluffFrequency = 0.40f,    
 			BaseFoldThreshold = 0.52f,     
 			BaseRiskTolerance = 0.55f,     
 			CallTendency = 0.42f,          
@@ -957,36 +955,34 @@ public static class PersonalityPresets
 			CallTendency = 0.55f,          
 			Chattiness = 0.36f,      
 			TellReliability = 0.50f, 
-
-			// BALANCED FOR GAMEPLAY:
 			TiltSensitivity = 0.40f,
 			RageQuitThreshold = 60.0f,    
 			SurrenderChipPercent = 0.10f
 		};
 
-		personality.Tells["strong_hand"] = new Godot.Collections.Array<string> { "Neutral", "Neutral" }; // Hard to read
+		personality.Tells["strong_hand"] = new Godot.Collections.Array<string> { "Neutral", "Neutral" };
 		personality.Tells["weak_hand"] = new Godot.Collections.Array<string> { "Neutral", "Annoyed" };
 		personality.Tells["bluffing"] = new Godot.Collections.Array<string> { "Neutral", "Smirk" };
 
 		personality.Dialogue["OnFold"] = new Godot.Collections.Array<string>
 		{
-			"Fold.",
-			"Negative expectation.",
-			"..."
+			"Wasn't my hand.",
+			"Using these cards would have been cheating.",
+			"Hmmm."
 		};
 
 		personality.Dialogue["OnCheck"] = new Godot.Collections.Array<string>
 		{
-			"Check.",
-			"...",
-			"Information preserved."
+			"Tap Tap.",
+			"Cheque.",
+			"Tippy Tappy."
 		};
 
 		personality.Dialogue["OnCall"] = new Godot.Collections.Array<string>
 		{
-			"Call.",
-			"Pot odds sufficient.",
-			"Continuing line."
+			"Are you okay?",
+			"Might as well.",
+			"Ring Ring."
 		};
 
 		personality.Dialogue["OnBet"] = new Godot.Collections.Array<string>
@@ -998,16 +994,16 @@ public static class PersonalityPresets
 
 		personality.Dialogue["OnRaise"] = new Godot.Collections.Array<string>
 		{
-			"Raising",
-			"Adjusting strategy.",
-			"Equilibrium shift."
+			"This pot feels too empty.",
+			"Praise me.",
+			"More chips for the table."
 		};
 
 		personality.Dialogue["OnAllIn"] = new Godot.Collections.Array<string>
 		{
-			"All in.",
-			"Maximum leverage.",
-			"Commitment reached."
+			"Don't freak out, okay?",
+			"Shall we wrap this up?",
+			"Let's go all in."
 		};
 
 		personality.Dialogue["OnWinPot"] = new Godot.Collections.Array<string>
@@ -1028,26 +1024,26 @@ public static class PersonalityPresets
 		{
 			"Zip it.",
 			"Good for you. You're actually making me sweat.",
-			"I'm actually starting to loathe you."
+			"Maybe you do have talent."
 		};
 
 		personality.Dialogue["WhileWaiting"] = new Godot.Collections.Array<string>
 		{
-			"...",
-			"Decision time exceeding average.",
-			"Analyzing your range."
+			"It's cute watching you squirm.",
+			"You look a tad uneasy.",
+			"Take your time. It won't change anything."
 		};
 
 		personality.Dialogue["StrongHand"] = new Godot.Collections.Array<string>
 		{
-			"You should fold darling. I have an incredible hand.",
+			"You should fold darling.",
 			"Oh, dear.",
 			"Might as well end things now."
 		};
 
 		personality.Dialogue["WeakHand"] = new Godot.Collections.Array<string>
 		{
-			"If I were you, I'd fold now. I have an incredible hand.",
+			"If I were you, I'd fold now",
 			"This hand is making me grin ear-to-ear.",
 			"I can tell you don't know what you are doing."
 		};

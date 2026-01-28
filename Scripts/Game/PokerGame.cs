@@ -543,7 +543,7 @@ public partial class PokerGame : Node2D
 
 		if (chatRoll <= threshold || alwaysTalk)
 		{
-			opponentDialogueLabel.Text = line;
+			AnimateText(opponentDialogueLabel, line);
 		}
 	}
 	

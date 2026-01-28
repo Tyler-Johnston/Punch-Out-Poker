@@ -640,7 +640,7 @@ public partial class PokerGame
 		
 		if ((chatRoll <= aiOpponent.Personality.Chattiness || alwaysTalk) && !string.IsNullOrEmpty(dialogueLine))
 		{
-			opponentDialogueLabel.Text = dialogueLine;
+			AnimateText(opponentDialogueLabel, dialogueLine);
 		}
 		else
 		{

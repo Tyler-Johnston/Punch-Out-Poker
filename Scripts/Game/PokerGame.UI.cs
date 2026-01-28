@@ -10,6 +10,19 @@ public partial class PokerGame
 		gameStateLabel.Text = text;
 	}
 	
+	private void AnimateText(Label label, string text, float speed = 0.03f)
+	{
+		label.Text = text;
+		label.VisibleRatio = 0;
+		
+		Tween tween = GetTree().CreateTween();
+		float duration = text.Length * speed;
+		
+		tween.TweenProperty(label, "visible_ratio", 1.0f, duration);
+		// sfxPlayer.Play("typing_sound"); 
+	}
+
+	
 	private void SetTableColor()
 	{
 		// get table color depending on the circuit we are in
