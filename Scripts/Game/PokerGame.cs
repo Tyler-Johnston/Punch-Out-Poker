@@ -161,7 +161,7 @@ public partial class PokerGame : Node2D
 		betSlider = hudControl.GetNode<HSlider>("BetSlider");
 		
 		// faceSprite
-		faceSprite = hudControl.GetNode<Sprite2D>("FaceSprite");
+		faceSprite = hudControl.GetNode<Sprite2D>("OpponentView/FaceSprite");
 		
 		// audio players
 		sfxPlayer = GetNode<SFXPlayer>("SFXPlayer");

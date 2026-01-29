@@ -293,9 +293,9 @@ position = Vector2(4, 0)
 
 [node name="TextureRect" type="ColorRect" parent="CanvasLayer/Control/OpponentView"]
 offset_left = 962.0
-offset_top = 1.0
-offset_right = 32462.0
-offset_bottom = 24001.0
+offset_top = -5.0
+offset_right = 32862.0
+offset_bottom = 24595.0
 scale = Vector2(0.01, 0.01)
 color = Color(0.22876146, 0.28048837, 0.4147905, 1)
 
