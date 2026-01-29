@@ -26,19 +26,20 @@ colors = PackedColorArray(0.32156864, 0.6509804, 0.49803922, 1, 0.18039216, 0.40
 
 [sub_resource type="GradientTexture2D" id="GradientTexture2D_u1fmj"]
 gradient = SubResource("Gradient_xxe2x")
-fill = 1
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_u5b2p"]
 shader = ExtResource("2_h5gdr")
 shader_parameter/gradient_texture = SubResource("GradientTexture2D_u1fmj")
-shader_parameter/border_color = Color(0.76526576, 0.6465772, 0.1413807, 1)
-shader_parameter/border_width = 0.05
+shader_parameter/border_color = Color(0.17409295, 0.104362376, 0.04976409, 1)
+shader_parameter/border_width = 0.0730000034675
 shader_parameter/tilt = 3.342000111245
 shader_parameter/scale = 0.87600003835012
+shader_parameter/pixel_factor = 0.01
+shader_parameter/levels = 25.00000114
 
 [sub_resource type="Gradient" id="Gradient_34q52"]
 offsets = PackedFloat32Array(0.033613447, 1)
-colors = PackedColorArray(0.32156864, 0.6509804, 0.49803922, 1, 0.18039216, 0.40392157, 0.3019608, 1)
+colors = PackedColorArray(0.32156864, 0.6509804, 0.49803922, 1, 0.33995035, 0.7444515, 0.06614905, 1)
 
 [sub_resource type="GradientTexture2D" id="GradientTexture2D_h5gdr"]
 gradient = SubResource("Gradient_34q52")
@@ -295,7 +296,7 @@ position = Vector2(4, 0)
 offset_left = 962.0
 offset_top = -5.0
 offset_right = 32862.0
-offset_bottom = 24595.0
+offset_bottom = 25295.0
 scale = Vector2(0.01, 0.01)
 color = Color(0.22876146, 0.28048837, 0.4147905, 1)
 

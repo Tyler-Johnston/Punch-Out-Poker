@@ -1,41 +1,49 @@
 shader_type canvas_item;
 
-// --- SETTINGS ---
+// --- TABLE SHAPE SETTINGS ---
 uniform sampler2D gradient_texture : source_color, filter_linear;
-uniform vec4 border_color : source_color = vec4(0.4, 0.2, 0.1, 1.0); // Brown
+uniform vec4 border_color : source_color = vec4(0.4, 0.2, 0.1, 1.0);
 uniform float border_width : hint_range(0.0, 0.2) = 0.02;
+uniform float tilt : hint_range(1.0, 10.0) = 3.0;
+uniform float scale : hint_range(0.1, 5.0) = 0.8;
 
-// Perspective & Shape
-uniform float tilt : hint_range(1.0, 10.0) = 3.0; // Squish factor
-uniform float scale : hint_range(0.1, 5.0) = 0.8; // Size of table
+// --- PIXELATION SETTINGS ---
+// Controls how "blocky" the shape is.
+// 0.001 = Ultra High Res (Smooth)
+// 0.01 = Retro
+// 0.05 = Very Chunky
+uniform float pixel_factor : hint_range(0.001, 0.1) = 0.01;
+
+// --- COLOR BANDING SETTINGS ---
+uniform float levels : hint_range(1.0, 32.0) = 25.0;
 
 void fragment() {
-    // 1. Center UVs
-    vec2 uv = UV - 0.5;
+    // --- STEP 1: PIXELATE THE COORDINATES ---
+    // Instead of using smooth "UV", we snap UV to a grid.
+    // simpler method: floor(uv / size) * size
+    vec2 pixel_uv = floor(UV / pixel_factor) * pixel_factor;
     
-    // 2. Apply Perspective Squish
-    uv.y *= tilt; 
+    // --- STEP 2: CALCULATE SHAPE (Using pixel_uv) ---
+    vec2 uv = pixel_uv - 0.5;
+    uv.y *= tilt; // Squish vertical axis
 
-    // 3. Calculate Distance
-    // We multiply by 2.0 so "1.0" is exactly the edge of our unit circle
+    // Calculate Distance
     float dist = length(uv) * (1.0 / scale) * 2.0;
     
-    // 4. Sample Gradient (Clamp to avoid artifacts at edge)
+    // Sample Gradient
     vec4 table_color = texture(gradient_texture, vec2(clamp(dist, 0.0, 1.0), 0.0));
     
-    // 5. Logic for Border vs. Table vs. Transparent Background
-    // If dist < 1.0, we are inside the table.
-    // If dist > 1.0 but < 1.0 + border_width, we are on the border.
-    // If dist > 1.0 + border_width, we are outside (transparent).
+    // Define Regions
+    float is_border = step(1.0, dist);        
+    float is_outside = step(1.0 + border_width, dist); 
     
-    float is_border = step(1.0, dist);        // 0 if table, 1 if border/outside
-    float is_outside = step(1.0 + border_width, dist); // 0 if table/border, 1 if outside
-    
-    // Mix the Table Color with Border Color
+    // Mix Table and Border
     vec4 final_color = mix(table_color, border_color, is_border);
     
-    // Apply Transparency (Cut out the background)
-    // If we are "outside", alpha becomes 0.0. Otherwise it stays 1.0.
+    // --- STEP 3: APPLY COLOR BANDING ---
+    final_color.rgb = floor(final_color.rgb * levels) / levels;
+    
+    // --- STEP 4: APPLY TRANSPARENCY ---
     final_color.a = 1.0 - is_outside;
     
     COLOR = final_color;
