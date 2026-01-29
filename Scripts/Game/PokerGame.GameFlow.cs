@@ -48,7 +48,7 @@ public partial class PokerGame
 
 	public async Task DealCommunityCards(Street street)
 	{
-		GD.Print($"\\\\n=== Community Cards: {street} ===");
+		GD.Print($"\n=== Community Cards: {street} ===");
 		switch (street)
 		{
 			case Street.Flop:
@@ -165,7 +165,7 @@ public partial class PokerGame
 		if (isShowdownInProgress) return;
 		isShowdownInProgress = true;
 		
-		GD.Print("\\\\n=== Showdown ===");
+		GD.Print("\n=== Showdown ===");
 		
 		// process refunds first
 		bool refundOccurred = ReturnUncalledChips();
@@ -200,7 +200,7 @@ public partial class PokerGame
 		
 		if (result > 0)
 		{
-			GD.Print("\\\\nPLAYER WINS!");
+			GD.Print("\nPLAYER WINS!");
 			message = $"You win ${finalPot} with {playerHandName}!";
 			
 			PlayReactionDialogue("OnLosePot");
@@ -237,7 +237,7 @@ public partial class PokerGame
 		}
 		else if (result < 0)
 		{
-			GD.Print("\\\\nOPPONENT WINS!");
+			GD.Print("\nOPPONENT WINS!");
 			message = $"{currentOpponentName} wins ${finalPot} with {opponentHandName}";
 			
 			PlayReactionDialogue("OnWinPot");
@@ -268,7 +268,7 @@ public partial class PokerGame
 		}
 		else
 		{
-			GD.Print("\\\\nSPLIT POT!");
+			GD.Print("\nSPLIT POT!");
 			int split = pot / 2;
 			message = $"Split pot - ${split} each!";
 			playerChips += split;

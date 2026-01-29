@@ -270,6 +270,40 @@ public partial class PokerGame
 		}
 	}
 	
+	private void LoadOpponentSprite(string currentOpponentName)
+	{
+		string folderPath = "res://Assets/Textures/expressions/"; 
+		string targetPath = $"{folderPath}{currentOpponentName}_expressions.png";
+		string fallbackPath = $"{folderPath}king_expressions.png";
+		
+		Texture2D loadedTexture = null;
+
+		if (ResourceLoader.Exists(targetPath))
+		{
+			loadedTexture = GD.Load<Texture2D>(targetPath);
+			GD.Print($"Loaded sprite: {currentOpponentName}");
+		}
+		else
+		{
+			GD.Print($"Sprite missing for {currentOpponentName}. Defaulting to King.");
+			if (ResourceLoader.Exists(fallbackPath))
+			{
+				loadedTexture = GD.Load<Texture2D>(fallbackPath);
+			}
+			else
+			{
+				GD.PushError("CRITICAL: Fallback sprite missing!");
+				return;
+			}
+		}
+
+		faceSprite.Texture = loadedTexture;
+		faceSprite.Hframes = 8; 
+		faceSprite.Vframes = 1;
+		faceSprite.Frame = 0;
+	}
+
+	
 	private void UpdateOpponentVisuals()
 	{
 		TiltState state = aiOpponent.CurrentTiltState;
@@ -292,7 +326,8 @@ public partial class PokerGame
 				break;
 		}
 
-		// trigger tilt dialogue
+		// trigger tilt dialogue TODO: need to use the AnimiateText method, and it needs to wait until 
+		// the current spoken line is done + waits a bit before saying this one as well.
 		if (handInProgress && !waitingForNextGame)
 		{
 			string tiltLine = dialogueManager.GetTiltDialogue(state);

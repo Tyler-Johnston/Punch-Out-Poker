@@ -230,6 +230,7 @@ public partial class PokerGame : Node2D
 
 		//musicPlayer.Play();
 		SetTableColor();
+		LoadOpponentSprite(currentOpponentName.ToLower());
 		UpdateHud();
 		StartNewHand();
 	}
