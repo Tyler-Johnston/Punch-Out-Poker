@@ -1,6 +1,7 @@
-[gd_scene load_steps=33 format=3 uid="uid://b5sq1675fwcio"]
+[gd_scene load_steps=39 format=3 uid="uid://b5sq1675fwcio"]
 
 [ext_resource type="Script" uid="uid://8k6pqsmgt5pe" path="res://Scripts/Game/PokerGame.cs" id="1_8w0ed"]
+[ext_resource type="Shader" uid="uid://xgv2p7pj4e3u" path="res://Assets/Shaders/EnemyView.gdshader" id="2_h5gdr"]
 [ext_resource type="FontFile" uid="uid://dmret52s833gh" path="res://Assets/Fonts/Jersey_10/Jersey10-Regular.ttf" id="2_j8upv"]
 [ext_resource type="PackedScene" uid="uid://dm1t1olfbu82u" path="res://Scenes/CardVisual.tscn" id="3_c6vvi"]
 [ext_resource type="Texture2D" uid="uid://dtkuv1jg1wjh1" path="res://Assets/Textures/Frames/card_background.png" id="3_xxe2x"]
@@ -10,7 +11,7 @@
 [ext_resource type="Script" uid="uid://dgfw5uwspo7c3" path="res://Scripts/Game/SFXPlayer.cs" id="12_u5b2p"]
 
 [sub_resource type="Gradient" id="Gradient_47o1s"]
-offsets = PackedFloat32Array(0.013333334, 0.96)
+offsets = PackedFloat32Array(0.017123288, 0.9747899)
 colors = PackedColorArray(0.32156864, 0.6509804, 0.49803922, 1, 0.1796309, 0.40264183, 0.30042112, 1)
 
 [sub_resource type="GradientTexture2D" id="GradientTexture2D_vtryj"]
@@ -18,6 +19,31 @@ gradient = SubResource("Gradient_47o1s")
 fill = 1
 fill_from = Vector2(0.5, 0.5)
 fill_to = Vector2(1, 0.5)
+
+[sub_resource type="Gradient" id="Gradient_xxe2x"]
+offsets = PackedFloat32Array(0, 0.89615387)
+colors = PackedColorArray(0.32156864, 0.6509804, 0.49803922, 1, 0.18039216, 0.40392157, 0.3019608, 0)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_u1fmj"]
+gradient = SubResource("Gradient_xxe2x")
+fill = 1
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_u5b2p"]
+shader = ExtResource("2_h5gdr")
+shader_parameter/gradient_texture = SubResource("GradientTexture2D_u1fmj")
+shader_parameter/border_color = Color(0.76526576, 0.6465772, 0.1413807, 1)
+shader_parameter/border_width = 0.05
+shader_parameter/tilt = 3.342000111245
+shader_parameter/scale = 0.87600003835012
+
+[sub_resource type="Gradient" id="Gradient_34q52"]
+offsets = PackedFloat32Array(0.033613447, 1)
+colors = PackedColorArray(0.32156864, 0.6509804, 0.49803922, 1, 0.18039216, 0.40392157, 0.3019608, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_h5gdr"]
+gradient = SubResource("Gradient_34q52")
+fill = 1
+fill_from = Vector2(0.49726775, 0.5409836)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_47o1s"]
 bg_color = Color(0.6784314, 0, 0.15686275, 1)
@@ -262,6 +288,31 @@ grow_horizontal = 2
 grow_vertical = 2
 texture = SubResource("GradientTexture2D_vtryj")
 
+[node name="OpponentView" type="Node2D" parent="CanvasLayer/Control"]
+position = Vector2(4, 0)
+
+[node name="TextureRect" type="ColorRect" parent="CanvasLayer/Control/OpponentView"]
+offset_left = 962.0
+offset_top = 1.0
+offset_right = 32462.0
+offset_bottom = 24001.0
+scale = Vector2(0.01, 0.01)
+color = Color(0.22876146, 0.28048837, 0.4147905, 1)
+
+[node name="FaceSprite" type="Sprite2D" parent="CanvasLayer/Control/OpponentView"]
+position = Vector2(1124, 109.00001)
+scale = Vector2(1.375, 1.3680557)
+texture = ExtResource("4_u1fmj")
+hframes = 8
+
+[node name="TableBackground" type="TextureRect" parent="CanvasLayer/Control/OpponentView"]
+material = SubResource("ShaderMaterial_u5b2p")
+offset_left = 946.0
+offset_top = 47.0
+offset_right = 1291.0
+offset_bottom = 352.0
+texture = SubResource("GradientTexture2D_h5gdr")
+
 [node name="ButtonUI" type="VBoxContainer" parent="CanvasLayer/Control"]
 layout_mode = 0
 offset_left = 24.0
@@ -439,12 +490,6 @@ offset_bottom = 210.0
 texture = ExtResource("3_xxe2x")
 expand_mode = 5
 stretch_mode = 4
-
-[node name="FaceSprite" type="Sprite2D" parent="CanvasLayer/Control"]
-position = Vector2(1142, 127)
-scale = Vector2(1.5, 1.5)
-texture = ExtResource("4_u1fmj")
-hframes = 8
 
 [node name="PlayerArea" type="Node2D" parent="."]
 position = Vector2(376, 210.00002)

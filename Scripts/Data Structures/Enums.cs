@@ -105,10 +105,10 @@ public enum Street
 
 public enum TiltState
 {
-	Zen,        // 0 - 10   (Calm, playing optimally)
-	Annoyed,    // 10 - 25  (Slightly looser, chatty)
-	Steaming,   // 25 - 50  (Aggressive, betting bigger)
-	Monkey      // 50+      (Shoving random hands, zero patience)
+	Zen,
+	Annoyed,
+	Steaming,
+	Monkey
 }
 
 public enum Expression
@@ -126,6 +126,6 @@ public enum Expression
 public enum OpponentExitType
 {
 	None,
-	RageQuit,   // TKO: They leave because of Tilt. YOU WIN (Unlock Next).
-	Surrender   // Escape: They leave to save money. YOU LOSE/DRAW (No Unlock).
+	RageQuit,
+	Surrender
 }

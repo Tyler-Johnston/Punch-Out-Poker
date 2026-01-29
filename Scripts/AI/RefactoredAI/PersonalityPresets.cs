@@ -14,7 +14,7 @@ public static class PersonalityPresets
 			BaseFoldThreshold = 0.55f,
 			BaseRiskTolerance = 0.60f,
 			
-			TiltSensitivity = 1.0f,
+			TiltSensitivity = 0.94f,
 			RageQuitThreshold = 30.0f,
 			SurrenderChipPercent = 0.40f,
 			
@@ -138,7 +138,7 @@ public static class PersonalityPresets
 			Chattiness = 0.80f,      
 			TellReliability = 0.90f, 
 
-			TiltSensitivity = 0.875f,
+			TiltSensitivity = 0.98f,
 			RageQuitThreshold = 30f,
 			SurrenderChipPercent = 0.24f
 		};
