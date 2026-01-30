@@ -37,7 +37,7 @@ public partial class PokerGame : Node2D
 	private Label playerHandType;
 	private Label opponentHandType;
 	private Label betSliderLabel;
-	private Label opponentDialogueLabel;
+	//private Label opponentDialogueLabel;
 	private Label checkCallLabel;
 	private Label betRaiseLabel;
 	
@@ -47,11 +47,10 @@ public partial class PokerGame : Node2D
 	private Texture2D betBtnImg;
 	private Texture2D raiseBtnImg;
 	
-	private TextureRect opponentPortrait;
-	
 	private AtlasTexture _opponentAtlas;
 	private Sprite2D faceSprite;
-	private PanelContainer speechBubble;
+	//private PanelContainer speechBubble;
+	private SpeechBubble speechBubble;
 	[Export] public PanelContainer OpponentFrame;
 	[Export] public TextureRect MainTableRect;
 	[Export] public TextureRect MiniTableRect;
@@ -150,13 +149,9 @@ public partial class PokerGame : Node2D
 		playerHandType = hudControl.GetNode<Label>("PlayerHandType");
 		opponentHandType = hudControl.GetNode<Label>("OpponentHandType");
 		betSliderLabel = hudControl.GetNode<Label>("BetSliderLabel");
-		opponentDialogueLabel = hudControl.GetNode<Label>("OpponentDialogue");
-		
-		// opponent picture
-		opponentPortrait = hudControl.GetNode<TextureRect>("OpponentPortrait");
 		
 		// speech bubble
-		speechBubble = hudControl.GetNode<PanelContainer>("SpeechBubble");
+		speechBubble = hudControl.GetNode<SpeechBubble>("SpeechBubble");
 		
 		// slider
 		betSlider = hudControl.GetNode<HSlider>("BetSlider");
@@ -338,7 +333,7 @@ public partial class PokerGame : Node2D
 	{
 		if (!waitingForNextGame && handInProgress) return; 
 		waitingForNextGame = false;
-		opponentDialogueLabel.Text = "";
+		//opponentDialogueLabel.Text = "";
 		SetExpression(Expression.Neutral);
 
 		if (IsGameOver())

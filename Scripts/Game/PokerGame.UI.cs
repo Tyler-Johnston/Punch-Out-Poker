@@ -246,7 +246,7 @@ public partial class PokerGame
 			betSlider.Visible = false;
 			betSliderLabel.Visible = false;
 			potLabel.Visible = false;
-			opponentDialogueLabel.Text = "";
+			//opponentDialogueLabel.Text = "";
 			return;
 		}
 
@@ -269,7 +269,7 @@ public partial class PokerGame
 			betSlider.Visible = false;
 			betSliderLabel.Visible = false;
 			potLabel.Visible = false;
-			opponentDialogueLabel.Text = "";
+			//opponentDialogueLabel.Text = "";
 		}
 		else
 		{
@@ -361,17 +361,29 @@ public partial class PokerGame
 		return typeDuration;
 	}
 	
+
 	private float PlayDialogue(string text)
 	{
 		if (string.IsNullOrEmpty(text))
 		{
-			opponentDialogueLabel.Text = "";
-			speechBubble.Visible = false;
+			// The bubble handles its own closing/hiding via Close()
+			speechBubble.Close(); 
 			return 0f;
 		}
 
-		return AnimateText(opponentDialogueLabel, text);
+		// Call the new dynamic system
+		speechBubble.Say(text);
+
+		// Calculate duration so the AI knows how long to "wait" before moving on (optional)
+		// Formula: Pop animation (0.2s) + Text length * Typing speed (0.05s) + Read time (2.0s)
+		float typingDuration = text.Length * 0.05f; 
+		float totalDuration = 0.2f + typingDuration + 2.0f;
+
+		GetTree().CreateTimer(totalDuration).Timeout += () => speechBubble.Close();
+
+		return typingDuration; 
 	}
+
 
 	private float PlayActionDialogue(PlayerAction action, GameState state)
 	{

@@ -1,4 +1,4 @@
-[gd_scene load_steps=44 format=3 uid="uid://b5sq1675fwcio"]
+[gd_scene load_steps=43 format=3 uid="uid://b5sq1675fwcio"]
 
 [ext_resource type="Script" uid="uid://8k6pqsmgt5pe" path="res://Scripts/Game/PokerGame.cs" id="1_8w0ed"]
 [ext_resource type="Texture2D" uid="uid://dqk4n2wxuqt2a" path="res://Assets/Textures/backgrounds/Cafe_Interior_Night.jpg" id="2_47o1s"]
@@ -6,7 +6,7 @@
 [ext_resource type="FontFile" uid="uid://dmret52s833gh" path="res://Assets/Fonts/Jersey_10/Jersey10-Regular.ttf" id="2_j8upv"]
 [ext_resource type="Texture2D" uid="uid://ti27q2cg6o2y" path="res://Assets/Textures/expressions/steve_expressions.png" id="3_47o1s"]
 [ext_resource type="PackedScene" uid="uid://dm1t1olfbu82u" path="res://Scenes/CardVisual.tscn" id="3_c6vvi"]
-[ext_resource type="Texture2D" uid="uid://dtkuv1jg1wjh1" path="res://Assets/Textures/Frames/card_background.png" id="3_xxe2x"]
+[ext_resource type="PackedScene" uid="uid://d3dtedqfbrtr8" path="res://Scenes/SpeechBubble.tscn" id="6_47o1s"]
 [ext_resource type="Shader" uid="uid://csfo7n8cjhc25" path="res://Assets/Shaders/crt_lcd.gdshader" id="8_34q52"]
 [ext_resource type="AudioStream" uid="uid://dss833xi3m8t5" path="res://Assets/Music/regrowth wip.wav" id="10_47o1s"]
 [ext_resource type="Script" uid="uid://dgfw5uwspo7c3" path="res://Scripts/Game/SFXPlayer.cs" id="12_u5b2p"]
@@ -277,10 +277,6 @@ corner_radius_bottom_left = 5
 font = ExtResource("2_j8upv")
 font_size = 30
 
-[sub_resource type="LabelSettings" id="LabelSettings_47o1s"]
-font = ExtResource("2_j8upv")
-font_size = 36
-
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_h5gdr"]
 shader = ExtResource("8_34q52")
 shader_parameter/screen_width = 1280.0
@@ -516,33 +512,12 @@ offset_top = 353.0
 offset_right = 79.0
 offset_bottom = 393.0
 
-[node name="SpeechBubble" type="PanelContainer" parent="CanvasLayer/Control"]
+[node name="SpeechBubble" parent="CanvasLayer/Control" instance=ExtResource("6_47o1s")]
 layout_mode = 0
-offset_left = 622.0
+offset_left = 986.0
 offset_top = 40.0
-offset_right = 891.0
-offset_bottom = 89.0
-
-[node name="OpponentDialogue" type="Label" parent="CanvasLayer/Control"]
-layout_mode = 0
-offset_left = 626.0
-offset_top = 41.0
-offset_right = 945.0
-offset_bottom = 93.0
-text = "I have a great hand!"
-label_settings = SubResource("LabelSettings_47o1s")
-autowrap_mode = 3
-
-[node name="OpponentPortrait" type="TextureRect" parent="CanvasLayer/Control"]
-visible = false
-layout_mode = 0
-offset_left = 1049.0
-offset_top = 28.0
-offset_right = 1239.0
-offset_bottom = 210.0
-texture = ExtResource("3_xxe2x")
-expand_mode = 5
-stretch_mode = 4
+offset_right = 1102.0
+offset_bottom = 179.0
 
 [node name="PlayerArea" type="Node2D" parent="."]
 position = Vector2(376, 210.00002)
