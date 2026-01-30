@@ -1,6 +1,16 @@
-[gd_scene load_steps=2 format=3 uid="uid://dm1t1olfbu82u"]
+[gd_scene load_steps=3 format=3 uid="uid://dm1t1olfbu82u"]
 
 [ext_resource type="Script" uid="uid://bqpvv0263uywg" path="res://Scripts/Data Structures/CardVisual.cs" id="1_svlf2"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_u2807"]
+bg_color = Color(0, 0, 0, 0)
+corner_radius_top_left = 20
+corner_radius_top_right = 10
+corner_radius_bottom_right = 20
+corner_radius_bottom_left = 20
+shadow_color = Color(0.003921569, 0.003921569, 0.003921569, 0.6)
+shadow_size = 4
+shadow_offset = Vector2(4, 4)
 
 [node name="CardVisual" type="Control"]
 custom_minimum_size = Vector2(142, 192)
@@ -19,3 +29,10 @@ script = ExtResource("1_svlf2")
 layout_mode = 0
 offset_right = 153.33333
 offset_bottom = 220.0
+
+[node name="FrameShadow" type="PanelContainer" parent="CardTexture"]
+show_behind_parent = true
+layout_mode = 0
+offset_right = 150.0
+offset_bottom = 216.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_u2807")

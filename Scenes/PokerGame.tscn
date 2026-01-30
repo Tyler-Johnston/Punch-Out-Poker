@@ -40,12 +40,12 @@ shadow_color = Color(0, 0, 0, 0.19607843)
 offsets = PackedFloat32Array(0, 0.89615387)
 colors = PackedColorArray(0.32156864, 0.6509804, 0.49803922, 1, 0.18039216, 0.40392157, 0.3019608, 0)
 
-[sub_resource type="GradientTexture2D" id="GradientTexture2D_u1fmj"]
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_47o1s"]
 gradient = SubResource("Gradient_xxe2x")
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_u5b2p"]
 shader = ExtResource("2_h5gdr")
-shader_parameter/gradient_texture = SubResource("GradientTexture2D_u1fmj")
+shader_parameter/gradient_texture = SubResource("GradientTexture2D_47o1s")
 shader_parameter/border_color = Color(0.17409295, 0.104362376, 0.04976409, 1)
 shader_parameter/border_width = 0.0730000034675
 shader_parameter/tilt = 3.342000111245
@@ -53,20 +53,20 @@ shader_parameter/scale = 0.87600003835012
 shader_parameter/pixel_factor = 0.01
 shader_parameter/levels = 25.00000114
 
-[sub_resource type="Gradient" id="Gradient_34q52"]
+[sub_resource type="Gradient" id="Gradient_u1fmj"]
 offsets = PackedFloat32Array(0.033613447, 1)
 colors = PackedColorArray(0.32156864, 0.6509804, 0.49803922, 1, 0.33995035, 0.7444515, 0.06614905, 1)
 
 [sub_resource type="GradientTexture2D" id="GradientTexture2D_h5gdr"]
-gradient = SubResource("Gradient_34q52")
+gradient = SubResource("Gradient_u1fmj")
 fill = 1
 fill_from = Vector2(0.49726775, 0.5409836)
 
-[sub_resource type="Gradient" id="Gradient_u1fmj"]
+[sub_resource type="Gradient" id="Gradient_u5b2p"]
 colors = PackedColorArray(0, 0, 0, 0.11764706, 0, 0, 0, 0.43137255)
 
 [sub_resource type="GradientTexture2D" id="GradientTexture2D_u5b2p"]
-gradient = SubResource("Gradient_u1fmj")
+gradient = SubResource("Gradient_u5b2p")
 fill = 1
 fill_from = Vector2(0.5, 0.5)
 fill_to = Vector2(0.5, 0)
@@ -449,7 +449,7 @@ label_settings = SubResource("LabelSettings_l4y0v")
 layout_mode = 0
 offset_left = 352.0
 offset_top = 233.0
-offset_right = 640.0
+offset_right = 938.0
 offset_bottom = 285.0
 text = "Game State Label"
 label_settings = SubResource("LabelSettings_l4y0v")
