@@ -150,18 +150,19 @@ public partial class PokerGame : Node2D
 		opponentHandType = hudControl.GetNode<Label>("OpponentHandType");
 		betSliderLabel = hudControl.GetNode<Label>("BetSliderLabel");
 		
+		// audio players
+		sfxPlayer = GetNode<SFXPlayer>("SFXPlayer");
+		musicPlayer = GetNode<AudioStreamPlayer>("MusicPlayer");  
+		
 		// speech bubble
 		speechBubble = hudControl.GetNode<SpeechBubble>("SpeechBubble");
+		speechBubble.AudioPlayer = sfxPlayer; 
 		
 		// slider
 		betSlider = hudControl.GetNode<HSlider>("BetSlider");
 		
 		// faceSprite
 		faceSprite = GetNode<Sprite2D>("%FaceSprite"); 
-		
-		// audio players
-		sfxPlayer = GetNode<SFXPlayer>("SFXPlayer");
-		musicPlayer = GetNode<AudioStreamPlayer>("MusicPlayer");  
 		
 		// set on-press handlers
 		foldButton.Pressed += OnFoldPressed;

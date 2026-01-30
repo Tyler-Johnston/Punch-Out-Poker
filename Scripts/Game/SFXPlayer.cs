@@ -11,6 +11,7 @@ public partial class SFXPlayer : AudioStreamPlayer
 
 	public override void _Ready()
 	{
+		// Existing Game Sounds
 		LoadSound("chips_1", "res://Assets/SFX/Chips/chips_1.wav");
 		LoadSound("chips_2", "res://Assets/SFX/Chips/chips_2.wav");
 		LoadSound("all_in_1", "res://Assets/SFX/Chips/all_in_1.wav");
@@ -21,6 +22,10 @@ public partial class SFXPlayer : AudioStreamPlayer
 		LoadSound("deck_deal_4", "res://Assets/SFX/DeckDeal/deck_deal_4.wav");
 		LoadSound("card_flip", "res://Assets/SFX/card_flip.mp3");
 		LoadSound("check", "res://Assets/SFX/check.mp3");
+		
+		// NEW: Dialogue Blip Sound
+		// Make sure to add your generated .wav file to this path!
+		LoadSound("speech_blip", "res://Assets/SFX/speech_blip.wav");
 	}
 
 	public void PlayRandomChip(bool isOpponent = false)
@@ -36,6 +41,28 @@ public partial class SFXPlayer : AudioStreamPlayer
 	public void PlayRandomDeckSound(bool isOpponent = false)
 	{
 		PlayRandomFromList(_deckSounds, isOpponent);
+	}
+	
+	/// <summary>
+	/// Plays a short blip for text dialogue.
+	/// </summary>
+	/// <param name="minPitch">Lowest pitch variance (e.g. 0.8)</param>
+	/// <param name="maxPitch">Highest pitch variance (e.g. 1.2)</param>
+	public void PlaySpeechBlip(float minPitch = 0.9f, float maxPitch = 1.1f)
+	{
+		GD.Print("in the playspeechblip");
+		if (_sounds.TryGetValue("speech_blip", out AudioStream stream))
+		{
+			// If the player is already busy playing a LONG sound, we might cut it off.
+			// But for speech blips, we usually want them to interrupt each other rapidly.
+			
+			this.Stream = stream;
+			
+			// Randomize pitch for the "speaking" effect
+			this.PitchScale = (float)GD.RandRange(minPitch, maxPitch);
+			
+			this.Play();
+		}
 	}
 
 	private void PlayRandomFromList(string[] soundList, bool isOpponent)
@@ -54,17 +81,16 @@ public partial class SFXPlayer : AudioStreamPlayer
 		{
 			this.Stream = stream;
 			
-			// 2. Adjust Pitch based on who triggered it
+			// Adjust Pitch based on who triggered it
 			float basePitch = 1.0f;
 			
 			if (isOpponent)
 			{
-				basePitch = 0.925f; 
+				basePitch = 0.925f; // Lower/Darker for opponent
 			}
 			else
 			{
-				// Normal pitch for player (Slightly higher/brighter)
-				basePitch = 1.0f;
+				basePitch = 1.0f; // Normal/Brighter for player
 			}
 			this.PitchScale = basePitch;
 			
@@ -72,12 +98,21 @@ public partial class SFXPlayer : AudioStreamPlayer
 		}
 		else
 		{
-			GD.PrintErr($"SFXPlayer: Sound '{soundName}' not found!");
+			// Only log error if it's not the speech blip (which might be missing initially)
+			if(soundName != "speech_blip") 
+				GD.PrintErr($"SFXPlayer: Sound '{soundName}' not found!");
 		}
 	}
 
 	private void LoadSound(string name, string path)
 	{
+		// Use FileAccess to check existence first to avoid console spam if file is missing
+		if (!FileAccess.FileExists(path))
+		{
+			GD.Print($"SFXPlayer: File not found at {path} - Sound '{name}' will be silent.");
+			return;
+		}
+
 		var stream = GD.Load<AudioStream>(path);
 		if (stream != null)
 		{
@@ -85,7 +120,7 @@ public partial class SFXPlayer : AudioStreamPlayer
 		}
 		else
 		{
-			GD.PrintErr($"SFXPlayer: Could not load sound at {path}");
+			GD.PrintErr($"SFXPlayer: Failed to load resource at {path}");
 		}
 	}
 }

@@ -518,6 +518,8 @@ offset_left = 986.0
 offset_top = 40.0
 offset_right = 1102.0
 offset_bottom = 179.0
+grow_horizontal = 0
+grow_vertical = 0
 
 [node name="PlayerArea" type="Node2D" parent="."]
 position = Vector2(376, 210.00002)

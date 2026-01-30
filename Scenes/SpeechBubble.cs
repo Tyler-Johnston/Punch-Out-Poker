@@ -9,6 +9,7 @@ public partial class SpeechBubble : PanelContainer
 	[Export] public float MinWidth = 32.0f;
 	[Export] public float TypingSpeed = 0.04f;
 	[Export] public float PopDuration = 0.3f;
+	[Export] public SFXPlayer AudioPlayer;
 
 	[ExportGroup("Tail Settings")]
 	[Export] public Vector2 TailTipPosition = new Vector2(500, 300);
@@ -92,12 +93,14 @@ public partial class SpeechBubble : PanelContainer
 
 	public async void Say(string text)
 	{
+			GD.Print($"[DEBUG] Say called with text: '{text}'. AudioPlayer is: {(AudioPlayer == null ? "NULL" : "ASSIGNED")}");
+			
 		if (_activeTween != null && _activeTween.IsRunning())
 			_activeTween.Kill();
 
 		Show();
 		Scale = Vector2.One;
-		Modulate = new Color(1, 1, 1, 0); // Visible to engine, invisible to player
+		Modulate = new Color(1, 1, 1, 0); // Invisible for calculation
 		
 		_label.Text = text;
 		_label.VisibleRatio = 0.0f;
@@ -108,7 +111,6 @@ public partial class SpeechBubble : PanelContainer
 		_label.ResetSize(); 
 		
 		await ToSignal(GetTree(), "process_frame");
-		
 		if (!IsInstanceValid(this) || !IsInstanceValid(_label)) return;
 
 		Vector2 naturalSize = _label.GetCombinedMinimumSize();
@@ -126,38 +128,59 @@ public partial class SpeechBubble : PanelContainer
 			_label.CustomMinimumSize = new Vector2(tightWidth, 0);
 		}
 		
-		_label.ResetSize(); // Force label to update rect
-		ResetSize();        // Force Container to shrink to Label
+		_label.ResetSize();
+		ResetSize();
 		
 		await ToSignal(GetTree(), "process_frame");
 
 		// --- PASS 3: Position Snap ---
-		// We want the Tail Tip (Size.X, Size.Y + TailHeight) to land at TailTipPosition.
-		// Math: GlobalPosition = Target - LocalOffset
 		Vector2 tailOffset = new Vector2(Size.X, Size.Y + TailHeight);
-		
-		// If SpeechBubble is child of a Control/CanvasLayer, Position works fine.
 		Position = TailTipPosition - tailOffset;
 
-		// --- PASS 4: Animate ---
-		// Re-set pivot because size just changed
+		// --- PASS 4: Pop Animation ---
 		PivotOffset = Size; 
-		
-		// Start "Pop" animation
 		Scale = Vector2.Zero;
-		Modulate = new Color(1, 1, 1, 1); // Fade alpha back in
+		Modulate = new Color(1, 1, 1, 1);
 		
 		_activeTween = CreateTween();
-		
 		_activeTween.SetParallel(true);
 		_activeTween.TweenProperty(this, "scale", Vector2.One, PopDuration)
 			.SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
 		
-		_activeTween.SetParallel(false);
-		float totalTypingTime = Mathf.Max(0.5f, text.Length * TypingSpeed);
-		_activeTween.TweenProperty(_label, "visible_ratio", 1.0f, totalTypingTime)
-			.SetTrans(Tween.TransitionType.Linear).SetEase(Tween.EaseType.InOut);
+		// Wait for pop to finish before typing (optional, feels cleaner)
+		// or just let it type while popping
+		
+		// --- PASS 5: Typing Loop with Sound ---
+		// We do NOT use TweenProperty for visible_ratio anymore. We do it manually.
+		
+		int totalChars = text.Length;
+		float delayPerChar = TypingSpeed;
+
+		for (int i = 0; i <= totalChars; i++)
+		{
+			_label.VisibleCharacters = i;
+			
+			// Play sound every 2 characters (so it's not too crazy)
+			// AND ensure we aren't at the very start (i=0)
+			if (i > 0 && i < totalChars && i % 2 == 0)
+			{
+				if (AudioPlayer != null)
+				{
+					// Play with slight random pitch (0.9 to 1.1)
+					AudioPlayer.PlaySpeechBlip(0.9f, 1.1f);
+				}
+			}
+
+			// Wait for next char
+			// Using CreateTimer ensures it runs even if the game is paused (if configured)
+			// or use ToSignal(GetTree().CreateTimer(delayPerChar), "timeout");
+			await ToSignal(GetTree().CreateTimer(delayPerChar), "timeout");
+			
+			// Safety check if the bubble was closed mid-typing
+			if (!IsInstanceValid(this) || !Visible) return;
+		}
 	}
+
 
 	public void Close()
 	{
