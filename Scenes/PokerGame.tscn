@@ -289,9 +289,10 @@ shader_parameter/grid_strength = 0.2000000095
 shader_parameter/grain_amount = 0.0450000021375
 shader_parameter/blur_strength = 0.5
 
-[node name="PokerGame" type="Node2D"]
+[node name="PokerGame" type="Node2D" node_paths=PackedStringArray("OpponentFrame")]
 scale = Vector2(3, 3)
 script = ExtResource("1_8w0ed")
+OpponentFrame = NodePath("CanvasLayer/Control/OpponentView/FrameShadow/OpponentFrame")
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 layer = -1

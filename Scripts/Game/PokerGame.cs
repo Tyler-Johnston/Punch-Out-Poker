@@ -53,6 +53,7 @@ public partial class PokerGame : Node2D
 	private AtlasTexture _opponentAtlas;
 	private Sprite2D faceSprite;
 	private PanelContainer speechBubble;
+	[Export] public PanelContainer OpponentFrame; 
 	
 	// game flow
 	private Street currentStreet = Street.Preflop;
@@ -503,11 +504,13 @@ public partial class PokerGame : Node2D
 			if (exitType == OpponentExitType.RageQuit)
 			{
 				ShowMessage($"{aiOpponent.PlayerName} RAGE QUITS!");
+				SetExpression(Expression.Angry);
 				GD.Print($"[GAME OVER] Opponent Rage Quit! Tilt: {aiOpponent.Personality.TiltMeter}");
 			}
 			else if (exitType == OpponentExitType.Surrender)
 			{
 				ShowMessage($"{aiOpponent.PlayerName} SURRENDERS!");
+				SetExpression(Expression.Worried);
 				GD.Print($"[GAME OVER] Opponent Surrendered. Chips: {aiOpponent.ChipStack}");
 			}
 			await ToSignal(GetTree().CreateTimer(3.0f), SceneTreeTimer.SignalName.Timeout);

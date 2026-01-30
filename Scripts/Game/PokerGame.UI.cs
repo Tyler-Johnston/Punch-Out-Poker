@@ -308,43 +308,29 @@ public partial class PokerGame
 	{
 		TiltState state = aiOpponent.CurrentTiltState;
 		
+		var currentStyle = OpponentFrame.GetThemeStylebox("panel");
+		StyleBoxFlat style = (StyleBoxFlat)currentStyle.Duplicate();
+
 		switch (state)
 		{
 			case TiltState.Zen:
-				opponentStackLabel.Modulate = Colors.White;
+				style.BorderColor = new Color("d8d8d8");
 				break;
+				
 			case TiltState.Annoyed:
-				opponentStackLabel.Modulate = Colors.Yellow;
+				style.BorderColor = new Color("e1cb1eff");
 				break;
+				
 			case TiltState.Steaming:
-				opponentStackLabel.Modulate = Colors.Orange;
-				ApplyShake(opponentPortrait, 2.0f);
+				style.BorderColor = new Color("be5d1bff");
 				break;
+				
 			case TiltState.Monkey:
-				opponentStackLabel.Modulate = Colors.Red;
-				ApplyShake(opponentPortrait, 5.0f);
+				style.BorderColor = Colors.Red;
 				break;
 		}
 
-		// trigger tilt dialogue TODO: need to use the AnimiateText method, and it needs to wait until 
-		// the current spoken line is done + waits a bit before saying this one as well.
-		if (handInProgress && !waitingForNextGame)
-		{
-			string tiltLine = dialogueManager.GetTiltDialogue(state);
-			if (!string.IsNullOrEmpty(tiltLine))
-			{
-				opponentDialogueLabel.Text = tiltLine;
-			}
-		}
-	}
-	
-	private void ApplyShake(Control node, float intensity)
-	{
-		var tween = CreateTween();
-		Vector2 originalPos = node.Position;
-		tween.TweenProperty(node, "position", originalPos + new Vector2(intensity, 0), 0.05f);
-		tween.TweenProperty(node, "position", originalPos - new Vector2(intensity, 0), 0.05f);
-		tween.TweenProperty(node, "position", originalPos, 0.05f);
+		OpponentFrame.AddThemeStyleboxOverride("panel", style);
 	}
 	
 	/// <summary>
