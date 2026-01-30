@@ -1,20 +1,23 @@
 using Godot;
 using System.Threading.Tasks;
 
+[Tool] // Runs in editor so you can see the Red Target Circle
 public partial class SpeechBubble : PanelContainer
 {
 	[ExportGroup("Settings")]
-	[Export] public float MaxWidth = 200.0f;
+	[Export] public float MaxWidth = 250.0f; // Slightly wider for poker tables
 	[Export] public float MinWidth = 32.0f;
-	[Export] public float TypingSpeed = 0.05f;
-	[Export] public float PopDuration = 0.2f;
+	[Export] public float TypingSpeed = 0.04f;
+	[Export] public float PopDuration = 0.3f;
 
 	[ExportGroup("Tail Settings")]
-	[Export] public float TailWidth = 12.0f;
-	[Export] public float TailHeight = 12.0f;
-	[Export] public Color TailColor = Colors.White; // Should match your Panel BG
-	[Export] public Color BorderColor = Colors.Black; // Should match your Panel Border
+	[Export] public Vector2 TailTipPosition = new Vector2(500, 300);
+	[Export] public float TailWidth = 16.0f;
+	[Export] public float TailHeight = 16.0f;
+	[Export] public Color TailColor = Colors.White; 
+	[Export] public Color BorderColor = Colors.Black;
 	[Export] public float BorderWidth = 4.0f;
+	[Export] public bool DebugDrawTarget = true; // Uncheck this to hide the red circle
 
 	private Label _label;
 	private Tween _activeTween;
@@ -25,47 +28,52 @@ public partial class SpeechBubble : PanelContainer
 		
 		if (_label == null)
 		{
-			GD.PrintErr("SpeechBubble: Missing 'Label' child node!");
+			// Only print error if running game, not in editor
+			if (!Engine.IsEditorHint()) GD.PrintErr("SpeechBubble: Missing 'Label' child node!");
 			return;
 		}
 
-		// Allow drawing outside bounds (for the tail)
+		// Ensure strictly manual sizing
 		ClipContents = false;
+		GrowHorizontal = GrowDirection.Begin; // "Begin" = Left in Godot
+		GrowVertical = GrowDirection.Begin;   // "Begin" = Top in Godot
 
-		// Set Growth Direction: Expand LEFT and UP
-		GrowHorizontal = GrowDirection.Begin; 
-		GrowVertical = GrowDirection.Begin;   
-
-		// Initial State: Hidden
-		Scale = Vector2.Zero;
-		Modulate = new Color(1, 1, 1, 0);
+		if (!Engine.IsEditorHint())
+		{
+			// Hide initially in game
+			Scale = Vector2.Zero;
+			Modulate = new Color(1, 1, 1, 0);
+		}
 	}
 
-	// --- FIX START: Handle Resize Events ---
 	public override void _Notification(int what)
 	{
 		base._Notification(what);
-
+		// Update pivot/redraw when size changes (Editor or Game)
 		if (what == NotificationResized)
 		{
-			// CRITICAL: Always keep the pivot at the Bottom-Right corner.
-			// This runs whenever Godot's layout engine updates the node's Size.
-			PivotOffset = Size;
-
-			// Request a redraw because the tail position depends on Size.
+			// Set pivot to Bottom-Right corner (Box corner, not tail tip)
+			// This makes the bubble "fan out" from the tail connection point
+			PivotOffset = Size; 
 			QueueRedraw();
 		}
 	}
-	// --- FIX END ---
 
 	public override void _Draw()
 	{
-		// 1. Define Points relative to the Bubble Box (Bottom-Right anchor)
+		// 1. Draw Debug Target (Editor Only)
+		if (Engine.IsEditorHint() && DebugDrawTarget)
+		{
+			DrawCircle(GetParentControl()?.GetLocalMousePosition() ?? Vector2.Zero, 5, Colors.Red);
+			DrawCircle(new Vector2(Size.X, Size.Y + TailHeight), 3, Colors.Red);
+		}
+
+		// 2. Draw The Tail
 		Vector2 p1 = new Vector2(Size.X - TailWidth - BorderWidth, Size.Y);
 		Vector2 p2 = new Vector2(Size.X - BorderWidth, Size.Y);
 		Vector2 tip = new Vector2(Size.X, Size.Y + TailHeight);
 
-		// 2. Draw Border Triangle
+		// Outer Border (Black)
 		Vector2[] borderPoints = new Vector2[] 
 		{ 
 			p1 + new Vector2(-BorderWidth, 0), 
@@ -74,7 +82,7 @@ public partial class SpeechBubble : PanelContainer
 		};
 		DrawColoredPolygon(borderPoints, BorderColor);
 
-		// 3. Draw Inner Triangle
+		// Inner Color (White) - Overlaps the box border to look seamless
 		Vector2 innerP1 = new Vector2(p1.X, Size.Y - BorderWidth);
 		Vector2 innerP2 = new Vector2(p2.X, Size.Y - BorderWidth);
 		
@@ -82,69 +90,30 @@ public partial class SpeechBubble : PanelContainer
 		DrawColoredPolygon(innerPoints, TailColor);
 	}
 
-	public void Say(string text)
+	public async void Say(string text)
 	{
 		if (_activeTween != null && _activeTween.IsRunning())
 			_activeTween.Kill();
+
+		Show();
+		Scale = Vector2.One;
+		Modulate = new Color(1, 1, 1, 0); // Visible to engine, invisible to player
 		
 		_label.Text = text;
 		_label.VisibleRatio = 0.0f;
 		
-		// Reset visibility
-		Scale = Vector2.Zero;
-		Modulate = new Color(1, 1, 1, 1);
-		Show();
-
-		// 1. Calculate and apply new size constraints
-		UpdateBubbleSize();
-
-		// 2. Force pivot update immediately (for the starting frame)
-		// Even if size doesn't change, we ensure pivot is correct before popping.
-		// If size DOES change, _Notification will fire shortly and update it again.
-		PivotOffset = Size;
-
-		// 3. Animate
-		_activeTween = CreateTween();
-		
-		// Pop In
-		_activeTween.SetParallel(true);
-		_activeTween.TweenProperty(this, "scale", Vector2.One, PopDuration)
-			.SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
-		_activeTween.TweenProperty(this, "modulate:a", 1.0f, PopDuration);
-		
-		// Typewriter
-		_activeTween.SetParallel(false);
-		float totalTypingTime = text.Length * TypingSpeed;
-		totalTypingTime = Mathf.Max(0.2f, totalTypingTime); 
-		
-		_activeTween.TweenProperty(_label, "visible_ratio", 1.0f, totalTypingTime)
-			.SetTrans(Tween.TransitionType.Linear).SetEase(Tween.EaseType.InOut);
-	}
-
-	public void Close()
-	{
-		if (_activeTween != null && _activeTween.IsRunning())
-			_activeTween.Kill();
-
-		_activeTween = CreateTween();
-		_activeTween.SetParallel(true);
-		
-		// Shrink back to Pivot (Bottom-Right)
-		_activeTween.TweenProperty(this, "scale", Vector2.Zero, PopDuration)
-			.SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.In);
-		_activeTween.TweenProperty(this, "modulate:a", 0.0f, PopDuration);
-		
-		_activeTween.Chain().TweenCallback(Callable.From(Hide));
-	}
-
-	private void UpdateBubbleSize()
-	{
+		// --- PASS 1: Natural Width Calculation ---
 		_label.AutowrapMode = TextServer.AutowrapMode.Off;
 		_label.CustomMinimumSize = Vector2.Zero;
 		_label.ResetSize(); 
 		
+		await ToSignal(GetTree(), "process_frame");
+		
+		if (!IsInstanceValid(this) || !IsInstanceValid(_label)) return;
+
 		Vector2 naturalSize = _label.GetCombinedMinimumSize();
 
+		// --- PASS 2: Apply Constraints ---
 		if (naturalSize.X > MaxWidth)
 		{
 			_label.AutowrapMode = TextServer.AutowrapMode.WordSmart;
@@ -157,8 +126,51 @@ public partial class SpeechBubble : PanelContainer
 			_label.CustomMinimumSize = new Vector2(tightWidth, 0);
 		}
 		
-		// Reset container to fit the new Label size
-		CustomMinimumSize = Vector2.Zero;
-		ResetSize();
+		_label.ResetSize(); // Force label to update rect
+		ResetSize();        // Force Container to shrink to Label
+		
+		await ToSignal(GetTree(), "process_frame");
+
+		// --- PASS 3: Position Snap ---
+		// We want the Tail Tip (Size.X, Size.Y + TailHeight) to land at TailTipPosition.
+		// Math: GlobalPosition = Target - LocalOffset
+		Vector2 tailOffset = new Vector2(Size.X, Size.Y + TailHeight);
+		
+		// If SpeechBubble is child of a Control/CanvasLayer, Position works fine.
+		Position = TailTipPosition - tailOffset;
+
+		// --- PASS 4: Animate ---
+		// Re-set pivot because size just changed
+		PivotOffset = Size; 
+		
+		// Start "Pop" animation
+		Scale = Vector2.Zero;
+		Modulate = new Color(1, 1, 1, 1); // Fade alpha back in
+		
+		_activeTween = CreateTween();
+		
+		_activeTween.SetParallel(true);
+		_activeTween.TweenProperty(this, "scale", Vector2.One, PopDuration)
+			.SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
+		
+		_activeTween.SetParallel(false);
+		float totalTypingTime = Mathf.Max(0.5f, text.Length * TypingSpeed);
+		_activeTween.TweenProperty(_label, "visible_ratio", 1.0f, totalTypingTime)
+			.SetTrans(Tween.TransitionType.Linear).SetEase(Tween.EaseType.InOut);
+	}
+
+	public void Close()
+	{
+		if (_activeTween != null && _activeTween.IsRunning())
+			_activeTween.Kill();
+
+		_activeTween = CreateTween();
+		_activeTween.SetParallel(true);
+		
+		_activeTween.TweenProperty(this, "scale", Vector2.Zero, PopDuration)
+			.SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.In);
+		_activeTween.TweenProperty(this, "modulate:a", 0.0f, PopDuration);
+		
+		_activeTween.Chain().TweenCallback(Callable.From(Hide));
 	}
 }
