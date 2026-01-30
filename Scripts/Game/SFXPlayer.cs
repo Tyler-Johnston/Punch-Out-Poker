@@ -50,15 +50,11 @@ public partial class SFXPlayer : AudioStreamPlayer
 	/// <param name="maxPitch">Highest pitch variance (e.g. 1.2)</param>
 	public void PlaySpeechBlip(float minPitch = 0.9f, float maxPitch = 1.1f)
 	{
-		GD.Print("in the playspeechblip");
 		if (_sounds.TryGetValue("speech_blip", out AudioStream stream))
 		{
-			// If the player is already busy playing a LONG sound, we might cut it off.
-			// But for speech blips, we usually want them to interrupt each other rapidly.
-			
 			this.Stream = stream;
 			
-			// Randomize pitch for the "speaking" effect
+		  	this.VolumeDb = -10.0f; 
 			this.PitchScale = (float)GD.RandRange(minPitch, maxPitch);
 			
 			this.Play();
