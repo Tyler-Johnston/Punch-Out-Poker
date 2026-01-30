@@ -48,12 +48,15 @@ public partial class PokerGame : Node2D
 	private Texture2D raiseBtnImg;
 	
 	private TextureRect opponentPortrait;
-	private TextureRect tableColor;
 	
 	private AtlasTexture _opponentAtlas;
 	private Sprite2D faceSprite;
 	private PanelContainer speechBubble;
-	[Export] public PanelContainer OpponentFrame; 
+	[Export] public PanelContainer OpponentFrame;
+	[Export] public TextureRect MainTableRect;
+	[Export] public TextureRect MiniTableRect;
+
+	// --- MESSAGING & ANIMATION ---
 	
 	// game flow
 	private Street currentStreet = Street.Preflop;
@@ -156,7 +159,7 @@ public partial class PokerGame : Node2D
 		speechBubble = hudControl.GetNode<PanelContainer>("SpeechBubble");
 		
 		// table color
-		tableColor = hudControl.GetNode<TextureRect>("ColorRect");
+		//tableColor = hudControl.GetNode<TextureRect>("MainTable");
 		
 		// slider
 		betSlider = hudControl.GetNode<HSlider>("BetSlider");

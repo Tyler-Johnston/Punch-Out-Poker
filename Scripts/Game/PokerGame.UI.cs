@@ -1,72 +1,74 @@
-// PokerGame.UI.cs
 using Godot;
 using System;
 
 public partial class PokerGame
 {
-	
 	private void ShowMessage(string text)
 	{
 		gameStateLabel.Text = text;
 	}
-	
-	private float AnimateText(Label label, string text, float speed = 0.03f)
-	{
-		if (string.IsNullOrWhiteSpace(text) || text.Length <= 1) 
-			return 0f; // No wait time
 
-		speechBubble.Visible = true; 
-		label.Text = text;
-		label.VisibleRatio = 0;
-		
-		float typeDuration = text.Length * speed;
-		
-		Tween tween = GetTree().CreateTween();
-		tween.TweenProperty(label, "visible_ratio", 1.0f, typeDuration);
-		
-		float readTime = 2.0f + (text.Length * 0.05f);
-		tween.TweenInterval(readTime);
-		
-		tween.TweenCallback(Callable.From(() => {
-			label.Text = "";           
-			speechBubble.Visible = false;
-		}));
-
-		return typeDuration; // Return how long typing takes
-	}
-
+	// --- TABLE VISUALS ---
 	private void SetTableColor()
 	{
-		// get table color depending on the circuit we are in
-		Color middleColor = new Color("#52a67f"); 
+		Color baseColor = new Color("#52a67f");
 		switch (GameManager.Instance.GetCircuitType())
 		{
-			case 0:
-				middleColor = new Color("#52a67f"); 
-				break;
-			case 1:
-				middleColor = new Color("b0333dff"); 
-				break;
-			case 2:
-				middleColor = new Color("#127AE3"); 
-				break;
+			case 0: baseColor = new Color("#52a67f"); break; // Green
+			case 1: baseColor = new Color("b0333dff"); break; // Red
+			case 2: baseColor = new Color("#127AE3"); break; // Blue
 		}
-		
-		// set the table color
-		var gradientTexture = tableColor.Texture as GradientTexture2D;
-		if (gradientTexture != null)
-		{
-			gradientTexture.Gradient = (Gradient)gradientTexture.Gradient.Duplicate();
-			Color cornerColor = middleColor.Darkened(0.3f);
 
-			gradientTexture.Gradient.SetColor(0, middleColor);
-			gradientTexture.Gradient.SetColor(1, cornerColor);
+		if (MiniTableRect != null)
+		{
+			var enemyViewShader = GD.Load<Shader>("res://Assets/Shaders/EnemyView.gdshader");
+			
+			// Create the Gradient Data
+			var newGradient = new GradientTexture2D();
+			newGradient.Gradient = new Gradient();
+			newGradient.Gradient.SetColor(0, baseColor);
+			newGradient.Gradient.SetColor(1, baseColor.Darkened(0.3f));
+			newGradient.Fill = GradientTexture2D.FillEnum.Linear; 
+
+			var mat = new ShaderMaterial();
+			mat.Shader = enemyViewShader;
+			
+			mat.SetShaderParameter("gradient_texture", newGradient);
+			mat.SetShaderParameter("border_width", 0.073f);
+			//mat.SetShaderParameter("border_color", baseColor.Darkened(0.6f));
+			mat.SetShaderParameter("pixel_factor", 0.01f);
+			
+			MiniTableRect.Material = mat;
 		}
-		ShaderMaterial retroMat = new ShaderMaterial();
-		retroMat.Shader = GD.Load<Shader>("res://Assets/Shaders/Pixelate.gdshader");
-		tableColor.Material = retroMat;
+
+		if (MainTableRect != null)
+		{
+			var pixelShader = GD.Load<Shader>("res://Assets/Shaders/Pixelate.gdshader");
+			UpdateMainTableGradient(MainTableRect, baseColor);
+
+			var mat = new ShaderMaterial();
+			mat.Shader = pixelShader;
+			MainTableRect.Material = mat;
+		}
 	}
-	
+
+	private void UpdateMainTableGradient(TextureRect rect, Color baseColor)
+	{
+		if (rect == null) return;
+
+		var gradTex = rect.Texture as GradientTexture2D;
+		if (gradTex != null)
+		{
+			// Duplicate to modify safely
+			gradTex.Gradient = (Gradient)gradTex.Gradient.Duplicate();
+			Color edgeColor = baseColor.Darkened(0.3f);
+
+			gradTex.Gradient.SetColor(0, baseColor);
+			gradTex.Gradient.SetColor(1, edgeColor);
+		}
+	}
+
+	// --- OPPONENT VISUALS ---
 	private void UpdateOpponentExpression(PlayerAction action)
 	{
 		// 1. Heavy Tilt Overrides (Angry/Monkey)
@@ -86,21 +88,98 @@ public partial class PokerGame
 				SetExpression(Expression.Neutral);
 				break;
 			case PlayerAction.Call:
-				SetExpression(Expression.Neutral); 
+				SetExpression(Expression.Neutral);
 				break;
 			case PlayerAction.Raise:
-				SetExpression(Expression.Neutral); 
+				SetExpression(Expression.Neutral);
 				break;
 			case PlayerAction.AllIn:
 				SetExpression(Expression.Smirk);
 				break;
 		}
 	}
-	
+
+	public void SetExpression(Expression expression)
+	{
+		if (faceSprite != null)
+		{
+			faceSprite.Frame = (int)expression;
+		}
+	}
+
+	private void LoadOpponentSprite(string currentOpponentName)
+	{
+		string folderPath = "res://Assets/Textures/expressions/";
+		string targetPath = $"{folderPath}{currentOpponentName}_expressions.png";
+		string fallbackPath = $"{folderPath}king_expressions.png";
+
+		Texture2D loadedTexture = null;
+
+		if (ResourceLoader.Exists(targetPath))
+		{
+			loadedTexture = GD.Load<Texture2D>(targetPath);
+			GD.Print($"Loaded sprite: {currentOpponentName}");
+		}
+		else
+		{
+			GD.Print($"Sprite missing for {currentOpponentName}. Defaulting to King.");
+			if (ResourceLoader.Exists(fallbackPath))
+			{
+				loadedTexture = GD.Load<Texture2D>(fallbackPath);
+			}
+			else
+			{
+				GD.PushError("CRITICAL: Fallback sprite missing!");
+				return;
+			}
+		}
+
+		faceSprite.Texture = loadedTexture;
+		faceSprite.Hframes = 8;
+		faceSprite.Vframes = 1;
+		faceSprite.Frame = 0;
+	}
+
+	private void UpdateOpponentVisuals()
+	{
+		if (OpponentFrame == null) return;
+
+		TiltState state = aiOpponent.CurrentTiltState;
+
+		// Get current stylebox and duplicate
+		var currentStyle = OpponentFrame.GetThemeStylebox("panel");
+		if (currentStyle is StyleBoxFlat)
+		{
+			StyleBoxFlat style = (StyleBoxFlat)currentStyle.Duplicate();
+
+			switch (state)
+			{
+				case TiltState.Zen:
+					style.BorderColor = new Color("d8d8d8");
+					break;
+
+				case TiltState.Annoyed:
+					style.BorderColor = new Color("e1cb1eff");
+					break;
+
+				case TiltState.Steaming:
+					style.BorderColor = new Color("be5d1bff");
+					break;
+
+				case TiltState.Monkey:
+					style.BorderColor = Colors.Red;
+					break;
+			}
+
+			OpponentFrame.AddThemeStyleboxOverride("panel", style);
+		}
+	}
+
+	// --- HUD & BUTTONS ---
 	private void UpdateButtonLabels()
 	{
 		if (waitingForNextGame) return;
-		
+
 		int toCall = currentBet - playerBet;
 		var (minBet, maxBet) = GetLegalBetRange();
 
@@ -119,13 +198,11 @@ public partial class PokerGame
 			{
 				if (currentBet > 0)
 				{
-					// Calculate total like the raise block
 					int raiseTotal = currentBet + betAmount;
 					betRaiseButton.Text = $"Raise: {raiseTotal}";
 				}
 				else
 				{
-					// True opening bet (0 in pot)
 					betRaiseButton.Text = $"Bet: {betAmount}";
 				}
 			}
@@ -142,7 +219,6 @@ public partial class PokerGame
 			}
 
 			int raiseTotal = currentBet + betAmount;
-			int toAddForRaise = raiseTotal - playerBet;
 
 			if (allInOnly || sliderAllIn)
 			{
@@ -174,7 +250,7 @@ public partial class PokerGame
 			opponentDialogueLabel.Text = "";
 			return;
 		}
-	
+
 		if (waitingForNextGame)
 		{
 			if (IsGameOver())
@@ -186,7 +262,7 @@ public partial class PokerGame
 				checkCallButton.Text = "Next Hand";
 				checkCallButton.Disabled = false;
 			}
-			
+
 			cashOutButton.Disabled = false;
 			cashOutButton.Visible = true;
 			foldButton.Visible = false;
@@ -200,16 +276,14 @@ public partial class PokerGame
 		{
 			RefreshBetSlider();
 			UpdateButtonLabels();
-			
+
 			foldButton.Visible = true;
 			betRaiseButton.Visible = true;
 
-			// Disable buttons during AI turn to prevent race conditions
 			bool enableButtons = isPlayerTurn && handInProgress && !playerIsAllIn;
 			foldButton.Disabled = !enableButtons;
 			checkCallButton.Disabled = !enableButtons;
 
-			// Special handling for raise button
 			if (!enableButtons || raisesThisStreet >= MAX_RAISES_PER_STREET)
 			{
 				betRaiseButton.Disabled = true;
@@ -248,11 +322,10 @@ public partial class PokerGame
 		betAmount = Math.Clamp(betAmount, minBet, maxBet);
 		betSlider.Value = betAmount;
 	}
-	
+
 	private void OnBetSliderValueChanged(double value)
 	{
 		int sliderValue = (int)Math.Round(value);
-
 		var (minBet, maxBet) = GetLegalBetRange();
 		sliderValue = Math.Clamp(sliderValue, minBet, maxBet);
 
@@ -260,83 +333,35 @@ public partial class PokerGame
 		betSlider.Value = betAmount;
 		UpdateButtonLabels();
 	}
+
+	// --- DIALOGUE SYSTEM ---
 	
-	public void SetExpression(Expression expression)
+	private float AnimateText(Label label, string text, float speed = 0.03f)
 	{
-		if (faceSprite != null)
+		if (string.IsNullOrWhiteSpace(text) || text.Length <= 1)
+			return 0f;
+
+		speechBubble.Visible = true;
+		label.Text = text;
+		label.VisibleRatio = 0;
+
+		float typeDuration = text.Length * speed;
+
+		Tween tween = GetTree().CreateTween();
+		tween.TweenProperty(label, "visible_ratio", 1.0f, typeDuration);
+
+		float readTime = 2.0f + (text.Length * 0.05f);
+		tween.TweenInterval(readTime);
+
+		tween.TweenCallback(Callable.From(() =>
 		{
-			// Cast the enum to int to set the frame index
-			faceSprite.Frame = (int)expression;
-		}
+			label.Text = "";
+			speechBubble.Visible = false;
+		}));
+
+		return typeDuration;
 	}
 	
-	private void LoadOpponentSprite(string currentOpponentName)
-	{
-		string folderPath = "res://Assets/Textures/expressions/"; 
-		string targetPath = $"{folderPath}{currentOpponentName}_expressions.png";
-		string fallbackPath = $"{folderPath}king_expressions.png";
-		
-		Texture2D loadedTexture = null;
-
-		if (ResourceLoader.Exists(targetPath))
-		{
-			loadedTexture = GD.Load<Texture2D>(targetPath);
-			GD.Print($"Loaded sprite: {currentOpponentName}");
-		}
-		else
-		{
-			GD.Print($"Sprite missing for {currentOpponentName}. Defaulting to King.");
-			if (ResourceLoader.Exists(fallbackPath))
-			{
-				loadedTexture = GD.Load<Texture2D>(fallbackPath);
-			}
-			else
-			{
-				GD.PushError("CRITICAL: Fallback sprite missing!");
-				return;
-			}
-		}
-
-		faceSprite.Texture = loadedTexture;
-		faceSprite.Hframes = 8; 
-		faceSprite.Vframes = 1;
-		faceSprite.Frame = 0;
-	}
-
-	
-	private void UpdateOpponentVisuals()
-	{
-		TiltState state = aiOpponent.CurrentTiltState;
-		
-		var currentStyle = OpponentFrame.GetThemeStylebox("panel");
-		StyleBoxFlat style = (StyleBoxFlat)currentStyle.Duplicate();
-
-		switch (state)
-		{
-			case TiltState.Zen:
-				style.BorderColor = new Color("d8d8d8");
-				break;
-				
-			case TiltState.Annoyed:
-				style.BorderColor = new Color("e1cb1eff");
-				break;
-				
-			case TiltState.Steaming:
-				style.BorderColor = new Color("be5d1bff");
-				break;
-				
-			case TiltState.Monkey:
-				style.BorderColor = Colors.Red;
-				break;
-		}
-
-		OpponentFrame.AddThemeStyleboxOverride("panel", style);
-	}
-	
-	/// <summary>
-	/// Core helper to manage Bubble visibility and Animation.
-	/// Returns the duration of the typing animation.
-	/// </summary>
 	private float PlayDialogue(string text)
 	{
 		if (string.IsNullOrEmpty(text))
@@ -345,42 +370,33 @@ public partial class PokerGame
 			speechBubble.Visible = false;
 			return 0f;
 		}
-		
+
 		return AnimateText(opponentDialogueLabel, text);
 	}
 
-	/// <summary>
-	/// Gets dialogue specific to the AI's Action (Call/Raise/Fold).
-	/// Returns the duration to wait.
-	/// </summary>
 	private float PlayActionDialogue(PlayerAction action, GameState state)
 	{
 		HandStrength strength = aiOpponent.DetermineHandStrengthCategory(state);
 		string dialogueLine = aiOpponent.GetDialogueForAction(action, strength, aiBluffedThisHand);
-		
+
 		float chatRoll = GD.Randf();
 		bool alwaysTalk = (aiOpponent.CurrentTiltState >= TiltState.Steaming);
-		
+
 		if ((chatRoll <= aiOpponent.Personality.Chattiness || alwaysTalk))
 		{
 			return PlayDialogue(dialogueLine);
 		}
-		
+
 		return PlayDialogue(null);
 	}
 
-	/// <summary>
-	/// Gets dialogue for reaction events (Win/Loss). 
-	/// Fire-and-forget (void).
-	/// </summary>
 	private void PlayReactionDialogue(string category)
 	{
 		string line = aiOpponent.GetRandomDialogue(category);
-		
+
 		float chatRoll = GD.Randf();
 		bool alwaysTalk = (aiOpponent.CurrentTiltState >= TiltState.Steaming);
-		
-		// Reaction thresholds can be slightly higher
+
 		float threshold = aiOpponent.Personality.Chattiness;
 		if (category == "OnWinPot" || category == "OnLosePot") threshold += 0.4f;
 
