@@ -158,9 +158,6 @@ public partial class PokerGame : Node2D
 		// speech bubble
 		speechBubble = hudControl.GetNode<PanelContainer>("SpeechBubble");
 		
-		// table color
-		//tableColor = hudControl.GetNode<TextureRect>("MainTable");
-		
 		// slider
 		betSlider = hudControl.GetNode<HSlider>("BetSlider");
 		
@@ -531,7 +528,6 @@ public partial class PokerGame : Node2D
 		return playerChips <= 0 || opponentChips <= 0;
 	}
 	
-	// Helper to show emotion momentarily then reset to neutral
 	private async void ShowMomentaryExpression(Expression expr, float duration)
 	{
 		SetExpression(expr);

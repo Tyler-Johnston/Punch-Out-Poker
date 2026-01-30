@@ -294,7 +294,7 @@ scale = Vector2(3, 3)
 script = ExtResource("1_8w0ed")
 OpponentFrame = NodePath("CanvasLayer/Control/OpponentView/FrameShadow/OpponentFrame")
 MainTableRect = NodePath("CanvasLayer/Control/MainTable")
-MiniTableRect = NodePath("CanvasLayer/Control/OpponentView/FrameShadow/OpponentFrame/InnerWrapper/TableBackground")
+MiniTableRect = NodePath("CanvasLayer/Control/OpponentView/FrameShadow/OpponentFrame/InnerWrapper/MiniTable")
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 layer = -1
@@ -336,7 +336,7 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_uh6rn")
 clip_contents = true
 layout_mode = 2
 
-[node name="TextureRect" type="TextureRect" parent="CanvasLayer/Control/OpponentView/FrameShadow/OpponentFrame/InnerWrapper"]
+[node name="OpponentBackground" type="TextureRect" parent="CanvasLayer/Control/OpponentView/FrameShadow/OpponentFrame/InnerWrapper"]
 clip_contents = true
 layout_mode = 0
 offset_right = 301.0
@@ -351,7 +351,7 @@ scale = Vector2(1.375, 1.3680557)
 texture = ExtResource("3_47o1s")
 hframes = 8
 
-[node name="TableBackground" type="TextureRect" parent="CanvasLayer/Control/OpponentView/FrameShadow/OpponentFrame/InnerWrapper"]
+[node name="MiniTable" type="TextureRect" parent="CanvasLayer/Control/OpponentView/FrameShadow/OpponentFrame/InnerWrapper"]
 material = SubResource("ShaderMaterial_u5b2p")
 layout_mode = 0
 offset_left = -53.0

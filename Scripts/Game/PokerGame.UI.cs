@@ -146,7 +146,6 @@ public partial class PokerGame
 
 		TiltState state = aiOpponent.CurrentTiltState;
 
-		// Get current stylebox and duplicate
 		var currentStyle = OpponentFrame.GetThemeStylebox("panel");
 		if (currentStyle is StyleBoxFlat)
 		{
@@ -295,7 +294,7 @@ public partial class PokerGame
 		}
 
 		playerStackLabel.Text = $"You: {playerChips}";
-		opponentStackLabel.Text = $"Opp: {opponentChips}";
+		opponentStackLabel.Text = $"{currentOpponentName}: {opponentChips}";
 		potLabel.Text = $"Pot: {pot}";
 	}
 

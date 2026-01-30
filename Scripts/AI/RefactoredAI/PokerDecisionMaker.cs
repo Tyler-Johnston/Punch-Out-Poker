@@ -580,14 +580,15 @@ public partial class PokerDecisionMaker : Node
 		}
 		
 		// 1. Calculate Absolute Strength
+		// This gives us a 0.0 - 1.0 rating based on the best 5-card hand we can make
 		int myRank = HandEvaluator.EvaluateHand(holeCards, communityCards);
 		float myAbsStrength = 1.0f - ((myRank - 1) / 7461.0f);
 
-		// 2. Calculate Board Strength (counterfeit check)
+		// 2. Calculate Board Strength (River Counterfeit Check)
+		// We can only ask the library to rank the board if there are 5+ cards.
 		float boardStrength = 0f;
 		if (communityCards.Count >= 5)
 		{
-			// Check if the board ITSELF is already very strong (counterfeiting our hand)
 			// Using an empty list for hole cards tells Evaluator to just check the board
 			int boardRank = HandEvaluator.EvaluateHand(new List<Card>(), communityCards);
 			boardStrength = 1.0f - ((boardRank - 1) / 7461.0f);
@@ -596,6 +597,7 @@ public partial class PokerDecisionMaker : Node
 		// 3. Adjust Strength for Counterfeiting
 		float adjustedStrength = myAbsStrength;
 		
+		// CASE A: River Counterfeit (Exact Calculation)
 		// If our hand is barely better than the board (e.g. board has 2-pair, we have 2-pair with bad kicker)
 		if (communityCards.Count >= 5 && (myAbsStrength - boardStrength < 0.05f))
 		{
@@ -603,12 +605,47 @@ public partial class PokerDecisionMaker : Node
 			adjustedStrength = 0.2f; // Downgrade to "weak"
 		}
 
-		adjustedStrength = (float)Math.Pow(adjustedStrength, 0.75);
-		if (myRank <= 6185) // Better than One Pair
+		// CASE B: Flop/Turn Counterfeit (Heuristic Check)
+		// The library can't rank 3 or 4 cards, so we use logic to detect "Fake Strength" on paired boards.
+		// Logic: If board is A-A-x and we have 6-9, the library says "Pair of Aces" (Strong),
+		// but in reality we are just playing the board (Weak).
+		else if (communityCards.Count >= 3)
 		{
-			adjustedStrength = Math.Max(adjustedStrength, 0.38f);
+			bool boardIsPaired = communityCards.GroupBy(c => c.Rank).Any(g => g.Count() >= 2);
+			bool holeCardsArePair = holeCards[0].Rank == holeCards[1].Rank;
+			
+			bool hitBoard = false;
+			foreach (var card in holeCards)
+			{
+				if (communityCards.Any(c => c.Rank == card.Rank)) hitBoard = true;
+			}
+
+			// If board is paired, we aren't holding a pair, and we didn't match the board:
+			// We are playing the board's pair with a potentially weak kicker.
+			if (boardIsPaired && !holeCardsArePair && !hitBoard && myAbsStrength < 0.75f)
+			{
+				// Downgrade significantly (40% penalty)
+				adjustedStrength *= 0.60f; 
+				GD.Print($"[AI] Early Counterfeit Heuristic: Board Paired & Missed. Downgrading {myAbsStrength:F2} -> {adjustedStrength:F2}");
+			}
+		}
+
+		// 4. Curve the strength
+		// This pushes decent hands higher and weak hands lower
+		adjustedStrength = (float)Math.Pow(adjustedStrength, 0.75);
+		
+		// Safety floor for made hands (better than One Pair)
+		if (myRank <= 6185) 
+		{
+			// But only enforce this floor if we weren't counterfeited!
+			// If we were counterfeited (adjusted < original), respect the downgrade.
+			if (adjustedStrength >= myAbsStrength * 0.9f) 
+			{
+				adjustedStrength = Math.Max(adjustedStrength, 0.38f);
+			}
 		}
 		
+		// 5. Add Draw Potential (Flop/Turn only)
 		if (street == Street.Flop || street == Street.Turn)
 		{
 			List<Card> allCards = new List<Card>(holeCards);
@@ -620,6 +657,7 @@ public partial class PokerDecisionMaker : Node
 		
 		return Mathf.Clamp(adjustedStrength + randomness, 0.10f, 1.0f);
 	}
+
 	
 	private float EvaluatePreflopHand(List<Card> holeCards)
 	{
