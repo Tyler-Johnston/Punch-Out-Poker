@@ -22,6 +22,7 @@ public partial class SpeechBubble : PanelContainer
 
 	private Label _label;
 	private Tween _activeTween;
+	public float VoicePitch { get; set; } = 1.0f; 
 
 	public override void _Ready()
 	{
@@ -166,8 +167,10 @@ public partial class SpeechBubble : PanelContainer
 			{
 				if (AudioPlayer != null)
 				{
-					// Play with slight random pitch (0.9 to 1.1)
-					AudioPlayer.PlaySpeechBlip(0.9f, 1.1f);
+					float minPitch = VoicePitch - 0.1f;
+					float maxPitch = VoicePitch + 0.1f;
+					
+					AudioPlayer.PlaySpeechBlip(minPitch, maxPitch);
 				}
 			}
 

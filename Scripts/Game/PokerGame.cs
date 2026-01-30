@@ -196,6 +196,7 @@ public partial class PokerGame : Node2D
 		aiOpponent.ChipStack = buyInAmount;
 		aiOpponent.PlayerName = currentOpponentName;
 		aiOpponent.InitializeForMatch(buyInAmount);
+		speechBubble.VoicePitch = aiOpponent.Personality.VoicePitch;
 
 		decisionMaker = new PokerDecisionMaker();
 		AddChild(aiOpponent); 
