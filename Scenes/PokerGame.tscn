@@ -1,4 +1,4 @@
-[gd_scene load_steps=43 format=3 uid="uid://b5sq1675fwcio"]
+[gd_scene load_steps=44 format=3 uid="uid://b5sq1675fwcio"]
 
 [ext_resource type="Script" uid="uid://8k6pqsmgt5pe" path="res://Scripts/Game/PokerGame.cs" id="1_8w0ed"]
 [ext_resource type="Texture2D" uid="uid://dqk4n2wxuqt2a" path="res://Assets/Textures/backgrounds/Cafe_Interior_Night.jpg" id="2_47o1s"]
@@ -21,6 +21,12 @@ fill = 1
 fill_from = Vector2(0.5, 0.5)
 fill_to = Vector2(1, 0.5)
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_0mxy1"]
+bg_color = Color(0.6, 0.6, 0.6, 0)
+shadow_color = Color(0.0035191667, 0.0035191681, 0.0035191672, 0.6)
+shadow_size = 4
+shadow_offset = Vector2(4, 4)
+
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_uh6rn"]
 bg_color = Color(0.6, 0.6, 0.6, 0.13333334)
 border_width_left = 10
@@ -29,8 +35,6 @@ border_width_right = 10
 border_width_bottom = 10
 border_color = Color(0.84705883, 0.84705883, 0.84705883, 1)
 shadow_color = Color(0, 0, 0, 0.19607843)
-shadow_size = 4
-shadow_offset = Vector2(4, 4)
 
 [sub_resource type="Gradient" id="Gradient_xxe2x"]
 offsets = PackedFloat32Array(0, 0.89615387)
@@ -59,7 +63,7 @@ fill = 1
 fill_from = Vector2(0.49726775, 0.5409836)
 
 [sub_resource type="Gradient" id="Gradient_u1fmj"]
-colors = PackedColorArray(0, 0, 0, 0, 0, 0, 0, 0.2784314)
+colors = PackedColorArray(0, 0, 0, 0.11764706, 0, 0, 0, 0.43137255)
 
 [sub_resource type="GradientTexture2D" id="GradientTexture2D_u5b2p"]
 gradient = SubResource("Gradient_u1fmj")
@@ -313,19 +317,23 @@ texture = SubResource("GradientTexture2D_vtryj")
 [node name="OpponentView" type="Node2D" parent="CanvasLayer/Control"]
 position = Vector2(-11, 14)
 
-[node name="OpponentFrame" type="PanelContainer" parent="CanvasLayer/Control/OpponentView"]
-clip_contents = true
+[node name="FrameShadow" type="PanelContainer" parent="CanvasLayer/Control/OpponentView"]
 offset_left = 960.0
-offset_top = -8.0
-offset_right = 1281.0
-offset_bottom = 251.0
+offset_top = -7.0
+offset_right = 1282.0
+offset_bottom = 253.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_0mxy1")
+
+[node name="OpponentFrame" type="PanelContainer" parent="CanvasLayer/Control/OpponentView/FrameShadow"]
+clip_contents = true
+layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_uh6rn")
 
-[node name="InnerWrapper" type="Control" parent="CanvasLayer/Control/OpponentView/OpponentFrame"]
+[node name="InnerWrapper" type="Control" parent="CanvasLayer/Control/OpponentView/FrameShadow/OpponentFrame"]
 clip_contents = true
 layout_mode = 2
 
-[node name="TextureRect" type="TextureRect" parent="CanvasLayer/Control/OpponentView/OpponentFrame/InnerWrapper"]
+[node name="TextureRect" type="TextureRect" parent="CanvasLayer/Control/OpponentView/FrameShadow/OpponentFrame/InnerWrapper"]
 clip_contents = true
 layout_mode = 0
 offset_right = 301.0
@@ -333,22 +341,23 @@ offset_bottom = 239.0
 texture = ExtResource("2_47o1s")
 expand_mode = 1
 
-[node name="FaceSprite" type="Sprite2D" parent="CanvasLayer/Control/OpponentView/OpponentFrame/InnerWrapper"]
+[node name="FaceSprite" type="Sprite2D" parent="CanvasLayer/Control/OpponentView/FrameShadow/OpponentFrame/InnerWrapper"]
+unique_name_in_owner = true
 position = Vector2(153.99988, 81.00001)
 scale = Vector2(1.375, 1.3680557)
 texture = ExtResource("3_47o1s")
 hframes = 8
 
-[node name="TableBackground" type="TextureRect" parent="CanvasLayer/Control/OpponentView/OpponentFrame/InnerWrapper"]
+[node name="TableBackground" type="TextureRect" parent="CanvasLayer/Control/OpponentView/FrameShadow/OpponentFrame/InnerWrapper"]
 material = SubResource("ShaderMaterial_u5b2p")
 layout_mode = 0
 offset_left = -53.0
 offset_top = 26.0
-offset_right = 346.0
+offset_right = 353.0
 offset_bottom = 392.0
 texture = SubResource("GradientTexture2D_h5gdr")
 
-[node name="Vignette" type="TextureRect" parent="CanvasLayer/Control/OpponentView/OpponentFrame/InnerWrapper"]
+[node name="Vignette" type="TextureRect" parent="CanvasLayer/Control/OpponentView/FrameShadow/OpponentFrame/InnerWrapper"]
 layout_mode = 0
 offset_right = 301.0
 offset_bottom = 239.0
