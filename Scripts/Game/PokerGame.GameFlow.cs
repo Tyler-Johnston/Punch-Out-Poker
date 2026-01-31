@@ -5,43 +5,6 @@ using System.Threading.Tasks;
 
 public partial class PokerGame
 {
-	private async Task TossCardFromTop(CardVisual card, Card cardData, float maxAngleDegrees = 3.0f, float maxPixelOffset = 2.0f)
-	{
-		Vector2 finalPosition = card.Position;
-		float randomAngle = (float)GD.RandRange(-maxAngleDegrees, maxAngleDegrees);
-		Vector2 randomOffset = new Vector2(
-			(float)GD.RandRange(-maxPixelOffset, maxPixelOffset),
-			(float)GD.RandRange(-maxPixelOffset, maxPixelOffset)
-		);
-		finalPosition += randomOffset;
-		float finalRotation = Mathf.DegToRad(randomAngle);
-		
-		Vector2 startPosition = new Vector2(
-			finalPosition.X + (float)GD.RandRange(-30.0, 30.0),
-			finalPosition.Y + 600 
-		);
-		
-		sfxPlayer.PlaySound("card_flip");
-		await card.RevealCard(cardData);
-		
-		card.Position = startPosition;
-		card.Rotation = Mathf.DegToRad((float)GD.RandRange(-15.0, 15.0));
-		card.Visible = true;
-		
-		Tween tween = CreateTween();
-		tween.SetParallel(true);
-		tween.TweenProperty(card, "position", finalPosition, 0.5f)
-			.SetTrans(Tween.TransitionType.Cubic)
-			.SetEase(Tween.EaseType.Out);
-		tween.TweenProperty(card, "rotation", finalRotation, 0.5f)
-			.SetTrans(Tween.TransitionType.Cubic)
-			.SetEase(Tween.EaseType.Out);
-		
-		await ToSignal(tween, Tween.SignalName.Finished);
-	}
-
-
-
 	private async Task DealInitialHands()
 	{
 		GD.Print("\\n=== Dealing Initial Hands ===");
@@ -214,10 +177,10 @@ public partial class PokerGame
 		}
 
 		// Toss cards from top of screen
-		await TossCardFromTop(opponentCard1, opponentHand[0]);
+		await TossCard(opponentCard1, opponentHand[0]);
 		await ToSignal(GetTree().CreateTimer(0.30f), SceneTreeTimer.SignalName.Timeout);
 
-		await TossCardFromTop(opponentCard2, opponentHand[1]);
+		await TossCard(opponentCard2, opponentHand[1]);
 		await ToSignal(GetTree().CreateTimer(1.0f), SceneTreeTimer.SignalName.Timeout);
 
 		int playerRank = HandEvaluator.EvaluateHand(playerHand, communityCards);
@@ -435,11 +398,17 @@ public partial class PokerGame
 		UpdateOpponentVisuals();
 	}
 
-	private void OnOpponentFold()
+	private async void OnOpponentFold()
 	{
 		ShowMessage($"{currentOpponentName} folds");
 		GD.Print($"{currentOpponentName} folds");
 		
+		Task card1Task = TossCard(opponentCard1, opponentHand[0], 2.5f, 1.5f, false);
+		Task card2Task = TossCard(opponentCard2, opponentHand[1], 1.5f, 1.5f, false);
+		
+		await Task.WhenAll(card1Task, card2Task);
+		await ToSignal(GetTree().CreateTimer(1.0f), SceneTreeTimer.SignalName.Timeout);
+			
 		float betRatio = (pot > 0) ? (float)currentBet / pot : 0;
 		aiOpponent.OnFolded(betRatio);
 

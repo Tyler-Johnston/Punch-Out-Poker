@@ -327,8 +327,8 @@ public partial class PokerGame : Node2D
 	private async void StartNewHand()
 	{
 		if (!waitingForNextGame && handInProgress) return; 
+		
 		waitingForNextGame = false;
-		//opponentDialogueLabel.Text = "";
 		SetExpression(Expression.Neutral);
 
 		if (IsGameOver())
@@ -466,7 +466,6 @@ public partial class PokerGame : Node2D
 		}
 		else if (!isPlayerTurn)
 		{
-			// Standard AI turn
 			GetTree().CreateTimer(1.15).Timeout += () => CheckAndProcessAITurn();
 		}
 	}
@@ -574,7 +573,6 @@ public partial class PokerGame : Node2D
 					return;
 				}
 				
-				// Remaining 40% maintains poker face (Neutral)
 				SetExpression(Expression.Neutral);
 				GD.Print($"[TELL-PREFLOP] {currentOpponentName} maintained poker face (trash hand hidden)");
 				return;
@@ -630,14 +628,11 @@ public partial class PokerGame : Node2D
 				}
 			}
 			
-			// Default: No strong reaction
 			SetExpression(Expression.Neutral);
 			return;
 		}
 
-		// ---------------------------------------------------------
-		// IDLE TELLS (Post-Flop / Timer)
-		// ---------------------------------------------------------
+		// idle tells
 		float idleDuration = 1.5f; 
 		float baseTellChance = 0.20f;
 		float tiltModifier = (float)aiOpponent.CurrentTiltState * 0.15f; 
@@ -658,7 +653,6 @@ public partial class PokerGame : Node2D
 		}
 		else if (strength == HandStrength.Medium) 
 		{
-			// Randomize "uncertainty" -> 40% look confident, 60% look worried.
 			tellCategory = (GD.Randf() > 0.6f) ? "strong_hand" : "weak_hand";
 		}
 
@@ -680,7 +674,7 @@ public partial class PokerGame : Node2D
 				tellCategory = "strong_hand"; // Selling the bluff
 		}
 		
-		// Retrieve expression from personality map
+		// retrieve expression from personality map
 		if (aiOpponent.Personality.Tells.ContainsKey(tellCategory))
 		{
 			var possibleTells = aiOpponent.Personality.Tells[tellCategory];
@@ -694,6 +688,41 @@ public partial class PokerGame : Node2D
 				}
 			}
 		}
+	}
+	
+	private async Task TossCard(CardVisual card, Card cardData, float maxAngleDegrees = 3.0f, float maxPixelOffset = 2.0f, bool revealCard=true)
+	{
+		Vector2 finalPosition = card.Position;
+		float randomAngle = (float)GD.RandRange(-maxAngleDegrees, maxAngleDegrees);
+		Vector2 randomOffset = new Vector2(
+			(float)GD.RandRange(-maxPixelOffset, maxPixelOffset),
+			(float)GD.RandRange(-maxPixelOffset, maxPixelOffset)
+		);
+		finalPosition += randomOffset;
+		float finalRotation = Mathf.DegToRad(randomAngle);
+		
+		Vector2 startPosition = new Vector2(
+			finalPosition.X + (float)GD.RandRange(-30.0, 30.0),
+			finalPosition.Y + 600 
+		);
+		
+		sfxPlayer.PlaySound("card_flip");
+		if (revealCard) await card.RevealCard(cardData);
+		
+		card.Position = startPosition;
+		card.Rotation = Mathf.DegToRad((float)GD.RandRange(-15.0, 15.0));
+		card.Visible = true;
+		
+		Tween tween = CreateTween();
+		tween.SetParallel(true);
+		tween.TweenProperty(card, "position", finalPosition, 0.5f)
+			.SetTrans(Tween.TransitionType.Cubic)
+			.SetEase(Tween.EaseType.Out);
+		tween.TweenProperty(card, "rotation", finalRotation, 0.5f)
+			.SetTrans(Tween.TransitionType.Cubic)
+			.SetEase(Tween.EaseType.Out);
+		
+		await ToSignal(tween, Tween.SignalName.Finished);
 	}
 	
 	/// <summary>
