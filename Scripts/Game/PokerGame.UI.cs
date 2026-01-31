@@ -1,29 +1,206 @@
 using Godot;
 using System;
+using System.Threading.Tasks;
 
 public partial class PokerGame
 {
+	private Tween foldButtonTween;
+	private Tween checkCallButtonTween;
+	private Tween betRaiseButtonTween;
+	private Tween cashOutButtonTween;
+	private Tween foldIdleTween;
+	private Tween checkCallIdleTween;
+	private Tween betRaiseIdleTween;
+	private Tween opponentViewIdleTween;
+
+	private const float HOVER_SCALE = 1.04f;
+	private const float PRESS_SCALE = 0.97f;
+	private const float HOVER_DURATION = 0.25f;         
+	private const float PRESS_DURATION = 0.1f;          
+	private const float RELEASE_DURATION = 0.3f;        
+	private const float IDLE_FLOAT_AMOUNT = 0.005f;
+	private const float IDLE_CYCLE_DURATION = 2.5f;  
+	private const float IDLE_SCALE_AMOUNT = 0.005f;
+	
+	private const float OPPONENT_IDLE_FLOAT_AMOUNT = 2.15f;
+	private const float OPPONENT_IDLE_SCALE_AMOUNT = 0.008f;
+	
+	public void InitializeButtonAnimations()
+	{
+		SetupButtonPivot(foldButton);
+		SetupButtonPivot(checkCallButton);
+		SetupButtonPivot(betRaiseButton);
+		SetupButtonPivot(cashOutButton);
+
+		foldButton.MouseEntered += () => OnButtonHover(foldButton, ref foldButtonTween);
+		foldButton.MouseExited += () => OnButtonUnhover(foldButton, ref foldButtonTween);
+		foldButton.ButtonDown += () => OnButtonPress(foldButton, ref foldButtonTween);
+		foldButton.ButtonUp += () => OnButtonRelease(foldButton, ref foldButtonTween);
+
+		checkCallButton.MouseEntered += () => OnButtonHover(checkCallButton, ref checkCallButtonTween);
+		checkCallButton.MouseExited += () => OnButtonUnhover(checkCallButton, ref checkCallButtonTween);
+		checkCallButton.ButtonDown += () => OnButtonPress(checkCallButton, ref checkCallButtonTween);
+		checkCallButton.ButtonUp += () => OnButtonRelease(checkCallButton, ref checkCallButtonTween);
+
+		betRaiseButton.MouseEntered += () => OnButtonHover(betRaiseButton, ref betRaiseButtonTween);
+		betRaiseButton.MouseExited += () => OnButtonUnhover(betRaiseButton, ref betRaiseButtonTween);
+		betRaiseButton.ButtonDown += () => OnButtonPress(betRaiseButton, ref betRaiseButtonTween);
+		betRaiseButton.ButtonUp += () => OnButtonRelease(betRaiseButton, ref betRaiseButtonTween);
+
+		cashOutButton.MouseEntered += () => OnButtonHover(cashOutButton, ref cashOutButtonTween);
+		cashOutButton.MouseExited += () => OnButtonUnhover(cashOutButton, ref cashOutButtonTween);
+		cashOutButton.ButtonDown += () => OnButtonPress(cashOutButton, ref cashOutButtonTween);
+		cashOutButton.ButtonUp += () => OnButtonRelease(cashOutButton, ref cashOutButtonTween);
+
+		StartIdleAnimation(foldButton, ref foldIdleTween, 0f);
+		StartIdleAnimation(checkCallButton, ref checkCallIdleTween, 0.33f);
+		StartIdleAnimation(betRaiseButton, ref betRaiseIdleTween, 0.66f);
+	}
+
+	/// <summary>
+	/// Sets button pivot to center for smooth scaling and prevents size drift
+	/// </summary>
+	private void SetupButtonPivot(Button button)
+	{
+		if (button == null) return;
+		
+		button.PivotOffset = button.Size / 2;
+		button.CustomMinimumSize = button.Size;
+		button.TextureFilter = CanvasItem.TextureFilterEnum.Linear;
+	}
+
+	// --- BUTTON ANIMATION METHODS ---
+	
+	private void OnButtonHover(Button button, ref Tween buttonTween)
+	{
+		if (button.Disabled) return;
+		
+		if (buttonTween != null && buttonTween.IsValid())
+			buttonTween.Kill();
+		
+		buttonTween = CreateTween();
+		buttonTween.SetProcessMode(Tween.TweenProcessMode.Idle);
+		
+		buttonTween.TweenProperty(button, "modulate", new Color(1.1f, 1.1f, 1.1f), 0.15f)
+			.SetEase(Tween.EaseType.Out)
+			.SetTrans(Tween.TransitionType.Quad);
+	}
+
+	private void OnButtonUnhover(Button button, ref Tween buttonTween)
+	{
+		if (buttonTween != null && buttonTween.IsValid())
+			buttonTween.Kill();
+		
+		buttonTween = CreateTween();
+		buttonTween.SetProcessMode(Tween.TweenProcessMode.Idle);
+		
+		buttonTween.TweenProperty(button, "modulate", Colors.White, 0.15f)
+			.SetEase(Tween.EaseType.Out)
+			.SetTrans(Tween.TransitionType.Quad);
+	}
+
+	private void OnButtonPress(Button button, ref Tween buttonTween)
+	{
+		if (button.Disabled) return;
+		
+		if (buttonTween != null && buttonTween.IsValid())
+			buttonTween.Kill();
+		
+		// quick squash on press
+		buttonTween = CreateTween();
+		buttonTween.SetProcessMode(Tween.TweenProcessMode.Idle);
+		buttonTween.SetEase(Tween.EaseType.Out);
+		buttonTween.SetTrans(Tween.TransitionType.Quad);
+		buttonTween.TweenProperty(button, "scale", Vector2.One * PRESS_SCALE, PRESS_DURATION);
+	}
+
+	private void OnButtonRelease(Button button, ref Tween buttonTween)
+	{
+		if (button.Disabled) return;
+		
+		if (buttonTween != null && buttonTween.IsValid())
+			buttonTween.Kill();
+		
+		// spring back to normal. idle animation will take over from here
+		buttonTween = CreateTween();
+		buttonTween.SetProcessMode(Tween.TweenProcessMode.Idle);
+		buttonTween.SetEase(Tween.EaseType.Out);
+		buttonTween.SetTrans(Tween.TransitionType.Spring);
+		
+		// return to base scale, idle animation continues
+		buttonTween.TweenProperty(button, "scale", Vector2.One, RELEASE_DURATION);
+	}
+
+	private void StartIdleAnimation(Button button, ref Tween idleTween, float timeOffset)
+	{
+		if (idleTween != null && idleTween.IsValid())
+			idleTween.Kill();
+		
+		idleTween = CreateTween();
+		idleTween.SetProcessMode(Tween.TweenProcessMode.Idle);
+		idleTween.SetLoops();
+		
+		float floatAmount = IDLE_FLOAT_AMOUNT;
+		float cycleDuration = IDLE_CYCLE_DURATION;
+		var originalPos = button.Position;
+		
+		// offset starting position for staggered effect
+		var startPos = originalPos + new Vector2(0, floatAmount * Mathf.Sin(timeOffset * Mathf.Pi * 2));
+		button.Position = startPos;
+		
+		// Float UP + Scale UP (breathing in) ===
+		idleTween.TweenProperty(button, "position:y", originalPos.Y - floatAmount, cycleDuration / 2)
+			.SetEase(Tween.EaseType.InOut)
+			.SetTrans(Tween.TransitionType.Sine);
+		
+		idleTween.Parallel().TweenProperty(button, "scale", Vector2.One * (1.0f + IDLE_SCALE_AMOUNT), cycleDuration / 2)
+			.SetEase(Tween.EaseType.InOut)
+			.SetTrans(Tween.TransitionType.Sine);
+		
+		// Float DOWN + Scale DOWN (breathing out) ===
+		idleTween.TweenProperty(button, "position:y", originalPos.Y + floatAmount, cycleDuration / 2)
+			.SetEase(Tween.EaseType.InOut)
+			.SetTrans(Tween.TransitionType.Sine);
+		
+		idleTween.Parallel().TweenProperty(button, "scale", Vector2.One * (1.0f - IDLE_SCALE_AMOUNT), cycleDuration / 2)
+			.SetEase(Tween.EaseType.InOut)
+			.SetTrans(Tween.TransitionType.Sine);
+	}
+
+	private void SetButtonIdleAnimationEnabled(Button button, Tween idleTween, bool enabled)
+	{
+		if (idleTween != null && idleTween.IsValid())
+		{
+			if (enabled)
+				idleTween.Play();
+			else
+				idleTween.Pause();
+		}
+	}
+
+	// --- MESSAGE DISPLAY ---
+	
 	private void ShowMessage(string text)
 	{
 		gameStateLabel.Text = text;
 	}
 
 	// --- TABLE VISUALS ---
+	
 	private void SetTableColor()
 	{
 		Color baseColor = new Color("#52a67f");
 		switch (GameManager.Instance.GetCircuitType())
 		{
-			case 0: baseColor = new Color("#52a67f"); break; // Green
-			case 1: baseColor = new Color("b0333dff"); break; // Red
-			case 2: baseColor = new Color("#127AE3"); break; // Blue
+			case 0: baseColor = new Color("#52a67f"); break;
+			case 1: baseColor = new Color("b0333dff"); break;
+			case 2: baseColor = new Color("#127AE3"); break;
 		}
 
 		if (MiniTableRect != null)
 		{
 			var enemyViewShader = GD.Load<Shader>("res://Assets/Shaders/EnemyView.gdshader");
 			
-			// Create the Gradient Data
 			var newGradient = new GradientTexture2D();
 			newGradient.Gradient = new Gradient();
 			newGradient.Gradient.SetColor(0, baseColor);
@@ -35,7 +212,6 @@ public partial class PokerGame
 			
 			mat.SetShaderParameter("gradient_texture", newGradient);
 			mat.SetShaderParameter("border_width", 0.073f);
-			//mat.SetShaderParameter("border_color", baseColor.Darkened(0.6f));
 			mat.SetShaderParameter("pixel_factor", 0.01f);
 			
 			MiniTableRect.Material = mat;
@@ -59,7 +235,6 @@ public partial class PokerGame
 		var gradTex = rect.Texture as GradientTexture2D;
 		if (gradTex != null)
 		{
-			// Duplicate to modify safely
 			gradTex.Gradient = (Gradient)gradTex.Gradient.Duplicate();
 			Color edgeColor = baseColor.Darkened(0.3f);
 
@@ -67,18 +242,100 @@ public partial class PokerGame
 			gradTex.Gradient.SetColor(1, edgeColor);
 		}
 	}
+	
+	private async Task TossCard(CardVisual card, Card cardData, float maxAngleDegrees = 3.0f, float maxPixelOffset = 2.0f, bool revealCard=true)
+	{
+		Vector2 finalPosition = card.Position;
+		float randomAngle = (float)GD.RandRange(-maxAngleDegrees, maxAngleDegrees);
+		Vector2 randomOffset = new Vector2(
+			(float)GD.RandRange(-maxPixelOffset, maxPixelOffset),
+			(float)GD.RandRange(-maxPixelOffset, maxPixelOffset)
+		);
+		finalPosition += randomOffset;
+		float finalRotation = Mathf.DegToRad(randomAngle);
+		
+		Vector2 startPosition = new Vector2(
+			finalPosition.X + (float)GD.RandRange(-30.0, 30.0),
+			finalPosition.Y + 600 
+		);
+		
+		sfxPlayer.PlaySound("card_flip");
+		if (revealCard) await card.RevealCard(cardData);
+		
+		card.Position = startPosition;
+		card.Rotation = Mathf.DegToRad((float)GD.RandRange(-15.0, 15.0));
+		card.Visible = true;
+		
+		Tween tween = CreateTween();
+		tween.SetParallel(true);
+		tween.TweenProperty(card, "position", finalPosition, 0.5f)
+			.SetTrans(Tween.TransitionType.Cubic)
+			.SetEase(Tween.EaseType.Out);
+		tween.TweenProperty(card, "rotation", finalRotation, 0.5f)
+			.SetTrans(Tween.TransitionType.Cubic)
+			.SetEase(Tween.EaseType.Out);
+		
+		await ToSignal(tween, Tween.SignalName.Finished);
+	}
 
 	// --- OPPONENT VISUALS ---
+	
+	/// <summary>
+	/// Initialize breathing animation for the OpponentView Node2D
+	/// </summary>
+	private void InitializeOpponentViewAnimation()
+	{
+		if (opponentView == null)
+		{
+			GD.PrintErr("OpponentView is null - cannot initialize animation");
+			return;
+		}
+		StartIdleOpponentView(opponentView, ref opponentViewIdleTween, 0.5f);
+	}
+
+	/// <summary>
+	/// Start idle breathing animation for Node2D (opponent view)
+	/// </summary>
+	private void StartIdleOpponentView(Node2D node, ref Tween idleTween, float timeOffset)
+	{
+		if (node == null) return;
+		
+		if (idleTween != null && idleTween.IsValid())
+			idleTween.Kill();
+		
+		idleTween = CreateTween();
+		idleTween.SetProcessMode(Tween.TweenProcessMode.Idle);
+		idleTween.SetLoops();
+		
+		float floatAmount = OPPONENT_IDLE_FLOAT_AMOUNT;
+		float cycleDuration = IDLE_CYCLE_DURATION;
+		
+		float originalY = node.Position.Y;
+		
+		if (timeOffset > 0)
+		{
+			idleTween.TweenInterval(timeOffset * cycleDuration);
+		}
+		
+		// Float UP (breathing in) ===
+		idleTween.TweenProperty(node, "position:y", originalY - floatAmount, cycleDuration / 2)
+			.SetEase(Tween.EaseType.InOut)
+			.SetTrans(Tween.TransitionType.Sine);
+		
+		// Float DOWN (breathing out) ===
+		idleTween.TweenProperty(node, "position:y", originalY + floatAmount, cycleDuration / 2)
+			.SetEase(Tween.EaseType.InOut)
+			.SetTrans(Tween.TransitionType.Sine);
+	}
+	
 	private void UpdateOpponentExpression(PlayerAction action)
 	{
-		// 1. Heavy Tilt Overrides (Angry/Monkey)
 		if (aiOpponent.CurrentTiltState == TiltState.Steaming || aiOpponent.CurrentTiltState == TiltState.Monkey)
 		{
 			SetExpression(Expression.Angry);
 			return;
 		}
 
-		// 2. Action-based Expressions
 		switch (action)
 		{
 			case PlayerAction.Fold:
@@ -175,6 +432,7 @@ public partial class PokerGame
 	}
 
 	// --- HUD & BUTTONS ---
+	
 	private void UpdateButtonLabels()
 	{
 		if (waitingForNextGame) return;

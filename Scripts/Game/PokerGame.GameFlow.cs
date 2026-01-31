@@ -7,7 +7,7 @@ public partial class PokerGame
 {
 	private async Task DealInitialHands()
 	{
-		GD.Print("\\n=== Dealing Initial Hands ===");
+		GD.Print("\n=== Dealing Initial Hands ===");
 		playerHand.Clear();
 		opponentHand.Clear();
 		communityCards.Clear();

@@ -109,10 +109,10 @@ public partial class PokerDecisionMaker : Node
 		sizeBump *= (1f - 0.5f * effRiskTol);
 		float threshold = Mathf.Clamp(baseThreshold + sizeBump, 0f, 1f);
 
-		// 6) HUGE OVERBET RULE (2.5x+ pot) - Unchanged
+		// 6) HUGE OVERBET RULE (2.5x+ pot)
 		if (betRatio >= 2.5f)
 		{
-			if (player.CurrentTiltState == TiltState.Monkey) return Decision.Call; // Calling station mode
+			if (player.CurrentTiltState == TiltState.Monkey) return Decision.Call;
 			
 			float overbetTighten = Mathf.Lerp(0.08f, 0.18f, 1f - effRiskTol);
 			float overbetThreshold = Mathf.Clamp(0.58f + overbetTighten, 0f, 1f);
@@ -127,7 +127,7 @@ public partial class PokerDecisionMaker : Node
 			return Decision.Call;
 		}
 
-		// 7) Large bet (0.8x+ pot) - Unchanged
+		// 7) Large bet (0.8x+ pot)
 		if (betRatio > 0.8f)
 		{
 			bool heroCall = false;
@@ -163,23 +163,19 @@ public partial class PokerDecisionMaker : Node
 			// Tier 1: Micro/Small Bets (< 33% pot)
 			if (betRatio < 0.33f)
 			{
-				// Was -0.10f. Increased to -0.15f to defend wider.
 				lightThreshold = threshold - 0.15f; 
-				
-				// Flop is loose, defend even wider (-0.08f extra)
 				if (street == Street.Flop) lightThreshold -= 0.08f; 
 			}
 			// Tier 2: Medium Bets (< 55% pot)
 			else if (betRatio < 0.55f)
 			{
-				// Was -0.06f. Increased to -0.10f to match pot odds better.
 				lightThreshold = threshold - 0.10f; 
 				if (street == Street.Flop) lightThreshold -= 0.05f;
 			}
 			// Tier 3: Standard Bets (0.55 - 0.80 pot)
 			else
 			{
-				lightThreshold = threshold - 0.04f; // Slight tweak from -0.03f
+				lightThreshold = threshold - 0.04f;
 				if (street == Street.Flop) lightThreshold -= 0.02f;
 			}
 			
@@ -253,7 +249,7 @@ public partial class PokerDecisionMaker : Node
 				return (Decision.Check, 0f);
 			}
 			
-			if (handStrength < 0.75f)  // Not premium
+			if (handStrength < 0.75f)
 			{
 				float valueBetFreq = PokerAIConfig.VALUE_BET_BASE_FREQ + 
 									 (effAggression * PokerAIConfig.VALUE_BET_AGGRESSION_WEIGHT);
@@ -308,9 +304,6 @@ public partial class PokerDecisionMaker : Node
 		return (Decision.Check, 0f);
 	}
 
-	/// <summary>
-	/// Get consistent decision seed for each street
-	/// </summary>
 	private float GetDecisionSeedForStreet(AIPokerPlayer player, Street street)
 	{
 		return street switch
@@ -323,32 +316,28 @@ public partial class PokerDecisionMaker : Node
 		};
 	}
 
-	/// <summary>
-	/// Calculate planned bet ratio with increased sizing + street multipliers
-	/// </summary>
 	private float CalculatePlannedBetRatio(float handStrength, PokerPersonality personality, Street street, float betSizeSeed, AIPokerPlayer player)
 	{
 		float normalizedSeed = betSizeSeed;
 		float baseBetMultiplier;
 		
-		// Base bet ranges by hand strength
-		if (handStrength >= 0.80f) // Premium hands
+		if (handStrength >= 0.80f)
 		{
 			baseBetMultiplier = 0.85f + (normalizedSeed * 0.35f); 
 		}
-		else if (handStrength >= 0.65f) // Strong hands
+		else if (handStrength >= 0.65f)
 		{
 			baseBetMultiplier = 0.65f + (normalizedSeed * 0.30f); 
 		}
-		else if (handStrength >= 0.45f) // Medium hands
+		else if (handStrength >= 0.45f)
 		{
 			baseBetMultiplier = 0.50f + (normalizedSeed * 0.25f); 
 		}
-		else if (handStrength >= 0.35f) // Weak hands
+		else if (handStrength >= 0.35f)
 		{
 			baseBetMultiplier = 0.35f + (normalizedSeed * 0.25f); 
 		}
-		else // Polarized bluff sizing
+		else
 		{
 			if (normalizedSeed < 0.60f)
 			{
@@ -362,7 +351,6 @@ public partial class PokerDecisionMaker : Node
 			}
 		}
 		
-		// Apply street-specific multipliers
 		float streetMultiplier = street switch
 		{
 			Street.Preflop => PokerAIConfig.PREFLOP_BET_MULTIPLIER,
@@ -399,7 +387,6 @@ public partial class PokerDecisionMaker : Node
 		{
 			if (player.CurrentTiltState < TiltState.Steaming)
 			{
-				// Require decent equity (0.60 = ~pairs or high aces)
 				if (handStrength < 0.60f)
 				{
 					GD.Print($"[AI] Protecting stack (State: {player.CurrentTiltState}). Folding {handStrength:F2} to preflop shove.");
@@ -423,7 +410,6 @@ public partial class PokerDecisionMaker : Node
 			return PlayerAction.AllIn;
 		}
 
-		// Use seeded bluff shove decision
 		float bluffShoveProb = street switch
 		{
 			Street.Preflop => effBluffFreq * 0.25f,
@@ -468,7 +454,6 @@ public partial class PokerDecisionMaker : Node
 		};
 		raiseThreshold -= effAggression * 0.15f;
 
-		// Strong hand - consider raising
 		if (handStrength >= raiseThreshold && player.ChipStack > toCall * 2.5f)
 		{
 			float raiseProb = effAggression * 0.8f + 0.2f;
@@ -481,7 +466,6 @@ public partial class PokerDecisionMaker : Node
 			}
 		}
 
-		// Bluff raise
 		float bluffRaiseProb = effBluffFreq * (street == Street.Flop ? 0.35f : 0.20f);
 		
 		if (player.CurrentTiltState >= TiltState.Steaming)
@@ -529,7 +513,6 @@ public partial class PokerDecisionMaker : Node
 		
 		betSize = Mathf.Max(betSize, minRaise);
 		
-		// River stack commitment with strong hands
 		if (gameState.Street == Street.River && handStrength >= 0.60f)
 		{
 			float stackToPotRatio = player.ChipStack / potSize;
@@ -544,7 +527,6 @@ public partial class PokerDecisionMaker : Node
 			}
 		}
 		
-		// Check for all-in situations
 		if (betSize >= player.ChipStack * 0.9f)
 		{
 			if (player.AllInCommitmentSeed < personality.CurrentRiskTolerance || handStrength > 0.80f)
@@ -580,16 +562,13 @@ public partial class PokerDecisionMaker : Node
 		}
 		
 		// 1. Calculate Absolute Strength
-		// This gives us a 0.0 - 1.0 rating based on the best 5-card hand we can make
 		int myRank = HandEvaluator.EvaluateHand(holeCards, communityCards);
 		float myAbsStrength = 1.0f - ((myRank - 1) / 7461.0f);
 
 		// 2. Calculate Board Strength (River Counterfeit Check)
-		// We can only ask the library to rank the board if there are 5+ cards.
 		float boardStrength = 0f;
 		if (communityCards.Count >= 5)
 		{
-			// Using an empty list for hole cards tells Evaluator to just check the board
 			int boardRank = HandEvaluator.EvaluateHand(new List<Card>(), communityCards);
 			boardStrength = 1.0f - ((boardRank - 1) / 7461.0f);
 		}
@@ -598,47 +577,94 @@ public partial class PokerDecisionMaker : Node
 		float adjustedStrength = myAbsStrength;
 		
 		// CASE A: River Counterfeit (Exact Calculation)
-		// If our hand is barely better than the board (e.g. board has 2-pair, we have 2-pair with bad kicker)
 		if (communityCards.Count >= 5 && (myAbsStrength - boardStrength < 0.05f))
 		{
 			GD.Print($"[AI] Counterfeit detected! Abs: {myAbsStrength:F2} vs Board: {boardStrength:F2}");
-			adjustedStrength = 0.2f; // Downgrade to "weak"
+			adjustedStrength = 0.2f;
 		}
-
-		// CASE B: Flop/Turn Counterfeit (Heuristic Check)
-		// The library can't rank 3 or 4 cards, so we use logic to detect "Fake Strength" on paired boards.
-		// Logic: If board is A-A-x and we have 6-9, the library says "Pair of Aces" (Strong),
-		// but in reality we are just playing the board (Weak).
+		// CASE B: Flop/Turn Counterfeit (Enhanced Heuristic Check)
 		else if (communityCards.Count >= 3)
 		{
-			bool boardIsPaired = communityCards.GroupBy(c => c.Rank).Any(g => g.Count() >= 2);
+			// Check for trips or quads on board (EXTREME counterfeit)
+			var boardRankGroups = communityCards.GroupBy(c => c.Rank).ToList();
+			int maxBoardMatch = boardRankGroups.Max(g => g.Count());
+			
+			bool boardHasTrips = maxBoardMatch >= 3;
+			bool boardHasQuads = maxBoardMatch >= 4;
+			bool boardIsPaired = maxBoardMatch >= 2;
+			
 			bool holeCardsArePair = holeCards[0].Rank == holeCards[1].Rank;
 			
+			// Check if our hole cards connect with the board
 			bool hitBoard = false;
+			bool havePocketPairBetterThanBoard = false;
+			
 			foreach (var card in holeCards)
 			{
 				if (communityCards.Any(c => c.Rank == card.Rank)) hitBoard = true;
 			}
-
-			// If board is paired, we aren't holding a pair, and we didn't match the board:
-			// We are playing the board's pair with a potentially weak kicker.
-			if (boardIsPaired && !holeCardsArePair && !hitBoard && myAbsStrength < 0.75f)
+			
+			// Check if our pocket pair makes a full house
+			if (holeCardsArePair)
 			{
-				// Downgrade significantly (40% penalty)
+				var ourPairRank = (int)holeCards[0].Rank;
+				var boardPairRank = boardRankGroups
+					.Where(g => g.Count() >= 2)
+					.Select(g => (int)g.Key)
+					.FirstOrDefault();
+				
+				havePocketPairBetterThanBoard = ourPairRank > boardPairRank;
+			}
+			
+			// === TRIPS/QUADS ON BOARD ===
+			if (boardHasTrips || boardHasQuads)
+			{
+				var tripRank = boardRankGroups.First(g => g.Count() >= 3).Key;
+				bool haveQuads = holeCardsArePair && holeCards[0].Rank == tripRank;
+				bool haveFullHouse = holeCardsArePair && !haveQuads;
+				bool haveKicker = holeCards.Any(c => c.Rank == tripRank);
+				
+				if (haveQuads)
+				{
+					// We have quads - actually strong!
+					GD.Print($"[AI] We have QUADS on trip board! Keeping strength {myAbsStrength:F2}");
+				}
+				else if (haveFullHouse && havePocketPairBetterThanBoard)
+				{
+					// Full house with strong pocket pair
+					GD.Print($"[AI] Full house on trip board with {holeCards[0].Rank} pocket pair");
+					adjustedStrength = Mathf.Max(adjustedStrength, 0.65f);
+				}
+				else if (haveKicker)
+				{
+					// We have one of the trip cards - kicker battle
+					int kickerValue = (int)holeCards.First(c => c.Rank != tripRank).Rank;
+					float kickerStrength = kickerValue / 14f; // Ace = 1.0, Deuce = 0.14
+					
+					adjustedStrength = 0.25f + (kickerStrength * 0.25f); // 0.25 - 0.50 range
+					GD.Print($"[AI] Trip board kicker battle: {adjustedStrength:F2} (kicker: {kickerValue})");
+				}
+				else
+				{
+					// We're just playing the board - extremely weak
+					adjustedStrength = 0.15f;
+					GD.Print($"[AI] EXTREME COUNTERFEIT! Trip/Quad board, no connection. Strength: {adjustedStrength:F2}");
+				}
+			}
+			// === PAIRED BOARD (Original Logic) ===
+			else if (boardIsPaired && !holeCardsArePair && !hitBoard && myAbsStrength < 0.75f)
+			{
 				adjustedStrength *= 0.60f; 
 				GD.Print($"[AI] Early Counterfeit Heuristic: Board Paired & Missed. Downgrading {myAbsStrength:F2} -> {adjustedStrength:F2}");
 			}
 		}
 
 		// 4. Curve the strength
-		// This pushes decent hands higher and weak hands lower
 		adjustedStrength = (float)Math.Pow(adjustedStrength, 0.75);
 		
 		// Safety floor for made hands (better than One Pair)
 		if (myRank <= 6185) 
 		{
-			// But only enforce this floor if we weren't counterfeited!
-			// If we were counterfeited (adjusted < original), respect the downgrade.
 			if (adjustedStrength >= myAbsStrength * 0.9f) 
 			{
 				adjustedStrength = Math.Max(adjustedStrength, 0.38f);

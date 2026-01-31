@@ -45,6 +45,8 @@ public partial class PokerGame : Node2D
 	private Texture2D betBtnImg;
 	private Texture2D raiseBtnImg;
 	
+	private Node2D opponentView;
+	
 	private AtlasTexture _opponentAtlas;
 	private Sprite2D faceSprite;
 	private SpeechBubble speechBubble;
@@ -102,14 +104,15 @@ public partial class PokerGame : Node2D
 	private SFXPlayer sfxPlayer;
 	private AudioStreamPlayer musicPlayer;
 
-	// Timer for idle tells
+	// timer for idle tells
 	private Timer tellTimer;
 
 	public override void _Ready()
 	{
 		Control hudControl = GetNode<Control>("CanvasLayer/Control");
 		cardVisualScene = GD.Load<PackedScene>("res://Scenes/CardVisual.tscn");
-
+		opponentView = hudControl.GetNode<Node2D>("OpponentView");
+		
 		// card areas
 		Node2D opponentArea = hudControl.GetNode<Node2D>("OpponentArea");
 		Node2D communityCardsArea = hudControl.GetNode<Node2D>("CommunityCardsArea");
@@ -137,7 +140,7 @@ public partial class PokerGame : Node2D
 
 		// labels
 		playerStackLabel = hudControl.GetNode<Label>("PlayerStackLabel");
-		opponentStackLabel = hudControl.GetNode<Label>("OpponentView/OpponentStackLabel");
+		opponentStackLabel = opponentView.GetNode<Label>("OpponentStackLabel");
 		potLabel = hudControl.GetNode<Label>("PotLabel");
 		gameStateLabel = hudControl.GetNode<Label>("GameStateLabel");
 		playerHandType = hudControl.GetNode<Label>("PlayerHandType");
@@ -148,7 +151,7 @@ public partial class PokerGame : Node2D
 		musicPlayer = GetNode<AudioStreamPlayer>("MusicPlayer");  
 		
 		// speech bubble
-		speechBubble = hudControl.GetNode<SpeechBubble>("SpeechBubble");
+		speechBubble = opponentView.GetNode<SpeechBubble>("SpeechBubble");
 		speechBubble.AudioPlayer = sfxPlayer; 
 		
 		// slider
@@ -219,8 +222,9 @@ public partial class PokerGame : Node2D
 		playerHasButton = false; 
 		GD.Print($"Blinds: {smallBlind}/{bigBlind}");
 
-		//musicPlayer.Play();
 		SetTableColor();
+		InitializeButtonAnimations();
+		InitializeOpponentViewAnimation();
 		LoadOpponentSprite(currentOpponentName.ToLower());
 		UpdateHud();
 		StartNewHand();
@@ -688,41 +692,6 @@ public partial class PokerGame : Node2D
 				}
 			}
 		}
-	}
-	
-	private async Task TossCard(CardVisual card, Card cardData, float maxAngleDegrees = 3.0f, float maxPixelOffset = 2.0f, bool revealCard=true)
-	{
-		Vector2 finalPosition = card.Position;
-		float randomAngle = (float)GD.RandRange(-maxAngleDegrees, maxAngleDegrees);
-		Vector2 randomOffset = new Vector2(
-			(float)GD.RandRange(-maxPixelOffset, maxPixelOffset),
-			(float)GD.RandRange(-maxPixelOffset, maxPixelOffset)
-		);
-		finalPosition += randomOffset;
-		float finalRotation = Mathf.DegToRad(randomAngle);
-		
-		Vector2 startPosition = new Vector2(
-			finalPosition.X + (float)GD.RandRange(-30.0, 30.0),
-			finalPosition.Y + 600 
-		);
-		
-		sfxPlayer.PlaySound("card_flip");
-		if (revealCard) await card.RevealCard(cardData);
-		
-		card.Position = startPosition;
-		card.Rotation = Mathf.DegToRad((float)GD.RandRange(-15.0, 15.0));
-		card.Visible = true;
-		
-		Tween tween = CreateTween();
-		tween.SetParallel(true);
-		tween.TweenProperty(card, "position", finalPosition, 0.5f)
-			.SetTrans(Tween.TransitionType.Cubic)
-			.SetEase(Tween.EaseType.Out);
-		tween.TweenProperty(card, "rotation", finalRotation, 0.5f)
-			.SetTrans(Tween.TransitionType.Cubic)
-			.SetEase(Tween.EaseType.Out);
-		
-		await ToSignal(tween, Tween.SignalName.Finished);
 	}
 	
 	/// <summary>

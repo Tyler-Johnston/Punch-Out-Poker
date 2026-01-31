@@ -4,13 +4,13 @@
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_u2807"]
 bg_color = Color(0, 0, 0, 0)
-corner_radius_top_left = 20
+corner_radius_top_left = 10
 corner_radius_top_right = 10
-corner_radius_bottom_right = 20
-corner_radius_bottom_left = 20
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
 shadow_color = Color(0.003921569, 0.003921569, 0.003921569, 0.6)
-shadow_size = 4
-shadow_offset = Vector2(4, 4)
+shadow_size = 6
+shadow_offset = Vector2(4, 5)
 
 [node name="CardVisual" type="Control"]
 custom_minimum_size = Vector2(142, 192)

@@ -93,6 +93,8 @@ corner_radius_top_left = 10
 corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
+shadow_size = 4
+shadow_offset = Vector2(2, 4)
 anti_aliasing = false
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_u5b2p"]
@@ -110,6 +112,8 @@ corner_radius_top_left = 10
 corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
+shadow_size = 4
+shadow_offset = Vector2(2, 4)
 anti_aliasing = false
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_vtryj"]
@@ -127,6 +131,8 @@ corner_radius_top_left = 10
 corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
+shadow_size = 4
+shadow_offset = Vector2(2, 4)
 anti_aliasing = false
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_m5pa5"]
@@ -144,6 +150,8 @@ corner_radius_top_left = 10
 corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
+shadow_size = 4
+shadow_offset = Vector2(2, 4)
 anti_aliasing = false
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_xxe2x"]
@@ -161,6 +169,8 @@ corner_radius_top_left = 10
 corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
+shadow_size = 4
+shadow_offset = Vector2(2, 4)
 anti_aliasing = false
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_6gitu"]
@@ -178,6 +188,8 @@ corner_radius_top_left = 10
 corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
+shadow_size = 4
+shadow_offset = Vector2(2, 4)
 anti_aliasing = false
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_mhpyu"]
@@ -195,6 +207,8 @@ corner_radius_top_left = 10
 corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
+shadow_size = 4
+shadow_offset = Vector2(2, 4)
 anti_aliasing = false
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_crlcv"]
@@ -212,6 +226,8 @@ corner_radius_top_left = 10
 corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
+shadow_size = 4
+shadow_offset = Vector2(2, 4)
 anti_aliasing = false
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_u1fmj"]
@@ -229,6 +245,8 @@ corner_radius_top_left = 10
 corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
+shadow_size = 4
+shadow_offset = Vector2(2, 4)
 anti_aliasing = false
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_epj03"]
@@ -242,6 +260,8 @@ corner_radius_top_left = 10
 corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
+shadow_size = 4
+shadow_offset = Vector2(2, 4)
 anti_aliasing = false
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_p0x7j"]
@@ -255,6 +275,8 @@ corner_radius_top_left = 10
 corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
+shadow_size = 4
+shadow_offset = Vector2(2, 4)
 anti_aliasing = false
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bvnvu"]
@@ -272,6 +294,8 @@ corner_radius_top_left = 10
 corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
+shadow_size = 4
+shadow_offset = Vector2(2, 4)
 anti_aliasing = false
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_34q52"]
@@ -424,6 +448,14 @@ offset_bottom = 253.25
 text = "0"
 label_settings = SubResource("LabelSettings_o1p3i")
 horizontal_alignment = 1
+
+[node name="SpeechBubble" parent="CanvasLayer/Control/OpponentView" instance=ExtResource("6_47o1s")]
+top_level = true
+offset_left = 1192.4999
+offset_top = 2.5
+offset_right = 1316.4999
+offset_bottom = 149.5
+grow_horizontal = 1
 
 [node name="ActionBar" type="PanelContainer" parent="CanvasLayer/Control"]
 layout_mode = 0
@@ -734,14 +766,6 @@ offset_bottom = 176.0
 grow_horizontal = 1
 grow_vertical = 1
 scale = Vector2(0.16, 0.16)
-
-[node name="SpeechBubble" parent="CanvasLayer/Control" instance=ExtResource("6_47o1s")]
-layout_mode = 0
-offset_left = 204.0
-offset_top = 26.0
-offset_right = 328.0
-offset_bottom = 173.0
-grow_horizontal = 1
 
 [node name="SFXPlayer" type="AudioStreamPlayer" parent="."]
 max_polyphony = 32
