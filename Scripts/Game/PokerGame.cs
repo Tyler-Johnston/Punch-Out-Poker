@@ -222,11 +222,7 @@ public partial class PokerGame : Node2D
 		playerHasButton = false; 
 		GD.Print($"Blinds: {smallBlind}/{bigBlind}");
 
-		SetTableColor();
-		InitializeButtonAnimations();
-		InitializeOpponentViewAnimation();
-		LoadOpponentSprite(currentOpponentName.ToLower());
-		UpdateHud();
+		InitializeUI();
 		StartNewHand();
 	}
 

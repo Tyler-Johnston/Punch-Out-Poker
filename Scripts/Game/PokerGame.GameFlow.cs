@@ -236,7 +236,7 @@ public partial class PokerGame
 		}
 		else if (result < 0)
 		{
-			GD.Print("\\nOPPONENT WINS!");
+			GD.Print("\nOPPONENT WINS!");
 			message = $"{currentOpponentName} wins ${finalPot} with {opponentHandName}";
 			
 			PlayReactionDialogue("OnWinPot");
@@ -267,7 +267,7 @@ public partial class PokerGame
 		}
 		else
 		{
-			GD.Print("\\nSPLIT POT!");
+			GD.Print("\nSPLIT POT!");
 			int split = pot / 2;
 			message = $"Split pot - ${split} each!";
 			playerChips += split;
@@ -311,23 +311,19 @@ public partial class PokerGame
 		if (isProcessingAIAction) return;
 		if (isPlayerTurn || !handInProgress || waitingForNextGame) return;
 
-		// Lock to prevent re-entry
+		// lock to prevent re-entry
 		isProcessingAIAction = true;
 		opponentHasActedThisStreet = true;
 
 		GameState gameState = CreateGameState();
 		PlayerAction action = DecideAIAction(gameState);
 
-		// Trigger Dialogue (And wait for it)
 		float waitTime = PlayActionDialogue(action, gameState);
-		
 		if (waitTime > 0)
 		{
-			// Wait for text to type + reading time + small pause
 			await ToSignal(GetTree().CreateTimer(waitTime + 1.0f), SceneTreeTimer.SignalName.Timeout);
 		}
 		
-		// Execute the Action (Chips move, Sound plays)
 		ExecuteAIAction(action);
 
 		if (action == PlayerAction.Fold || !handInProgress)
@@ -465,7 +461,7 @@ public partial class PokerGame
 	{
 		GameState gameState = CreateGameState();
 		
-		// Calculate bet size
+		// calculate bet size
 		float handStrength = aiOpponent.DetermineHandStrengthCategory(gameState) switch
 		{
 			HandStrength.Strong => 0.8f,

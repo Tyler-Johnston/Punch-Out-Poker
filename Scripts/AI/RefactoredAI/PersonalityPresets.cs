@@ -623,8 +623,7 @@ public static class PersonalityPresets
 			RageQuitThreshold = 40.0f,
 			SurrenderChipPercent = 0.30f,
 
-			// NEW: Soft/Neutral female pitch
-			VoicePitch = 1.10f
+			VoicePitch = 1.20f
 		};
 
 		personality.Tells["strong_hand"] = new Godot.Collections.Array<string> { "Happy", "Neutral" };

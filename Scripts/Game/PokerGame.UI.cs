@@ -25,6 +25,18 @@ public partial class PokerGame
 	private const float OPPONENT_IDLE_FLOAT_AMOUNT = 2.15f;
 	private const float OPPONENT_IDLE_SCALE_AMOUNT = 0.008f;
 	
+	
+	public void InitializeUI()
+	{
+		SetTableColor();
+		LoadOpponentSprite();
+		InitializeButtonAnimations();
+		InitializeOpponentViewAnimation();
+		UpdateHud();
+	}
+
+	// --- BUTTON ANIMATION METHODS ---
+	
 	public void InitializeButtonAnimations()
 	{
 		SetupButtonPivot(foldButton);
@@ -68,8 +80,6 @@ public partial class PokerGame
 		button.CustomMinimumSize = button.Size;
 		button.TextureFilter = CanvasItem.TextureFilterEnum.Linear;
 	}
-
-	// --- BUTTON ANIMATION METHODS ---
 	
 	private void OnButtonHover(Button button, ref Tween buttonTween)
 	{
@@ -364,10 +374,13 @@ public partial class PokerGame
 		}
 	}
 
-	private void LoadOpponentSprite(string currentOpponentName)
+	private void LoadOpponentSprite()
 	{
+		
+		string opponent = currentOpponentName.ToLower();
+		
 		string folderPath = "res://Assets/Textures/expressions/";
-		string targetPath = $"{folderPath}{currentOpponentName}_expressions.png";
+		string targetPath = $"{folderPath}{opponent}_expressions.png";
 		string fallbackPath = $"{folderPath}king_expressions.png";
 
 		Texture2D loadedTexture = null;
@@ -375,11 +388,11 @@ public partial class PokerGame
 		if (ResourceLoader.Exists(targetPath))
 		{
 			loadedTexture = GD.Load<Texture2D>(targetPath);
-			GD.Print($"Loaded sprite: {currentOpponentName}");
+			GD.Print($"Loaded sprite: {opponent}");
 		}
 		else
 		{
-			GD.Print($"Sprite missing for {currentOpponentName}. Defaulting to King.");
+			GD.Print($"Sprite missing for {opponent}. Defaulting to King.");
 			if (ResourceLoader.Exists(fallbackPath))
 			{
 				loadedTexture = GD.Load<Texture2D>(fallbackPath);
