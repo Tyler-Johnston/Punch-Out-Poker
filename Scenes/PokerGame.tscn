@@ -79,6 +79,10 @@ font_size = 48
 font_color = Color(0, 0, 0, 1)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_47o1s"]
+content_margin_left = 10.0
+content_margin_top = 10.0
+content_margin_right = 10.0
+content_margin_bottom = 10.0
 bg_color = Color(0.6784314, 0, 0.15686275, 1)
 border_width_left = 1
 border_width_top = 1
@@ -89,8 +93,13 @@ corner_radius_top_left = 10
 corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
+anti_aliasing = false
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_u5b2p"]
+content_margin_left = 10.0
+content_margin_top = 10.0
+content_margin_right = 10.0
+content_margin_bottom = 10.0
 bg_color = Color(0.6331879, 0, 0.14385304, 1)
 border_width_left = 1
 border_width_top = 1
@@ -101,8 +110,13 @@ corner_radius_top_left = 10
 corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
+anti_aliasing = false
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_vtryj"]
+content_margin_left = 10.0
+content_margin_top = 10.0
+content_margin_right = 10.0
+content_margin_bottom = 10.0
 bg_color = Color(0.8283891, 9.50101e-05, 0.20019525, 1)
 border_width_left = 1
 border_width_top = 1
@@ -113,8 +127,13 @@ corner_radius_top_left = 10
 corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
+anti_aliasing = false
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_m5pa5"]
+content_margin_left = 10.0
+content_margin_top = 10.0
+content_margin_right = 10.0
+content_margin_bottom = 10.0
 bg_color = Color(0.6117647, 0.6117647, 0.6117647, 1)
 border_width_left = 1
 border_width_top = 1
@@ -125,8 +144,13 @@ corner_radius_top_left = 10
 corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
+anti_aliasing = false
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_xxe2x"]
+content_margin_left = 10.0
+content_margin_top = 10.0
+content_margin_right = 10.0
+content_margin_bottom = 10.0
 bg_color = Color(0.18431373, 0.34509805, 0.7764706, 1)
 border_width_left = 1
 border_width_top = 1
@@ -137,8 +161,13 @@ corner_radius_top_left = 10
 corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
+anti_aliasing = false
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_6gitu"]
+content_margin_left = 10.0
+content_margin_top = 10.0
+content_margin_right = 10.0
+content_margin_bottom = 10.0
 bg_color = Color(0.13769913, 0.27821404, 0.6658435, 1)
 border_width_left = 1
 border_width_top = 1
@@ -149,8 +178,13 @@ corner_radius_top_left = 10
 corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
+anti_aliasing = false
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_mhpyu"]
+content_margin_left = 10.0
+content_margin_top = 10.0
+content_margin_right = 10.0
+content_margin_bottom = 10.0
 bg_color = Color(0.24937052, 0.4229884, 0.8669834, 1)
 border_width_left = 1
 border_width_top = 1
@@ -161,8 +195,13 @@ corner_radius_top_left = 10
 corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
+anti_aliasing = false
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_crlcv"]
+content_margin_left = 10.0
+content_margin_top = 10.0
+content_margin_right = 10.0
+content_margin_bottom = 10.0
 bg_color = Color(0.6117647, 0.6117647, 0.6117647, 1)
 border_width_left = 1
 border_width_top = 1
@@ -173,8 +212,13 @@ corner_radius_top_left = 10
 corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
+anti_aliasing = false
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_u1fmj"]
+content_margin_left = 10.0
+content_margin_top = 10.0
+content_margin_right = 10.0
+content_margin_bottom = 10.0
 bg_color = Color(0.7137255, 0.4627451, 0.2901961, 1)
 border_width_left = 1
 border_width_top = 1
@@ -185,6 +229,7 @@ corner_radius_top_left = 10
 corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
+anti_aliasing = false
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_epj03"]
 bg_color = Color(0.6251021, 0.3965849, 0.23819709, 1)
@@ -197,6 +242,7 @@ corner_radius_top_left = 10
 corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
+anti_aliasing = false
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_p0x7j"]
 bg_color = Color(0.85093796, 0.5918597, 0.41853422, 1)
@@ -209,8 +255,13 @@ corner_radius_top_left = 10
 corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
+anti_aliasing = false
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bvnvu"]
+content_margin_left = 10.0
+content_margin_top = 10.0
+content_margin_right = 10.0
+content_margin_bottom = 10.0
 bg_color = Color(0.6117647, 0.6117647, 0.6117647, 1)
 border_width_left = 1
 border_width_top = 1
@@ -221,6 +272,7 @@ corner_radius_top_left = 10
 corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
+anti_aliasing = false
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_34q52"]
 bg_color = Color(0.15965182, 0.58779526, 0.24229228, 1)
@@ -382,21 +434,20 @@ offset_bottom = 724.0
 
 [node name="ActionButtons" type="HBoxContainer" parent="CanvasLayer/Control"]
 texture_filter = 1
-custom_minimum_size = Vector2(0, 25)
 layout_mode = 0
-offset_left = 18.0
-offset_top = 603.0
-offset_right = 180.00006
-offset_bottom = 628.0
-scale = Vector2(3, 3)
+offset_left = 28.0
+offset_top = 605.0
+offset_right = 518.0
+offset_bottom = 677.0
+theme_override_constants/separation = 20
 alignment = 1
 
 [node name="FoldButton" type="Button" parent="CanvasLayer/Control/ActionButtons"]
 texture_filter = 1
-custom_minimum_size = Vector2(50, 20)
+custom_minimum_size = Vector2(150, 20)
 layout_mode = 2
 focus_mode = 0
-theme_override_font_sizes/font_size = 16
+theme_override_font_sizes/font_size = 48
 theme_override_styles/normal = SubResource("StyleBoxFlat_47o1s")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_u5b2p")
 theme_override_styles/hover = SubResource("StyleBoxFlat_vtryj")
@@ -404,11 +455,12 @@ theme_override_styles/disabled = SubResource("StyleBoxFlat_m5pa5")
 text = "Fold"
 
 [node name="CheckCallButton" type="Button" parent="CanvasLayer/Control/ActionButtons"]
-custom_minimum_size = Vector2(50, 0)
+custom_minimum_size = Vector2(150, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 focus_mode = 0
 theme_override_fonts/font = ExtResource("2_j8upv")
+theme_override_font_sizes/font_size = 48
 theme_override_styles/normal = SubResource("StyleBoxFlat_xxe2x")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_6gitu")
 theme_override_styles/hover = SubResource("StyleBoxFlat_mhpyu")
@@ -416,10 +468,11 @@ theme_override_styles/disabled = SubResource("StyleBoxFlat_crlcv")
 text = "Check"
 
 [node name="BetRaiseButton" type="Button" parent="CanvasLayer/Control/ActionButtons"]
-custom_minimum_size = Vector2(50, 0)
+custom_minimum_size = Vector2(150, 0)
 layout_mode = 2
 focus_mode = 0
 theme_override_fonts/font = ExtResource("2_j8upv")
+theme_override_font_sizes/font_size = 48
 theme_override_styles/normal = SubResource("StyleBoxFlat_u1fmj")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_epj03")
 theme_override_styles/hover = SubResource("StyleBoxFlat_p0x7j")
