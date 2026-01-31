@@ -116,9 +116,9 @@ public partial class PokerGame : Node2D
 		cardVisualScene = GD.Load<PackedScene>("res://Scenes/CardVisual.tscn");
 
 		// card areas
-		Node2D opponentArea = GetNode<Node2D>("OpponentArea");
-		Node2D communityCardsArea = GetNode<Node2D>("CommunityCardsArea");
-		Node2D playerArea = GetNode<Node2D>("PlayerArea");
+		Node2D opponentArea = hudControl.GetNode<Node2D>("OpponentArea");
+		Node2D communityCardsArea = hudControl.GetNode<Node2D>("CommunityCardsArea");
+		Node2D playerArea = hudControl.GetNode<Node2D>("PlayerArea");
 
 		// pocket cards
 		playerCard1 = playerArea.GetNode<CardVisual>("PlayerCard1");

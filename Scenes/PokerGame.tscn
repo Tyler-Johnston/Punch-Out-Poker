@@ -17,8 +17,8 @@ colors = PackedColorArray(0.32156864, 0.6509804, 0.49803922, 1, 0.1796309, 0.402
 
 [sub_resource type="GradientTexture2D" id="GradientTexture2D_vtryj"]
 gradient = SubResource("Gradient_47o1s")
-width = 256
-height = 256
+width = 128
+height = 128
 fill = 1
 fill_from = Vector2(0.5, 0.5)
 fill_to = Vector2(1, 0.5)
@@ -533,20 +533,11 @@ offset_top = 353.0
 offset_right = 79.0
 offset_bottom = 393.0
 
-[node name="SpeechBubble" parent="CanvasLayer/Control" instance=ExtResource("6_47o1s")]
-layout_mode = 0
-offset_left = 993.0
-offset_top = 74.0
-offset_right = 1117.0
-offset_bottom = 221.0
-grow_horizontal = 0
-grow_vertical = 0
+[node name="PlayerArea" type="Node2D" parent="CanvasLayer/Control"]
+position = Vector2(1196.9998, 636.00037)
+scale = Vector2(4.5, 4.5)
 
-[node name="PlayerArea" type="Node2D" parent="."]
-position = Vector2(398.9999, 212.00012)
-scale = Vector2(1.5, 1.5)
-
-[node name="PlayerCard1" parent="PlayerArea" instance=ExtResource("3_c6vvi")]
+[node name="PlayerCard1" parent="CanvasLayer/Control/PlayerArea" instance=ExtResource("3_c6vvi")]
 anchors_preset = 0
 anchor_right = 0.0
 anchor_bottom = 0.0
@@ -559,7 +550,7 @@ grow_vertical = 1
 rotation = 0.13264503
 scale = Vector2(0.16, 0.16)
 
-[node name="PlayerCard2" parent="PlayerArea" instance=ExtResource("3_c6vvi")]
+[node name="PlayerCard2" parent="CanvasLayer/Control/PlayerArea" instance=ExtResource("3_c6vvi")]
 anchors_preset = 0
 anchor_right = 0.0
 anchor_bottom = 0.0
@@ -572,12 +563,12 @@ grow_vertical = 1
 rotation = -0.12042772
 scale = Vector2(0.16, 0.16)
 
-[node name="OpponentArea" type="Node2D" parent="."]
-position = Vector2(194.00003, 49)
-rotation = 3.1415927
-scale = Vector2(1.5, 1.5)
+[node name="OpponentArea" type="Node2D" parent="CanvasLayer/Control"]
+position = Vector2(582.0001, 147)
+rotation = -3.1415925
+scale = Vector2(4.5, 4.5)
 
-[node name="OpponentCard1" parent="OpponentArea" instance=ExtResource("3_c6vvi")]
+[node name="OpponentCard1" parent="CanvasLayer/Control/OpponentArea" instance=ExtResource("3_c6vvi")]
 anchors_preset = 0
 anchor_right = 0.0
 anchor_bottom = 0.0
@@ -589,7 +580,7 @@ grow_horizontal = 1
 grow_vertical = 1
 rotation = -0.4660029
 
-[node name="OpponentCard2" parent="OpponentArea" instance=ExtResource("3_c6vvi")]
+[node name="OpponentCard2" parent="CanvasLayer/Control/OpponentArea" instance=ExtResource("3_c6vvi")]
 anchors_preset = 0
 anchor_right = 0.0
 anchor_bottom = 0.0
@@ -601,11 +592,11 @@ grow_horizontal = 1
 grow_vertical = 1
 rotation = -0.31415927
 
-[node name="CommunityCardsArea" type="Node2D" parent="."]
-position = Vector2(101.33334, 109.000015)
-scale = Vector2(1.5, 1.5)
+[node name="CommunityCardsArea" type="Node2D" parent="CanvasLayer/Control"]
+position = Vector2(304.00003, 327.00006)
+scale = Vector2(4.5, 4.5)
 
-[node name="Flop1" parent="CommunityCardsArea" instance=ExtResource("3_c6vvi")]
+[node name="Flop1" parent="CanvasLayer/Control/CommunityCardsArea" instance=ExtResource("3_c6vvi")]
 anchors_preset = 0
 anchor_right = 0.0
 anchor_bottom = 0.0
@@ -617,7 +608,7 @@ grow_horizontal = 1
 grow_vertical = 1
 scale = Vector2(0.16, 0.16)
 
-[node name="Flop2" parent="CommunityCardsArea" instance=ExtResource("3_c6vvi")]
+[node name="Flop2" parent="CanvasLayer/Control/CommunityCardsArea" instance=ExtResource("3_c6vvi")]
 anchors_preset = 0
 anchor_right = 0.0
 anchor_bottom = 0.0
@@ -629,7 +620,7 @@ grow_horizontal = 1
 grow_vertical = 1
 scale = Vector2(0.16, 0.16)
 
-[node name="Flop3" parent="CommunityCardsArea" instance=ExtResource("3_c6vvi")]
+[node name="Flop3" parent="CanvasLayer/Control/CommunityCardsArea" instance=ExtResource("3_c6vvi")]
 anchors_preset = 0
 anchor_right = 0.0
 anchor_bottom = 0.0
@@ -641,7 +632,7 @@ grow_horizontal = 1
 grow_vertical = 1
 scale = Vector2(0.16, 0.16)
 
-[node name="Turn" parent="CommunityCardsArea" instance=ExtResource("3_c6vvi")]
+[node name="Turn" parent="CanvasLayer/Control/CommunityCardsArea" instance=ExtResource("3_c6vvi")]
 anchors_preset = 0
 anchor_right = 0.0
 anchor_bottom = 0.0
@@ -653,7 +644,7 @@ grow_horizontal = 1
 grow_vertical = 1
 scale = Vector2(0.16, 0.16)
 
-[node name="River" parent="CommunityCardsArea" instance=ExtResource("3_c6vvi")]
+[node name="River" parent="CanvasLayer/Control/CommunityCardsArea" instance=ExtResource("3_c6vvi")]
 anchors_preset = 0
 anchor_right = 0.0
 anchor_bottom = 0.0
@@ -664,6 +655,15 @@ offset_bottom = 176.0
 grow_horizontal = 1
 grow_vertical = 1
 scale = Vector2(0.16, 0.16)
+
+[node name="SpeechBubble" parent="CanvasLayer/Control" instance=ExtResource("6_47o1s")]
+layout_mode = 0
+offset_left = 204.0
+offset_top = 26.0
+offset_right = 328.0
+offset_bottom = 173.0
+grow_horizontal = 1
+grow_vertical = 1
 
 [node name="SFXPlayer" type="AudioStreamPlayer" parent="."]
 max_polyphony = 32

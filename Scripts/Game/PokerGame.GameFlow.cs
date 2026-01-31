@@ -5,81 +5,46 @@ using System.Threading.Tasks;
 
 public partial class PokerGame
 {
+	private async Task TossCardFromTop(CardVisual card, Card cardData, float maxAngleDegrees = 3.0f, float maxPixelOffset = 2.0f)
+	{
+		Vector2 finalPosition = card.Position;
+		float randomAngle = (float)GD.RandRange(-maxAngleDegrees, maxAngleDegrees);
+		Vector2 randomOffset = new Vector2(
+			(float)GD.RandRange(-maxPixelOffset, maxPixelOffset),
+			(float)GD.RandRange(-maxPixelOffset, maxPixelOffset)
+		);
+		finalPosition += randomOffset;
+		float finalRotation = Mathf.DegToRad(randomAngle);
+		
+		Vector2 startPosition = new Vector2(
+			finalPosition.X + (float)GD.RandRange(-30.0, 30.0),
+			finalPosition.Y + 600 
+		);
+		
+		sfxPlayer.PlaySound("card_flip");
+		await card.RevealCard(cardData);
+		
+		card.Position = startPosition;
+		card.Rotation = Mathf.DegToRad((float)GD.RandRange(-15.0, 15.0));
+		card.Visible = true;
+		
+		Tween tween = CreateTween();
+		tween.SetParallel(true);
+		tween.TweenProperty(card, "position", finalPosition, 0.5f)
+			.SetTrans(Tween.TransitionType.Cubic)
+			.SetEase(Tween.EaseType.Out);
+		tween.TweenProperty(card, "rotation", finalRotation, 0.5f)
+			.SetTrans(Tween.TransitionType.Cubic)
+			.SetEase(Tween.EaseType.Out);
+		
+		await ToSignal(tween, Tween.SignalName.Finished);
+	}
 
-	//private async Task ThrowOpponentReveal()
-	//{
-		//sfxPlayer.PlaySound("card_flip");
-		//
-		//Vector2 target1 = opponentCard1.GlobalPosition;
-		//Vector2 target2 = opponentCard2.GlobalPosition;
-		//
-		//Vector2 scatter1 = new Vector2(
-			//(float)GD.RandRange(-15f, 15f), 
-			//(float)GD.RandRange(-10f, 10f)
-		//);
-		//Vector2 scatter2 = new Vector2(
-			//(float)GD.RandRange(-20f, 20f), 
-			//(float)GD.RandRange(-15f, 15f)
-		//);
-		//
-		//target1 += scatter1;
-		//target2 += scatter2;
-		//
-		//Vector2 startPos = OpponentFrame.GlobalPosition + new Vector2(60f, 40f);
-		//
-		//var thrown1 = await ThrowSingleCard(opponentHand[0], startPos, target1);
-		//await ToSignal(GetTree().CreateTimer(0.15f), SceneTreeTimer.SignalName.Timeout);
-		//var thrown2 = await ThrowSingleCard(opponentHand[1], startPos, target2);
-		//
-		//await ToSignal(GetTree().CreateTimer(1.2f), SceneTreeTimer.SignalName.Timeout);
-	//}
-//
-	//private async Task<CardVisual> ThrowSingleCard(Card card, Vector2 start, Vector2 target)
-	//{
-		//var thrownCard = cardVisualScene.Instantiate<CardVisual>();
-		//GetTree().CurrentScene.AddChild(thrownCard);
-//
-		//thrownCard.Scale = new Vector2(0.45f, 0.45f);  // Start here
-		//thrownCard.GlobalPosition = start;
-		//thrownCard.ShowBack();
-			//
-		//var tween = CreateTween();
-		//tween.SetParallel();
-		//
-		//// Flight arc
-		//Vector2 midPoint = (start + target) * 0.5f + new Vector2(0, -60);
-		//tween.TweenProperty(thrownCard, "global_position", midPoint, 0.4f)
-			 //.SetEase(Tween.EaseType.Out).SetTrans(Tween.TransitionType.Sine);
-		//tween.TweenProperty(thrownCard, "global_position", target, 0.4f)
-			 //.SetEase(Tween.EaseType.In).SetTrans(Tween.TransitionType.Cubic);
-		//
-		//// Spin
-		//tween.TweenProperty(thrownCard, "rotation_degrees", 
-						   //(float)GD.RandRange(-200f, 200f), 0.8f);
-		//
-		//// *** FIX 2: Use TweenProperty for flip instead of callback ***
-		//tween.TweenProperty(thrownCard, "scale:x", 0.01f, 0.2f)
-			 //.From(1.0f).SetDelay(0.3f);  // Flip halfway (scale X to 0)
-		//tween.TweenProperty(thrownCard, "scale:x", 1.0f, 0.2f)
-			 //.SetDelay(0.5f);             // Flip back to full
-		//
-		//// Reveal texture after flip starts (manual timing)
-		//GetTree().CreateTimer(0.4f).Timeout += () => thrownCard.RevealCard(card);
-		//
-		//// Bounce
-		//tween.TweenProperty(thrownCard, "scale", Vector2.One * 0.9f, 0.1f)
-			 //.SetDelay(0.8f);
-		//tween.TweenProperty(thrownCard, "scale", Vector2.One, 0.15f)
-			 //.SetDelay(0.9f);
-		//
-		//await ToSignal(tween, Tween.SignalName.Finished);
-		//return thrownCard;
-	//}
 
 
 	private async Task DealInitialHands()
 	{
-		GD.Print("\\\\\\\\n=== Dealing Initial Hands ===");
+		GD.Print("\\n=== Dealing Initial Hands ===");
 		playerHand.Clear();
 		opponentHand.Clear();
 		communityCards.Clear();
@@ -231,7 +196,7 @@ public partial class PokerGame
 
 	private async void ShowDown()
 	{
-		// Stop tells during showdown
+		// stop tells during showdown
 		if (tellTimer != null) tellTimer.Stop();
 		
 		if (isShowdownInProgress) return;
@@ -248,16 +213,11 @@ public partial class PokerGame
 			await ToSignal(GetTree().CreateTimer(1.5f), SceneTreeTimer.SignalName.Timeout);
 		}
 
-		//// *** THROW ANIMATION REPLACES OLD REVEAL ***
-		//await ThrowOpponentReveal();
-		//// *** END THROW ANIMATION ***
-		opponentCard1.Visible = true;
-		opponentCard2.Visible = true;
-		sfxPlayer.PlaySound("card_flip");
-		await opponentCard1.RevealCard(opponentHand[0]);
+		// Toss cards from top of screen
+		await TossCardFromTop(opponentCard1, opponentHand[0]);
 		await ToSignal(GetTree().CreateTimer(0.30f), SceneTreeTimer.SignalName.Timeout);
-		sfxPlayer.PlaySound("card_flip");
-		await opponentCard2.RevealCard(opponentHand[1]);
+
+		await TossCardFromTop(opponentCard2, opponentHand[1]);
 		await ToSignal(GetTree().CreateTimer(1.0f), SceneTreeTimer.SignalName.Timeout);
 
 		int playerRank = HandEvaluator.EvaluateHand(playerHand, communityCards);
@@ -300,7 +260,7 @@ public partial class PokerGame
 			{
 				GD.Print($"{currentOpponentName} was bluffing!");
 				aiHandResult = HandResult.BluffCaught;
-				SetExpression(Expression.Surprised); // Caught bluffing
+				SetExpression(Expression.Surprised);
 			}
 			else
 			{
@@ -395,7 +355,7 @@ public partial class PokerGame
 		GameState gameState = CreateGameState();
 		PlayerAction action = DecideAIAction(gameState);
 
-		// 3. Trigger Dialogue (And wait for it)
+		// Trigger Dialogue (And wait for it)
 		float waitTime = PlayActionDialogue(action, gameState);
 		
 		if (waitTime > 0)
@@ -404,7 +364,7 @@ public partial class PokerGame
 			await ToSignal(GetTree().CreateTimer(waitTime + 1.0f), SceneTreeTimer.SignalName.Timeout);
 		}
 		
-		// 4. Execute the Action (Chips move, Sound plays)
+		// Execute the Action (Chips move, Sound plays)
 		ExecuteAIAction(action);
 
 		if (action == PlayerAction.Fold || !handInProgress)
@@ -441,9 +401,6 @@ public partial class PokerGame
 		}
 	}
 
-	/// <summary>
-	/// Execute the AI's chosen action and update game state
-	/// </summary>
 	private void ExecuteAIAction(PlayerAction action)
 	{
 		GD.Print($"[AI ACTION] {currentOpponentName}: {action}");
@@ -478,9 +435,6 @@ public partial class PokerGame
 		UpdateOpponentVisuals();
 	}
 
-	/// <summary>
-	/// Handle opponent fold
-	/// </summary>
 	private void OnOpponentFold()
 	{
 		ShowMessage($"{currentOpponentName} folds");
@@ -503,9 +457,6 @@ public partial class PokerGame
 		};
 	}
 
-	/// <summary>
-	/// Handle opponent check
-	/// </summary>
 	private void OnOpponentCheck()
 	{
 		sfxPlayer.PlaySound("check", true);
@@ -513,9 +464,6 @@ public partial class PokerGame
 		GD.Print($"{currentOpponentName} checks");
 	}
 
-	/// <summary>
-	/// Handle opponent call
-	/// </summary>
 	private void OnOpponentCall()
 	{
 		int toCall = currentBet - opponentBet;
@@ -544,9 +492,6 @@ public partial class PokerGame
 		}
 	}
 
-	/// <summary>
-	/// Handle opponent raise/bet
-	/// </summary>
 	private void OnOpponentRaise()
 	{
 		GameState gameState = CreateGameState();
@@ -602,9 +547,6 @@ public partial class PokerGame
 		}
 	}
 
-	/// <summary>
-	/// Handle opponent all-in
-	/// </summary>
 	private void OnOpponentAllIn()
 	{
 		int allInAmount = opponentChips;
@@ -627,9 +569,6 @@ public partial class PokerGame
 		GD.Print($"{currentOpponentName} ALL-IN: {allInAmount}");
 	}
 
-	/// <summary>
-	/// AI decision making using personality. Returns Action only.
-	/// </summary>
 	private PlayerAction DecideAIAction(GameState gameState)
 	{
 		return aiOpponent.MakeDecision(gameState);
@@ -647,9 +586,6 @@ public partial class PokerGame
 		}
 	}
 	
-	/// <summary>
-	/// Handle game over state
-	/// </summary>
 	private void HandleGameOver(bool opponentSurrendered = false)
 	{
 		// Stop tells
