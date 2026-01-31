@@ -244,9 +244,7 @@ public partial class PokerGame
 			foldButton.Visible = false;
 			betRaiseButton.Visible = false;
 			betSlider.Visible = false;
-			betSliderLabel.Visible = false;
 			potLabel.Visible = false;
-			//opponentDialogueLabel.Text = "";
 			return;
 		}
 
@@ -267,9 +265,7 @@ public partial class PokerGame
 			foldButton.Visible = false;
 			betRaiseButton.Visible = false;
 			betSlider.Visible = false;
-			betSliderLabel.Visible = false;
 			potLabel.Visible = false;
-			//opponentDialogueLabel.Text = "";
 		}
 		else
 		{

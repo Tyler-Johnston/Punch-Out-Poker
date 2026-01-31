@@ -36,8 +36,6 @@ public partial class PokerGame : Node2D
 	private Label gameStateLabel;
 	private Label playerHandType;
 	private Label opponentHandType;
-	private Label betSliderLabel;
-	//private Label opponentDialogueLabel;
 	private Label checkCallLabel;
 	private Label betRaiseLabel;
 	
@@ -49,14 +47,11 @@ public partial class PokerGame : Node2D
 	
 	private AtlasTexture _opponentAtlas;
 	private Sprite2D faceSprite;
-	//private PanelContainer speechBubble;
 	private SpeechBubble speechBubble;
 	[Export] public PanelContainer OpponentFrame;
 	[Export] public TextureRect MainTableRect;
 	[Export] public TextureRect MiniTableRect;
 
-	// --- MESSAGING & ANIMATION ---
-	
 	// game flow
 	private Street currentStreet = Street.Preflop;
 	private int playerChips = 100;
@@ -134,12 +129,11 @@ public partial class PokerGame : Node2D
 		riverCard = communityCardsArea.GetNode<CardVisual>("River");
 
 		// action buttons
-		Control buttonUI = hudControl.GetNode<Control>("ButtonUI");
-		Control actionButtons = buttonUI.GetNode<Control>("ActionButtons");
+		Control actionButtons = hudControl.GetNode<Control>("ActionButtons");
 		foldButton = actionButtons.GetNode<Button>("FoldButton");
 		checkCallButton = actionButtons.GetNode<Button>("CheckCallButton");
 		betRaiseButton = actionButtons.GetNode<Button>("BetRaiseButton");
-		cashOutButton = buttonUI.GetNode<Button>("CashOutButton");
+		cashOutButton = hudControl.GetNode<Button>("CashOutButton");
 
 		// labels
 		playerStackLabel = hudControl.GetNode<Label>("PlayerStackLabel");
@@ -148,7 +142,6 @@ public partial class PokerGame : Node2D
 		gameStateLabel = hudControl.GetNode<Label>("GameStateLabel");
 		playerHandType = hudControl.GetNode<Label>("PlayerHandType");
 		opponentHandType = hudControl.GetNode<Label>("OpponentHandType");
-		betSliderLabel = hudControl.GetNode<Label>("BetSliderLabel");
 		
 		// audio players
 		sfxPlayer = GetNode<SFXPlayer>("SFXPlayer");
@@ -159,7 +152,7 @@ public partial class PokerGame : Node2D
 		speechBubble.AudioPlayer = sfxPlayer; 
 		
 		// slider
-		betSlider = hudControl.GetNode<HSlider>("BetSlider");
+		betSlider = GetNode<HSlider>("%BetSlider");
 		
 		// faceSprite
 		faceSprite = GetNode<Sprite2D>("%FaceSprite"); 
@@ -357,7 +350,6 @@ public partial class PokerGame : Node2D
 		cashOutButton.Visible = false;
 		speechBubble.Visible = false;
 		betSlider.Visible = true;
-		betSliderLabel.Visible = true;
 		foldButton.Visible = true;
 		foldButton.Disabled = true;
 		betRaiseButton.Visible = true;
