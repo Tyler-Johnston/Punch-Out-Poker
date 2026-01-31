@@ -26,12 +26,14 @@ font_size = 36
 font_color = Color(0, 0, 0, 1)
 
 [node name="SpeechBubble" type="PanelContainer"]
+grow_horizontal = 0
+grow_vertical = 0
 pivot_offset = Vector2(124, 147)
 theme_override_styles/panel = SubResource("StyleBoxFlat_joscm")
 script = ExtResource("1_joscm")
 MinWidth = 50.0
-TailTipPosition = Vector2(1060, 110)
 TailColor = Color(0.84705883, 0.84705883, 0.84705883, 1)
+TailTargetOffset = Vector2(70, 20)
 
 [node name="Label" type="Label" parent="."]
 custom_minimum_size = Vector2(100, 0)

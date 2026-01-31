@@ -5,9 +5,81 @@ using System.Threading.Tasks;
 
 public partial class PokerGame
 {
+
+	//private async Task ThrowOpponentReveal()
+	//{
+		//sfxPlayer.PlaySound("card_flip");
+		//
+		//Vector2 target1 = opponentCard1.GlobalPosition;
+		//Vector2 target2 = opponentCard2.GlobalPosition;
+		//
+		//Vector2 scatter1 = new Vector2(
+			//(float)GD.RandRange(-15f, 15f), 
+			//(float)GD.RandRange(-10f, 10f)
+		//);
+		//Vector2 scatter2 = new Vector2(
+			//(float)GD.RandRange(-20f, 20f), 
+			//(float)GD.RandRange(-15f, 15f)
+		//);
+		//
+		//target1 += scatter1;
+		//target2 += scatter2;
+		//
+		//Vector2 startPos = OpponentFrame.GlobalPosition + new Vector2(60f, 40f);
+		//
+		//var thrown1 = await ThrowSingleCard(opponentHand[0], startPos, target1);
+		//await ToSignal(GetTree().CreateTimer(0.15f), SceneTreeTimer.SignalName.Timeout);
+		//var thrown2 = await ThrowSingleCard(opponentHand[1], startPos, target2);
+		//
+		//await ToSignal(GetTree().CreateTimer(1.2f), SceneTreeTimer.SignalName.Timeout);
+	//}
+//
+	//private async Task<CardVisual> ThrowSingleCard(Card card, Vector2 start, Vector2 target)
+	//{
+		//var thrownCard = cardVisualScene.Instantiate<CardVisual>();
+		//GetTree().CurrentScene.AddChild(thrownCard);
+//
+		//thrownCard.Scale = new Vector2(0.45f, 0.45f);  // Start here
+		//thrownCard.GlobalPosition = start;
+		//thrownCard.ShowBack();
+			//
+		//var tween = CreateTween();
+		//tween.SetParallel();
+		//
+		//// Flight arc
+		//Vector2 midPoint = (start + target) * 0.5f + new Vector2(0, -60);
+		//tween.TweenProperty(thrownCard, "global_position", midPoint, 0.4f)
+			 //.SetEase(Tween.EaseType.Out).SetTrans(Tween.TransitionType.Sine);
+		//tween.TweenProperty(thrownCard, "global_position", target, 0.4f)
+			 //.SetEase(Tween.EaseType.In).SetTrans(Tween.TransitionType.Cubic);
+		//
+		//// Spin
+		//tween.TweenProperty(thrownCard, "rotation_degrees", 
+						   //(float)GD.RandRange(-200f, 200f), 0.8f);
+		//
+		//// *** FIX 2: Use TweenProperty for flip instead of callback ***
+		//tween.TweenProperty(thrownCard, "scale:x", 0.01f, 0.2f)
+			 //.From(1.0f).SetDelay(0.3f);  // Flip halfway (scale X to 0)
+		//tween.TweenProperty(thrownCard, "scale:x", 1.0f, 0.2f)
+			 //.SetDelay(0.5f);             // Flip back to full
+		//
+		//// Reveal texture after flip starts (manual timing)
+		//GetTree().CreateTimer(0.4f).Timeout += () => thrownCard.RevealCard(card);
+		//
+		//// Bounce
+		//tween.TweenProperty(thrownCard, "scale", Vector2.One * 0.9f, 0.1f)
+			 //.SetDelay(0.8f);
+		//tween.TweenProperty(thrownCard, "scale", Vector2.One, 0.15f)
+			 //.SetDelay(0.9f);
+		//
+		//await ToSignal(tween, Tween.SignalName.Finished);
+		//return thrownCard;
+	//}
+
+
 	private async Task DealInitialHands()
 	{
-		GD.Print("\\\\n=== Dealing Initial Hands ===");
+		GD.Print("\\\\\\\\n=== Dealing Initial Hands ===");
 		playerHand.Clear();
 		opponentHand.Clear();
 		communityCards.Clear();
@@ -48,7 +120,7 @@ public partial class PokerGame
 
 	public async Task DealCommunityCards(Street street)
 	{
-		GD.Print($"\n=== Community Cards: {street} ===");
+		GD.Print($"\\n=== Community Cards: {street} ===");
 		switch (street)
 		{
 			case Street.Flop:
@@ -165,7 +237,7 @@ public partial class PokerGame
 		if (isShowdownInProgress) return;
 		isShowdownInProgress = true;
 		
-		GD.Print("\n=== Showdown ===");
+		GD.Print("\\n=== Showdown ===");
 		
 		// process refunds first
 		bool refundOccurred = ReturnUncalledChips();
@@ -176,7 +248,11 @@ public partial class PokerGame
 			await ToSignal(GetTree().CreateTimer(1.5f), SceneTreeTimer.SignalName.Timeout);
 		}
 
-		// reveal opponent hand
+		//// *** THROW ANIMATION REPLACES OLD REVEAL ***
+		//await ThrowOpponentReveal();
+		//// *** END THROW ANIMATION ***
+		opponentCard1.Visible = true;
+		opponentCard2.Visible = true;
 		sfxPlayer.PlaySound("card_flip");
 		await opponentCard1.RevealCard(opponentHand[0]);
 		await ToSignal(GetTree().CreateTimer(0.30f), SceneTreeTimer.SignalName.Timeout);
@@ -200,7 +276,7 @@ public partial class PokerGame
 		
 		if (result > 0)
 		{
-			GD.Print("\nPLAYER WINS!");
+			GD.Print("\\nPLAYER WINS!");
 			message = $"You win ${finalPot} with {playerHandName}!";
 			
 			PlayReactionDialogue("OnLosePot");
@@ -237,7 +313,7 @@ public partial class PokerGame
 		}
 		else if (result < 0)
 		{
-			GD.Print("\nOPPONENT WINS!");
+			GD.Print("\\nOPPONENT WINS!");
 			message = $"{currentOpponentName} wins ${finalPot} with {opponentHandName}";
 			
 			PlayReactionDialogue("OnWinPot");
@@ -268,7 +344,7 @@ public partial class PokerGame
 		}
 		else
 		{
-			GD.Print("\nSPLIT POT!");
+			GD.Print("\\nSPLIT POT!");
 			int split = pot / 2;
 			message = $"Split pot - ${split} each!";
 			playerChips += split;
@@ -316,10 +392,7 @@ public partial class PokerGame
 		isProcessingAIAction = true;
 		opponentHasActedThisStreet = true;
 
-		// 1. Prepare Game State
 		GameState gameState = CreateGameState();
-
-		// 2. Decide Action (No side effects)
 		PlayerAction action = DecideAIAction(gameState);
 
 		// 3. Trigger Dialogue (And wait for it)
@@ -458,12 +531,8 @@ public partial class PokerGame
 			opponentIsAllIn = true;
 			aiOpponent.IsAllIn = true;
 			
-			GameState snapState = new GameState 
-			{ 
-				CommunityCards = new List<Card>(communityCards),
-				Street = currentStreet
-			};
-			aiStrengthAtAllIn = aiOpponent.EvaluateCurrentHandStrength(snapState);
+			GameState gameState = CreateGameState();
+			aiStrengthAtAllIn = aiOpponent.EvaluateCurrentHandStrength(gameState);
 			
 			ShowMessage($"{currentOpponentName} calls all-in for ${callAmount}");
 			GD.Print($"{currentOpponentName} calls all-in: {callAmount}");
@@ -551,12 +620,8 @@ public partial class PokerGame
 		currentBet = Math.Max(currentBet, opponentBet);
 		playerHasActedThisStreet = false;
 		
-		GameState snapState = new GameState 
-		{ 
-			CommunityCards = new List<Card>(communityCards),
-			Street = currentStreet
-		};
-		aiStrengthAtAllIn = aiOpponent.EvaluateCurrentHandStrength(snapState);
+		GameState gameState = CreateGameState();
+		aiStrengthAtAllIn = aiOpponent.EvaluateCurrentHandStrength(gameState);
 		
 		ShowMessage($"{currentOpponentName} goes ALL-IN for ${allInAmount}!");
 		GD.Print($"{currentOpponentName} ALL-IN: {allInAmount}");

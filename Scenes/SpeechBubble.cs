@@ -1,27 +1,28 @@
 using Godot;
 using System.Threading.Tasks;
 
-[Tool] // Runs in editor so you can see the Red Target Circle
+[Tool]
 public partial class SpeechBubble : PanelContainer
 {
 	[ExportGroup("Settings")]
-	[Export] public float MaxWidth = 250.0f; // Slightly wider for poker tables
+	[Export] public float MaxWidth = 250.0f;
 	[Export] public float MinWidth = 32.0f;
 	[Export] public float TypingSpeed = 0.04f;
 	[Export] public float PopDuration = 0.3f;
 	[Export] public SFXPlayer AudioPlayer;
 
 	[ExportGroup("Tail Settings")]
-	[Export] public Vector2 TailTipPosition = new Vector2(500, 300);
 	[Export] public float TailWidth = 16.0f;
 	[Export] public float TailHeight = 16.0f;
 	[Export] public Color TailColor = Colors.White; 
 	[Export] public Color BorderColor = Colors.Black;
 	[Export] public float BorderWidth = 4.0f;
-	[Export] public bool DebugDrawTarget = true; // Uncheck this to hide the red circle
+	[Export] public bool DebugDrawTarget = true;
+	[Export] public Vector2 TailTargetOffset = new Vector2(0, -20);
 
 	private Label _label;
 	private Tween _activeTween;
+	private Node2D _currentTarget;
 	public float VoicePitch { get; set; } = 1.0f; 
 
 	public override void _Ready()
@@ -30,19 +31,16 @@ public partial class SpeechBubble : PanelContainer
 		
 		if (_label == null)
 		{
-			// Only print error if running game, not in editor
 			if (!Engine.IsEditorHint()) GD.PrintErr("SpeechBubble: Missing 'Label' child node!");
 			return;
 		}
 
-		// Ensure strictly manual sizing
 		ClipContents = false;
-		GrowHorizontal = GrowDirection.Begin; // "Begin" = Left in Godot
-		GrowVertical = GrowDirection.Begin;   // "Begin" = Top in Godot
+		GrowHorizontal = GrowDirection.End;   // Grows RIGHT
+		GrowVertical = GrowDirection.Begin;   // Grows UP
 
 		if (!Engine.IsEditorHint())
 		{
-			// Hide initially in game
 			Scale = Vector2.Zero;
 			Modulate = new Color(1, 1, 1, 0);
 		}
@@ -51,29 +49,25 @@ public partial class SpeechBubble : PanelContainer
 	public override void _Notification(int what)
 	{
 		base._Notification(what);
-		// Update pivot/redraw when size changes (Editor or Game)
 		if (what == NotificationResized)
 		{
-			// Set pivot to Bottom-Right corner (Box corner, not tail tip)
-			// This makes the bubble "fan out" from the tail connection point
-			PivotOffset = Size; 
+			PivotOffset = new Vector2(0, Size.Y); // Bottom-LEFT corner
 			QueueRedraw();
 		}
 	}
 
 	public override void _Draw()
 	{
-		// 1. Draw Debug Target (Editor Only)
-		if (Engine.IsEditorHint() && DebugDrawTarget)
+		if (Engine.IsEditorHint() && DebugDrawTarget && _currentTarget != null)
 		{
-			DrawCircle(GetParentControl()?.GetLocalMousePosition() ?? Vector2.Zero, 5, Colors.Red);
-			DrawCircle(new Vector2(Size.X, Size.Y + TailHeight), 3, Colors.Red);
+			Vector2 targetPos = GetTargetWorldPosition();
+			DrawCircle(targetPos, 3, Colors.Green);
 		}
 
-		// 2. Draw The Tail
-		Vector2 p1 = new Vector2(Size.X - TailWidth - BorderWidth, Size.Y);
-		Vector2 p2 = new Vector2(Size.X - BorderWidth, Size.Y);
-		Vector2 tip = new Vector2(Size.X, Size.Y + TailHeight);
+		// Tail points LEFT from bottom-left corner
+		Vector2 p1 = new Vector2(BorderWidth, Size.Y);
+		Vector2 p2 = new Vector2(TailWidth + BorderWidth, Size.Y);
+		Vector2 tip = new Vector2(0, Size.Y + TailHeight);
 
 		// Outer Border (Black)
 		Vector2[] borderPoints = new Vector2[] 
@@ -84,7 +78,7 @@ public partial class SpeechBubble : PanelContainer
 		};
 		DrawColoredPolygon(borderPoints, BorderColor);
 
-		// Inner Color (White) - Overlaps the box border to look seamless
+		// Inner Color (White)
 		Vector2 innerP1 = new Vector2(p1.X, Size.Y - BorderWidth);
 		Vector2 innerP2 = new Vector2(p2.X, Size.Y - BorderWidth);
 		
@@ -92,16 +86,32 @@ public partial class SpeechBubble : PanelContainer
 		DrawColoredPolygon(innerPoints, TailColor);
 	}
 
-	public async void Say(string text)
+	private Vector2 GetTargetWorldPosition()
 	{
-			GD.Print($"[DEBUG] Say called with text: '{text}'. AudioPlayer is: {(AudioPlayer == null ? "NULL" : "ASSIGNED")}");
-			
+		if (_currentTarget != null && IsInstanceValid(_currentTarget))
+		{
+			if (_currentTarget is Sprite2D sprite)
+			{
+				return _currentTarget.GlobalPosition + TailTargetOffset;
+			}
+			return _currentTarget.GlobalPosition;
+		}
+		
+		return GlobalPosition;
+	}
+
+	public async void Say(string text, Node2D targetNode)
+	{
+		_currentTarget = targetNode;
+		
+		GD.Print($"[DEBUG] Say called with text: '{text}'. AudioPlayer is: {(AudioPlayer == null ? "NULL" : "ASSIGNED")}");
+		
 		if (_activeTween != null && _activeTween.IsRunning())
 			_activeTween.Kill();
 
 		Show();
 		Scale = Vector2.One;
-		Modulate = new Color(1, 1, 1, 0); // Invisible for calculation
+		Modulate = new Color(1, 1, 1, 0);
 		
 		_label.Text = text;
 		_label.VisibleRatio = 0.0f;
@@ -135,11 +145,12 @@ public partial class SpeechBubble : PanelContainer
 		await ToSignal(GetTree(), "process_frame");
 
 		// --- PASS 3: Position Snap ---
-		Vector2 tailOffset = new Vector2(Size.X, Size.Y + TailHeight);
-		Position = TailTipPosition - tailOffset;
+		Vector2 targetWorldPos = GetTargetWorldPosition();
+		Vector2 tailOffset = new Vector2(0, Size.Y + TailHeight); // Tail at bottom-left
+		Position = targetWorldPos - tailOffset;
 
 		// --- PASS 4: Pop Animation ---
-		PivotOffset = Size; 
+		PivotOffset = new Vector2(0, Size.Y); // Pivot at bottom-left
 		Scale = Vector2.Zero;
 		Modulate = new Color(1, 1, 1, 1);
 		
@@ -148,12 +159,7 @@ public partial class SpeechBubble : PanelContainer
 		_activeTween.TweenProperty(this, "scale", Vector2.One, PopDuration)
 			.SetTrans(Tween.TransitionType.Back).SetEase(Tween.EaseType.Out);
 		
-		// Wait for pop to finish before typing (optional, feels cleaner)
-		// or just let it type while popping
-		
-		// --- PASS 5: Typing Loop with Sound ---
-		// We do NOT use TweenProperty for visible_ratio anymore. We do it manually.
-		
+		// --- PASS 5: Typing Loop ---
 		int totalChars = text.Length;
 		float delayPerChar = TypingSpeed;
 
@@ -161,8 +167,6 @@ public partial class SpeechBubble : PanelContainer
 		{
 			_label.VisibleCharacters = i;
 			
-			// Play sound every 2 characters (so it's not too crazy)
-			// AND ensure we aren't at the very start (i=0)
 			if (i > 0 && i < totalChars && i % 2 == 0)
 			{
 				if (AudioPlayer != null)
@@ -174,16 +178,11 @@ public partial class SpeechBubble : PanelContainer
 				}
 			}
 
-			// Wait for next char
-			// Using CreateTimer ensures it runs even if the game is paused (if configured)
-			// or use ToSignal(GetTree().CreateTimer(delayPerChar), "timeout");
 			await ToSignal(GetTree().CreateTimer(delayPerChar), "timeout");
 			
-			// Safety check if the bubble was closed mid-typing
 			if (!IsInstanceValid(this) || !Visible) return;
 		}
 	}
-
 
 	public void Close()
 	{

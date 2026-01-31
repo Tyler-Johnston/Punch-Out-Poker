@@ -17,6 +17,8 @@ colors = PackedColorArray(0.32156864, 0.6509804, 0.49803922, 1, 0.1796309, 0.402
 
 [sub_resource type="GradientTexture2D" id="GradientTexture2D_vtryj"]
 gradient = SubResource("Gradient_47o1s")
+width = 256
+height = 256
 fill = 1
 fill_from = Vector2(0.5, 0.5)
 fill_to = Vector2(1, 0.5)
@@ -32,7 +34,7 @@ bg_color = Color(0.6, 0.6, 0.6, 0.13333334)
 border_width_left = 10
 border_width_top = 10
 border_width_right = 10
-border_width_bottom = 10
+border_width_bottom = 50
 border_color = Color(0.84705883, 0.84705883, 0.84705883, 1)
 shadow_color = Color(0, 0, 0, 0.19607843)
 
@@ -70,6 +72,11 @@ gradient = SubResource("Gradient_u5b2p")
 fill = 1
 fill_from = Vector2(0.5, 0.5)
 fill_to = Vector2(0.5, 0)
+
+[sub_resource type="LabelSettings" id="LabelSettings_o1p3i"]
+font = ExtResource("2_j8upv")
+font_size = 48
+font_color = Color(0, 0, 0, 1)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_47o1s"]
 bg_color = Color(0.6784314, 0, 0.15686275, 1)
@@ -243,10 +250,6 @@ corner_radius_bottom_left = 10
 font = ExtResource("2_j8upv")
 font_size = 48
 
-[sub_resource type="LabelSettings" id="LabelSettings_o1p3i"]
-font = ExtResource("2_j8upv")
-font_size = 48
-
 [sub_resource type="LabelSettings" id="LabelSettings_l4y0v"]
 font = ExtResource("2_j8upv")
 font_size = 48
@@ -304,6 +307,7 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="MainTable" type="TextureRect" parent="CanvasLayer/Control"]
+texture_filter = 1
 custom_minimum_size = Vector2(50, 20)
 layout_mode = 1
 anchors_preset = 15
@@ -314,7 +318,9 @@ grow_vertical = 2
 texture = SubResource("GradientTexture2D_vtryj")
 
 [node name="OpponentView" type="Node2D" parent="CanvasLayer/Control"]
-position = Vector2(-11, 14)
+unique_name_in_owner = true
+position = Vector2(-750, 24)
+scale = Vector2(0.8, 0.8)
 
 [node name="FrameShadow" type="PanelContainer" parent="CanvasLayer/Control/OpponentView"]
 offset_left = 960.0
@@ -362,24 +368,44 @@ offset_right = 301.0
 offset_bottom = 239.0
 texture = SubResource("GradientTexture2D_u5b2p")
 
-[node name="ButtonUI" type="VBoxContainer" parent="CanvasLayer/Control"]
+[node name="OpponentStackLabel" type="Label" parent="CanvasLayer/Control/OpponentView"]
+unique_name_in_owner = true
+offset_left = 966.25
+offset_top = 201.25
+offset_right = 1277.5
+offset_bottom = 253.25
+text = "0"
+label_settings = SubResource("LabelSettings_o1p3i")
+horizontal_alignment = 1
+
+[node name="PanelContainer" type="PanelContainer" parent="CanvasLayer/Control"]
 layout_mode = 0
-offset_left = 24.0
-offset_top = 592.0
-offset_right = 182.0
-offset_bottom = 644.0
-scale = Vector2(2.25, 2.25)
+offset_left = 1.0
+offset_top = 558.0
+offset_right = 1278.0
+offset_bottom = 724.0
+
+[node name="ButtonUI" type="VBoxContainer" parent="CanvasLayer/Control"]
+texture_filter = 1
+layout_mode = 0
+offset_left = 11.0
+offset_top = 610.00006
+offset_right = 173.0
+offset_bottom = 650.5556
+scale = Vector2(2.5, 2.5)
 
 [node name="ActionButtons" type="HBoxContainer" parent="CanvasLayer/Control/ButtonUI"]
+texture_filter = 1
 custom_minimum_size = Vector2(0, 25)
 layout_mode = 2
 alignment = 1
 
 [node name="FoldButton" type="Button" parent="CanvasLayer/Control/ButtonUI/ActionButtons"]
+texture_filter = 1
 custom_minimum_size = Vector2(50, 20)
 layout_mode = 2
 focus_mode = 0
-theme_override_fonts/font = ExtResource("2_j8upv")
+theme_override_font_sizes/font_size = 16
 theme_override_styles/normal = SubResource("StyleBoxFlat_47o1s")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_u5b2p")
 theme_override_styles/hover = SubResource("StyleBoxFlat_vtryj")
@@ -410,6 +436,7 @@ theme_override_styles/disabled = SubResource("StyleBoxFlat_bvnvu")
 text = "Bet"
 
 [node name="CashOutButton" type="Button" parent="CanvasLayer/Control/ButtonUI"]
+visible = false
 custom_minimum_size = Vector2(0, 23)
 layout_mode = 2
 focus_mode = 0
@@ -420,41 +447,34 @@ text = "Cash Out"
 
 [node name="PlayerStackLabel" type="Label" parent="CanvasLayer/Control"]
 layout_mode = 0
-offset_left = 848.0
-offset_top = 620.0
-offset_right = 912.0
-offset_bottom = 672.0
+offset_left = 428.0
+offset_top = 621.0
+offset_right = 531.0
+offset_bottom = 673.0
 text = "0"
 label_settings = SubResource("LabelSettings_eibjp")
-
-[node name="OpponentStackLabel" type="Label" parent="CanvasLayer/Control"]
-layout_mode = 0
-offset_left = 271.0
-offset_top = 72.0
-offset_right = 311.0
-offset_bottom = 124.0
-text = "0"
-label_settings = SubResource("LabelSettings_o1p3i")
+horizontal_alignment = 1
 
 [node name="PotLabel" type="Label" parent="CanvasLayer/Control"]
 layout_mode = 0
-offset_left = 581.0
-offset_top = 447.0
-offset_right = 702.0
-offset_bottom = 499.0
+offset_left = 1091.0
+offset_top = 34.0
+offset_right = 1212.0
+offset_bottom = 86.0
 text = "Pot: 100"
 label_settings = SubResource("LabelSettings_l4y0v")
 
 [node name="GameStateLabel" type="Label" parent="CanvasLayer/Control"]
 layout_mode = 0
-offset_left = 352.0
-offset_top = 233.0
-offset_right = 938.0
-offset_bottom = 285.0
+offset_left = 15.0
+offset_top = 505.0
+offset_right = 449.0
+offset_bottom = 557.0
 text = "Game State Label"
 label_settings = SubResource("LabelSettings_l4y0v")
 
 [node name="PlayerHandType" type="Label" parent="CanvasLayer/Control"]
+visible = false
 layout_mode = 0
 offset_left = 1014.0
 offset_top = 509.0
@@ -464,6 +484,7 @@ text = "PlayerHandType"
 label_settings = SubResource("LabelSettings_l4y0v")
 
 [node name="OpponentHandType" type="Label" parent="CanvasLayer/Control"]
+visible = false
 layout_mode = 0
 offset_left = 27.0
 offset_top = 167.0
@@ -474,20 +495,20 @@ label_settings = SubResource("LabelSettings_l4y0v")
 
 [node name="BetSlider" type="HSlider" parent="CanvasLayer/Control"]
 layout_mode = 0
-offset_left = 120.0
-offset_top = 675.0
-offset_right = 384.0
-offset_bottom = 692.0
+offset_left = 671.0
+offset_top = 637.0
+offset_right = 935.0
+offset_bottom = 654.0
 theme_override_styles/slider = SubResource("StyleBoxFlat_vnib4")
 theme_override_styles/grabber_area = SubResource("StyleBoxFlat_hkg01")
 theme_override_styles/grabber_area_highlight = SubResource("StyleBoxFlat_hkg01")
 
 [node name="BetSliderLabel" type="Label" parent="CanvasLayer/Control"]
 layout_mode = 0
-offset_left = 32.0
-offset_top = 666.0
-offset_right = 111.0
-offset_bottom = 700.0
+offset_left = 583.0
+offset_top = 626.0
+offset_right = 662.0
+offset_bottom = 660.0
 text = "Amount"
 label_settings = SubResource("LabelSettings_hkg01")
 
@@ -514,123 +535,135 @@ offset_bottom = 393.0
 
 [node name="SpeechBubble" parent="CanvasLayer/Control" instance=ExtResource("6_47o1s")]
 layout_mode = 0
-offset_left = 986.0
-offset_top = 40.0
-offset_right = 1102.0
-offset_bottom = 179.0
+offset_left = 993.0
+offset_top = 74.0
+offset_right = 1117.0
+offset_bottom = 221.0
 grow_horizontal = 0
 grow_vertical = 0
 
 [node name="PlayerArea" type="Node2D" parent="."]
-position = Vector2(376, 210.00002)
+position = Vector2(398.9999, 212.00012)
 scale = Vector2(1.5, 1.5)
 
 [node name="PlayerCard1" parent="PlayerArea" instance=ExtResource("3_c6vvi")]
 anchors_preset = 0
 anchor_right = 0.0
 anchor_bottom = 0.0
-offset_left = 2.6666677
-offset_top = -15.666653
-offset_right = 2.6666677
-offset_bottom = -15.666653
+offset_left = -7.8884277
+offset_top = -16.554993
+offset_right = 134.11157
+offset_bottom = 175.445
 grow_horizontal = 1
 grow_vertical = 1
+rotation = 0.13264503
+scale = Vector2(0.16, 0.16)
 
 [node name="PlayerCard2" parent="PlayerArea" instance=ExtResource("3_c6vvi")]
 anchors_preset = 0
 anchor_right = 0.0
 anchor_bottom = 0.0
-offset_left = -25.0
-offset_top = -15.666653
-offset_right = -25.0
-offset_bottom = -15.666653
+offset_left = -38.666
+offset_top = -13.667
+offset_right = 103.334
+offset_bottom = 178.33301
 grow_horizontal = 1
 grow_vertical = 1
+rotation = -0.12042772
+scale = Vector2(0.16, 0.16)
 
 [node name="OpponentArea" type="Node2D" parent="."]
-position = Vector2(43.333317, 28.666685)
+position = Vector2(194.00003, 49)
+rotation = 3.1415927
 scale = Vector2(1.5, 1.5)
 
 [node name="OpponentCard1" parent="OpponentArea" instance=ExtResource("3_c6vvi")]
 anchors_preset = 0
 anchor_right = 0.0
 anchor_bottom = 0.0
-offset_left = 2.6666677
-offset_top = -15.666653
-offset_right = 2.6666677
-offset_bottom = -15.666653
+offset_left = 6.0000305
+offset_top = -13.111084
+offset_right = 148.00003
+offset_bottom = 178.88892
 grow_horizontal = 1
 grow_vertical = 1
+rotation = -0.4660029
 
 [node name="OpponentCard2" parent="OpponentArea" instance=ExtResource("3_c6vvi")]
 anchors_preset = 0
 anchor_right = 0.0
 anchor_bottom = 0.0
-offset_left = -25.0
-offset_top = -15.666653
-offset_right = -25.0
-offset_bottom = -15.666653
+offset_left = -36.333313
+offset_top = -7.8888245
+offset_right = 105.66669
+offset_bottom = 184.11118
 grow_horizontal = 1
 grow_vertical = 1
+rotation = -0.31415927
 
 [node name="CommunityCardsArea" type="Node2D" parent="."]
-position = Vector2(109.33334, 123.000015)
+position = Vector2(101.33334, 109.000015)
 scale = Vector2(1.5, 1.5)
 
 [node name="Flop1" parent="CommunityCardsArea" instance=ExtResource("3_c6vvi")]
 anchors_preset = 0
 anchor_right = 0.0
 anchor_bottom = 0.0
-offset_left = 4.0000024
-offset_top = -15.777778
-offset_right = 4.0000024
-offset_bottom = -15.777778
+offset_left = 2.888855
+offset_top = -15.777771
+offset_right = 144.88885
+offset_bottom = 176.22223
 grow_horizontal = 1
 grow_vertical = 1
+scale = Vector2(0.16, 0.16)
 
 [node name="Flop2" parent="CommunityCardsArea" instance=ExtResource("3_c6vvi")]
 anchors_preset = 0
 anchor_right = 0.0
 anchor_bottom = 0.0
-offset_left = 30.88889
+offset_left = 31.111084
 offset_top = -16.0
-offset_right = 30.88889
-offset_bottom = -16.0
+offset_right = 173.11108
+offset_bottom = 176.0
 grow_horizontal = 1
 grow_vertical = 1
+scale = Vector2(0.16, 0.16)
 
 [node name="Flop3" parent="CommunityCardsArea" instance=ExtResource("3_c6vvi")]
 anchors_preset = 0
 anchor_right = 0.0
 anchor_bottom = 0.0
-offset_left = 58.444447
-offset_top = -16.444445
-offset_right = 58.444447
-offset_bottom = -16.444445
+offset_left = 58.888916
+offset_top = -16.444458
+offset_right = 200.88892
+offset_bottom = 175.55554
 grow_horizontal = 1
 grow_vertical = 1
+scale = Vector2(0.16, 0.16)
 
 [node name="Turn" parent="CommunityCardsArea" instance=ExtResource("3_c6vvi")]
 anchors_preset = 0
 anchor_right = 0.0
 anchor_bottom = 0.0
-offset_left = 84.66667
-offset_top = -16.222223
-offset_right = 84.66667
-offset_bottom = -16.222223
+offset_left = 86.888916
+offset_top = -16.222229
+offset_right = 228.88892
+offset_bottom = 175.77777
 grow_horizontal = 1
 grow_vertical = 1
+scale = Vector2(0.16, 0.16)
 
 [node name="River" parent="CommunityCardsArea" instance=ExtResource("3_c6vvi")]
 anchors_preset = 0
 anchor_right = 0.0
 anchor_bottom = 0.0
-offset_left = 112.22221
+offset_left = 115.11102
 offset_top = -16.0
-offset_right = 112.22221
-offset_bottom = -16.0
+offset_right = 257.11102
+offset_bottom = 176.0
 grow_horizontal = 1
 grow_vertical = 1
+scale = Vector2(0.16, 0.16)
 
 [node name="SFXPlayer" type="AudioStreamPlayer" parent="."]
 max_polyphony = 32

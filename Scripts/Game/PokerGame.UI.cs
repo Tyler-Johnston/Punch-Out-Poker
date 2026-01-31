@@ -366,16 +366,12 @@ public partial class PokerGame
 	{
 		if (string.IsNullOrEmpty(text))
 		{
-			// The bubble handles its own closing/hiding via Close()
 			speechBubble.Close(); 
 			return 0f;
 		}
 
-		// Call the new dynamic system
-		speechBubble.Say(text);
+		speechBubble.Say(text, faceSprite);
 
-		// Calculate duration so the AI knows how long to "wait" before moving on (optional)
-		// Formula: Pop animation (0.2s) + Text length * Typing speed (0.05s) + Read time (2.0s)
 		float typingDuration = text.Length * 0.05f; 
 		float totalDuration = 0.2f + typingDuration + 2.0f;
 

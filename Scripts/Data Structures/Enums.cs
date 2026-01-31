@@ -113,14 +113,14 @@ public enum TiltState
 
 public enum Expression
 {
-	Neutral,
-	Happy,
-	Sad,
-	Angry,
-	Surprised,
-	Annoyed,
+	Smirk,
 	Worried,
-	Smirk
+	Annoyed,
+	Surprised,
+	Angry,
+	Sad,
+	Happy,
+	Neutral
 }
 
 public enum OpponentExitType

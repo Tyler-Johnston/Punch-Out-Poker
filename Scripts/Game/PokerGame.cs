@@ -143,7 +143,7 @@ public partial class PokerGame : Node2D
 
 		// labels
 		playerStackLabel = hudControl.GetNode<Label>("PlayerStackLabel");
-		opponentStackLabel = hudControl.GetNode<Label>("OpponentStackLabel");
+		opponentStackLabel = hudControl.GetNode<Label>("OpponentView/OpponentStackLabel");
 		potLabel = hudControl.GetNode<Label>("PotLabel");
 		gameStateLabel = hudControl.GetNode<Label>("GameStateLabel");
 		playerHandType = hudControl.GetNode<Label>("PlayerHandType");
@@ -348,9 +348,11 @@ public partial class PokerGame : Node2D
 		aiOpponent.ResetForNewHand();
 		aiOpponent.ChipStack = opponentChips;
 
-		GD.Print("\\\\n=== New Hand ===");
+		GD.Print("\n=== New Hand ===");
 		ShowMessage("");
 
+		opponentCard1.Visible = false;
+		opponentCard2.Visible = false;
 		cashOutButton.Disabled = true;
 		cashOutButton.Visible = false;
 		speechBubble.Visible = false;
