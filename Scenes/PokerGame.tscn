@@ -1,4 +1,4 @@
-[gd_scene load_steps=64 format=3 uid="uid://b5sq1675fwcio"]
+[gd_scene load_steps=65 format=3 uid="uid://b5sq1675fwcio"]
 
 [ext_resource type="Script" uid="uid://8k6pqsmgt5pe" path="res://Scripts/Game/PokerGame.cs" id="1_8w0ed"]
 [ext_resource type="Texture2D" uid="uid://dqk4n2wxuqt2a" path="res://Assets/Textures/backgrounds/Cafe_Interior_Night.jpg" id="2_47o1s"]
@@ -335,14 +335,6 @@ corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
 
-[sub_resource type="LabelSettings" id="LabelSettings_eibjp"]
-font = ExtResource("2_j8upv")
-font_size = 48
-
-[sub_resource type="LabelSettings" id="LabelSettings_l4y0v"]
-font = ExtResource("2_j8upv")
-font_size = 46
-
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_vnib4"]
 bg_color = Color(0.84705883, 0.84705883, 0.84705883, 1)
 border_width_top = 5
@@ -606,6 +598,26 @@ corner_radius_bottom_left = 10
 shadow_size = 2
 shadow_offset = Vector2(2, 2)
 
+[sub_resource type="LabelSettings" id="LabelSettings_eibjp"]
+font = ExtResource("2_j8upv")
+font_size = 48
+
+[sub_resource type="LabelSettings" id="LabelSettings_l4y0v"]
+font = ExtResource("2_j8upv")
+font_size = 46
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_jn1cq"]
+bg_color = Color(0, 0, 0, 0.33333334)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.84705883, 0.84705883, 0.84705883, 0.33333334)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_h5gdr"]
 shader = ExtResource("8_34q52")
 shader_parameter/screen_width = 1280.0
@@ -712,17 +724,20 @@ offset_right = 315.0
 offset_bottom = 170.0
 grow_horizontal = 1
 
-[node name="ActionBar" type="PanelContainer" parent="CanvasLayer/Control"]
-layout_mode = 0
-offset_left = 1.0
+[node name="ActionView" type="Node2D" parent="CanvasLayer/Control"]
+unique_name_in_owner = true
+position = Vector2(2, -3)
+
+[node name="ActionBar" type="PanelContainer" parent="CanvasLayer/Control/ActionView"]
+offset_left = 2.0
 offset_top = 554.0
-offset_right = 1278.0
+offset_right = 1275.0
 offset_bottom = 720.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_y8qw4")
 
-[node name="ActionButtons" type="HBoxContainer" parent="CanvasLayer/Control"]
+[node name="ActionButtons" type="HBoxContainer" parent="CanvasLayer/Control/ActionView"]
+unique_name_in_owner = true
 texture_filter = 1
-layout_mode = 0
 offset_left = 28.0
 offset_top = 600.0
 offset_right = 518.0
@@ -730,7 +745,7 @@ offset_bottom = 672.0
 theme_override_constants/separation = 20
 alignment = 1
 
-[node name="FoldButton" type="Button" parent="CanvasLayer/Control/ActionButtons"]
+[node name="FoldButton" type="Button" parent="CanvasLayer/Control/ActionView/ActionButtons"]
 texture_filter = 1
 custom_minimum_size = Vector2(150, 20)
 layout_mode = 2
@@ -742,7 +757,7 @@ theme_override_styles/hover = SubResource("StyleBoxFlat_vtryj")
 theme_override_styles/disabled = SubResource("StyleBoxFlat_m5pa5")
 text = "Fold"
 
-[node name="CheckCallButton" type="Button" parent="CanvasLayer/Control/ActionButtons"]
+[node name="CheckCallButton" type="Button" parent="CanvasLayer/Control/ActionView/ActionButtons"]
 custom_minimum_size = Vector2(150, 0)
 layout_mode = 2
 size_flags_horizontal = 3
@@ -755,7 +770,7 @@ theme_override_styles/hover = SubResource("StyleBoxFlat_mhpyu")
 theme_override_styles/disabled = SubResource("StyleBoxFlat_crlcv")
 text = "Check"
 
-[node name="BetRaiseButton" type="Button" parent="CanvasLayer/Control/ActionButtons"]
+[node name="BetRaiseButton" type="Button" parent="CanvasLayer/Control/ActionView/ActionButtons"]
 custom_minimum_size = Vector2(150, 0)
 layout_mode = 2
 focus_mode = 0
@@ -767,10 +782,9 @@ theme_override_styles/hover = SubResource("StyleBoxFlat_p0x7j")
 theme_override_styles/disabled = SubResource("StyleBoxFlat_bvnvu")
 text = "Bet"
 
-[node name="CashOutButton" type="Button" parent="CanvasLayer/Control"]
+[node name="CashOutButton" type="Button" parent="CanvasLayer/Control/ActionView"]
 visible = false
 custom_minimum_size = Vector2(0, 23)
-layout_mode = 0
 offset_left = 11.0
 offset_top = 610.00006
 offset_right = 62.0
@@ -780,6 +794,116 @@ theme_override_fonts/font = ExtResource("2_j8upv")
 theme_override_styles/normal = SubResource("StyleBoxFlat_34q52")
 theme_override_styles/disabled = SubResource("StyleBoxFlat_h5gdr")
 text = "Cash Out"
+
+[node name="SliderUI" type="VBoxContainer" parent="CanvasLayer/Control/ActionView"]
+offset_left = 593.0
+offset_top = 605.0
+offset_right = 945.0
+offset_bottom = 678.0
+theme_override_constants/separation = 15
+
+[node name="BetSlider" type="HSlider" parent="CanvasLayer/Control/ActionView/SliderUI"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_styles/slider = SubResource("StyleBoxFlat_vnib4")
+theme_override_styles/grabber_area = SubResource("StyleBoxFlat_hkg01")
+theme_override_styles/grabber_area_highlight = SubResource("StyleBoxFlat_hkg01")
+
+[node name="BetShortcuts" type="HBoxContainer" parent="CanvasLayer/Control/ActionView/SliderUI"]
+layout_mode = 2
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="ThirdPot" type="Button" parent="CanvasLayer/Control/ActionView/SliderUI/BetShortcuts"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(60, 0)
+layout_mode = 2
+focus_mode = 0
+theme_override_font_sizes/font_size = 36
+theme_override_styles/normal = SubResource("StyleBoxFlat_j3mk2")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_2m4hi")
+theme_override_styles/hover = SubResource("StyleBoxFlat_xloky")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_f2l75")
+text = "1/3"
+
+[node name="HalfPot" type="Button" parent="CanvasLayer/Control/ActionView/SliderUI/BetShortcuts"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(60, 0)
+layout_mode = 2
+focus_mode = 0
+theme_override_font_sizes/font_size = 36
+theme_override_styles/normal = SubResource("StyleBoxFlat_m7dep")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_b0ir2")
+theme_override_styles/hover = SubResource("StyleBoxFlat_6qdjg")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_8fm0h")
+text = "1/2"
+
+[node name="TwoThirdsPot" type="Button" parent="CanvasLayer/Control/ActionView/SliderUI/BetShortcuts"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(60, 0)
+layout_mode = 2
+focus_mode = 0
+theme_override_font_sizes/font_size = 36
+theme_override_styles/normal = SubResource("StyleBoxFlat_5ar8g")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_emhtb")
+theme_override_styles/hover = SubResource("StyleBoxFlat_at0be")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_adxoh")
+text = "2/3"
+
+[node name="StandardPot" type="Button" parent="CanvasLayer/Control/ActionView/SliderUI/BetShortcuts"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(60, 0)
+layout_mode = 2
+focus_mode = 0
+theme_override_font_sizes/font_size = 36
+theme_override_styles/normal = SubResource("StyleBoxFlat_m1ugq")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_m7b72")
+theme_override_styles/hover = SubResource("StyleBoxFlat_sfxlf")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_k8u0e")
+text = "Pot"
+
+[node name="AllInPot" type="Button" parent="CanvasLayer/Control/ActionView/SliderUI/BetShortcuts"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(60, 0)
+layout_mode = 2
+focus_mode = 0
+theme_override_font_sizes/font_size = 36
+theme_override_styles/normal = SubResource("StyleBoxFlat_nj6s6")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_c27go")
+theme_override_styles/hover = SubResource("StyleBoxFlat_3sgh4")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_qmc8i")
+text = "All-In"
+
+[node name="PlayerArea" type="Node2D" parent="CanvasLayer/Control/ActionView"]
+unique_name_in_owner = true
+position = Vector2(1196.9998, 636.00037)
+scale = Vector2(4.5, 4.5)
+
+[node name="PlayerCard1" parent="CanvasLayer/Control/ActionView/PlayerArea" instance=ExtResource("3_c6vvi")]
+anchors_preset = 0
+anchor_right = 0.0
+anchor_bottom = 0.0
+offset_left = -8.999756
+offset_top = -17.666138
+offset_right = 133.00024
+offset_bottom = 174.33386
+grow_horizontal = 1
+grow_vertical = 1
+rotation = 0.13264503
+scale = Vector2(0.16, 0.16)
+
+[node name="PlayerCard2" parent="CanvasLayer/Control/ActionView/PlayerArea" instance=ExtResource("3_c6vvi")]
+anchors_preset = 0
+anchor_right = 0.0
+anchor_bottom = 0.0
+offset_left = -39.777344
+offset_top = -14.778137
+offset_right = 102.22266
+offset_bottom = 177.22186
+grow_horizontal = 1
+grow_vertical = 1
+rotation = -0.12042772
+scale = Vector2(0.16, 0.16)
 
 [node name="PlayerStackLabel" type="Label" parent="CanvasLayer/Control"]
 layout_mode = 0
@@ -819,116 +943,6 @@ offset_right = 202.0
 offset_bottom = 212.0
 text = "OpponentHandType"
 label_settings = SubResource("LabelSettings_l4y0v")
-
-[node name="SliderUI" type="VBoxContainer" parent="CanvasLayer/Control"]
-layout_mode = 0
-offset_left = 580.0
-offset_top = 605.0
-offset_right = 932.0
-offset_bottom = 678.0
-theme_override_constants/separation = 15
-
-[node name="BetSlider" type="HSlider" parent="CanvasLayer/Control/SliderUI"]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_styles/slider = SubResource("StyleBoxFlat_vnib4")
-theme_override_styles/grabber_area = SubResource("StyleBoxFlat_hkg01")
-theme_override_styles/grabber_area_highlight = SubResource("StyleBoxFlat_hkg01")
-
-[node name="BetShortcuts" type="HBoxContainer" parent="CanvasLayer/Control/SliderUI"]
-layout_mode = 2
-theme_override_constants/separation = 10
-alignment = 1
-
-[node name="ThirdPot" type="Button" parent="CanvasLayer/Control/SliderUI/BetShortcuts"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(60, 0)
-layout_mode = 2
-focus_mode = 0
-theme_override_font_sizes/font_size = 36
-theme_override_styles/normal = SubResource("StyleBoxFlat_j3mk2")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_2m4hi")
-theme_override_styles/hover = SubResource("StyleBoxFlat_xloky")
-theme_override_styles/disabled = SubResource("StyleBoxFlat_f2l75")
-text = "1/3"
-
-[node name="HalfPot" type="Button" parent="CanvasLayer/Control/SliderUI/BetShortcuts"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(60, 0)
-layout_mode = 2
-focus_mode = 0
-theme_override_font_sizes/font_size = 36
-theme_override_styles/normal = SubResource("StyleBoxFlat_m7dep")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_b0ir2")
-theme_override_styles/hover = SubResource("StyleBoxFlat_6qdjg")
-theme_override_styles/disabled = SubResource("StyleBoxFlat_8fm0h")
-text = "1/2"
-
-[node name="TwoThirdsPot" type="Button" parent="CanvasLayer/Control/SliderUI/BetShortcuts"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(60, 0)
-layout_mode = 2
-focus_mode = 0
-theme_override_font_sizes/font_size = 36
-theme_override_styles/normal = SubResource("StyleBoxFlat_5ar8g")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_emhtb")
-theme_override_styles/hover = SubResource("StyleBoxFlat_at0be")
-theme_override_styles/disabled = SubResource("StyleBoxFlat_adxoh")
-text = "2/3"
-
-[node name="StandardPot" type="Button" parent="CanvasLayer/Control/SliderUI/BetShortcuts"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(60, 0)
-layout_mode = 2
-focus_mode = 0
-theme_override_font_sizes/font_size = 36
-theme_override_styles/normal = SubResource("StyleBoxFlat_m1ugq")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_m7b72")
-theme_override_styles/hover = SubResource("StyleBoxFlat_sfxlf")
-theme_override_styles/disabled = SubResource("StyleBoxFlat_k8u0e")
-text = "Pot"
-
-[node name="AllInPot" type="Button" parent="CanvasLayer/Control/SliderUI/BetShortcuts"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(60, 0)
-layout_mode = 2
-focus_mode = 0
-theme_override_font_sizes/font_size = 36
-theme_override_styles/normal = SubResource("StyleBoxFlat_nj6s6")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_c27go")
-theme_override_styles/hover = SubResource("StyleBoxFlat_3sgh4")
-theme_override_styles/disabled = SubResource("StyleBoxFlat_qmc8i")
-text = "All-In"
-
-[node name="PlayerArea" type="Node2D" parent="CanvasLayer/Control"]
-position = Vector2(1196.9998, 636.00037)
-scale = Vector2(4.5, 4.5)
-
-[node name="PlayerCard1" parent="CanvasLayer/Control/PlayerArea" instance=ExtResource("3_c6vvi")]
-anchors_preset = 0
-anchor_right = 0.0
-anchor_bottom = 0.0
-offset_left = -7.8884277
-offset_top = -17.666138
-offset_right = 134.11157
-offset_bottom = 174.33386
-grow_horizontal = 1
-grow_vertical = 1
-rotation = 0.13264503
-scale = Vector2(0.16, 0.16)
-
-[node name="PlayerCard2" parent="CanvasLayer/Control/PlayerArea" instance=ExtResource("3_c6vvi")]
-anchors_preset = 0
-anchor_right = 0.0
-anchor_bottom = 0.0
-offset_left = -38.666016
-offset_top = -14.778137
-offset_right = 103.333984
-offset_bottom = 177.22186
-grow_horizontal = 1
-grow_vertical = 1
-rotation = -0.12042772
-scale = Vector2(0.16, 0.16)
 
 [node name="OpponentArea" type="Node2D" parent="CanvasLayer/Control"]
 position = Vector2(582.0001, 147)
@@ -1036,6 +1050,7 @@ theme_override_constants/separation = 10
 
 [node name="PanelContainer" type="PanelContainer" parent="CanvasLayer/Control/PotArea/VBoxContainer"]
 layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_jn1cq")
 
 [node name="PotLabel" type="Label" parent="CanvasLayer/Control/PotArea/VBoxContainer/PanelContainer"]
 unique_name_in_owner = true

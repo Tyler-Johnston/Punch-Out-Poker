@@ -51,7 +51,10 @@ public partial class PokerGame : Node2D
 	private Texture2D raiseBtnImg;
 	
 	private Node2D opponentView;
+	private Node2D actionView;
 	private Node2D potArea;
+	private Node2D playerArea;
+	private Control actionButtons;
 	private GridContainer chipContainer;
 	
 	private AtlasTexture _opponentAtlas;
@@ -123,7 +126,7 @@ public partial class PokerGame : Node2D
 		// ui areas
 		Node2D opponentArea = hudControl.GetNode<Node2D>("OpponentArea");
 		Node2D communityCardsArea = hudControl.GetNode<Node2D>("CommunityCardsArea");
-		Node2D playerArea = hudControl.GetNode<Node2D>("PlayerArea");
+		playerArea = GetNode<Node2D>("%PlayerArea");
 		opponentView = hudControl.GetNode<Node2D>("OpponentView");
 		potArea = hudControl.GetNode<Node2D>("PotArea");
 		chipContainer = potArea.GetNode<GridContainer>("VBoxContainer/ChipHBox");
@@ -142,11 +145,12 @@ public partial class PokerGame : Node2D
 		riverCard = communityCardsArea.GetNode<CardVisual>("River");
 
 		// action buttons
-		Control actionButtons = hudControl.GetNode<Control>("ActionButtons");
+		actionButtons = GetNode<Control>("%ActionButtons");
+		actionView = GetNode<Node2D>("%ActionView");
 		foldButton = actionButtons.GetNode<Button>("FoldButton");
 		checkCallButton = actionButtons.GetNode<Button>("CheckCallButton");
 		betRaiseButton = actionButtons.GetNode<Button>("BetRaiseButton");
-		cashOutButton = hudControl.GetNode<Button>("CashOutButton");
+		cashOutButton = actionView.GetNode<Button>("CashOutButton");
 		
 
 		// labels
@@ -365,6 +369,7 @@ public partial class PokerGame : Node2D
 		GD.Print("\n=== New Hand ===");
 		ShowMessage("");
 
+		potArea.Visible = true;
 		opponentCard1.Visible = false;
 		opponentCard2.Visible = false;
 		cashOutButton.Disabled = true;
@@ -375,7 +380,7 @@ public partial class PokerGame : Node2D
 		foldButton.Disabled = true;
 		betRaiseButton.Visible = true;
 		betRaiseButton.Disabled = true;
-		potLabel.Visible = true;
+		//potLabel.Visible = true;
 		playerHandType.Text = "";
 		opponentHandType.Text = "";
 		aiStrengthAtAllIn = 0f;

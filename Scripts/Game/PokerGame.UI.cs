@@ -773,7 +773,7 @@ public partial class PokerGame
 			foldButton.Visible = false;
 			betRaiseButton.Visible = false;
 			betSlider.Visible = false;
-			potLabel.Visible = false;
+			potArea.Visible = false;
 			UpdatePotDisplay(0);
 			return;
 		}
@@ -795,7 +795,7 @@ public partial class PokerGame
 			foldButton.Visible = false;
 			betRaiseButton.Visible = false;
 			betSlider.Visible = false;
-			potLabel.Visible = false;
+			potArea.Visible = false;
 			UpdatePotDisplay(0);
 		}
 		else
