@@ -575,12 +575,14 @@ public partial class PokerDecisionMaker : Node
 
 		// 3. Adjust Strength for Counterfeiting
 		float adjustedStrength = myAbsStrength;
+		bool isCounterfeit = false; // ✅ ADD COUNTERFEIT FLAG
 		
 		// CASE A: River Counterfeit (Exact Calculation)
 		if (communityCards.Count >= 5 && (myAbsStrength - boardStrength < 0.05f))
 		{
 			GD.Print($"[AI] Counterfeit detected! Abs: {myAbsStrength:F2} vs Board: {boardStrength:F2}");
 			adjustedStrength = 0.2f;
+			isCounterfeit = true; // ✅ MARK AS COUNTERFEIT
 		}
 		// CASE B: Flop/Turn Counterfeit (Enhanced Heuristic Check)
 		else if (communityCards.Count >= 3)
@@ -642,19 +644,22 @@ public partial class PokerDecisionMaker : Node
 					float kickerStrength = kickerValue / 14f; // Ace = 1.0, Deuce = 0.14
 					
 					adjustedStrength = 0.25f + (kickerStrength * 0.25f); // 0.25 - 0.50 range
+					isCounterfeit = true; // ✅ MARK AS COUNTERFEIT
 					GD.Print($"[AI] Trip board kicker battle: {adjustedStrength:F2} (kicker: {kickerValue})");
 				}
 				else
 				{
 					// We're just playing the board - extremely weak
 					adjustedStrength = 0.15f;
+					isCounterfeit = true; // ✅ MARK AS COUNTERFEIT
 					GD.Print($"[AI] EXTREME COUNTERFEIT! Trip/Quad board, no connection. Strength: {adjustedStrength:F2}");
 				}
 			}
 			// === PAIRED BOARD (Original Logic) ===
 			else if (boardIsPaired && !holeCardsArePair && !hitBoard && myAbsStrength < 0.75f)
 			{
-				adjustedStrength *= 0.60f; 
+				adjustedStrength *= 0.60f;
+				isCounterfeit = true; // ✅ MARK AS COUNTERFEIT
 				GD.Print($"[AI] Early Counterfeit Heuristic: Board Paired & Missed. Downgrading {myAbsStrength:F2} -> {adjustedStrength:F2}");
 			}
 		}
@@ -662,8 +667,8 @@ public partial class PokerDecisionMaker : Node
 		// 4. Curve the strength
 		adjustedStrength = (float)Math.Pow(adjustedStrength, 0.75);
 		
-		// Safety floor for made hands (better than One Pair)
-		if (myRank <= 6185) 
+		// 5. Safety floor for made hands - BUT SKIP IF COUNTERFEIT
+		if (!isCounterfeit && myRank <= 6185) // ✅ CHECK COUNTERFEIT FLAG
 		{
 			if (adjustedStrength >= myAbsStrength * 0.9f) 
 			{
@@ -671,7 +676,7 @@ public partial class PokerDecisionMaker : Node
 			}
 		}
 		
-		// 5. Add Draw Potential (Flop/Turn only)
+		// 6. Add Draw Potential (Flop/Turn only)
 		if (street == Street.Flop || street == Street.Turn)
 		{
 			List<Card> allCards = new List<Card>(holeCards);

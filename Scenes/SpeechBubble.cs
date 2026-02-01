@@ -104,8 +104,6 @@ public partial class SpeechBubble : PanelContainer
 	{
 		_currentTarget = targetNode;
 		
-		GD.Print($"[DEBUG] Say called with text: '{text}'. AudioPlayer is: {(AudioPlayer == null ? "NULL" : "ASSIGNED")}");
-		
 		if (_activeTween != null && _activeTween.IsRunning())
 			_activeTween.Kill();
 

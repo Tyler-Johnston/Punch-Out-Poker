@@ -384,9 +384,7 @@ public static class PersonalityPresets
 			TiltSensitivity = 0.65f,
 			RageQuitThreshold = 35.0f,
 			SurrenderChipPercent = 0.25f,
-			
-			// NEW: Low/Gravelly pitch
-			VoicePitch = 0.85f 
+			VoicePitch = 0.82f 
 		};
 
 		personality.Tells["strong_hand"] = new Godot.Collections.Array<string> { "Smirk", "Neutral" };

@@ -1,5 +1,6 @@
 using Godot;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 public partial class PokerGame
@@ -24,6 +25,20 @@ public partial class PokerGame
 	
 	private const float OPPONENT_IDLE_FLOAT_AMOUNT = 2.15f;
 	private const float OPPONENT_IDLE_SCALE_AMOUNT = 0.008f;
+	
+	private readonly Dictionary<string, int> CHIP_VALUES = new Dictionary<string, int>
+	{
+		{ "pink", 5000 },
+		{ "yellow", 1000 },
+		{ "purple", 500 },
+		{ "black", 100 },
+		{ "green", 25 },
+		{ "blue", 10 },
+		{ "red", 5 },
+		{ "white", 1 }
+	};
+
+	private readonly string[] CHIP_COLORS = { "pink", "yellow", "purple", "black", "green", "blue", "red", "white" };
 	
 	
 	public void InitializeUI()
@@ -444,6 +459,114 @@ public partial class PokerGame
 		}
 	}
 
+	/// <summary>
+	/// Determines which chip images to display for a given pot amount using standard poker chip values
+	/// </summary>
+	private List<string> GetChipImagesForPot(int potAmount)
+	{
+		if (potAmount <= 0) return new List<string>();
+		
+		int remaining = potAmount;
+		List<string> chipStacks = new List<string>();
+		
+		foreach (string color in CHIP_COLORS)
+		{
+			int value = CHIP_VALUES[color];
+			int chipCount = remaining / value;
+			
+			if (chipCount > 0)
+			{
+				// Break this chip count into visual stacks
+				List<string> colorStacks = GetChipStackImages(color, chipCount);
+				chipStacks.AddRange(colorStacks);
+				
+				remaining -= chipCount * value;
+			}
+			
+			if (chipStacks.Count >= 6) break;
+		}
+		
+		// Limit to 6 images max
+		if (chipStacks.Count > 6)
+			chipStacks = chipStacks.GetRange(0, 6);
+		
+		return chipStacks;
+	}
+
+	/// <summary>
+	/// Converts a chip count into the right combination of image sizes
+	/// _4 = 8 chips, _3 = 4 chips, _2 = 2 chips, _1 = 1 chip
+	/// </summary>
+	private List<string> GetChipStackImages(string color, int count)
+	{
+		List<string> images = new List<string>();
+		
+		// Break down into 8s, 4s, 2s, 1s
+		while (count >= 8)
+		{
+			images.Add($"{color}_4.png");
+			count -= 8;
+		}
+		
+		if (count >= 4)
+		{
+			images.Add($"{color}_3.png");
+			count -= 4;
+		}
+		
+		if (count >= 2)
+		{
+			images.Add($"{color}_2.png");
+			count -= 2;
+		}
+		
+		if (count >= 1)
+		{
+			images.Add($"{color}_1.png");
+		}
+		
+		return images;
+	}
+
+
+
+	/// <summary>
+	/// Updates the pot display with appropriate chip sprites
+	/// </summary>
+	private void UpdatePotDisplay(int potAmount)
+	{
+		if (chipContainer == null) return;
+		
+		foreach (Node child in chipContainer.GetChildren())
+		{
+			child.QueueFree();
+		}
+		
+		List<string> chipImages = GetChipImagesForPot(potAmount);
+		
+		foreach (string chipFile in chipImages)
+		{
+			TextureRect chipSprite = new TextureRect();
+
+			string path = $"res://Assets/Textures/chip_pngs/{chipFile}";
+			if (ResourceLoader.Exists(path))
+			{
+				chipSprite.Texture = GD.Load<Texture2D>(path);
+			}
+			else
+			{
+				GD.PrintErr($"Chip texture not found: {path}");
+				continue;
+			}
+			
+			chipSprite.CustomMinimumSize = new Vector2(32, 32);
+			chipSprite.ExpandMode = TextureRect.ExpandModeEnum.FitWidthProportional;
+			chipSprite.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
+			
+			chipContainer.AddChild(chipSprite);
+		}
+	}
+
 	// --- HUD & BUTTONS ---
 	
 	private void UpdateButtonLabels()
@@ -516,6 +639,7 @@ public partial class PokerGame
 			betRaiseButton.Visible = false;
 			betSlider.Visible = false;
 			potLabel.Visible = false;
+			UpdatePotDisplay(0);
 			return;
 		}
 
@@ -537,6 +661,7 @@ public partial class PokerGame
 			betRaiseButton.Visible = false;
 			betSlider.Visible = false;
 			potLabel.Visible = false;
+			UpdatePotDisplay(0);
 		}
 		else
 		{
@@ -563,6 +688,7 @@ public partial class PokerGame
 		playerStackLabel.Text = $"You: {playerChips}";
 		opponentStackLabel.Text = $"{currentOpponentName}: {opponentChips}";
 		potLabel.Text = $"Pot: {pot}";
+		UpdatePotDisplay(pot);
 	}
 
 	private void RefreshBetSlider()

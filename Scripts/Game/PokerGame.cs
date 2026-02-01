@@ -46,6 +46,8 @@ public partial class PokerGame : Node2D
 	private Texture2D raiseBtnImg;
 	
 	private Node2D opponentView;
+	private Node2D potArea;
+	private HBoxContainer chipContainer;
 	
 	private AtlasTexture _opponentAtlas;
 	private Sprite2D faceSprite;
@@ -111,12 +113,14 @@ public partial class PokerGame : Node2D
 	{
 		Control hudControl = GetNode<Control>("CanvasLayer/Control");
 		cardVisualScene = GD.Load<PackedScene>("res://Scenes/CardVisual.tscn");
-		opponentView = hudControl.GetNode<Node2D>("OpponentView");
 		
-		// card areas
+		// ui areas
 		Node2D opponentArea = hudControl.GetNode<Node2D>("OpponentArea");
 		Node2D communityCardsArea = hudControl.GetNode<Node2D>("CommunityCardsArea");
 		Node2D playerArea = hudControl.GetNode<Node2D>("PlayerArea");
+		opponentView = hudControl.GetNode<Node2D>("OpponentView");
+		potArea = hudControl.GetNode<Node2D>("PotArea");
+		chipContainer = potArea.GetNode<HBoxContainer>("VBoxContainer/ChipHBox");
 
 		// pocket cards
 		playerCard1 = playerArea.GetNode<CardVisual>("PlayerCard1");
@@ -141,7 +145,7 @@ public partial class PokerGame : Node2D
 		// labels
 		playerStackLabel = hudControl.GetNode<Label>("PlayerStackLabel");
 		opponentStackLabel = opponentView.GetNode<Label>("OpponentStackLabel");
-		potLabel = hudControl.GetNode<Label>("PotLabel");
+		potLabel = potArea.GetNode<Label>("VBoxContainer/PotLabel");
 		gameStateLabel = hudControl.GetNode<Label>("GameStateLabel");
 		playerHandType = hudControl.GetNode<Label>("PlayerHandType");
 		opponentHandType = hudControl.GetNode<Label>("OpponentHandType");
