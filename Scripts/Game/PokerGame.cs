@@ -29,6 +29,11 @@ public partial class PokerGame : Node2D
 	private Button checkCallButton;
 	private Button betRaiseButton;
 	private Button cashOutButton;
+	private Button thirdPot;
+	private Button halfPot;
+	private Button standardPot;
+	private Button twoThirdsPot;
+	private Button allInPot;
 
 	private Label playerStackLabel;
 	private Label opponentStackLabel;
@@ -142,6 +147,7 @@ public partial class PokerGame : Node2D
 		checkCallButton = actionButtons.GetNode<Button>("CheckCallButton");
 		betRaiseButton = actionButtons.GetNode<Button>("BetRaiseButton");
 		cashOutButton = hudControl.GetNode<Button>("CashOutButton");
+		
 
 		// labels
 		playerStackLabel = hudControl.GetNode<Label>("PlayerStackLabel");
@@ -161,6 +167,11 @@ public partial class PokerGame : Node2D
 		
 		// slider
 		betSlider = GetNode<HSlider>("%BetSlider");
+		thirdPot = GetNode<Button>("%ThirdPot");
+		halfPot = GetNode<Button>("%HalfPot");
+		standardPot = GetNode<Button>("%StandardPot");
+		twoThirdsPot = GetNode<Button>("%TwoThirdsPot");
+		allInPot = GetNode<Button>("%AllInPot");
 		
 		// faceSprite
 		faceSprite = GetNode<Sprite2D>("%FaceSprite"); 
@@ -170,6 +181,11 @@ public partial class PokerGame : Node2D
 		checkCallButton.Pressed += OnCheckCallPressed;
 		betRaiseButton.Pressed += OnBetRaisePressed;
 		betSlider.ValueChanged += OnBetSliderValueChanged;
+		thirdPot.Pressed += () => OnPotSizeButtonPressed(0.33f);
+		halfPot.Pressed += () => OnPotSizeButtonPressed(0.5f);
+		standardPot.Pressed += () => OnPotSizeButtonPressed(1.0f);
+		twoThirdsPot.Pressed += () => OnPotSizeButtonPressed(0.67f);
+		allInPot.Pressed += OnAllInButtonPressed;
 
 		// Initialize Tell Timer
 		tellTimer = new Timer();

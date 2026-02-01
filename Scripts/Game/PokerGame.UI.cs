@@ -631,8 +631,8 @@ public partial class PokerGame
 			{
 				if (currentBet > 0)
 				{
-					int raiseTotal = currentBet + betAmount;
-					betRaiseButton.Text = $"Raise: {raiseTotal}";
+					//int raiseTotal = currentBet + betAmount;
+					betRaiseButton.Text = $"Raise: {betAmount}";
 				}
 				else
 				{
@@ -651,7 +651,7 @@ public partial class PokerGame
 				checkCallButton.Text = $"Call: {Math.Min(toCall, playerChips)}";
 			}
 
-			int raiseTotal = currentBet + betAmount;
+			//int raiseTotal = currentBet + betAmount;
 
 			if (allInOnly || sliderAllIn)
 			{
@@ -659,7 +659,7 @@ public partial class PokerGame
 			}
 			else
 			{
-				betRaiseButton.Text = $"Raise: {raiseTotal}";
+				betRaiseButton.Text = $"Raise: {betAmount}";
 			}
 		}
 
