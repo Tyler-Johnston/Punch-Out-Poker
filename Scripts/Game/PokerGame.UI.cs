@@ -501,7 +501,6 @@ public partial class PokerGame
 	{
 		List<string> images = new List<string>();
 		
-		// Break down into 8s, 4s, 2s, 1s
 		while (count >= 8)
 		{
 			images.Add($"{color}_4.png");
@@ -528,11 +527,6 @@ public partial class PokerGame
 		return images;
 	}
 
-
-
-	/// <summary>
-	/// Updates the pot display with appropriate chip sprites
-	/// </summary>
 	private void UpdatePotDisplay(int potAmount)
 	{
 		if (chipContainer == null) return;
@@ -547,7 +541,7 @@ public partial class PokerGame
 		foreach (string chipFile in chipImages)
 		{
 			TextureRect chipSprite = new TextureRect();
-
+			
 			string path = $"res://Assets/Textures/chip_pngs/{chipFile}";
 			if (ResourceLoader.Exists(path))
 			{
@@ -559,13 +553,31 @@ public partial class PokerGame
 				continue;
 			}
 			
-			chipSprite.CustomMinimumSize = new Vector2(32, 32);
-			chipSprite.ExpandMode = TextureRect.ExpandModeEnum.FitWidthProportional;
+			// Adjust height based on stack size
+			float width = 32;
+			float height = GetChipHeight(chipFile);
+			
+			chipSprite.CustomMinimumSize = new Vector2(width, height);
+			chipSprite.ExpandMode = TextureRect.ExpandModeEnum.KeepSize;
 			chipSprite.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
 			
 			chipContainer.AddChild(chipSprite);
 		}
 	}
+
+	/// <summary>
+	/// Returns appropriate height for chip stack based on filename
+	/// </summary>
+	private float GetChipHeight(string chipFile)
+	{
+		if (chipFile.Contains("_1.png")) return 32;   // 1 chip
+		if (chipFile.Contains("_2.png")) return 36;   // 2 chips - slightly taller
+		if (chipFile.Contains("_3.png")) return 40;   // 4 chips - taller
+		if (chipFile.Contains("_4.png")) return 46;   // 8 chips - tallest
+		
+		return 32; // default
+	}
+
 
 	// --- HUD & BUTTONS ---
 	

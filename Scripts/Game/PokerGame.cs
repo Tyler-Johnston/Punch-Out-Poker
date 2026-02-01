@@ -47,7 +47,7 @@ public partial class PokerGame : Node2D
 	
 	private Node2D opponentView;
 	private Node2D potArea;
-	private HBoxContainer chipContainer;
+	private GridContainer chipContainer;
 	
 	private AtlasTexture _opponentAtlas;
 	private Sprite2D faceSprite;
@@ -120,7 +120,7 @@ public partial class PokerGame : Node2D
 		Node2D playerArea = hudControl.GetNode<Node2D>("PlayerArea");
 		opponentView = hudControl.GetNode<Node2D>("OpponentView");
 		potArea = hudControl.GetNode<Node2D>("PotArea");
-		chipContainer = potArea.GetNode<HBoxContainer>("VBoxContainer/ChipHBox");
+		chipContainer = potArea.GetNode<GridContainer>("VBoxContainer/ChipHBox");
 
 		// pocket cards
 		playerCard1 = playerArea.GetNode<CardVisual>("PlayerCard1");
