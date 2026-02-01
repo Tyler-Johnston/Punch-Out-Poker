@@ -796,6 +796,7 @@ theme_override_styles/disabled = SubResource("StyleBoxFlat_h5gdr")
 text = "Cash Out"
 
 [node name="SliderUI" type="VBoxContainer" parent="CanvasLayer/Control/ActionView"]
+unique_name_in_owner = true
 offset_left = 593.0
 offset_top = 605.0
 offset_right = 945.0

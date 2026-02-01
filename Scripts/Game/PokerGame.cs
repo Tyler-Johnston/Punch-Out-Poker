@@ -55,6 +55,7 @@ public partial class PokerGame : Node2D
 	private Node2D potArea;
 	private Node2D playerArea;
 	private Control actionButtons;
+	private Control sliderUI;
 	private GridContainer chipContainer;
 	
 	private AtlasTexture _opponentAtlas;
@@ -170,6 +171,7 @@ public partial class PokerGame : Node2D
 		speechBubble.AudioPlayer = sfxPlayer; 
 		
 		// slider
+		sliderUI = GetNode<Control>("%SliderUI");
 		betSlider = GetNode<HSlider>("%BetSlider");
 		thirdPot = GetNode<Button>("%ThirdPot");
 		halfPot = GetNode<Button>("%HalfPot");
@@ -375,7 +377,8 @@ public partial class PokerGame : Node2D
 		cashOutButton.Disabled = true;
 		cashOutButton.Visible = false;
 		speechBubble.Visible = false;
-		betSlider.Visible = true;
+		//betSlider.Visible = true;
+		sliderUI.Visible = true;
 		foldButton.Visible = true;
 		foldButton.Disabled = true;
 		betRaiseButton.Visible = true;

@@ -772,7 +772,8 @@ public partial class PokerGame
 			checkCallButton.Disabled = false;
 			foldButton.Visible = false;
 			betRaiseButton.Visible = false;
-			betSlider.Visible = false;
+			//betSlider.Visible = false;
+			sliderUI.Visible = false;
 			potArea.Visible = false;
 			UpdatePotDisplay(0);
 			return;
@@ -794,7 +795,8 @@ public partial class PokerGame
 			cashOutButton.Visible = true;
 			foldButton.Visible = false;
 			betRaiseButton.Visible = false;
-			betSlider.Visible = false;
+			//betSlider.Visible = false;
+			sliderUI.Visible = false;
 			potArea.Visible = false;
 			UpdatePotDisplay(0);
 		}
