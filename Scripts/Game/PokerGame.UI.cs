@@ -54,6 +54,7 @@ public partial class PokerGame
 	
 	public void InitializeButtonAnimations()
 	{
+
 		SetupButtonPivot(foldButton);
 		SetupButtonPivot(checkCallButton);
 		SetupButtonPivot(betRaiseButton);
@@ -83,6 +84,47 @@ public partial class PokerGame
 		StartIdleAnimation(checkCallButton, ref checkCallIdleTween, 0.33f);
 		StartIdleAnimation(betRaiseButton, ref betRaiseIdleTween, 0.66f);
 	}
+
+	//private void SetupPotButtonHover(Button button)
+	//{
+		//if (button == null) return;
+		//
+		//button.PivotOffset = button.Size / 2;
+		//
+		//button.MouseEntered += () => 
+		//{
+			//Tween tween = CreateTween();
+			//tween.TweenProperty(button, "modulate", new Color(1.15f, 1.15f, 1.15f), 0.1f)
+				//.SetEase(Tween.EaseType.Out);
+			//tween.Parallel().TweenProperty(button, "scale", Vector2.One * 1.03f, 0.1f)
+				//.SetEase(Tween.EaseType.Out);
+		//};
+		//
+		//button.MouseExited += () => 
+		//{
+			//Tween tween = CreateTween();
+			//tween.TweenProperty(button, "modulate", Colors.White, 0.1f)
+				//.SetEase(Tween.EaseType.Out);
+			//tween.Parallel().TweenProperty(button, "scale", Vector2.One, 0.1f)
+				//.SetEase(Tween.EaseType.Out);
+		//};
+		//
+		//button.ButtonDown += () =>
+		//{
+			//Tween tween = CreateTween();
+			//tween.TweenProperty(button, "scale", Vector2.One * 0.95f, 0.05f)
+				//.SetEase(Tween.EaseType.Out);
+		//};
+		//
+		//button.ButtonUp += () =>
+		//{
+			//Tween tween = CreateTween();
+			//tween.TweenProperty(button, "scale", Vector2.One, 0.15f)
+				//.SetEase(Tween.EaseType.Out)
+				//.SetTrans(Tween.TransitionType.Back);
+		//};
+	//}
+
 
 	/// <summary>
 	/// Sets button pivot to center for smooth scaling and prevents size drift
