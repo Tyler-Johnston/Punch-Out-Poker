@@ -606,19 +606,19 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 36
 text = "1/2"
 
-[node name="StandardPot" type="Button" parent="CanvasLayer/Control/SliderUI/BetShortcuts"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(60, 0)
-layout_mode = 2
-theme_override_font_sizes/font_size = 36
-text = "Pot"
-
 [node name="TwoThirdsPot" type="Button" parent="CanvasLayer/Control/SliderUI/BetShortcuts"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(60, 0)
 layout_mode = 2
 theme_override_font_sizes/font_size = 36
 text = "2/3"
+
+[node name="StandardPot" type="Button" parent="CanvasLayer/Control/SliderUI/BetShortcuts"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(60, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 36
+text = "Pot"
 
 [node name="AllInPot" type="Button" parent="CanvasLayer/Control/SliderUI/BetShortcuts"]
 unique_name_in_owner = true

@@ -668,6 +668,86 @@ public partial class PokerGame
 			betRaiseButton.Disabled = true;
 		}
 	}
+	
+private void UpdatePotSizeButtons()
+{
+	if (!handInProgress || !isPlayerTurn || playerIsAllIn)
+	{
+		thirdPot.Disabled = true;
+		halfPot.Disabled = true;
+		standardPot.Disabled = true;
+		twoThirdsPot.Disabled = true;
+		allInPot.Disabled = true;
+		return;
+	}
+	
+	var (minBet, maxBet) = GetLegalBetRange();
+	
+	if (maxBet <= 0)
+	{
+		thirdPot.Disabled = true;
+		halfPot.Disabled = true;
+		standardPot.Disabled = true;
+		twoThirdsPot.Disabled = true;
+		allInPot.Disabled = true;
+		return;
+	}
+	
+	// Calculate pot AFTER calling
+	int toCall = currentBet - playerBet;
+	int potAfterCall = pot + toCall;
+	
+	// Calculate raise amounts as % of pot-after-call
+	int thirdPotRaise = (int)Math.Round(potAfterCall * 0.33f);
+	int halfPotRaise = (int)Math.Round(potAfterCall * 0.5f);
+	int twoThirdsPotRaise = (int)Math.Round(potAfterCall * 0.67f);
+	int fullPotRaise = (int)Math.Round(potAfterCall * 1.0f);
+	
+	// Disable if raise is out of legal range
+	thirdPot.Disabled = (thirdPotRaise < minBet || thirdPotRaise > maxBet);
+	halfPot.Disabled = (halfPotRaise < minBet || halfPotRaise > maxBet);
+	twoThirdsPot.Disabled = (twoThirdsPotRaise < minBet || twoThirdsPotRaise > maxBet);
+	standardPot.Disabled = (fullPotRaise < minBet || fullPotRaise > maxBet);
+	
+	allInPot.Disabled = false;
+}
+
+
+
+	/// <summary>
+	/// Helper to calculate pot-sized bet amount
+	/// </summary>
+	private int CalculatePotSizeBet(float potMultiplier)
+	{
+		var (minBet, maxBet) = GetLegalBetRange();
+		
+		if (maxBet <= 0) return 0;
+		
+		int targetRaiseAmount;
+		int toCall = currentBet - playerBet;
+		
+		// ALWAYS calculate based on pot AFTER you call
+		// This is standard poker pot-sizing
+		int potAfterCall = pot + toCall;
+		
+		if (currentBet == 0)
+		{
+			// Opening bet (no one has bet yet)
+			// Still use potAfterCall because it includes any blinds posted
+			targetRaiseAmount = (int)Math.Round(potAfterCall * potMultiplier);
+		}
+		else
+		{
+			// Raising situation
+			// Your raise is a % of the pot AFTER you call
+			targetRaiseAmount = (int)Math.Round(potAfterCall * potMultiplier);
+		}
+		
+		return Math.Clamp(targetRaiseAmount, minBet, maxBet);
+	}
+
+
+
 
 	private void UpdateHud()
 	{
@@ -729,6 +809,7 @@ public partial class PokerGame
 		opponentStackLabel.Text = $"{currentOpponentName}: {opponentChips}";
 		potLabel.Text = $"Pot: {pot}";
 		UpdatePotDisplay(pot);
+		UpdatePotSizeButtons();
 	}
 
 	private void RefreshBetSlider()
@@ -753,6 +834,7 @@ public partial class PokerGame
 
 		betAmount = Math.Clamp(betAmount, minBet, maxBet);
 		betSlider.Value = betAmount;
+		UpdatePotSizeButtons();
 	}
 
 	private void OnBetSliderValueChanged(double value)
@@ -764,6 +846,7 @@ public partial class PokerGame
 		betAmount = sliderValue;
 		betSlider.Value = betAmount;
 		UpdateButtonLabels();
+		UpdatePotSizeButtons();
 	}
 
 	// --- DIALOGUE SYSTEM ---
