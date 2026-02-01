@@ -463,6 +463,14 @@ offset_top = 558.0
 offset_right = 1278.0
 offset_bottom = 724.0
 
+[node name="ActionBar2" type="PanelContainer" parent="CanvasLayer/Control"]
+visible = false
+layout_mode = 0
+offset_left = 1.0
+offset_top = 510.0
+offset_right = 1278.0
+offset_bottom = 559.0
+
 [node name="ActionButtons" type="HBoxContainer" parent="CanvasLayer/Control"]
 texture_filter = 1
 layout_mode = 0
@@ -526,10 +534,10 @@ text = "Cash Out"
 
 [node name="PlayerStackLabel" type="Label" parent="CanvasLayer/Control"]
 layout_mode = 0
-offset_left = 1029.0
-offset_top = 505.0
-offset_right = 1047.0
-offset_bottom = 557.0
+offset_left = 1035.0
+offset_top = 508.0
+offset_right = 1053.0
+offset_bottom = 560.0
 text = "0"
 label_settings = SubResource("LabelSettings_eibjp")
 horizontal_alignment = 1
@@ -546,9 +554,9 @@ label_settings = SubResource("LabelSettings_l4y0v")
 [node name="GameStateLabel" type="Label" parent="CanvasLayer/Control"]
 layout_mode = 0
 offset_left = 15.0
-offset_top = 505.0
+offset_top = 508.0
 offset_right = 449.0
-offset_bottom = 557.0
+offset_bottom = 560.0
 text = "Game State Label"
 label_settings = SubResource("LabelSettings_l4y0v")
 
