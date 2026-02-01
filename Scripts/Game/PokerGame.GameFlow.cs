@@ -461,6 +461,7 @@ public partial class PokerGame
 			ShowMessage($"{currentOpponentName} calls ${callAmount}");
 			GD.Print($"{currentOpponentName} calls: {callAmount}");
 		}
+		sfxPlayer.PlayRandomChip();
 	}
 
 	private void OnOpponentRaise()
@@ -510,6 +511,7 @@ public partial class PokerGame
 			ShowMessage($"{currentOpponentName} raises to ${currentBet}");
 			GD.Print($"{currentOpponentName} raises to: {currentBet}");
 		}
+		sfxPlayer.PlayRandomChip();
 		
 		// track if this might be a bluff
 		if (handStrength < 0.4f)
@@ -538,6 +540,7 @@ public partial class PokerGame
 		
 		ShowMessage($"{currentOpponentName} goes ALL-IN for ${allInAmount}!");
 		GD.Print($"{currentOpponentName} ALL-IN: {allInAmount}");
+		sfxPlayer.PlayRandomChip();
 	}
 
 	private PlayerAction DecideAIAction(GameState gameState)

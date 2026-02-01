@@ -411,7 +411,25 @@ public partial class PokerGame : Node2D
 		handInProgress = true;
 		
 		UpdateOpponentVisuals();
-
+		PostBlinds();
+		UpdateHud();
+		UpdateButtonLabels();
+		RefreshBetSlider();
+		
+		// if both are all-in (or player is forced all-in), skip betting logic
+		if (playerIsAllIn || opponentIsAllIn)
+		{
+			GD.Print("[START HAND] Blind forced All-In! Skipping to next street.");
+			GetTree().CreateTimer(1.5).Timeout += AdvanceStreet;
+		}
+		else if (!isPlayerTurn)
+		{
+			GetTree().CreateTimer(1.15).Timeout += () => CheckAndProcessAITurn();
+		}
+	}
+	
+	private void PostBlinds()
+	{
 		playerHasButton = !playerHasButton;
 		if (playerHasButton)
 		{
@@ -459,21 +477,7 @@ public partial class PokerGame : Node2D
 			ShowMessage($"Blinds: You {bbAmount}, {currentOpponentName} {sbAmount}");
 			GD.Print($"Opponent SB. Posted: {sbAmount} vs {bbAmount}. Pot: {pot}");
 		}
-
-		UpdateHud();
-		UpdateButtonLabels();
-		RefreshBetSlider();
-		
-		// if both are all-in (or player is forced all-in), skip betting logic
-		if (playerIsAllIn || opponentIsAllIn)
-		{
-			GD.Print("[START HAND] Blind forced All-In! Skipping to next street.");
-			GetTree().CreateTimer(1.5).Timeout += AdvanceStreet;
-		}
-		else if (!isPlayerTurn)
-		{
-			GetTree().CreateTimer(1.15).Timeout += () => CheckAndProcessAITurn();
-		}
+		sfxPlayer.PlayRandomChip();
 	}
 
 	private async void EndHand()

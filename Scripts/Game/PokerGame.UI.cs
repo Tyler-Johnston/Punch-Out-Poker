@@ -531,7 +531,6 @@ public partial class PokerGame
 	{
 		if (chipContainer == null) return;
 		
-		// Don't update if pot hasn't changed
 		if (potAmount == _lastDisplayedPot)
 			return;
 		
