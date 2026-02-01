@@ -145,7 +145,7 @@ public partial class PokerGame : Node2D
 		// labels
 		playerStackLabel = hudControl.GetNode<Label>("PlayerStackLabel");
 		opponentStackLabel = opponentView.GetNode<Label>("OpponentStackLabel");
-		potLabel = potArea.GetNode<Label>("VBoxContainer/PotLabel");
+		potLabel = GetNode<Label>("%PotLabel");
 		gameStateLabel = hudControl.GetNode<Label>("GameStateLabel");
 		playerHandType = hudControl.GetNode<Label>("PlayerHandType");
 		opponentHandType = hudControl.GetNode<Label>("OpponentHandType");
