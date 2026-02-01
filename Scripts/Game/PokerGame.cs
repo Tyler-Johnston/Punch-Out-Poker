@@ -61,6 +61,7 @@ public partial class PokerGame : Node2D
 	private int playerChips = 100;
 	private int opponentChips = 100;
 	private int pot = 0;
+	private int _lastDisplayedPot = -1;
 	private int betAmount = 20;
 	private int currentBet = 0;
 	private int playerBet = 0;
@@ -367,6 +368,7 @@ public partial class PokerGame : Node2D
 		deck.Shuffle();
 		
 		pot = 0;
+		_lastDisplayedPot = -1; 
 		playerContributed = 0;
 		opponentContributed = 0;
 		playerTotalBetsThisHand = 0;

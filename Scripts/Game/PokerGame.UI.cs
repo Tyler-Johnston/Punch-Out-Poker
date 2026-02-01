@@ -526,10 +526,16 @@ public partial class PokerGame
 		
 		return images;
 	}
-
+	
 	private void UpdatePotDisplay(int potAmount)
 	{
 		if (chipContainer == null) return;
+		
+		// Don't update if pot hasn't changed
+		if (potAmount == _lastDisplayedPot)
+			return;
+		
+		_lastDisplayedPot = potAmount;
 		
 		foreach (Node child in chipContainer.GetChildren())
 		{
@@ -561,8 +567,32 @@ public partial class PokerGame
 			chipSprite.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
 			
 			chipContainer.AddChild(chipSprite);
+			
+			// Wait one frame for layout, then randomize
+			GetTree().CreateTimer(0.0f).Timeout += () =>
+			{
+				if (chipSprite == null || !IsInstanceValid(chipSprite)) return;
+				
+				// Random position offset
+				float offsetX = (float)GD.RandRange(-4.0, 4.0);
+				float offsetY = (float)GD.RandRange(-4.0, 4.0);
+				chipSprite.Position += new Vector2(offsetX, offsetY);
+				
+				// Random rotation
+				float rotationDegrees = (float)GD.RandRange(-5.0, 5.0);
+				chipSprite.Rotation = Mathf.DegToRad(rotationDegrees);
+				
+				// Pop-in animation
+				chipSprite.Scale = Vector2.Zero;
+				Tween tween = CreateTween();
+				tween.TweenProperty(chipSprite, "scale", Vector2.One, 0.15f)
+					.SetEase(Tween.EaseType.Out)
+					.SetTrans(Tween.TransitionType.Back);
+			};
 		}
 	}
+
+
 
 	/// <summary>
 	/// Returns appropriate height for chip stack based on filename
