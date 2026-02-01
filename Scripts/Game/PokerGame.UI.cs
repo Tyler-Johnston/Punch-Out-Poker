@@ -553,8 +553,7 @@ public partial class PokerGame
 				continue;
 			}
 			
-			// Adjust height based on stack size
-			float width = 32;
+			float width = 48;
 			float height = GetChipHeight(chipFile);
 			
 			chipSprite.CustomMinimumSize = new Vector2(width, height);
@@ -570,12 +569,12 @@ public partial class PokerGame
 	/// </summary>
 	private float GetChipHeight(string chipFile)
 	{
-		if (chipFile.Contains("_1.png")) return 32;   // 1 chip
-		if (chipFile.Contains("_2.png")) return 36;   // 2 chips - slightly taller
-		if (chipFile.Contains("_3.png")) return 40;   // 4 chips - taller
-		if (chipFile.Contains("_4.png")) return 46;   // 8 chips - tallest
+		if (chipFile.Contains("_1.png")) return 48;
+		if (chipFile.Contains("_2.png")) return 54;
+		if (chipFile.Contains("_3.png")) return 60;
+		if (chipFile.Contains("_4.png")) return 69;
 		
-		return 32; // default
+		return 48; // default
 	}
 
 
