@@ -291,6 +291,12 @@ public partial class PokerGame
 	{
 		GD.Print($"[CheckAndProcessAITurn] isProcessing={isProcessingAIAction}, isPlayerTurn={isPlayerTurn}, handInProgress={handInProgress}");
 		
+		if (IsAIDebugDisabled())
+		{
+			GD.Print("[DEBUG] AI turn skipped (AI manually disabled)");
+			return;
+		}
+	
 		if (isProcessingAIAction)
 		{
 			GD.Print("CheckAndProcessAITurn blocked: already processing");
