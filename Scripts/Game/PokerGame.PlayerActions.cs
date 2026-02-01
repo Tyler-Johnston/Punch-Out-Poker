@@ -230,6 +230,11 @@ public partial class PokerGame
 		}
 	}
 	
+	// --- POT-SIZED BET BUTTONS ---
+	
+	/// <summary>
+	/// Handles pot-sized bet buttons (1/3, 1/2, 2/3, 1x pot)
+	/// </summary>
 	private void OnPotSizeButtonPressed(float potMultiplier)
 	{
 		if (!handInProgress || !isPlayerTurn) return;
@@ -237,7 +242,7 @@ public partial class PokerGame
 		var (minBet, maxBet) = GetLegalBetRange();
 		if (maxBet <= 0) return;
 		
-		// Use the helper method
+		// Use the helper method to calculate raise amount
 		int targetBet = CalculatePotSizeBet(potMultiplier);
 		
 		// Update slider and betAmount
@@ -249,7 +254,6 @@ public partial class PokerGame
 		GD.Print($"Set bet to {potMultiplier:P0} pot: {targetBet}");
 	}
 
-
 	/// <summary>
 	/// Handles the All-In button
 	/// </summary>
@@ -258,7 +262,6 @@ public partial class PokerGame
 		if (!handInProgress || !isPlayerTurn) return;
 		
 		var (minBet, maxBet) = GetLegalBetRange();
-		
 		if (maxBet <= 0) return;
 		
 		// Set to maximum (all-in amount)
