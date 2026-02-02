@@ -63,7 +63,6 @@ public partial class PokerGame
 	
 	public void InitializeButtonAnimations()
 	{
-
 		SetupButtonPivot(foldButton);
 		SetupButtonPivot(checkCallButton);
 		SetupButtonPivot(betRaiseButton);
@@ -267,13 +266,6 @@ public partial class PokerGame
 			.SetEase(Tween.EaseType.Out);
 	}
 
-	// --- MESSAGE DISPLAY ---
-	
-	private void ShowMessage(string text)
-	{
-		gameStateLabel.Text = text;
-	}
-
 	// --- TABLE VISUALS ---
 	
 	private void SetTableColor()
@@ -455,7 +447,6 @@ public partial class PokerGame
 
 	private void LoadOpponentSprite()
 	{
-		
 		string opponent = currentOpponentName.ToLower();
 		
 		string folderPath = "res://Assets/Textures/expressions/";
@@ -522,6 +513,8 @@ public partial class PokerGame
 			OpponentFrame.AddThemeStyleboxOverride("panel", style);
 		}
 	}
+
+	// --- POT & CHIP DISPLAY ---
 
 	/// <summary>
 	/// Determines which chip images to display for a given pot amount using standard poker chip values
@@ -677,6 +670,8 @@ public partial class PokerGame
 		return 48; // default
 	}
 
+	// --- HUD UPDATE METHODS ---
+
 	private void UpdatePotSizeButtons()
 	{
 		if (!handInProgress || !isPlayerTurn || playerIsAllIn)
@@ -701,41 +696,80 @@ public partial class PokerGame
 			return;
 		}
 		
+		// Calculate pot-sized bet amounts
 		int thirdPotRaise = (int)Math.Round(pot * 0.33f);
 		int halfPotRaise = (int)Math.Round(pot * 0.5f);
 		int twoThirdsPotRaise = (int)Math.Round(pot * 0.67f);
 		int fullPotRaise = pot;
+		int allInRaise = maxBet;
 		
-		// Disable if raise is out of legal range
-		thirdPot.Disabled = (thirdPotRaise < minBet || thirdPotRaise > maxBet);
-		halfPot.Disabled = (halfPotRaise < minBet || halfPotRaise > maxBet);
-		twoThirdsPot.Disabled = (twoThirdsPotRaise < minBet || twoThirdsPotRaise > maxBet);
-		standardPot.Disabled = (fullPotRaise < minBet || fullPotRaise > maxBet);
+		// Clamp to legal range
+		thirdPotRaise = Math.Clamp(thirdPotRaise, minBet, maxBet);
+		halfPotRaise = Math.Clamp(halfPotRaise, minBet, maxBet);
+		twoThirdsPotRaise = Math.Clamp(twoThirdsPotRaise, minBet, maxBet);
+		fullPotRaise = Math.Clamp(fullPotRaise, minBet, maxBet);
 		
-		allInPot.Disabled = false;
+		// Track seen values to disable duplicates
+		HashSet<int> seenValues = new HashSet<int>();
+		
+		// 1/3 Pot
+		bool thirdValid = (thirdPotRaise >= minBet && thirdPotRaise <= maxBet);
+		if (thirdValid && !seenValues.Contains(thirdPotRaise))
+		{
+			thirdPot.Disabled = false;
+			seenValues.Add(thirdPotRaise);
+		}
+		else
+		{
+			thirdPot.Disabled = true;
+		}
+		
+		// 1/2 Pot
+		bool halfValid = (halfPotRaise >= minBet && halfPotRaise <= maxBet);
+		if (halfValid && !seenValues.Contains(halfPotRaise))
+		{
+			halfPot.Disabled = false;
+			seenValues.Add(halfPotRaise);
+		}
+		else
+		{
+			halfPot.Disabled = true;
+		}
+		
+		// 2/3 Pot
+		bool twoThirdsValid = (twoThirdsPotRaise >= minBet && twoThirdsPotRaise <= maxBet);
+		if (twoThirdsValid && !seenValues.Contains(twoThirdsPotRaise))
+		{
+			twoThirdsPot.Disabled = false;
+			seenValues.Add(twoThirdsPotRaise);
+		}
+		else
+		{
+			twoThirdsPot.Disabled = true;
+		}
+		
+		// Full Pot
+		bool fullValid = (fullPotRaise >= minBet && fullPotRaise <= maxBet);
+		if (fullValid && !seenValues.Contains(fullPotRaise))
+		{
+			standardPot.Disabled = false;
+			seenValues.Add(fullPotRaise);
+		}
+		else
+		{
+			standardPot.Disabled = true;
+		}
+		
+		// All-In (always enable if different from others)
+		if (!seenValues.Contains(allInRaise))
+		{
+			allInPot.Disabled = false;
+		}
+		else
+		{
+			allInPot.Disabled = true;
+		}
 	}
-
-
-	/// <summary>
-	/// Helper to calculate pot-sized bet amount
-	/// </summary>
-	/// <summary>
-	/// Helper to calculate pot-sized bet amount - SIMPLE VERSION
-	/// Just takes % of current visible pot
-	/// </summary>
-	private int CalculatePotSizeBet(float potMultiplier)
-	{
-		var (minBet, maxBet) = GetLegalBetRange();
-		
-		if (maxBet <= 0) return 0;
-		
-		int targetRaiseAmount = (int)Math.Round(pot * potMultiplier);
-		
-		return Math.Clamp(targetRaiseAmount, minBet, maxBet);
-	}
-
-
-	// --- HUD & BUTTONS ---
 	
 	private void UpdateButtonLabels()
 	{
@@ -809,10 +843,8 @@ public partial class PokerGame
 			return;
 		}
 
-
 		if (waitingForNextGame)
 		{
-			
 			actionButtons.Visible = false;
 			sliderUI.Visible = false;
 			potArea.Visible = false;
@@ -827,14 +859,14 @@ public partial class PokerGame
 			{
 				nextHandButton.Text = "Next Hand";
 				nextHandButton.Disabled = false;
-				UpdateSessionProfitLabel();
 			}
 			
+			UpdateSessionProfitLabel();
 			UpdatePotDisplay(0);
 		}
 		else
 		{
-			// we are in an active hand. show gameplay buttons and hide betwwen hands UI
+			// Active hand - show gameplay buttons and hide between hands UI
 			RefreshBetSlider();
 			UpdateButtonLabels();
 
@@ -860,40 +892,6 @@ public partial class PokerGame
 		potLabel.Text = $"Pot: {pot}";
 		UpdatePotDisplay(pot);
 		UpdatePotSizeButtons();
-	}
-	
-	private void UpdateSessionProfitLabel()
-	{
-		int buyIn = GameManager.Instance.CurrentBuyIn;
-		int profit = playerChips - buyIn;
-		
-		if (profit > 0)
-		{
-			playerEarningsLabel.Text = $"Net: +${profit}";
-			playerEarningsLabel.Modulate = new Color("#4ade80");
-		}
-		else if (profit < 0)
-		{
-			playerEarningsLabel.Text = $"Net: -${Math.Abs(profit)}";
-			playerEarningsLabel.Modulate = new Color("#f87171"); // Red
-		}
-		else
-		{
-			playerEarningsLabel.Text = "Net: $0";
-			playerEarningsLabel.Modulate = Colors.White;
-		}
-	}
-
-	
-	private void UpdatePlayerStackLabels()
-	{
-		string text = $"Money In-Hand: ${playerChips}";
-		
-		if (playerStackLabel != null)
-			playerStackLabel.Text = text;
-		
-		if (playerStackLabel2 != null)
-			playerStackLabel2.Text = text;
 	}
 
 	private void RefreshBetSlider()
@@ -934,32 +932,6 @@ public partial class PokerGame
 	}
 
 	// --- DIALOGUE SYSTEM ---
-	
-	private float AnimateText(Label label, string text, float speed = 0.03f)
-	{
-		if (string.IsNullOrWhiteSpace(text) || text.Length <= 1)
-			return 0f;
-
-		speechBubble.Visible = true;
-		label.Text = text;
-		label.VisibleRatio = 0;
-
-		float typeDuration = text.Length * speed;
-
-		Tween tween = GetTree().CreateTween();
-		tween.TweenProperty(label, "visible_ratio", 1.0f, typeDuration);
-
-		float readTime = 2.0f + (text.Length * 0.05f);
-		tween.TweenInterval(readTime);
-
-		tween.TweenCallback(Callable.From(() =>
-		{
-			label.Text = "";
-			speechBubble.Visible = false;
-		}));
-
-		return typeDuration;
-	}
 	
 	private float PlayDialogue(string text)
 	{

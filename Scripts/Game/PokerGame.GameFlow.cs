@@ -5,6 +5,225 @@ using System.Threading.Tasks;
 
 public partial class PokerGame
 {
+	// --- GAME LIFECYCLE ---
+	
+	private async void StartNewHand()
+	{
+		if (!waitingForNextGame && handInProgress) return; 
+		
+		waitingForNextGame = false;
+		SetExpression(Expression.Neutral);
+
+		if (IsGameOver())
+		{
+			HandleGameOver();
+			return;
+		}
+		
+		// reset AI opponent for new hand
+		aiOpponent.ResetForNewHand();
+		aiOpponent.ChipStack = opponentChips;
+
+		GD.Print("\n=== New Hand ===");
+		ShowMessage("");
+
+		playerStackLabel.Visible = true;
+		actionButtons.Visible = true;
+		betweenHandsUI.Visible = false;
+		potArea.Visible = true;
+		opponentCard1.Visible = false;
+		opponentCard2.Visible = false;
+		speechBubble.Visible = false;
+		sliderUI.Visible = true;
+		foldButton.Visible = true;
+		foldButton.Disabled = true;
+		betRaiseButton.Visible = true;
+		betRaiseButton.Disabled = true;
+		aiStrengthAtAllIn = 0f;
+
+		deck = new Deck();
+		deck.Shuffle();
+		
+		pot = 0;
+		_lastDisplayedPot = -1; 
+		playerContributed = 0;
+		opponentContributed = 0;
+		playerTotalBetsThisHand = 0;
+		
+		aiBluffedThisHand = false;
+		raisesThisStreet = 0;
+		playerIsAllIn = false;
+		opponentIsAllIn = false;
+		isProcessingAIAction = false; 
+
+		playerHasActedThisStreet = false;
+		opponentHasActedThisStreet = false;
+
+		playerBetOnStreet.Clear();
+		playerBetSizeOnStreet.Clear();
+		playerBetOnStreet[Street.Preflop] = false;
+		playerBetOnStreet[Street.Flop] = false;
+		playerBetOnStreet[Street.Turn] = false;
+		playerBetOnStreet[Street.River] = false;
+
+		playerHand.Clear();
+		opponentHand.Clear();
+		communityCards.Clear();
+
+		playerCard1.ShowBack();
+		playerCard2.ShowBack();
+		opponentCard1.ShowBack();
+		opponentCard2.ShowBack();
+		flop1.ShowBack();
+		flop2.ShowBack();
+		flop3.ShowBack();
+		turnCard.ShowBack();
+		riverCard.ShowBack();
+
+		await DealInitialHands();
+		
+		tellTimer.Start();
+		
+		currentStreet = Street.Preflop;
+		handInProgress = true;
+		
+		UpdateOpponentVisuals();
+		PostBlinds();
+		UpdateHud();
+		UpdateButtonLabels();
+		RefreshBetSlider();
+		
+		// if both are all-in (or player is forced all-in), skip betting logic
+		if (playerIsAllIn || opponentIsAllIn)
+		{
+			GD.Print("[START HAND] Blind forced All-In! Skipping to next street.");
+			GetTree().CreateTimer(1.5).Timeout += AdvanceStreet;
+		}
+		else if (!isPlayerTurn)
+		{
+			GetTree().CreateTimer(1.15).Timeout += () => CheckAndProcessAITurn();
+		}
+	}
+	
+	private void PostBlinds()
+	{
+		playerHasButton = !playerHasButton;
+		if (playerHasButton)
+		{
+			// human player is Small Blind
+			int sbAmount = Math.Min(smallBlind, playerChips); 
+			playerChips -= sbAmount;
+			AddToPot(true, sbAmount);
+			playerBet = sbAmount;
+			if (playerChips == 0) playerIsAllIn = true;
+
+			// opponent is Big Blind
+			int bbAmount = Math.Min(bigBlind, opponentChips); 
+			opponentChips -= bbAmount;
+			aiOpponent.ChipStack = opponentChips;
+			AddToPot(false, bbAmount);
+			opponentBet = bbAmount;
+			currentBet = opponentBet; 
+			if (opponentChips == 0) opponentIsAllIn = true;
+
+			isPlayerTurn = true;
+			ShowMessage($"Blinds: You {sbAmount}, {currentOpponentName} {bbAmount}");
+			GD.Print($"Player SB. Posted: {sbAmount} vs {bbAmount}. Pot: {pot}");
+		}
+		else
+		{
+			// human player is Big Blind
+			int bbAmount = Math.Min(bigBlind, playerChips); 
+			playerChips -= bbAmount;
+			AddToPot(true, bbAmount);
+			playerBet = bbAmount;
+			if (playerChips == 0) playerIsAllIn = true;
+
+			// opponent is Small Blind
+			int sbAmount = Math.Min(smallBlind, opponentChips); 
+			opponentChips -= sbAmount;
+			aiOpponent.ChipStack = opponentChips;
+			AddToPot(false, sbAmount);
+			opponentBet = sbAmount;
+			
+			currentBet = Math.Max(playerBet, opponentBet);
+
+			if (opponentChips == 0) opponentIsAllIn = true;
+
+			isPlayerTurn = false;
+			ShowMessage($"Blinds: You {bbAmount}, {currentOpponentName} {sbAmount}");
+			GD.Print($"Opponent SB. Posted: {sbAmount} vs {bbAmount}. Pot: {pot}");
+		}
+		sfxPlayer.PlayRandomChip();
+	}
+
+	private async void EndHand()
+	{
+		tellTimer.Stop();
+		
+		if (isShowdownInProgress) return;
+		
+		pot = 0;
+		handInProgress = false;
+		waitingForNextGame = true;
+
+		if (IsGameOver())
+		{
+			HandleGameOver();
+			return;
+		}
+		
+		// check for rage quit or surrender
+		OpponentExitType exitType = aiOpponent.CheckForEarlyExit();
+		if (exitType != OpponentExitType.None)
+		{
+			await ToSignal(GetTree().CreateTimer(1.5f), SceneTreeTimer.SignalName.Timeout);
+			if (exitType == OpponentExitType.RageQuit)
+			{
+				ShowMessage($"{aiOpponent.PlayerName} RAGE QUITS!");
+				SetExpression(Expression.Angry);
+				GD.Print($"[GAME OVER] Opponent Rage Quit! Tilt: {aiOpponent.Personality.TiltMeter}");
+			}
+			else if (exitType == OpponentExitType.Surrender)
+			{
+				ShowMessage($"{aiOpponent.PlayerName} SURRENDERS!");
+				SetExpression(Expression.Worried);
+				GD.Print($"[GAME OVER] Opponent Surrendered. Chips: {aiOpponent.ChipStack}");
+			}
+			await ToSignal(GetTree().CreateTimer(3.0f), SceneTreeTimer.SignalName.Timeout);
+			HandleGameOver(opponentSurrendered: true);
+			return;
+		}
+
+		UpdateHud();
+		RefreshBetSlider();
+	}
+	
+	private void HandleGameOver(bool opponentSurrendered = false)
+	{
+		if (tellTimer != null) tellTimer.Stop();
+
+		bool playerWon = opponentSurrendered || (opponentChips <= 0);
+		
+		if (playerWon)
+		{
+			int winnings = buyInAmount * 2;
+			GameManager.Instance.OnMatchWon(currentOpponentName, winnings);
+			
+			string reason = opponentSurrendered ? "surrendered!" : "went bust!";
+			ShowMessage($"VICTORY! {currentOpponentName} {reason}");
+			GD.Print($"=== VICTORY vs {currentOpponentName} ===");
+		}
+		else
+		{
+			GameManager.Instance.OnMatchLost(currentOpponentName);
+			ShowMessage($"{currentOpponentName} wins!");
+			GD.Print($"=== DEFEAT vs {currentOpponentName} ===");
+		}
+	}
+
+	// --- CARD DEALING ---
+	
 	private async Task DealInitialHands()
 	{
 		GD.Print("\n=== Dealing Initial Hands ===");
@@ -48,7 +267,7 @@ public partial class PokerGame
 
 	public async Task DealCommunityCards(Street street)
 	{
-		GD.Print($"\\n=== Community Cards: {street} ===");
+		GD.Print($"\n=== Community Cards: {street} ===");
 		switch (street)
 		{
 			case Street.Flop:
@@ -92,6 +311,8 @@ public partial class PokerGame
 		// Show reaction to the board
 		ShowTell(true);
 	}
+
+	// --- STREET PROGRESSION ---
 
 	private async void AdvanceStreet()
 	{
@@ -165,7 +386,7 @@ public partial class PokerGame
 		if (isShowdownInProgress) return;
 		isShowdownInProgress = true;
 		
-		GD.Print("\\n=== Showdown ===");
+		GD.Print("\\\\n=== Showdown ===");
 		
 		// process refunds first
 		bool refundOccurred = ReturnUncalledChips();
@@ -196,7 +417,7 @@ public partial class PokerGame
 		
 		if (result > 0)
 		{
-			GD.Print("\\nPLAYER WINS!");
+			GD.Print("\nPLAYER WINS!");
 			message = $"You win ${finalPot} with {playerHandName}!";
 			
 			PlayReactionDialogue("OnLosePot");
@@ -283,6 +504,8 @@ public partial class PokerGame
 		UpdateHud(); 
 		EndHand();
 	}
+
+	// --- AI TURN PROCESSING ---
 
 	private void CheckAndProcessAITurn()
 	{
@@ -396,6 +619,8 @@ public partial class PokerGame
 		UpdateHud();
 		UpdateOpponentVisuals();
 	}
+
+	// --- AI ACTION HANDLERS ---
 
 	private async void OnOpponentFold()
 	{
@@ -540,6 +765,8 @@ public partial class PokerGame
 		sfxPlayer.PlayRandomChip();
 	}
 
+	// --- AI HELPERS ---
+
 	private PlayerAction DecideAIAction(GameState gameState)
 	{
 		return aiOpponent.MakeDecision(gameState);
@@ -555,35 +782,5 @@ public partial class PokerGame
 		{
 			return !playerHasButton;
 		}
-	}
-	
-	private void HandleGameOver(bool opponentSurrendered = false)
-	{
-		// Stop tells
-		if (tellTimer != null) tellTimer.Stop();
-
-		bool playerWon = opponentSurrendered || (opponentChips <= 0);
-		
-		if (playerWon)
-		{
-			int winnings = buyInAmount * 2;
-			GameManager.Instance.OnMatchWon(currentOpponentName, winnings);
-			
-			string reason = opponentSurrendered ? "surrendered!" : "went bust!";
-			ShowMessage($"VICTORY! {currentOpponentName} {reason}");
-			GD.Print($"=== VICTORY vs {currentOpponentName} ===");
-		}
-		else
-		{
-			GameManager.Instance.OnMatchLost(currentOpponentName);
-			ShowMessage($"{currentOpponentName} wins!");
-			GD.Print($"=== DEFEAT vs {currentOpponentName} ===");
-		}
-		
-		// return to menu after delay
-		GetTree().CreateTimer(6.0).Timeout += () => 
-		{
-			GetTree().ChangeSceneToFile("res://Scenes/CharacterSelect.tscn");
-		};
 	}
 }
