@@ -91,61 +91,20 @@ corner_radius_top_right = 5
 corner_radius_bottom_right = 5
 corner_radius_bottom_left = 5
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_34q52"]
-bg_color = Color(0.15965182, 0.58779526, 0.24229228, 1)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.84705883, 0.84705883, 0.84705883, 1)
-corner_radius_top_left = 10
-corner_radius_top_right = 10
-corner_radius_bottom_right = 10
-corner_radius_bottom_left = 10
-shadow_size = 4
-shadow_offset = Vector2(2, 4)
+[sub_resource type="LabelSettings" id="LabelSettings_vtryj"]
+font_size = 48
+outline_size = 1
+outline_color = Color(0, 0, 0, 1)
+shadow_size = 3
+shadow_offset = Vector2(5, 5)
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_end58"]
-bg_color = Color(0.12975281, 0.482908, 0.19654876, 1)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.84705883, 0.84705883, 0.84705883, 1)
-corner_radius_top_left = 10
-corner_radius_top_right = 10
-corner_radius_bottom_right = 10
-corner_radius_bottom_left = 10
-shadow_size = 4
-shadow_offset = Vector2(2, 4)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_0nmcr"]
-bg_color = Color(0.17765662, 0.6531238, 0.2707276, 1)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.84705883, 0.84705883, 0.84705883, 1)
-corner_radius_top_left = 10
-corner_radius_top_right = 10
-corner_radius_bottom_right = 10
-corner_radius_bottom_left = 10
-shadow_size = 4
-shadow_offset = Vector2(2, 4)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_h5gdr"]
-bg_color = Color(0.6117647, 0.6117647, 0.6117647, 1)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.84705883, 0.84705883, 0.84705883, 1)
-corner_radius_top_left = 10
-corner_radius_top_right = 10
-corner_radius_bottom_right = 10
-corner_radius_bottom_left = 10
-shadow_size = 4
-shadow_offset = Vector2(2, 4)
+[sub_resource type="LabelSettings" id="LabelSettings_u1fmj"]
+font_size = 48
+outline_size = 1
+outline_color = Color(0, 0, 0, 1)
+shadow_size = 3
+shadow_color = Color(0, 0, 0, 0.05882353)
+shadow_offset = Vector2(5, 5)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_jpe82"]
 bg_color = Color(0.18431373, 0.34509805, 0.7764706, 1)
@@ -190,6 +149,62 @@ shadow_size = 4
 shadow_offset = Vector2(2, 4)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_76q2j"]
+bg_color = Color(0.6117647, 0.6117647, 0.6117647, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.84705883, 0.84705883, 0.84705883, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+shadow_size = 4
+shadow_offset = Vector2(2, 4)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_34q52"]
+bg_color = Color(0.15965182, 0.58779526, 0.24229228, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.84705883, 0.84705883, 0.84705883, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+shadow_size = 4
+shadow_offset = Vector2(2, 4)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_end58"]
+bg_color = Color(0.12975281, 0.482908, 0.19654876, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.84705883, 0.84705883, 0.84705883, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+shadow_size = 4
+shadow_offset = Vector2(2, 4)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_0nmcr"]
+bg_color = Color(0.17765662, 0.6531238, 0.2707276, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.84705883, 0.84705883, 0.84705883, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+shadow_size = 4
+shadow_offset = Vector2(2, 4)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_h5gdr"]
 bg_color = Color(0.6117647, 0.6117647, 0.6117647, 1)
 border_width_left = 1
 border_width_top = 1
@@ -686,14 +701,6 @@ corner_radius_bottom_left = 10
 shadow_size = 2
 shadow_offset = Vector2(2, 2)
 
-[sub_resource type="LabelSettings" id="LabelSettings_u1fmj"]
-font_size = 48
-outline_size = 1
-outline_color = Color(0, 0, 0, 1)
-shadow_size = 3
-shadow_color = Color(0, 0, 0, 0.05882353)
-shadow_offset = Vector2(5, 5)
-
 [sub_resource type="LabelSettings" id="LabelSettings_xxe2x"]
 font_size = 56
 outline_size = 1
@@ -701,12 +708,6 @@ outline_color = Color(0, 0, 0, 1)
 shadow_size = 3
 shadow_color = Color(0, 0, 0, 0.05882353)
 shadow_offset = Vector2(5, 5)
-
-[sub_resource type="LabelSettings" id="LabelSettings_l4y0v"]
-font = ExtResource("2_j8upv")
-font_size = 46
-outline_size = 1
-outline_color = Color(0, 0, 0, 1)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_jn1cq"]
 bg_color = Color(0, 0, 0, 0.33333334)
@@ -842,18 +843,56 @@ offset_right = 1275.0
 offset_bottom = 720.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_y8qw4")
 
-[node name="BetweenHandsUI" type="HBoxContainer" parent="CanvasLayer/Control/ActionView"]
+[node name="BetweenHandsUI" type="Node2D" parent="CanvasLayer/Control/ActionView"]
 unique_name_in_owner = true
 visible = false
-offset_left = 29.0
-offset_top = 616.0
-offset_right = 949.0
-offset_bottom = 686.0
+position = Vector2(-2, -8)
+
+[node name="BetweenHandsVBox" type="VBoxContainer" parent="CanvasLayer/Control/ActionView/BetweenHandsUI"]
+offset_left = 33.0
+offset_top = 569.0
+offset_right = 1010.0
+offset_bottom = 697.0
+
+[node name="BetweenHandsLabelHBox" type="HBoxContainer" parent="CanvasLayer/Control/ActionView/BetweenHandsUI/BetweenHandsVBox"]
+layout_mode = 2
+alignment = 1
+
+[node name="PlayerStackLabel2" type="Label" parent="CanvasLayer/Control/ActionView/BetweenHandsUI/BetweenHandsVBox/BetweenHandsLabelHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 6
+text = "Money In-Hand: $0"
+label_settings = SubResource("LabelSettings_vtryj")
+
+[node name="PlayerEarningsLabel" type="Label" parent="CanvasLayer/Control/ActionView/BetweenHandsUI/BetweenHandsVBox/BetweenHandsLabelHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 6
+text = "Net: +$50"
+label_settings = SubResource("LabelSettings_u1fmj")
+horizontal_alignment = 2
+
+[node name="BetweenHandsButtonHBox" type="HBoxContainer" parent="CanvasLayer/Control/ActionView/BetweenHandsUI/BetweenHandsVBox"]
+unique_name_in_owner = true
+layout_mode = 2
 mouse_filter = 2
 theme_override_constants/separation = 30
 alignment = 1
 
-[node name="CashOutButton" type="Button" parent="CanvasLayer/Control/ActionView/BetweenHandsUI"]
+[node name="NextHandButton" type="Button" parent="CanvasLayer/Control/ActionView/BetweenHandsUI/BetweenHandsVBox/BetweenHandsButtonHBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(150, 72)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 48
+theme_override_styles/normal = SubResource("StyleBoxFlat_jpe82")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_dvnhm")
+theme_override_styles/hover = SubResource("StyleBoxFlat_8x3rv")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_76q2j")
+text = "Next Hand"
+
+[node name="CashOutButton" type="Button" parent="CanvasLayer/Control/ActionView/BetweenHandsUI/BetweenHandsVBox/BetweenHandsButtonHBox"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(150, 72)
 layout_mode = 2
@@ -866,18 +905,6 @@ theme_override_styles/pressed = SubResource("StyleBoxFlat_end58")
 theme_override_styles/hover = SubResource("StyleBoxFlat_0nmcr")
 theme_override_styles/disabled = SubResource("StyleBoxFlat_h5gdr")
 text = "Cash Out"
-
-[node name="NextHandButton" type="Button" parent="CanvasLayer/Control/ActionView/BetweenHandsUI"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(150, 72)
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 48
-theme_override_styles/normal = SubResource("StyleBoxFlat_jpe82")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_dvnhm")
-theme_override_styles/hover = SubResource("StyleBoxFlat_8x3rv")
-theme_override_styles/disabled = SubResource("StyleBoxFlat_76q2j")
-text = "Next Hand"
 
 [node name="ActionButtons" type="HBoxContainer" parent="CanvasLayer/Control/ActionView"]
 unique_name_in_owner = true
@@ -1039,6 +1066,7 @@ rotation = -0.12042772
 scale = Vector2(0.16, 0.16)
 
 [node name="PlayerStackLabel" type="Label" parent="CanvasLayer/Control"]
+unique_name_in_owner = true
 layout_mode = 0
 offset_left = 32.0
 offset_top = 558.0
@@ -1057,26 +1085,6 @@ offset_bottom = 487.0
 text = "Game State Label"
 label_settings = SubResource("LabelSettings_xxe2x")
 horizontal_alignment = 1
-
-[node name="PlayerHandType" type="Label" parent="CanvasLayer/Control"]
-visible = false
-layout_mode = 0
-offset_left = 1014.0
-offset_top = 509.0
-offset_right = 1279.0
-offset_bottom = 561.0
-text = "PlayerHandType"
-label_settings = SubResource("LabelSettings_l4y0v")
-
-[node name="OpponentHandType" type="Label" parent="CanvasLayer/Control"]
-visible = false
-layout_mode = 0
-offset_left = 27.0
-offset_top = 167.0
-offset_right = 202.0
-offset_bottom = 212.0
-text = "OpponentHandType"
-label_settings = SubResource("LabelSettings_l4y0v")
 
 [node name="OpponentArea" type="Node2D" parent="CanvasLayer/Control"]
 position = Vector2(582.0001, 147)
@@ -1180,7 +1188,7 @@ offset_left = 36.666668
 offset_top = -14.0
 offset_right = 194.66667
 offset_bottom = 96.0
-theme_override_constants/separation = 10
+theme_override_constants/separation = 18
 
 [node name="PanelContainer" type="PanelContainer" parent="CanvasLayer/Control/PotArea/VBoxContainer"]
 layout_mode = 2

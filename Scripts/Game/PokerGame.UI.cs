@@ -701,7 +701,6 @@ public partial class PokerGame
 			return;
 		}
 		
-		// Simple: Just calculate % of visible pot
 		int thirdPotRaise = (int)Math.Round(pot * 0.33f);
 		int halfPotRaise = (int)Math.Round(pot * 0.5f);
 		int twoThirdsPotRaise = (int)Math.Round(pot * 0.67f);
@@ -813,19 +812,11 @@ public partial class PokerGame
 
 		if (waitingForNextGame)
 		{
-			// Hide gameplay buttons
-			//foldButton.Visible = false;
-			//checkCallButton.Visible = false;
-			//betRaiseButton.Visible = false;
 			
 			actionButtons.Visible = false;
 			sliderUI.Visible = false;
 			potArea.Visible = false;
-			
-			// Show next hand and cash out buttons
-			//nextHandButton.Visible = true;
-			//cashOutButton.Visible = true;
-			//cashOutButton.Disabled = false;
+			playerStackLabel.Visible = false;
 			betweenHandsUI.Visible = true;
 			
 			if (IsGameOver())
@@ -836,23 +827,19 @@ public partial class PokerGame
 			{
 				nextHandButton.Text = "Next Hand";
 				nextHandButton.Disabled = false;
+				UpdateSessionProfitLabel();
 			}
 			
 			UpdatePotDisplay(0);
 		}
 		else
 		{
-			// During active hand - show gameplay buttons, hide next hand button
+			// we are in an active hand. show gameplay buttons and hide betwwen hands UI
 			RefreshBetSlider();
 			UpdateButtonLabels();
 
-			//foldButton.Visible = true;
-			//checkCallButton.Visible = true;
-			//betRaiseButton.Visible = true;
 			betweenHandsUI.Visible = false;
 			actionButtons.Visible = true;
-			//nextHandButton.Visible = false;
-			//cashOutButton.Visible = false;
 
 			bool enableButtons = isPlayerTurn && handInProgress && !playerIsAllIn;
 			foldButton.Disabled = !enableButtons;
@@ -868,11 +855,45 @@ public partial class PokerGame
 			}
 		}
 
-		playerStackLabel.Text = $"Money In-Hand: ${playerChips}";
+		UpdatePlayerStackLabels();
 		opponentStackLabel.Text = $"{currentOpponentName}: {opponentChips}";
 		potLabel.Text = $"Pot: {pot}";
 		UpdatePotDisplay(pot);
 		UpdatePotSizeButtons();
+	}
+	
+	private void UpdateSessionProfitLabel()
+	{
+		int buyIn = GameManager.Instance.CurrentBuyIn;
+		int profit = playerChips - buyIn;
+		
+		if (profit > 0)
+		{
+			playerEarningsLabel.Text = $"Net: +${profit}";
+			playerEarningsLabel.Modulate = new Color("#4ade80");
+		}
+		else if (profit < 0)
+		{
+			playerEarningsLabel.Text = $"Net: -${Math.Abs(profit)}";
+			playerEarningsLabel.Modulate = new Color("#f87171"); // Red
+		}
+		else
+		{
+			playerEarningsLabel.Text = "Net: $0";
+			playerEarningsLabel.Modulate = Colors.White;
+		}
+	}
+
+	
+	private void UpdatePlayerStackLabels()
+	{
+		string text = $"Money In-Hand: ${playerChips}";
+		
+		if (playerStackLabel != null)
+			playerStackLabel.Text = text;
+		
+		if (playerStackLabel2 != null)
+			playerStackLabel2.Text = text;
 	}
 
 	private void RefreshBetSlider()

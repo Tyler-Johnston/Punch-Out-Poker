@@ -188,9 +188,6 @@ public partial class PokerGame
 
 		string playerHandName = HandEvaluator.GetHandDescription(playerHand, communityCards);
 		string opponentHandName = HandEvaluator.GetHandDescription(opponentHand, communityCards);
-		
-		playerHandType.Text = playerHandName;
-		opponentHandType.Text = opponentHandName;
 
 		int result = HandEvaluator.CompareHands(playerRank, opponentRank);
 		string message;

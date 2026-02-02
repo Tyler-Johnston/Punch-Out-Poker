@@ -37,11 +37,11 @@ public partial class PokerGame : Node2D
 	private Button allInPot;
 
 	private Label playerStackLabel;
+	private Label playerStackLabel2;
+	private Label playerEarningsLabel;
 	private Label opponentStackLabel;
 	private Label potLabel;
 	private Label gameStateLabel;
-	private Label playerHandType;
-	private Label opponentHandType;
 	private Label checkCallLabel;
 	private Label betRaiseLabel;
 	
@@ -56,7 +56,7 @@ public partial class PokerGame : Node2D
 	private Node2D potArea;
 	private Node2D playerArea;
 	private Control actionButtons;
-	private Control betweenHandsUI;
+	private Node2D betweenHandsUI;
 	private Control sliderUI;
 	private GridContainer chipContainer;
 	
@@ -133,7 +133,7 @@ public partial class PokerGame : Node2D
 		opponentView = hudControl.GetNode<Node2D>("OpponentView");
 		potArea = hudControl.GetNode<Node2D>("PotArea");
 		chipContainer = potArea.GetNode<GridContainer>("VBoxContainer/ChipHBox");
-		betweenHandsUI = GetNode<Control>("%BetweenHandsUI");
+		betweenHandsUI = GetNode<Node2D>("%BetweenHandsUI");
 
 		// pocket cards
 		playerCard1 = playerArea.GetNode<CardVisual>("PlayerCard1");
@@ -159,12 +159,12 @@ public partial class PokerGame : Node2D
 		
 
 		// labels
-		playerStackLabel = hudControl.GetNode<Label>("PlayerStackLabel");
+		playerStackLabel = GetNode<Label>("%PlayerStackLabel");
+		playerStackLabel2 = GetNode<Label>("%PlayerStackLabel2");
+		playerEarningsLabel = GetNode<Label>("%PlayerEarningsLabel");
 		opponentStackLabel = opponentView.GetNode<Label>("OpponentStackLabel");
 		potLabel = GetNode<Label>("%PotLabel");
 		gameStateLabel = hudControl.GetNode<Label>("GameStateLabel");
-		playerHandType = hudControl.GetNode<Label>("PlayerHandType");
-		opponentHandType = hudControl.GetNode<Label>("OpponentHandType");
 		
 		// audio players
 		sfxPlayer = GetNode<SFXPlayer>("SFXPlayer");
@@ -377,23 +377,18 @@ public partial class PokerGame : Node2D
 		GD.Print("\n=== New Hand ===");
 		ShowMessage("");
 
+		playerStackLabel.Visible = true;
 		actionButtons.Visible = true;
 		betweenHandsUI.Visible = false;
 		potArea.Visible = true;
 		opponentCard1.Visible = false;
 		opponentCard2.Visible = false;
-		//cashOutButton.Disabled = true;
-		//cashOutButton.Visible = false;
 		speechBubble.Visible = false;
-		//betSlider.Visible = true;
 		sliderUI.Visible = true;
 		foldButton.Visible = true;
 		foldButton.Disabled = true;
 		betRaiseButton.Visible = true;
 		betRaiseButton.Disabled = true;
-		//potLabel.Visible = true;
-		playerHandType.Text = "";
-		opponentHandType.Text = "";
 		aiStrengthAtAllIn = 0f;
 
 		deck = new Deck();
