@@ -125,9 +125,6 @@ public partial class PokerGame
 	private void OnNextHandPressed()
 	{
 		if (!waitingForNextGame || IsGameOver()) return;
-		
-		nextHandButton.Disabled = true;
-		nextHandButton.Text = "Next Hand";
 		StartNewHand();
 	}
 
@@ -136,12 +133,6 @@ public partial class PokerGame
 		if (!handInProgress || !isPlayerTurn) return;
 
 		bool isRaise = currentBet > 0;
-		if (isRaise && raisesThisStreet >= MAX_RAISES_PER_STREET)
-		{
-			ShowMessage("Maximum raises reached - can only call or fold");
-			GD.Print("Max raises reached this street");
-			return;
-		}
 
 		playerHasActedThisStreet = true;
 		
@@ -165,11 +156,6 @@ public partial class PokerGame
 		playerBetOnStreet[currentStreet] = true;
 		playerBetSizeOnStreet[currentStreet] = actualBet;
 		playerTotalBetsThisHand++;
-
-		if (isRaise)
-		{
-			raisesThisStreet++;
-		}
 
 		if (playerChips == 0)
 		{
@@ -241,10 +227,8 @@ public partial class PokerGame
 		var (minBet, maxBet) = GetLegalBetRange();
 		if (maxBet <= 0) return;
 		
-		// Use the helper method to calculate raise amount
 		int targetBet = CalculatePotSizeBet(potMultiplier);
 		
-		// Update slider and betAmount
 		betAmount = targetBet;
 		betSlider.Value = targetBet;
 		
@@ -274,7 +258,6 @@ public partial class PokerGame
 	
 	private void OnCashOutPressed()
 	{
-		// Handle cashing out / returning to character select
 		GetTree().ChangeSceneToFile("res://Scenes/CharacterSelect.tscn");
 	}
 

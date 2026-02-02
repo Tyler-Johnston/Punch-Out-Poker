@@ -827,19 +827,12 @@ public partial class PokerGame
 	{
 		if (isMatchComplete)
 		{
-			checkCallButton.Text = "Continue";
-			checkCallButton.Disabled = false;
-			
-			actionButtons.Visible = true;
-			betweenHandsUI.Visible = false;
+			actionButtons.Visible = false;
+			betweenHandsUI.Visible = true;
 			sliderUI.Visible = false;
 			potArea.Visible = false;
-			
-			foldButton.Visible = false;
-			betRaiseButton.Visible = false;
-			checkCallButton.Visible = true;
-			
-			UpdatePotDisplay(0);
+			nextHandButton.Disabled = true;
+			UpdateSessionProfitLabel();
 			return;
 		}
 
@@ -850,16 +843,6 @@ public partial class PokerGame
 			potArea.Visible = false;
 			playerStackLabel.Visible = false;
 			betweenHandsUI.Visible = true;
-			
-			if (IsGameOver())
-			{
-				nextHandButton.Disabled = true;
-			}
-			else
-			{
-				nextHandButton.Text = "Next Hand";
-				nextHandButton.Disabled = false;
-			}
 			
 			UpdateSessionProfitLabel();
 			UpdatePotDisplay(0);
@@ -876,15 +859,7 @@ public partial class PokerGame
 			bool enableButtons = isPlayerTurn && handInProgress && !playerIsAllIn;
 			foldButton.Disabled = !enableButtons;
 			checkCallButton.Disabled = !enableButtons;
-
-			if (!enableButtons || raisesThisStreet >= MAX_RAISES_PER_STREET)
-			{
-				betRaiseButton.Disabled = true;
-			}
-			else
-			{
-				betRaiseButton.Disabled = false;
-			}
+			betRaiseButton.Disabled = !enableButtons;
 		}
 
 		UpdatePlayerStackLabels();

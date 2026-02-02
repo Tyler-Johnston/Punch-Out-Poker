@@ -51,21 +51,22 @@ public partial class PokerGame : Node2D
 	private Texture2D betBtnImg;
 	private Texture2D raiseBtnImg;
 	
+	[Export] public PanelContainer OpponentFrame;
+	[Export] public TextureRect MainTableRect;
+	[Export] public TextureRect MiniTableRect;
+	
 	private Node2D opponentView;
 	private Node2D actionView;
 	private Node2D potArea;
 	private Node2D playerArea;
-	private Control actionButtons;
 	private Node2D betweenHandsUI;
-	private Control sliderUI;
-	private GridContainer chipContainer;
 	
-	private AtlasTexture _opponentAtlas;
+	private Control actionButtons;
+	private Control sliderUI;
+	
+	private GridContainer chipContainer;
 	private Sprite2D faceSprite;
 	private SpeechBubble speechBubble;
-	[Export] public PanelContainer OpponentFrame;
-	[Export] public TextureRect MainTableRect;
-	[Export] public TextureRect MiniTableRect;
 
 	// game flow
 	private Street currentStreet = Street.Preflop;
@@ -79,8 +80,6 @@ public partial class PokerGame : Node2D
 	private int opponentBet = 0;
 	private int smallBlind = 5;
 	private int bigBlind = 10;
-	private int raisesThisStreet = 0;
-	private const int MAX_RAISES_PER_STREET = 4;
 
 	// tracking
 	public float aiStrengthAtAllIn = 0f; 
@@ -157,7 +156,6 @@ public partial class PokerGame : Node2D
 		cashOutButton = GetNode<Button>("%CashOutButton");
 		nextHandButton = GetNode<Button>("%NextHandButton");
 		
-
 		// labels
 		playerStackLabel = GetNode<Label>("%PlayerStackLabel");
 		playerStackLabel2 = GetNode<Label>("%PlayerStackLabel2");

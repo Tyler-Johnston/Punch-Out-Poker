@@ -65,7 +65,6 @@ public partial class PokerGame
 		playerBet = 0;
 		opponentBet = 0;
 		currentBet = 0;
-		raisesThisStreet = 0;
 		playerHasActedThisStreet = false;
 		opponentHasActedThisStreet = false;
 	}

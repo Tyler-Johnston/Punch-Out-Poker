@@ -12,6 +12,7 @@ public partial class PokerGame
 		if (!waitingForNextGame && handInProgress) return; 
 		
 		waitingForNextGame = false;
+		isMatchComplete = false;
 		SetExpression(Expression.Neutral);
 
 		if (IsGameOver())
@@ -51,7 +52,6 @@ public partial class PokerGame
 		playerTotalBetsThisHand = 0;
 		
 		aiBluffedThisHand = false;
-		raisesThisStreet = 0;
 		playerIsAllIn = false;
 		opponentIsAllIn = false;
 		isProcessingAIAction = false; 
@@ -110,14 +110,14 @@ public partial class PokerGame
 		playerHasButton = !playerHasButton;
 		if (playerHasButton)
 		{
-			// human player is Small Blind
+			// human player is small blind
 			int sbAmount = Math.Min(smallBlind, playerChips); 
 			playerChips -= sbAmount;
 			AddToPot(true, sbAmount);
 			playerBet = sbAmount;
 			if (playerChips == 0) playerIsAllIn = true;
 
-			// opponent is Big Blind
+			// opponent is big blind
 			int bbAmount = Math.Min(bigBlind, opponentChips); 
 			opponentChips -= bbAmount;
 			aiOpponent.ChipStack = opponentChips;
@@ -132,14 +132,14 @@ public partial class PokerGame
 		}
 		else
 		{
-			// human player is Big Blind
+			// human player is big blind
 			int bbAmount = Math.Min(bigBlind, playerChips); 
 			playerChips -= bbAmount;
 			AddToPot(true, bbAmount);
 			playerBet = bbAmount;
 			if (playerChips == 0) playerIsAllIn = true;
 
-			// opponent is Small Blind
+			// opponent is small blind
 			int sbAmount = Math.Min(smallBlind, opponentChips); 
 			opponentChips -= sbAmount;
 			aiOpponent.ChipStack = opponentChips;
@@ -202,7 +202,7 @@ public partial class PokerGame
 	private void HandleGameOver(bool opponentSurrendered = false)
 	{
 		if (tellTimer != null) tellTimer.Stop();
-
+		isMatchComplete = true;
 		bool playerWon = opponentSurrendered || (opponentChips <= 0);
 		
 		if (playerWon)
@@ -220,6 +220,7 @@ public partial class PokerGame
 			ShowMessage($"{currentOpponentName} wins!");
 			GD.Print($"=== DEFEAT vs {currentOpponentName} ===");
 		}
+		UpdateHud();
 	}
 
 	// --- CARD DEALING ---
@@ -247,12 +248,12 @@ public partial class PokerGame
 		GD.Print($"Opponent hand: {opponentHand[0]}, {opponentHand[1]}");
 		await ToSignal(GetTree().CreateTimer(0.25f), SceneTreeTimer.SignalName.Timeout);
 		
-		// animate player Card 1
+		// animate player card 1
 		sfxPlayer.PlaySound("card_flip");
 		await playerCard1.RevealCard(playerHand[0]);
 		await ToSignal(GetTree().CreateTimer(0.25f), SceneTreeTimer.SignalName.Timeout);
 
-		// animate player Card 2
+		// animate player card 2
 		sfxPlayer.PlaySound("card_flip");
 		await playerCard2.RevealCard(playerHand[1]);
 		await ToSignal(GetTree().CreateTimer(0.25f), SceneTreeTimer.SignalName.Timeout);
@@ -307,8 +308,6 @@ public partial class PokerGame
 				await ToSignal(GetTree().CreateTimer(0.25f), SceneTreeTimer.SignalName.Timeout);
 				break;
 		}
-		
-		// Show reaction to the board
 		ShowTell(true);
 	}
 
@@ -386,7 +385,7 @@ public partial class PokerGame
 		if (isShowdownInProgress) return;
 		isShowdownInProgress = true;
 		
-		GD.Print("\\\\n=== Showdown ===");
+		GD.Print("\n=== Showdown ===");
 		
 		// process refunds first
 		bool refundOccurred = ReturnUncalledChips();
@@ -394,6 +393,7 @@ public partial class PokerGame
 		if (refundOccurred)
 		{
 			UpdateHud();
+			ShowMessage("Returned Uncalled Chips");
 			await ToSignal(GetTree().CreateTimer(1.5f), SceneTreeTimer.SignalName.Timeout);
 		}
 
@@ -718,7 +718,6 @@ public partial class PokerGame
 		opponentBet += raiseAmount;
 		currentBet = opponentBet;
 		
-		raisesThisStreet++;
 		playerHasActedThisStreet = false;
 		
 		bool isOpening = (currentBet == bigBlind && currentStreet == Street.Preflop) || (currentBet == 0 && currentStreet != Street.Preflop);
