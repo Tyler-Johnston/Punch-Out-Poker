@@ -28,21 +28,8 @@ public partial class PokerGame
 
 	private void OnCheckCallPressed()
 	{
-		if (isMatchComplete)
-		{
-			GetTree().ChangeSceneToFile("res://Scenes/CharacterSelect.tscn");
-			return;
-		}
+		if (!handInProgress || !isPlayerTurn) return;
 		
-		if (!handInProgress)
-		{
-			checkCallButton.Disabled = true; 
-			checkCallButton.Text = "Check";
-			StartNewHand();
-			return;
-		}
-
-		if (!isPlayerTurn) return;
 		playerHasActedThisStreet = true;
 		int toCall = currentBet - playerBet;
 
@@ -130,6 +117,18 @@ public partial class PokerGame
 		{
 			GetTree().CreateTimer(1.2).Timeout += CheckAndProcessAITurn;
 		}
+	}
+
+	/// <summary>
+	/// Handles the Next Hand button press between hands
+	/// </summary>
+	private void OnNextHandPressed()
+	{
+		if (!waitingForNextGame || IsGameOver()) return;
+		
+		nextHandButton.Disabled = true;
+		nextHandButton.Text = "Next Hand";
+		StartNewHand();
 	}
 
 	private void OnBetRaisePressed()
@@ -271,6 +270,12 @@ public partial class PokerGame
 		UpdateButtonLabels();
 		
 		GD.Print($"Set bet to ALL-IN: {maxBet}");
+	}
+	
+	private void OnCashOutPressed()
+	{
+		// Handle cashing out / returning to character select
+		GetTree().ChangeSceneToFile("res://Scenes/CharacterSelect.tscn");
 	}
 
 }

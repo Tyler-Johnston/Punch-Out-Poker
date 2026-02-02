@@ -29,6 +29,7 @@ public partial class PokerGame : Node2D
 	private Button checkCallButton;
 	private Button betRaiseButton;
 	private Button cashOutButton;
+	private Button nextHandButton;
 	private Button thirdPot;
 	private Button halfPot;
 	private Button standardPot;
@@ -55,6 +56,7 @@ public partial class PokerGame : Node2D
 	private Node2D potArea;
 	private Node2D playerArea;
 	private Control actionButtons;
+	private Control betweenHandsUI;
 	private Control sliderUI;
 	private GridContainer chipContainer;
 	
@@ -131,6 +133,7 @@ public partial class PokerGame : Node2D
 		opponentView = hudControl.GetNode<Node2D>("OpponentView");
 		potArea = hudControl.GetNode<Node2D>("PotArea");
 		chipContainer = potArea.GetNode<GridContainer>("VBoxContainer/ChipHBox");
+		betweenHandsUI = GetNode<Control>("%BetweenHandsUI");
 
 		// pocket cards
 		playerCard1 = playerArea.GetNode<CardVisual>("PlayerCard1");
@@ -151,7 +154,8 @@ public partial class PokerGame : Node2D
 		foldButton = actionButtons.GetNode<Button>("FoldButton");
 		checkCallButton = actionButtons.GetNode<Button>("CheckCallButton");
 		betRaiseButton = actionButtons.GetNode<Button>("BetRaiseButton");
-		cashOutButton = actionView.GetNode<Button>("CashOutButton");
+		cashOutButton = GetNode<Button>("%CashOutButton");
+		nextHandButton = GetNode<Button>("%NextHandButton");
 		
 
 		// labels
@@ -186,6 +190,8 @@ public partial class PokerGame : Node2D
 		foldButton.Pressed += OnFoldPressed;
 		checkCallButton.Pressed += OnCheckCallPressed;
 		betRaiseButton.Pressed += OnBetRaisePressed;
+		cashOutButton.Pressed += OnCashOutPressed;
+		nextHandButton.Pressed += OnNextHandPressed;
 		betSlider.ValueChanged += OnBetSliderValueChanged;
 		thirdPot.Pressed += () => OnPotSizeButtonPressed(0.33f);
 		halfPot.Pressed += () => OnPotSizeButtonPressed(0.5f);
@@ -371,11 +377,13 @@ public partial class PokerGame : Node2D
 		GD.Print("\n=== New Hand ===");
 		ShowMessage("");
 
+		actionButtons.Visible = true;
+		betweenHandsUI.Visible = false;
 		potArea.Visible = true;
 		opponentCard1.Visible = false;
 		opponentCard2.Visible = false;
-		cashOutButton.Disabled = true;
-		cashOutButton.Visible = false;
+		//cashOutButton.Disabled = true;
+		//cashOutButton.Visible = false;
 		speechBubble.Visible = false;
 		//betSlider.Visible = true;
 		sliderUI.Visible = true;

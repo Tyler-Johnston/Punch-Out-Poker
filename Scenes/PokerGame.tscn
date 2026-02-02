@@ -1,4 +1,4 @@
-[gd_scene load_steps=67 format=3 uid="uid://b5sq1675fwcio"]
+[gd_scene load_steps=73 format=3 uid="uid://b5sq1675fwcio"]
 
 [ext_resource type="Script" uid="uid://8k6pqsmgt5pe" path="res://Scripts/Game/PokerGame.cs" id="1_8w0ed"]
 [ext_resource type="Texture2D" uid="uid://dqk4n2wxuqt2a" path="res://Assets/Textures/backgrounds/Cafe_Interior_Night.jpg" id="2_47o1s"]
@@ -90,6 +90,118 @@ corner_radius_top_left = 5
 corner_radius_top_right = 5
 corner_radius_bottom_right = 5
 corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_34q52"]
+bg_color = Color(0.15965182, 0.58779526, 0.24229228, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.84705883, 0.84705883, 0.84705883, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+shadow_size = 4
+shadow_offset = Vector2(2, 4)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_end58"]
+bg_color = Color(0.12975281, 0.482908, 0.19654876, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.84705883, 0.84705883, 0.84705883, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+shadow_size = 4
+shadow_offset = Vector2(2, 4)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_0nmcr"]
+bg_color = Color(0.17765662, 0.6531238, 0.2707276, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.84705883, 0.84705883, 0.84705883, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+shadow_size = 4
+shadow_offset = Vector2(2, 4)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_h5gdr"]
+bg_color = Color(0.6117647, 0.6117647, 0.6117647, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.84705883, 0.84705883, 0.84705883, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+shadow_size = 4
+shadow_offset = Vector2(2, 4)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_jpe82"]
+bg_color = Color(0.18431373, 0.34509805, 0.7764706, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.84705883, 0.84705883, 0.84705883, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+shadow_size = 4
+shadow_offset = Vector2(2, 4)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_dvnhm"]
+bg_color = Color(0.13725491, 0.2784314, 0.6666667, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.84705883, 0.84705883, 0.84705883, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+shadow_size = 4
+shadow_offset = Vector2(2, 4)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_8x3rv"]
+bg_color = Color(0.2509804, 0.42352942, 0.8666667, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.84705883, 0.84705883, 0.84705883, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+shadow_size = 4
+shadow_offset = Vector2(2, 4)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_76q2j"]
+bg_color = Color(0.6117647, 0.6117647, 0.6117647, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.84705883, 0.84705883, 0.84705883, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+shadow_size = 4
+shadow_offset = Vector2(2, 4)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_47o1s"]
 content_margin_left = 10.0
@@ -310,30 +422,6 @@ corner_radius_bottom_left = 10
 shadow_size = 4
 shadow_offset = Vector2(2, 4)
 anti_aliasing = false
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_34q52"]
-bg_color = Color(0.15965182, 0.58779526, 0.24229228, 1)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.84705883, 0.84705883, 0.84705883, 1)
-corner_radius_top_left = 10
-corner_radius_top_right = 10
-corner_radius_bottom_right = 10
-corner_radius_bottom_left = 10
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_h5gdr"]
-bg_color = Color(0.6117647, 0.6117647, 0.6117647, 1)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.84705883, 0.84705883, 0.84705883, 1)
-corner_radius_top_left = 10
-corner_radius_top_right = 10
-corner_radius_bottom_right = 10
-corner_radius_bottom_left = 10
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_vnib4"]
 bg_color = Color(0.84705883, 0.84705883, 0.84705883, 1)
@@ -754,6 +842,43 @@ offset_right = 1275.0
 offset_bottom = 720.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_y8qw4")
 
+[node name="BetweenHandsUI" type="HBoxContainer" parent="CanvasLayer/Control/ActionView"]
+unique_name_in_owner = true
+visible = false
+offset_left = 29.0
+offset_top = 616.0
+offset_right = 949.0
+offset_bottom = 686.0
+mouse_filter = 2
+theme_override_constants/separation = 30
+alignment = 1
+
+[node name="CashOutButton" type="Button" parent="CanvasLayer/Control/ActionView/BetweenHandsUI"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(150, 72)
+layout_mode = 2
+size_flags_horizontal = 3
+focus_mode = 0
+theme_override_fonts/font = ExtResource("2_j8upv")
+theme_override_font_sizes/font_size = 48
+theme_override_styles/normal = SubResource("StyleBoxFlat_34q52")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_end58")
+theme_override_styles/hover = SubResource("StyleBoxFlat_0nmcr")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_h5gdr")
+text = "Cash Out"
+
+[node name="NextHandButton" type="Button" parent="CanvasLayer/Control/ActionView/BetweenHandsUI"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(150, 72)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 48
+theme_override_styles/normal = SubResource("StyleBoxFlat_jpe82")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_dvnhm")
+theme_override_styles/hover = SubResource("StyleBoxFlat_8x3rv")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_76q2j")
+text = "Next Hand"
+
 [node name="ActionButtons" type="HBoxContainer" parent="CanvasLayer/Control/ActionView"]
 unique_name_in_owner = true
 texture_filter = 1
@@ -761,6 +886,7 @@ offset_left = 28.0
 offset_top = 615.0
 offset_right = 518.0
 offset_bottom = 687.0
+mouse_filter = 2
 theme_override_constants/separation = 20
 alignment = 1
 
@@ -800,19 +926,6 @@ theme_override_styles/pressed = SubResource("StyleBoxFlat_epj03")
 theme_override_styles/hover = SubResource("StyleBoxFlat_p0x7j")
 theme_override_styles/disabled = SubResource("StyleBoxFlat_bvnvu")
 text = "Bet"
-
-[node name="CashOutButton" type="Button" parent="CanvasLayer/Control/ActionView"]
-visible = false
-custom_minimum_size = Vector2(0, 23)
-offset_left = 11.0
-offset_top = 610.00006
-offset_right = 62.0
-offset_bottom = 633.00006
-focus_mode = 0
-theme_override_fonts/font = ExtResource("2_j8upv")
-theme_override_styles/normal = SubResource("StyleBoxFlat_34q52")
-theme_override_styles/disabled = SubResource("StyleBoxFlat_h5gdr")
-text = "Cash Out"
 
 [node name="SliderUI" type="VBoxContainer" parent="CanvasLayer/Control/ActionView"]
 unique_name_in_owner = true

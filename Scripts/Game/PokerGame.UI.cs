@@ -9,9 +9,12 @@ public partial class PokerGame
 	private Tween checkCallButtonTween;
 	private Tween betRaiseButtonTween;
 	private Tween cashOutButtonTween;
+	private Tween nextHandButtonTween;
 	private Tween foldIdleTween;
 	private Tween checkCallIdleTween;
 	private Tween betRaiseIdleTween;
+	private Tween nextHandIdleTween;
+	private Tween cashOutIdleTween;
 	private Tween opponentViewIdleTween;
 	private Tween potLabelTween;
 
@@ -65,6 +68,7 @@ public partial class PokerGame
 		SetupButtonPivot(checkCallButton);
 		SetupButtonPivot(betRaiseButton);
 		SetupButtonPivot(cashOutButton);
+		SetupButtonPivot(nextHandButton);
 
 		foldButton.MouseEntered += () => OnButtonHover(foldButton, ref foldButtonTween);
 		foldButton.MouseExited += () => OnButtonUnhover(foldButton, ref foldButtonTween);
@@ -86,9 +90,16 @@ public partial class PokerGame
 		cashOutButton.ButtonDown += () => OnButtonPress(cashOutButton, ref cashOutButtonTween);
 		cashOutButton.ButtonUp += () => OnButtonRelease(cashOutButton, ref cashOutButtonTween);
 
+		nextHandButton.MouseEntered += () => OnButtonHover(nextHandButton, ref nextHandButtonTween);
+		nextHandButton.MouseExited += () => OnButtonUnhover(nextHandButton, ref nextHandButtonTween);
+		nextHandButton.ButtonDown += () => OnButtonPress(nextHandButton, ref nextHandButtonTween);
+		nextHandButton.ButtonUp += () => OnButtonRelease(nextHandButton, ref nextHandButtonTween);
+
 		StartIdleAnimation(foldButton, ref foldIdleTween, 0f);
 		StartIdleAnimation(checkCallButton, ref checkCallIdleTween, 0.33f);
 		StartIdleAnimation(betRaiseButton, ref betRaiseIdleTween, 0.66f);
+		StartIdleAnimation(nextHandButton, ref nextHandIdleTween, 0.5f);
+		StartIdleAnimation(cashOutButton, ref cashOutIdleTween, 0.5f);
 	}
 
 	/// <summary>
@@ -165,6 +176,8 @@ public partial class PokerGame
 
 	private void StartIdleAnimation(Button button, ref Tween idleTween, float timeOffset)
 	{
+		if (button == null) return;
+		
 		if (idleTween != null && idleTween.IsValid())
 			idleTween.Kill();
 		
@@ -783,41 +796,63 @@ public partial class PokerGame
 		{
 			checkCallButton.Text = "Continue";
 			checkCallButton.Disabled = false;
-			foldButton.Visible = false;
-			betRaiseButton.Visible = false;
+			
+			actionButtons.Visible = true;
+			betweenHandsUI.Visible = false;
 			sliderUI.Visible = false;
 			potArea.Visible = false;
+			
+			foldButton.Visible = false;
+			betRaiseButton.Visible = false;
+			checkCallButton.Visible = true;
+			
 			UpdatePotDisplay(0);
 			return;
 		}
 
+
 		if (waitingForNextGame)
 		{
+			// Hide gameplay buttons
+			//foldButton.Visible = false;
+			//checkCallButton.Visible = false;
+			//betRaiseButton.Visible = false;
+			
+			actionButtons.Visible = false;
+			sliderUI.Visible = false;
+			potArea.Visible = false;
+			
+			// Show next hand and cash out buttons
+			//nextHandButton.Visible = true;
+			//cashOutButton.Visible = true;
+			//cashOutButton.Disabled = false;
+			betweenHandsUI.Visible = true;
+			
 			if (IsGameOver())
 			{
-				checkCallButton.Disabled = true;
+				nextHandButton.Disabled = true;
 			}
 			else
 			{
-				checkCallButton.Text = "Next Hand";
-				checkCallButton.Disabled = false;
+				nextHandButton.Text = "Next Hand";
+				nextHandButton.Disabled = false;
 			}
-
-			cashOutButton.Disabled = false;
-			cashOutButton.Visible = true;
-			foldButton.Visible = false;
-			betRaiseButton.Visible = false;
-			sliderUI.Visible = false;
-			potArea.Visible = false;
+			
 			UpdatePotDisplay(0);
 		}
 		else
 		{
+			// During active hand - show gameplay buttons, hide next hand button
 			RefreshBetSlider();
 			UpdateButtonLabels();
 
-			foldButton.Visible = true;
-			betRaiseButton.Visible = true;
+			//foldButton.Visible = true;
+			//checkCallButton.Visible = true;
+			//betRaiseButton.Visible = true;
+			betweenHandsUI.Visible = false;
+			actionButtons.Visible = true;
+			//nextHandButton.Visible = false;
+			//cashOutButton.Visible = false;
 
 			bool enableButtons = isPlayerTurn && handInProgress && !playerIsAllIn;
 			foldButton.Disabled = !enableButtons;
