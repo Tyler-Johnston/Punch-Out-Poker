@@ -1,4 +1,4 @@
-[gd_scene load_steps=65 format=3 uid="uid://b5sq1675fwcio"]
+[gd_scene load_steps=67 format=3 uid="uid://b5sq1675fwcio"]
 
 [ext_resource type="Script" uid="uid://8k6pqsmgt5pe" path="res://Scripts/Game/PokerGame.cs" id="1_8w0ed"]
 [ext_resource type="Texture2D" uid="uid://dqk4n2wxuqt2a" path="res://Assets/Textures/backgrounds/Cafe_Interior_Night.jpg" id="2_47o1s"]
@@ -598,13 +598,27 @@ corner_radius_bottom_left = 10
 shadow_size = 2
 shadow_offset = Vector2(2, 2)
 
-[sub_resource type="LabelSettings" id="LabelSettings_eibjp"]
-font = ExtResource("2_j8upv")
+[sub_resource type="LabelSettings" id="LabelSettings_u1fmj"]
 font_size = 48
+outline_size = 1
+outline_color = Color(0, 0, 0, 1)
+shadow_size = 3
+shadow_color = Color(0, 0, 0, 0.05882353)
+shadow_offset = Vector2(5, 5)
+
+[sub_resource type="LabelSettings" id="LabelSettings_xxe2x"]
+font_size = 56
+outline_size = 1
+outline_color = Color(0, 0, 0, 1)
+shadow_size = 3
+shadow_color = Color(0, 0, 0, 0.05882353)
+shadow_offset = Vector2(5, 5)
 
 [sub_resource type="LabelSettings" id="LabelSettings_l4y0v"]
 font = ExtResource("2_j8upv")
 font_size = 46
+outline_size = 1
+outline_color = Color(0, 0, 0, 1)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_jn1cq"]
 bg_color = Color(0, 0, 0, 0.33333334)
@@ -617,6 +631,11 @@ corner_radius_top_left = 5
 corner_radius_top_right = 5
 corner_radius_bottom_right = 5
 corner_radius_bottom_left = 5
+
+[sub_resource type="LabelSettings" id="LabelSettings_u5b2p"]
+font_size = 48
+outline_size = 1
+outline_color = Color(0, 0, 0, 1)
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_h5gdr"]
 shader = ExtResource("8_34q52")
@@ -739,9 +758,9 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_y8qw4")
 unique_name_in_owner = true
 texture_filter = 1
 offset_left = 28.0
-offset_top = 600.0
+offset_top = 615.0
 offset_right = 518.0
-offset_bottom = 672.0
+offset_bottom = 687.0
 theme_override_constants/separation = 20
 alignment = 1
 
@@ -908,22 +927,23 @@ scale = Vector2(0.16, 0.16)
 
 [node name="PlayerStackLabel" type="Label" parent="CanvasLayer/Control"]
 layout_mode = 0
-offset_left = 1035.0
-offset_top = 508.0
-offset_right = 1053.0
-offset_bottom = 560.0
+offset_left = 32.0
+offset_top = 558.0
+offset_right = 518.0
+offset_bottom = 610.0
 text = "0"
-label_settings = SubResource("LabelSettings_eibjp")
+label_settings = SubResource("LabelSettings_u1fmj")
 horizontal_alignment = 1
 
 [node name="GameStateLabel" type="Label" parent="CanvasLayer/Control"]
 layout_mode = 0
-offset_left = 15.0
-offset_top = 508.0
-offset_right = 449.0
-offset_bottom = 560.0
+offset_left = 334.0
+offset_top = 424.0
+offset_right = 946.0
+offset_bottom = 484.0
 text = "Game State Label"
-label_settings = SubResource("LabelSettings_l4y0v")
+label_settings = SubResource("LabelSettings_xxe2x")
+horizontal_alignment = 1
 
 [node name="PlayerHandType" type="Label" parent="CanvasLayer/Control"]
 visible = false
@@ -954,10 +974,10 @@ scale = Vector2(4.5, 4.5)
 anchors_preset = 0
 anchor_right = 0.0
 anchor_bottom = 0.0
-offset_left = 6.0000305
-offset_top = -13.111084
-offset_right = 148.00003
-offset_bottom = 178.88892
+offset_left = 3.111084
+offset_top = -8.223389
+offset_right = 145.11108
+offset_bottom = 183.77661
 grow_horizontal = 1
 grow_vertical = 1
 rotation = -0.4660029
@@ -966,16 +986,16 @@ rotation = -0.4660029
 anchors_preset = 0
 anchor_right = 0.0
 anchor_bottom = 0.0
-offset_left = -36.333313
-offset_top = -7.8888245
-offset_right = 105.66669
-offset_bottom = 184.11118
+offset_left = -35.888855
+offset_top = -3.8886719
+offset_right = 106.111145
+offset_bottom = 188.11133
 grow_horizontal = 1
 grow_vertical = 1
 rotation = -0.31415927
 
 [node name="CommunityCardsArea" type="Node2D" parent="CanvasLayer/Control"]
-position = Vector2(304.00003, 327.00006)
+position = Vector2(313, 311.0001)
 scale = Vector2(4.5, 4.5)
 
 [node name="Flop1" parent="CanvasLayer/Control/CommunityCardsArea" instance=ExtResource("3_c6vvi")]
@@ -1057,7 +1077,7 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_jn1cq")
 unique_name_in_owner = true
 layout_mode = 2
 text = "Pot: 100"
-label_settings = SubResource("LabelSettings_l4y0v")
+label_settings = SubResource("LabelSettings_u5b2p")
 horizontal_alignment = 1
 
 [node name="ChipHBox" type="GridContainer" parent="CanvasLayer/Control/PotArea/VBoxContainer"]

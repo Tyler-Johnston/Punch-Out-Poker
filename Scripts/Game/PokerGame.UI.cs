@@ -757,11 +757,6 @@ public partial class PokerGame
 				betRaiseButton.Text = $"Raise: {betAmount}";
 			}
 		}
-
-		if (raisesThisStreet >= MAX_RAISES_PER_STREET && !waitingForNextGame)
-		{
-			betRaiseButton.Disabled = true;
-		}
 	}
 
 	private void UpdateHud()
@@ -772,7 +767,6 @@ public partial class PokerGame
 			checkCallButton.Disabled = false;
 			foldButton.Visible = false;
 			betRaiseButton.Visible = false;
-			//betSlider.Visible = false;
 			sliderUI.Visible = false;
 			potArea.Visible = false;
 			UpdatePotDisplay(0);
@@ -795,7 +789,6 @@ public partial class PokerGame
 			cashOutButton.Visible = true;
 			foldButton.Visible = false;
 			betRaiseButton.Visible = false;
-			//betSlider.Visible = false;
 			sliderUI.Visible = false;
 			potArea.Visible = false;
 			UpdatePotDisplay(0);
@@ -822,7 +815,7 @@ public partial class PokerGame
 			}
 		}
 
-		playerStackLabel.Text = $"You: {playerChips}";
+		playerStackLabel.Text = $"Money In-Hand: ${playerChips}";
 		opponentStackLabel.Text = $"{currentOpponentName}: {opponentChips}";
 		potLabel.Text = $"Pot: {pot}";
 		UpdatePotDisplay(pot);
