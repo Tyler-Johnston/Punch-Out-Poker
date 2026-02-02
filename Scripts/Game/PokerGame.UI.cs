@@ -13,6 +13,7 @@ public partial class PokerGame
 	private Tween checkCallIdleTween;
 	private Tween betRaiseIdleTween;
 	private Tween opponentViewIdleTween;
+	private Tween potLabelTween;
 
 	private const float HOVER_SCALE = 1.04f;
 	private const float PRESS_SCALE = 0.97f;
@@ -25,6 +26,10 @@ public partial class PokerGame
 	
 	private const float OPPONENT_IDLE_FLOAT_AMOUNT = 2.15f;
 	private const float OPPONENT_IDLE_SCALE_AMOUNT = 0.008f;
+	
+	private const float POT_POP_SCALE = 1.15f;
+	private const float POT_POP_DURATION = 0.06f;
+	private const float POT_SETTLE_DURATION = 0.10f;
 	
 	private readonly Dictionary<string, int> CHIP_VALUES = new Dictionary<string, int>
 	{
@@ -47,6 +52,7 @@ public partial class PokerGame
 		LoadOpponentSprite();
 		InitializeButtonAnimations();
 		InitializeOpponentViewAnimation();
+		InitializePotLabel();
 		UpdateHud();
 	}
 
@@ -84,47 +90,6 @@ public partial class PokerGame
 		StartIdleAnimation(checkCallButton, ref checkCallIdleTween, 0.33f);
 		StartIdleAnimation(betRaiseButton, ref betRaiseIdleTween, 0.66f);
 	}
-
-	//private void SetupPotButtonHover(Button button)
-	//{
-		//if (button == null) return;
-		//
-		//button.PivotOffset = button.Size / 2;
-		//
-		//button.MouseEntered += () => 
-		//{
-			//Tween tween = CreateTween();
-			//tween.TweenProperty(button, "modulate", new Color(1.15f, 1.15f, 1.15f), 0.1f)
-				//.SetEase(Tween.EaseType.Out);
-			//tween.Parallel().TweenProperty(button, "scale", Vector2.One * 1.03f, 0.1f)
-				//.SetEase(Tween.EaseType.Out);
-		//};
-		//
-		//button.MouseExited += () => 
-		//{
-			//Tween tween = CreateTween();
-			//tween.TweenProperty(button, "modulate", Colors.White, 0.1f)
-				//.SetEase(Tween.EaseType.Out);
-			//tween.Parallel().TweenProperty(button, "scale", Vector2.One, 0.1f)
-				//.SetEase(Tween.EaseType.Out);
-		//};
-		//
-		//button.ButtonDown += () =>
-		//{
-			//Tween tween = CreateTween();
-			//tween.TweenProperty(button, "scale", Vector2.One * 0.95f, 0.05f)
-				//.SetEase(Tween.EaseType.Out);
-		//};
-		//
-		//button.ButtonUp += () =>
-		//{
-			//Tween tween = CreateTween();
-			//tween.TweenProperty(button, "scale", Vector2.One, 0.15f)
-				//.SetEase(Tween.EaseType.Out)
-				//.SetTrans(Tween.TransitionType.Back);
-		//};
-	//}
-
 
 	/// <summary>
 	/// Sets button pivot to center for smooth scaling and prevents size drift
@@ -243,6 +208,50 @@ public partial class PokerGame
 			else
 				idleTween.Pause();
 		}
+	}
+
+	// --- POT LABEL ANIMATION ---
+	
+	/// <summary>
+	/// Initialize pot label pivot for scaling animations
+	/// </summary>
+	private void InitializePotLabel()
+	{
+		if (potLabel == null) return;
+		
+		potLabel.PivotOffset = potLabel.Size / 2;
+	}
+	
+	/// <summary>
+	/// Animates pot label with pop effect when value increases
+	/// </summary>
+	private void AnimatePotLabelPop()
+	{
+		if (potLabel == null) return;
+		
+		// Kill any existing animation
+		if (potLabelTween != null && potLabelTween.IsValid())
+			potLabelTween.Kill();
+		
+		// Ensure pivot is centered
+		potLabel.PivotOffset = potLabel.Size / 2;
+		
+		// Create pop animation
+		potLabelTween = CreateTween();
+		potLabelTween.SetProcessMode(Tween.TweenProcessMode.Idle);
+		
+		// Scale up quickly
+		potLabelTween.TweenProperty(potLabel, "scale", Vector2.One * POT_POP_SCALE, POT_POP_DURATION)
+			.SetEase(Tween.EaseType.Out)
+			.SetTrans(Tween.TransitionType.Quad);
+		
+		// Settle back with slight bounce
+		potLabelTween.TweenProperty(potLabel, "scale", Vector2.One, POT_SETTLE_DURATION)
+			.SetEase(Tween.EaseType.Out)
+			.SetTrans(Tween.TransitionType.Back);
+		
+		potLabelTween.TweenProperty(potLabel, "modulate", Colors.White, POT_SETTLE_DURATION)
+			.SetEase(Tween.EaseType.Out);
 	}
 
 	// --- MESSAGE DISPLAY ---
@@ -573,10 +582,19 @@ public partial class PokerGame
 	{
 		if (chipContainer == null) return;
 		
+		// Only pop if pot increased from previous value
+		bool potIncreased = (potAmount > _lastDisplayedPot && potAmount > 0);
+		
 		if (potAmount == _lastDisplayedPot)
 			return;
 		
 		_lastDisplayedPot = potAmount;
+		
+		// Trigger pot label pop animation when pot increases
+		if (potIncreased)
+		{
+			AnimatePotLabelPop();
+		}
 		
 		foreach (Node child in chipContainer.GetChildren())
 		{
@@ -615,8 +633,8 @@ public partial class PokerGame
 				if (chipSprite == null || !IsInstanceValid(chipSprite)) return;
 				
 				// Random position offset
-				float offsetX = (float)GD.RandRange(-4.0, 4.0);
-				float offsetY = (float)GD.RandRange(-4.0, 4.0);
+				float offsetX = (float)GD.RandRange(-6.0, 6.0);
+				float offsetY = (float)GD.RandRange(-6.0, 6.0);
 				chipSprite.Position += new Vector2(offsetX, offsetY);
 				
 				// Random rotation

@@ -931,16 +931,16 @@ offset_left = 32.0
 offset_top = 558.0
 offset_right = 518.0
 offset_bottom = 610.0
-text = "0"
+text = "Money In-Hand: $0"
 label_settings = SubResource("LabelSettings_u1fmj")
 horizontal_alignment = 1
 
 [node name="GameStateLabel" type="Label" parent="CanvasLayer/Control"]
 layout_mode = 0
-offset_left = 334.0
-offset_top = 424.0
-offset_right = 946.0
-offset_bottom = 484.0
+offset_left = 2.0
+offset_top = 427.0
+offset_right = 1279.0
+offset_bottom = 487.0
 text = "Game State Label"
 label_settings = SubResource("LabelSettings_xxe2x")
 horizontal_alignment = 1
@@ -995,7 +995,7 @@ grow_vertical = 1
 rotation = -0.31415927
 
 [node name="CommunityCardsArea" type="Node2D" parent="CanvasLayer/Control"]
-position = Vector2(313, 311.0001)
+position = Vector2(318, 311.0001)
 scale = Vector2(4.5, 4.5)
 
 [node name="Flop1" parent="CanvasLayer/Control/CommunityCardsArea" instance=ExtResource("3_c6vvi")]
