@@ -584,23 +584,32 @@ public partial class PokerGame
 		return images;
 	}
 	
-	private void UpdatePotDisplay(int potAmount)
+	private void UpdatePotLabel(int currentPot)
 	{
-		if (chipContainer == null) return;
+		if (potLabel == null) return;
 		
-		// Only pop if pot increased from previous value
-		bool potIncreased = (potAmount > _lastDisplayedPot && potAmount > 0);
+		potLabel.Text = $"Pot: ${currentPot}";
 		
-		if (potAmount == _lastDisplayedPot)
-			return;
+		// Only animate if pot increased
+		bool potIncreased = (currentPot > _lastPotLabel && currentPot > 0);
 		
-		_lastDisplayedPot = potAmount;
-		
-		// Trigger pot label pop animation when pot increases
 		if (potIncreased)
 		{
 			AnimatePotLabelPop();
 		}
+		
+		_lastPotLabel = currentPot;
+	}
+	
+	private void UpdatePotDisplay(int potAmount)
+	{
+		if (chipContainer == null) return;
+		
+		// Only update chip sprites if displayPot changed
+		if (potAmount == _lastDisplayedPot)
+			return;
+		
+		_lastDisplayedPot = potAmount;
 		
 		foreach (Node child in chipContainer.GetChildren())
 		{
@@ -633,21 +642,17 @@ public partial class PokerGame
 			
 			chipContainer.AddChild(chipSprite);
 			
-			// Wait one frame for layout, then randomize
 			GetTree().CreateTimer(0.0f).Timeout += () =>
 			{
 				if (chipSprite == null || !IsInstanceValid(chipSprite)) return;
 				
-				// Random position offset
 				float offsetX = (float)GD.RandRange(-6.0, 6.0);
 				float offsetY = (float)GD.RandRange(-6.0, 6.0);
 				chipSprite.Position += new Vector2(offsetX, offsetY);
 				
-				// Random rotation
 				float rotationDegrees = (float)GD.RandRange(-5.0, 5.0);
 				chipSprite.Rotation = Mathf.DegToRad(rotationDegrees);
 				
-				// Pop-in animation
 				chipSprite.Scale = Vector2.Zero;
 				Tween tween = CreateTween();
 				tween.TweenProperty(chipSprite, "scale", Vector2.One, 0.15f)
@@ -656,6 +661,7 @@ public partial class PokerGame
 			};
 		}
 	}
+
 
 	/// <summary>
 	/// Updates the player's chip display showing their contribution to the current betting round
@@ -992,7 +998,7 @@ public partial class PokerGame
 
 		UpdatePlayerStackLabels();
 		opponentStackLabel.Text = $"{currentOpponentName}: ${opponentChips}";
-		potLabel.Text = $"Pot: ${pot}";
+		UpdatePotLabel(pot);  
 		UpdatePotDisplay(displayPot);
 		UpdatePlayerChipDisplay();
 		UpdateOpponentChipDisplay();

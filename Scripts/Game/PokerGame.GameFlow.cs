@@ -48,6 +48,7 @@ public partial class PokerGame
 		pot = 0;
 		displayPot = 0;
 		_lastDisplayedPot = -1;
+		_lastPotLabel = -1; 
 		playerContributed = 0;
 		opponentContributed = 0;
 		playerTotalBetsThisHand = 0;
@@ -132,11 +133,10 @@ public partial class PokerGame
 			
 			ShowMessage($"You post the ${sbAmount} small blind");
 			GD.Print($"Player posts SB: {sbAmount}");
-			UpdateHud(true);
 			sfxPlayer.PlayRandomChip();
 			
-			// Add chips to pot immediately after SB
 			AddToPot(true, sbAmount);
+			UpdateHud(true);
 			
 			// Wait before big blind
 			await ToSignal(GetTree().CreateTimer(2.5f), SceneTreeTimer.SignalName.Timeout);

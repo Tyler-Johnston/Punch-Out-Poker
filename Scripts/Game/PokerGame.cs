@@ -81,6 +81,7 @@ public partial class PokerGame : Node2D
 	private int pot = 0;                   // Total pot (all streets combined)
 	private int displayPot = 0; 
 	private int _lastDisplayedPot = -1;
+	private int _lastPotLabel = -1;
 	private int _lastDisplayedPlayerChips = -1;
 	private int _lastDisplayedOpponentChips = -1;
 	private int betAmount = 20;
@@ -145,7 +146,7 @@ public partial class PokerGame : Node2D
 		// Get chip display containers
 		PlayerChipGridBox = playerArea.GetNode<GridContainer>("PlayerChipGridBox");
 		OpponentChipGridBox = GetNode<GridContainer>("%OpponentChipGridBox");
-		chipContainer = potArea.GetNode<GridContainer>("VBoxContainer/PotGridBox");
+		chipContainer = potArea.GetNode<GridContainer>("%PotGridBox");
 
 		// pocket cards
 		playerCard1 = playerArea.GetNode<CardVisual>("PlayerCard1");

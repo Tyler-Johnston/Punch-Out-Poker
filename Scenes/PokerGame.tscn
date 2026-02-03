@@ -35,7 +35,7 @@ bg_color = Color(0.6, 0.6, 0.6, 0.13333334)
 border_width_left = 10
 border_width_top = 10
 border_width_right = 10
-border_width_bottom = 50
+border_width_bottom = 45
 border_color = Color(0.84705883, 0.84705883, 0.84705883, 1)
 shadow_color = Color(0, 0, 0, 0.19607843)
 
@@ -819,11 +819,13 @@ texture = SubResource("GradientTexture2D_h5gdr")
 [node name="OpponentChipGridBox" type="GridContainer" parent="CanvasLayer/Control/OpponentView/FrameShadow/OpponentFrame/InnerWrapper"]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 233.75
-offset_top = 214.5
-offset_right = 391.75
-offset_bottom = 264.5
+offset_left = 192.50009
+offset_top = 219.49998
+offset_right = 350.50006
+offset_bottom = 269.5
 rotation = 3.1415927
+theme_override_constants/h_separation = -10
+theme_override_constants/v_separation = -10
 columns = 3
 
 [node name="ChipSprite1" type="TextureRect" parent="CanvasLayer/Control/OpponentView/FrameShadow/OpponentFrame/InnerWrapper/OpponentChipGridBox"]
@@ -849,10 +851,10 @@ texture = SubResource("GradientTexture2D_u5b2p")
 
 [node name="OpponentStackLabel" type="Label" parent="CanvasLayer/Control/OpponentView"]
 unique_name_in_owner = true
-offset_left = 966.25
-offset_top = 201.25
-offset_right = 1277.5
-offset_bottom = 253.25
+offset_left = 966.2501
+offset_top = 205.0
+offset_right = 1277.5001
+offset_bottom = 257.0
 text = "0"
 label_settings = SubResource("LabelSettings_o1p3i")
 horizontal_alignment = 1
@@ -1100,12 +1102,14 @@ rotation = -0.12042772
 scale = Vector2(0.16, 0.16)
 
 [node name="PlayerChipGridBox" type="GridContainer" parent="CanvasLayer/Control/ActionView/PlayerArea"]
-offset_left = -48.888855
-offset_top = -40.22235
-offset_right = 109.111145
-offset_bottom = 9.777649
+offset_left = -30.88887
+offset_top = -47.55567
+offset_right = 127.11113
+offset_bottom = 2.4443283
 scale = Vector2(0.5, 0.5)
-columns = 4
+theme_override_constants/h_separation = -10
+theme_override_constants/v_separation = -10
+columns = 3
 
 [node name="ChipSprite1" type="TextureRect" parent="CanvasLayer/Control/ActionView/PlayerArea/PlayerChipGridBox"]
 custom_minimum_size = Vector2(50, 50)
@@ -1258,11 +1262,33 @@ text = "Pot: 100"
 label_settings = SubResource("LabelSettings_u5b2p")
 horizontal_alignment = 1
 
-[node name="PotGridBox" type="GridContainer" parent="CanvasLayer/Control/PotArea/VBoxContainer"]
-layout_mode = 2
-theme_override_constants/h_separation = 0
-theme_override_constants/v_separation = 0
+[node name="PotGridBox" type="GridContainer" parent="CanvasLayer/Control/PotArea"]
+unique_name_in_owner = true
+offset_left = 64.66669
+offset_top = 60.66667
+offset_right = 222.66669
+offset_bottom = 110.66667
+theme_override_constants/h_separation = -10
+theme_override_constants/v_separation = -10
 columns = 3
+
+[node name="ChipSprite1" type="TextureRect" parent="CanvasLayer/Control/PotArea/PotGridBox"]
+visible = false
+custom_minimum_size = Vector2(50, 50)
+layout_mode = 2
+texture = ExtResource("11_xxe2x")
+
+[node name="ChipSprite2" type="TextureRect" parent="CanvasLayer/Control/PotArea/PotGridBox"]
+visible = false
+custom_minimum_size = Vector2(50, 50)
+layout_mode = 2
+texture = ExtResource("11_xxe2x")
+
+[node name="ChipSprite3" type="TextureRect" parent="CanvasLayer/Control/PotArea/PotGridBox"]
+visible = false
+custom_minimum_size = Vector2(50, 50)
+layout_mode = 2
+texture = ExtResource("11_xxe2x")
 
 [node name="SFXPlayer" type="AudioStreamPlayer" parent="."]
 max_polyphony = 32
