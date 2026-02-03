@@ -64,7 +64,11 @@ public partial class PokerGame : Node2D
 	private Control actionButtons;
 	private Control sliderUI;
 	
-	private GridContainer chipContainer;
+	// Chip display containers
+	private GridContainer PlayerChipGridBox;      // Player's chips in current betting round
+	private GridContainer OpponentChipGridBox;    // Opponent's chips in current betting round
+	private GridContainer chipContainer;          // Main pot display (center of table)
+	
 	private Sprite2D faceSprite;
 	private SpeechBubble speechBubble;
 
@@ -72,7 +76,10 @@ public partial class PokerGame : Node2D
 	private Street currentStreet = Street.Preflop;
 	private int playerChips = 100;
 	private int opponentChips = 100;
-	private int pot = 0;
+	private int playerChipsInPot = 0;      // Amount player has in current betting round
+	private int opponentChipsInPot = 0;    // Amount opponent has in current betting round
+	private int pot = 0;                   // Total pot (all streets combined)
+	private int displayPot = 0; 
 	private int _lastDisplayedPot = -1;
 	private int betAmount = 20;
 	private int currentBet = 0;
@@ -131,8 +138,12 @@ public partial class PokerGame : Node2D
 		playerArea = GetNode<Node2D>("%PlayerArea");
 		opponentView = hudControl.GetNode<Node2D>("OpponentView");
 		potArea = hudControl.GetNode<Node2D>("PotArea");
-		chipContainer = potArea.GetNode<GridContainer>("VBoxContainer/ChipHBox");
 		betweenHandsUI = GetNode<Node2D>("%BetweenHandsUI");
+		
+		// Get chip display containers
+		PlayerChipGridBox = playerArea.GetNode<GridContainer>("PlayerChipGridBox");
+		OpponentChipGridBox = GetNode<GridContainer>("%OpponentChipGridBox");
+		chipContainer = potArea.GetNode<GridContainer>("VBoxContainer/PotGridBox");
 
 		// pocket cards
 		playerCard1 = playerArea.GetNode<CardVisual>("PlayerCard1");

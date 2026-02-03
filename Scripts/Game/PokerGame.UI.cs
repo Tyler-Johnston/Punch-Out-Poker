@@ -658,6 +658,124 @@ public partial class PokerGame
 	}
 
 	/// <summary>
+	/// Updates the player's chip display showing their contribution to the current betting round
+	/// </summary>
+	private void UpdatePlayerChipDisplay()
+	{
+		if (PlayerChipGridBox == null) return;
+		
+		foreach (Node child in PlayerChipGridBox.GetChildren())
+		{
+			child.QueueFree();
+		}
+		
+		if (playerChipsInPot <= 0) return;
+		
+		List<string> chipImages = GetChipImagesForPot(playerChipsInPot);
+		
+		foreach (string chipFile in chipImages)
+		{
+			TextureRect chipSprite = new TextureRect();
+			
+			string path = $"res://Assets/Textures/chip_pngs/{chipFile}";
+			if (ResourceLoader.Exists(path))
+			{
+				chipSprite.Texture = GD.Load<Texture2D>(path);
+			}
+			else
+			{
+				continue;
+			}
+			
+			float width = 32;
+			float height = GetChipHeight(chipFile) * 0.67f;
+			
+			chipSprite.CustomMinimumSize = new Vector2(width, height);
+			chipSprite.ExpandMode = TextureRect.ExpandModeEnum.KeepSize;
+			chipSprite.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
+			
+			PlayerChipGridBox.AddChild(chipSprite);
+			
+			GetTree().CreateTimer(0.0f).Timeout += () =>
+			{
+				if (chipSprite == null || !IsInstanceValid(chipSprite)) return;
+				
+				float offsetX = (float)GD.RandRange(-3.0, 3.0);
+				float offsetY = (float)GD.RandRange(-3.0, 3.0);
+				chipSprite.Position += new Vector2(offsetX, offsetY);
+				
+				float rotationDegrees = (float)GD.RandRange(-5.0, 5.0);
+				chipSprite.Rotation = Mathf.DegToRad(rotationDegrees);
+				
+				chipSprite.Scale = Vector2.Zero;
+				Tween tween = CreateTween();
+				tween.TweenProperty(chipSprite, "scale", Vector2.One, 0.15f)
+					.SetEase(Tween.EaseType.Out)
+					.SetTrans(Tween.TransitionType.Back);
+			};
+		}
+	}
+
+	/// <summary>
+	/// Updates the opponent's chip display showing their contribution to the current betting round
+	/// </summary>
+	private void UpdateOpponentChipDisplay()
+	{
+		if (OpponentChipGridBox == null) return;
+		
+		foreach (Node child in OpponentChipGridBox.GetChildren())
+		{
+			child.QueueFree();
+		}
+		
+		if (opponentChipsInPot <= 0) return;
+		
+		List<string> chipImages = GetChipImagesForPot(opponentChipsInPot);
+		
+		foreach (string chipFile in chipImages)
+		{
+			TextureRect chipSprite = new TextureRect();
+			
+			string path = $"res://Assets/Textures/chip_pngs/{chipFile}";
+			if (ResourceLoader.Exists(path))
+			{
+				chipSprite.Texture = GD.Load<Texture2D>(path);
+			}
+			else
+			{
+				continue;
+			}
+			
+			float width = 32;
+			float height = GetChipHeight(chipFile) * 0.67f;
+			
+			chipSprite.CustomMinimumSize = new Vector2(width, height);
+			chipSprite.ExpandMode = TextureRect.ExpandModeEnum.KeepSize;
+			chipSprite.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
+			
+			OpponentChipGridBox.AddChild(chipSprite);
+			
+			GetTree().CreateTimer(0.0f).Timeout += () =>
+			{
+				if (chipSprite == null || !IsInstanceValid(chipSprite)) return;
+				
+				float offsetX = (float)GD.RandRange(-3.0, 3.0);
+				float offsetY = (float)GD.RandRange(-3.0, 3.0);
+				chipSprite.Position += new Vector2(offsetX, offsetY);
+				
+				float rotationDegrees = (float)GD.RandRange(-5.0, 5.0);
+				chipSprite.Rotation = Mathf.DegToRad(rotationDegrees);
+				
+				chipSprite.Scale = Vector2.Zero;
+				Tween tween = CreateTween();
+				tween.TweenProperty(chipSprite, "scale", Vector2.One, 0.15f)
+					.SetEase(Tween.EaseType.Out)
+					.SetTrans(Tween.TransitionType.Back);
+			};
+		}
+	}
+
+	/// <summary>
 	/// Returns appropriate height for chip stack based on filename
 	/// </summary>
 	private float GetChipHeight(string chipFile)
@@ -787,38 +905,38 @@ public partial class PokerGame
 
 			if (allInOnly || sliderAllIn)
 			{
-				betRaiseButton.Text = $"ALL IN: {maxBet}";
+				betRaiseButton.Text = $"ALL IN: ${maxBet}";
 			}
 			else
 			{
 				if (currentBet > 0)
 				{
-					betRaiseButton.Text = $"Raise: {betAmount}";
+					betRaiseButton.Text = $"Raise to: {betAmount}";
 				}
 				else
 				{
-					betRaiseButton.Text = $"Bet: {betAmount}";
+					betRaiseButton.Text = $"Bet: ${betAmount}";
 				}
 			}
 		}
 		else
 		{
-			if (toCall < 0)
-			{
-				checkCallButton.Text = $"Call (Take back {Math.Abs(toCall)})";
-			}
-			else
-			{
-				checkCallButton.Text = $"Call: {Math.Min(toCall, playerChips)}";
-			}
+			//if (toCall < 0)
+			//{
+				//checkCallButton.Text = $"Call (Take back ${Math.Abs(toCall)})";
+			//}
+			//else
+			//{
+			checkCallButton.Text = $"Call: ${Math.Min(toCall, playerChips)}";
+			//}
 
 			if (allInOnly || sliderAllIn)
 			{
-				betRaiseButton.Text = $"ALL IN ({maxBet})";
+				betRaiseButton.Text = $"ALL IN: ${maxBet}";
 			}
 			else
 			{
-				betRaiseButton.Text = $"Raise: {betAmount}";
+				betRaiseButton.Text = $"Raise: ${betAmount}";
 			}
 		}
 	}
@@ -846,6 +964,8 @@ public partial class PokerGame
 			
 			UpdateSessionProfitLabel();
 			UpdatePotDisplay(0);
+			UpdatePlayerChipDisplay();
+			UpdateOpponentChipDisplay();
 		}
 		else
 		{
@@ -864,8 +984,10 @@ public partial class PokerGame
 
 		UpdatePlayerStackLabels();
 		opponentStackLabel.Text = $"{currentOpponentName}: ${opponentChips}";
-		potLabel.Text = $"Pot: ${pot}";
-		UpdatePotDisplay(pot);
+		potLabel.Text = $"Pot: ${displayPot}";
+		UpdatePotDisplay(displayPot);
+		UpdatePlayerChipDisplay();
+		UpdateOpponentChipDisplay();
 		UpdatePotSizeButtons();
 	}
 

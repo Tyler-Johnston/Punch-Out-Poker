@@ -816,6 +816,32 @@ offset_right = 353.0
 offset_bottom = 392.0
 texture = SubResource("GradientTexture2D_h5gdr")
 
+[node name="OpponentChipGridBox" type="GridContainer" parent="CanvasLayer/Control/OpponentView/FrameShadow/OpponentFrame/InnerWrapper"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 216.24998
+offset_top = 204.5
+offset_right = 374.25
+offset_bottom = 254.50002
+rotation = 3.1415927
+scale = Vector2(0.75, 0.75)
+columns = 3
+
+[node name="ChipSprite1" type="TextureRect" parent="CanvasLayer/Control/OpponentView/FrameShadow/OpponentFrame/InnerWrapper/OpponentChipGridBox"]
+custom_minimum_size = Vector2(50, 50)
+layout_mode = 2
+texture = ExtResource("11_xxe2x")
+
+[node name="ChipSprite2" type="TextureRect" parent="CanvasLayer/Control/OpponentView/FrameShadow/OpponentFrame/InnerWrapper/OpponentChipGridBox"]
+custom_minimum_size = Vector2(50, 50)
+layout_mode = 2
+texture = ExtResource("11_xxe2x")
+
+[node name="ChipSprite3" type="TextureRect" parent="CanvasLayer/Control/OpponentView/FrameShadow/OpponentFrame/InnerWrapper/OpponentChipGridBox"]
+custom_minimum_size = Vector2(50, 50)
+layout_mode = 2
+texture = ExtResource("11_xxe2x")
+
 [node name="Vignette" type="TextureRect" parent="CanvasLayer/Control/OpponentView/FrameShadow/OpponentFrame/InnerWrapper"]
 layout_mode = 0
 offset_right = 301.0
@@ -1074,6 +1100,29 @@ grow_vertical = 1
 rotation = -0.12042772
 scale = Vector2(0.16, 0.16)
 
+[node name="PlayerChipGridBox" type="GridContainer" parent="CanvasLayer/Control/ActionView/PlayerArea"]
+offset_left = -35.77772
+offset_top = -48.88897
+offset_right = 122.222275
+offset_bottom = 1.1110306
+scale = Vector2(0.3, 0.3)
+columns = 3
+
+[node name="ChipSprite1" type="TextureRect" parent="CanvasLayer/Control/ActionView/PlayerArea/PlayerChipGridBox"]
+custom_minimum_size = Vector2(50, 50)
+layout_mode = 2
+texture = ExtResource("11_xxe2x")
+
+[node name="ChipSprite2" type="TextureRect" parent="CanvasLayer/Control/ActionView/PlayerArea/PlayerChipGridBox"]
+custom_minimum_size = Vector2(50, 50)
+layout_mode = 2
+texture = ExtResource("11_xxe2x")
+
+[node name="ChipSprite3" type="TextureRect" parent="CanvasLayer/Control/ActionView/PlayerArea/PlayerChipGridBox"]
+custom_minimum_size = Vector2(50, 50)
+layout_mode = 2
+texture = ExtResource("11_xxe2x")
+
 [node name="PlayerStackLabel" type="Label" parent="CanvasLayer/Control"]
 unique_name_in_owner = true
 layout_mode = 0
@@ -1210,24 +1259,9 @@ text = "Pot: 100"
 label_settings = SubResource("LabelSettings_u5b2p")
 horizontal_alignment = 1
 
-[node name="ChipHBox" type="GridContainer" parent="CanvasLayer/Control/PotArea/VBoxContainer"]
+[node name="PotGridBox" type="GridContainer" parent="CanvasLayer/Control/PotArea/VBoxContainer"]
 layout_mode = 2
 columns = 3
-
-[node name="ChipSprite1" type="TextureRect" parent="CanvasLayer/Control/PotArea/VBoxContainer/ChipHBox"]
-custom_minimum_size = Vector2(50, 50)
-layout_mode = 2
-texture = ExtResource("11_xxe2x")
-
-[node name="ChipSprite2" type="TextureRect" parent="CanvasLayer/Control/PotArea/VBoxContainer/ChipHBox"]
-custom_minimum_size = Vector2(50, 50)
-layout_mode = 2
-texture = ExtResource("11_xxe2x")
-
-[node name="ChipSprite3" type="TextureRect" parent="CanvasLayer/Control/PotArea/VBoxContainer/ChipHBox"]
-custom_minimum_size = Vector2(50, 50)
-layout_mode = 2
-texture = ExtResource("11_xxe2x")
 
 [node name="SFXPlayer" type="AudioStreamPlayer" parent="."]
 max_polyphony = 32

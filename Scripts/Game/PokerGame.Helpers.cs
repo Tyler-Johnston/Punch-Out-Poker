@@ -62,12 +62,25 @@ public partial class PokerGame
 	
 	private void ResetBettingRound()
 	{
+		// Move current round chips to display pot
+		displayPot += playerChipsInPot + opponentChipsInPot;
+		
+		// Reset current round displays
+		playerChipsInPot = 0;
+		opponentChipsInPot = 0;
+		
+		// Reset betting amounts for new street
 		playerBet = 0;
 		opponentBet = 0;
 		currentBet = 0;
+		
+		// Reset action flags
 		playerHasActedThisStreet = false;
 		opponentHasActedThisStreet = false;
+		UpdateHud();
+		GD.Print($"[ResetBettingRound] New street - Total Pot: {pot}, Display Pot: {displayPot}");
 	}
+
 	
 	private (int minBet, int maxBet) GetLegalBetRange()
 	{

@@ -13,10 +13,13 @@ public partial class PokerGame
 		ShowMessage("You fold");
 		GD.Print("Player folds");
 
-		int winAmount = pot; 
+		// Combine all chips before awarding
+		int winAmount = pot + playerChipsInPot + opponentChipsInPot;
 		opponentChips += winAmount;
 		aiOpponent.ChipStack = opponentChips;
 		pot = 0;
+		playerChipsInPot = 0;
+		opponentChipsInPot = 0;
 		
 		aiOpponent.ProcessHandResult(HandResult.Win, winAmount, bigBlind);
 		
@@ -25,6 +28,7 @@ public partial class PokerGame
 		GD.Print($"Stacks -> Player: {playerChips}, Opponent: {opponentChips}");
 		EndHand();
 	}
+
 
 	private void OnCheckCallPressed()
 	{
@@ -46,6 +50,7 @@ public partial class PokerGame
 			
 			playerChips += refundAmount;
 			playerBet -= refundAmount;
+			playerChipsInPot -= refundAmount;  // Remove from current round tracking
 			
 			// Pass negative value to remove from pot/contribution tracking
 			AddToPot(true, -refundAmount);
@@ -62,18 +67,19 @@ public partial class PokerGame
 			int actualCall = Math.Min(toCall, playerChips);
 			playerChips -= actualCall;
 			playerBet += actualCall;
+			playerChipsInPot += actualCall;  // Track in current betting round
 			
 			AddToPot(true, actualCall);
 
 			if (playerChips == 0)
 			{
 				playerIsAllIn = true;
-				ShowMessage($"You call {actualCall} chips (ALL-IN!)");
+				ShowMessage($"You call ${actualCall} (ALL-IN!)");
 				GD.Print($"Player calls {actualCall} (ALL-IN)");
 			}
 			else
 			{
-				ShowMessage($"You call {actualCall} chips");
+				ShowMessage($"You call ${actualCall}");
 				GD.Print($"Player calls {actualCall}, Player stack: {playerChips}, Pot: {pot}");
 			}
 			sfxPlayer.PlayRandomChip();
@@ -148,6 +154,7 @@ public partial class PokerGame
 
 		playerChips -= actualBet;
 		playerBet += actualBet;
+		playerChipsInPot += actualBet;  // Track in current betting round
 		
 		AddToPot(true, actualBet);
 		
@@ -160,17 +167,17 @@ public partial class PokerGame
 		if (playerChips == 0)
 		{
 			playerIsAllIn = true;
-			ShowMessage($"You raise to {playerBet} chips (ALL-IN!)");
+			ShowMessage($"You raise to ${playerBet} (ALL-IN!)");
 			GD.Print($"Player raises to {playerBet} (ALL-IN)");
 		}
 		else if (isRaise)
 		{
-			ShowMessage($"You raise to {playerBet} chips");
+			ShowMessage($"You raise to ${playerBet}");
 			GD.Print($"Player raises to {playerBet}");
 		}
 		else
 		{
-			ShowMessage($"You bet {actualBet} chips");
+			ShowMessage($"You bet ${actualBet}");
 			GD.Print($"Player bets {actualBet}");
 		}
 		
