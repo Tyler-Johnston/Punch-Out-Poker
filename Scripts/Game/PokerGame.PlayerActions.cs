@@ -14,7 +14,7 @@ public partial class PokerGame
 		GD.Print("Player folds");
 
 		// Combine all chips before awarding
-		int winAmount = pot + playerChipsInPot + opponentChipsInPot;
+		int winAmount = pot;
 		opponentChips += winAmount;
 		aiOpponent.ChipStack = opponentChips;
 		pot = 0;

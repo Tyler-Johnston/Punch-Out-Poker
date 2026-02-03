@@ -704,7 +704,7 @@ public partial class PokerGame
 		aiOpponent.OnFolded(betRatio);
 
 		// Combine all chips before awarding
-		int winAmount = pot + playerChipsInPot + opponentChipsInPot;
+		int winAmount = pot;
 		playerChips += winAmount;
 		pot = 0;
 		playerChipsInPot = 0;
