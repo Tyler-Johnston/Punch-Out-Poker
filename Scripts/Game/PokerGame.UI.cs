@@ -337,7 +337,7 @@ public partial class PokerGame
 		
 		Vector2 startPosition = new Vector2(
 			finalPosition.X + (float)GD.RandRange(-30.0, 30.0),
-			finalPosition.Y + 600 
+			finalPosition.Y - 600 
 		);
 		
 		sfxPlayer.PlaySound("card_flip");

@@ -136,7 +136,7 @@ public partial class PokerGame : Node2D
 		cardVisualScene = GD.Load<PackedScene>("res://Scenes/CardVisual.tscn");
 		
 		// ui areas
-		Node2D opponentArea = hudControl.GetNode<Node2D>("OpponentArea");
+		Node2D opponentArea = GetNode<Node2D>("%OpponentArea");
 		Node2D communityCardsArea = hudControl.GetNode<Node2D>("CommunityCardsArea");
 		playerArea = GetNode<Node2D>("%PlayerArea");
 		opponentView = hudControl.GetNode<Node2D>("OpponentView");
@@ -176,7 +176,7 @@ public partial class PokerGame : Node2D
 		playerEarningsLabel = GetNode<Label>("%PlayerEarningsLabel");
 		opponentStackLabel = opponentView.GetNode<Label>("OpponentStackLabel");
 		potLabel = GetNode<Label>("%PotLabel");
-		gameStateLabel = hudControl.GetNode<Label>("GameStateLabel");
+		gameStateLabel = GetNode<Label>("%GameStateLabel");
 		
 		// audio players
 		sfxPlayer = GetNode<SFXPlayer>("SFXPlayer");

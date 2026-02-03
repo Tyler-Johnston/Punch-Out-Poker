@@ -1,4 +1,4 @@
-[gd_scene load_steps=73 format=3 uid="uid://b5sq1675fwcio"]
+[gd_scene load_steps=74 format=3 uid="uid://b5sq1675fwcio"]
 
 [ext_resource type="Script" uid="uid://8k6pqsmgt5pe" path="res://Scripts/Game/PokerGame.cs" id="1_8w0ed"]
 [ext_resource type="Texture2D" uid="uid://dqk4n2wxuqt2a" path="res://Assets/Textures/backgrounds/Cafe_Interior_Night.jpg" id="2_47o1s"]
@@ -702,14 +702,6 @@ corner_radius_bottom_left = 10
 shadow_size = 2
 shadow_offset = Vector2(2, 2)
 
-[sub_resource type="LabelSettings" id="LabelSettings_xxe2x"]
-font_size = 56
-outline_size = 1
-outline_color = Color(0, 0, 0, 1)
-shadow_size = 3
-shadow_color = Color(0, 0, 0, 0.09803922)
-shadow_offset = Vector2(5, 5)
-
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_jn1cq"]
 bg_color = Color(0, 0, 0, 0.33333334)
 border_width_left = 3
@@ -728,6 +720,33 @@ expand_margin_bottom = 2.0
 
 [sub_resource type="LabelSettings" id="LabelSettings_u5b2p"]
 font_size = 48
+outline_size = 1
+outline_color = Color(0, 0, 0, 1)
+shadow_size = 3
+shadow_color = Color(0, 0, 0, 0.09803922)
+shadow_offset = Vector2(5, 5)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_g5j4w"]
+content_margin_left = 10.0
+content_margin_top = 10.0
+content_margin_right = 10.0
+content_margin_bottom = 10.0
+bg_color = Color(0, 0, 0, 0.13725491)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.10747979, 0.107479714, 0.10747973, 0.33333334)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+shadow_color = Color(0, 0, 0, 0.09803922)
+shadow_size = 2
+shadow_offset = Vector2(0, 3)
+
+[sub_resource type="LabelSettings" id="LabelSettings_xxe2x"]
+font_size = 56
 outline_size = 1
 outline_color = Color(0, 0, 0, 1)
 shadow_size = 3
@@ -773,8 +792,8 @@ texture = SubResource("GradientTexture2D_vtryj")
 
 [node name="OpponentView" type="Node2D" parent="CanvasLayer/Control"]
 unique_name_in_owner = true
-position = Vector2(-750, 24)
-scale = Vector2(0.8, 0.8)
+position = Vector2(-838, 33)
+scale = Vector2(0.9, 0.9)
 
 [node name="FrameShadow" type="PanelContainer" parent="CanvasLayer/Control/OpponentView"]
 offset_left = 960.0
@@ -807,6 +826,34 @@ scale = Vector2(1.375, 1.3680557)
 texture = ExtResource("3_47o1s")
 hframes = 8
 
+[node name="OpponentArea" type="Node2D" parent="CanvasLayer/Control/OpponentView/FrameShadow/OpponentFrame/InnerWrapper"]
+unique_name_in_owner = true
+position = Vector2(147.50002, 238.24998)
+rotation = -3.1415925
+scale = Vector2(3.7499993, 3.7499993)
+
+[node name="OpponentCard1" parent="CanvasLayer/Control/OpponentView/FrameShadow/OpponentFrame/InnerWrapper/OpponentArea" instance=ExtResource("3_c6vvi")]
+anchors_preset = 0
+anchor_right = 0.0
+anchor_bottom = 0.0
+offset_left = 4.0740805
+offset_top = 0.3333298
+offset_right = 146.07408
+offset_bottom = 192.33333
+grow_horizontal = 1
+grow_vertical = 1
+
+[node name="OpponentCard2" parent="CanvasLayer/Control/OpponentView/FrameShadow/OpponentFrame/InnerWrapper/OpponentArea" instance=ExtResource("3_c6vvi")]
+anchors_preset = 0
+anchor_right = 0.0
+anchor_bottom = 0.0
+offset_left = -28.814816
+offset_top = -0.25925946
+offset_right = 113.18518
+offset_bottom = 191.74074
+grow_horizontal = 1
+grow_vertical = 1
+
 [node name="MiniTable" type="TextureRect" parent="CanvasLayer/Control/OpponentView/FrameShadow/OpponentFrame/InnerWrapper"]
 material = SubResource("ShaderMaterial_u5b2p")
 layout_mode = 0
@@ -824,9 +871,10 @@ offset_top = 219.49998
 offset_right = 350.50006
 offset_bottom = 269.5
 rotation = 3.1415927
+scale = Vector2(1.15, 1.15)
 theme_override_constants/h_separation = -10
 theme_override_constants/v_separation = -10
-columns = 3
+columns = 4
 
 [node name="ChipSprite1" type="TextureRect" parent="CanvasLayer/Control/OpponentView/FrameShadow/OpponentFrame/InnerWrapper/OpponentChipGridBox"]
 custom_minimum_size = Vector2(50, 50)
@@ -861,11 +909,12 @@ horizontal_alignment = 1
 
 [node name="SpeechBubble" parent="CanvasLayer/Control/OpponentView" instance=ExtResource("6_47o1s")]
 top_level = true
-offset_left = 191.0
-offset_top = 23.0
-offset_right = 315.0
-offset_bottom = 170.0
+offset_left = 257.0
+offset_top = -58.0
+offset_right = 381.0
+offset_bottom = 89.0
 grow_horizontal = 1
+grow_vertical = 1
 
 [node name="ActionView" type="Node2D" parent="CanvasLayer/Control"]
 unique_name_in_owner = true
@@ -1102,14 +1151,14 @@ rotation = -0.12042772
 scale = Vector2(0.16, 0.16)
 
 [node name="PlayerChipGridBox" type="GridContainer" parent="CanvasLayer/Control/ActionView/PlayerArea"]
-offset_left = -36.666702
-offset_top = -53.777916
-offset_right = 121.3333
-offset_bottom = -3.777916
+offset_left = -144.66661
+offset_top = -46.888973
+offset_right = 49.777863
+offset_bottom = 3.1110268
 scale = Vector2(0.5, 0.5)
 theme_override_constants/h_separation = -10
 theme_override_constants/v_separation = -10
-columns = 3
+columns = 4
 
 [node name="ChipSprite1" type="TextureRect" parent="CanvasLayer/Control/ActionView/PlayerArea/PlayerChipGridBox"]
 custom_minimum_size = Vector2(50, 50)
@@ -1137,47 +1186,8 @@ text = "Money In-Hand: $0"
 label_settings = SubResource("LabelSettings_u1fmj")
 horizontal_alignment = 1
 
-[node name="GameStateLabel" type="Label" parent="CanvasLayer/Control"]
-layout_mode = 0
-offset_left = 2.0
-offset_top = 427.0
-offset_right = 1279.0
-offset_bottom = 487.0
-text = "Game State Label"
-label_settings = SubResource("LabelSettings_xxe2x")
-horizontal_alignment = 1
-
-[node name="OpponentArea" type="Node2D" parent="CanvasLayer/Control"]
-position = Vector2(582.0001, 147)
-rotation = -3.1415925
-scale = Vector2(4.5, 4.5)
-
-[node name="OpponentCard1" parent="CanvasLayer/Control/OpponentArea" instance=ExtResource("3_c6vvi")]
-anchors_preset = 0
-anchor_right = 0.0
-anchor_bottom = 0.0
-offset_left = 3.111084
-offset_top = -8.223389
-offset_right = 145.11108
-offset_bottom = 183.77661
-grow_horizontal = 1
-grow_vertical = 1
-rotation = -0.4660029
-
-[node name="OpponentCard2" parent="CanvasLayer/Control/OpponentArea" instance=ExtResource("3_c6vvi")]
-anchors_preset = 0
-anchor_right = 0.0
-anchor_bottom = 0.0
-offset_left = -35.888855
-offset_top = -3.8886719
-offset_right = 106.111145
-offset_bottom = 188.11133
-grow_horizontal = 1
-grow_vertical = 1
-rotation = -0.31415927
-
 [node name="CommunityCardsArea" type="Node2D" parent="CanvasLayer/Control"]
-position = Vector2(318, 311.0001)
+position = Vector2(336.00003, 321)
 scale = Vector2(4.5, 4.5)
 
 [node name="Flop1" parent="CanvasLayer/Control/CommunityCardsArea" instance=ExtResource("3_c6vvi")]
@@ -1289,6 +1299,35 @@ visible = false
 custom_minimum_size = Vector2(50, 50)
 layout_mode = 2
 texture = ExtResource("11_xxe2x")
+
+[node name="GameStateControl" type="Control" parent="CanvasLayer/Control"]
+anchors_preset = 0
+offset_left = 9.0
+offset_top = 156.0
+offset_right = 1282.0
+offset_bottom = 196.0
+
+[node name="PanelContainer" type="PanelContainer" parent="CanvasLayer/Control/GameStateControl"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -178.0
+offset_top = -40.0
+offset_right = 178.0
+offset_bottom = 40.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_g5j4w")
+
+[node name="GameStateLabel" type="Label" parent="CanvasLayer/Control/GameStateControl/PanelContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Game State Label"
+label_settings = SubResource("LabelSettings_xxe2x")
+horizontal_alignment = 1
 
 [node name="SFXPlayer" type="AudioStreamPlayer" parent="."]
 max_polyphony = 32

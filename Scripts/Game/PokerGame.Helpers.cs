@@ -81,11 +81,11 @@ public partial class PokerGame
 		GD.Print($"[ResetBettingRound] New street - Total Pot: {pot}, Display Pot: {displayPot}");
 	}
 
-	
 	private (int minBet, int maxBet) GetLegalBetRange()
 	{
 		int amountToCall = currentBet - playerBet;
-		int maxBet = playerChips - amountToCall;
+		
+		int maxBet = playerChips + playerBet;
 		
 		if (maxBet <= 0) return (0, 0);
 		
@@ -98,9 +98,11 @@ public partial class PokerGame
 		}
 		else
 		{
-			int minRaiseIncrement = (amountToCall == 0) ? bigBlind : amountToCall;
-			minRaiseIncrement = Math.Max(minRaiseIncrement, bigBlind);
-			minBet = minRaiseIncrement;
+			// Minimum raise increment (at least one big blind, or match last raise size)
+			int minRaiseIncrement = Math.Max(amountToCall, bigBlind);
+			
+			// Minimum total bet = current bet + minimum raise increment
+			minBet = currentBet + minRaiseIncrement;
 			
 			if (minBet > maxBet)
 				minBet = maxBet;
@@ -109,6 +111,9 @@ public partial class PokerGame
 		if (minBet > maxBet) minBet = maxBet;
 		return (minBet, maxBet);
 	}
+
+
+
 	
 	private int CalculatePotSizeBet(float potMultiplier)
 	{

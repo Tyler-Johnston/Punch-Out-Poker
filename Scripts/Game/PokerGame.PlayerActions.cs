@@ -146,8 +146,7 @@ public partial class PokerGame
 		var (minBet, maxBet) = GetLegalBetRange();
 		betAmount = Math.Clamp(betAmount, minBet, maxBet);
 
-		int raiseAmount = betAmount;
-		int totalBet = currentBet + raiseAmount;
+		int totalBet = betAmount;
 		int toAdd = totalBet - playerBet;
 		
 		int actualBet = Math.Min(toAdd, playerChips);

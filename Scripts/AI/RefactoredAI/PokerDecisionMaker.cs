@@ -578,11 +578,11 @@ public partial class PokerDecisionMaker : Node
 		bool isCounterfeit = false; // ✅ ADD COUNTERFEIT FLAG
 		
 		// CASE A: River Counterfeit (Exact Calculation)
-		if (communityCards.Count >= 5 && (myAbsStrength - boardStrength < 0.05f))
+		if (communityCards.Count >= 5 && myAbsStrength > 0.28 && (myAbsStrength - boardStrength < 0.03f))
 		{
 			GD.Print($"[AI] Counterfeit detected! Abs: {myAbsStrength:F2} vs Board: {boardStrength:F2}");
 			adjustedStrength = 0.2f;
-			isCounterfeit = true; // ✅ MARK AS COUNTERFEIT
+			isCounterfeit = true;
 		}
 		// CASE B: Flop/Turn Counterfeit (Enhanced Heuristic Check)
 		else if (communityCards.Count >= 3)
