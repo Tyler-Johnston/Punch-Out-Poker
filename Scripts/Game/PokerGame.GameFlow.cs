@@ -52,6 +52,9 @@ public partial class PokerGame
 		playerContributed = 0;
 		opponentContributed = 0;
 		playerTotalBetsThisHand = 0;
+		playerBet = 0;
+		opponentBet = 0;
+		currentBet = 0;  // Reset this too for safety
 		
 		playerChipsInPot = 0;
 		opponentChipsInPot = 0;

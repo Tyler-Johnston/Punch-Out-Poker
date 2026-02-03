@@ -1152,13 +1152,13 @@ scale = Vector2(0.16, 0.16)
 
 [node name="PlayerChipGridBox" type="GridContainer" parent="CanvasLayer/Control/ActionView/PlayerArea"]
 offset_left = -144.66661
-offset_top = -46.888973
+offset_top = -44.666744
 offset_right = 49.777863
-offset_bottom = 3.1110268
+offset_bottom = 5.333256
 scale = Vector2(0.5, 0.5)
 theme_override_constants/h_separation = -10
 theme_override_constants/v_separation = -10
-columns = 4
+columns = 8
 
 [node name="ChipSprite1" type="TextureRect" parent="CanvasLayer/Control/ActionView/PlayerArea/PlayerChipGridBox"]
 custom_minimum_size = Vector2(50, 50)
@@ -1302,9 +1302,9 @@ texture = ExtResource("11_xxe2x")
 
 [node name="GameStateControl" type="Control" parent="CanvasLayer/Control"]
 anchors_preset = 0
-offset_left = 9.0
+offset_left = 178.0
 offset_top = 156.0
-offset_right = 1282.0
+offset_right = 1140.0
 offset_bottom = 196.0
 
 [node name="PanelContainer" type="PanelContainer" parent="CanvasLayer/Control/GameStateControl"]
