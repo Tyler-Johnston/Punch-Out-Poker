@@ -1100,12 +1100,12 @@ rotation = -0.12042772
 scale = Vector2(0.16, 0.16)
 
 [node name="PlayerChipGridBox" type="GridContainer" parent="CanvasLayer/Control/ActionView/PlayerArea"]
-offset_left = -47.111053
-offset_top = -38.444534
-offset_right = 110.88895
-offset_bottom = 11.555466
-scale = Vector2(0.4, 0.4)
-columns = 3
+offset_left = -48.888855
+offset_top = -40.22235
+offset_right = 109.111145
+offset_bottom = 9.777649
+scale = Vector2(0.5, 0.5)
+columns = 4
 
 [node name="ChipSprite1" type="TextureRect" parent="CanvasLayer/Control/ActionView/PlayerArea/PlayerChipGridBox"]
 custom_minimum_size = Vector2(50, 50)
@@ -1260,6 +1260,8 @@ horizontal_alignment = 1
 
 [node name="PotGridBox" type="GridContainer" parent="CanvasLayer/Control/PotArea/VBoxContainer"]
 layout_mode = 2
+theme_override_constants/h_separation = 0
+theme_override_constants/v_separation = 0
 columns = 3
 
 [node name="SFXPlayer" type="AudioStreamPlayer" parent="."]

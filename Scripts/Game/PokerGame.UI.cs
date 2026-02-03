@@ -674,6 +674,7 @@ public partial class PokerGame
 		if (playerChipsInPot <= 0) return;
 		
 		List<string> chipImages = GetChipImagesForPot(playerChipsInPot);
+		chipImages.Reverse();
 		
 		foreach (string chipFile in chipImages)
 		{
