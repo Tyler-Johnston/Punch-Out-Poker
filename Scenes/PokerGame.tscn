@@ -1102,10 +1102,10 @@ rotation = -0.12042772
 scale = Vector2(0.16, 0.16)
 
 [node name="PlayerChipGridBox" type="GridContainer" parent="CanvasLayer/Control/ActionView/PlayerArea"]
-offset_left = -30.88887
-offset_top = -47.55567
-offset_right = 127.11113
-offset_bottom = 2.4443283
+offset_left = -36.666702
+offset_top = -53.777916
+offset_right = 121.3333
+offset_bottom = -3.777916
 scale = Vector2(0.5, 0.5)
 theme_override_constants/h_separation = -10
 theme_override_constants/v_separation = -10
