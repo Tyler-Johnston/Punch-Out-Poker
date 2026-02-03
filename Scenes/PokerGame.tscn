@@ -819,12 +819,11 @@ texture = SubResource("GradientTexture2D_h5gdr")
 [node name="OpponentChipGridBox" type="GridContainer" parent="CanvasLayer/Control/OpponentView/FrameShadow/OpponentFrame/InnerWrapper"]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 216.24998
-offset_top = 204.5
-offset_right = 374.25
-offset_bottom = 254.50002
+offset_left = 233.75
+offset_top = 214.5
+offset_right = 391.75
+offset_bottom = 264.5
 rotation = 3.1415927
-scale = Vector2(0.75, 0.75)
 columns = 3
 
 [node name="ChipSprite1" type="TextureRect" parent="CanvasLayer/Control/OpponentView/FrameShadow/OpponentFrame/InnerWrapper/OpponentChipGridBox"]
@@ -1101,11 +1100,11 @@ rotation = -0.12042772
 scale = Vector2(0.16, 0.16)
 
 [node name="PlayerChipGridBox" type="GridContainer" parent="CanvasLayer/Control/ActionView/PlayerArea"]
-offset_left = -35.77772
-offset_top = -48.88897
-offset_right = 122.222275
-offset_bottom = 1.1110306
-scale = Vector2(0.3, 0.3)
+offset_left = -47.111053
+offset_top = -38.444534
+offset_right = 110.88895
+offset_bottom = 11.555466
+scale = Vector2(0.4, 0.4)
 columns = 3
 
 [node name="ChipSprite1" type="TextureRect" parent="CanvasLayer/Control/ActionView/PlayerArea/PlayerChipGridBox"]

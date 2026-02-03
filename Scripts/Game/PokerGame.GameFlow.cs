@@ -117,6 +117,10 @@ public partial class PokerGame
 		bool wasProcessing = isProcessingAIAction;
 		isProcessingAIAction = true;
 		
+		foldButton.Disabled = true;
+		checkCallButton.Disabled = true;
+		betRaiseButton.Disabled = true;
+		
 		if (playerHasButton)
 		{
 			// SMALL BLIND: Human player
@@ -128,7 +132,7 @@ public partial class PokerGame
 			
 			ShowMessage($"You post the ${sbAmount} small blind");
 			GD.Print($"Player posts SB: {sbAmount}");
-			UpdateHud();
+			UpdateHud(true);
 			sfxPlayer.PlayRandomChip();
 			
 			// Add chips to pot immediately after SB
@@ -151,7 +155,7 @@ public partial class PokerGame
 			
 			// Add chips to pot immediately after BB
 			AddToPot(false, bbAmount);
-			UpdateHud();
+			UpdateHud(true);
 			sfxPlayer.PlayRandomChip();
 			
 			isPlayerTurn = true;
@@ -172,7 +176,7 @@ public partial class PokerGame
 			
 			// Add chips to pot immediately after SB
 			AddToPot(false, sbAmount);
-			UpdateHud();
+			UpdateHud(true);
 			sfxPlayer.PlayRandomChip();
 			
 			// Wait before big blind
@@ -191,7 +195,7 @@ public partial class PokerGame
 			// Add chips to pot immediately after BB
 			AddToPot(true, bbAmount);
 			currentBet = Math.Max(playerBet, opponentBet);
-			UpdateHud();
+			UpdateHud(true);
 			sfxPlayer.PlayRandomChip();
 			
 			isPlayerTurn = false;
@@ -364,8 +368,10 @@ public partial class PokerGame
 	// --- STREET PROGRESSION ---
 
 	private async void AdvanceStreet()
-	{
+	{		
+		await ToSignal(GetTree().CreateTimer(0.8f), SceneTreeTimer.SignalName.Timeout);
 		ResetBettingRound();
+		await ToSignal(GetTree().CreateTimer(1.2f), SceneTreeTimer.SignalName.Timeout);
 		UpdateOpponentVisuals();
 		aiBluffedThisHand = false;
 		isProcessingAIAction = false;

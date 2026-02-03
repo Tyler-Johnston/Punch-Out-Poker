@@ -663,6 +663,8 @@ public partial class PokerGame
 	private void UpdatePlayerChipDisplay()
 	{
 		if (PlayerChipGridBox == null) return;
+		if (playerChipsInPot == _lastDisplayedPlayerChips) return;
+		_lastDisplayedPlayerChips = playerChipsInPot;
 		
 		foreach (Node child in PlayerChipGridBox.GetChildren())
 		{
@@ -722,6 +724,8 @@ public partial class PokerGame
 	private void UpdateOpponentChipDisplay()
 	{
 		if (OpponentChipGridBox == null) return;
+		if (opponentChipsInPot == _lastDisplayedOpponentChips) return;
+		_lastDisplayedOpponentChips = opponentChipsInPot;
 		
 		foreach (Node child in OpponentChipGridBox.GetChildren())
 		{
@@ -941,7 +945,7 @@ public partial class PokerGame
 		}
 	}
 
-	private void UpdateHud()
+	private void UpdateHud(bool disableButtons = false)
 	{
 		if (isMatchComplete)
 		{
@@ -976,15 +980,18 @@ public partial class PokerGame
 			betweenHandsUI.Visible = false;
 			actionButtons.Visible = true;
 
-			bool enableButtons = isPlayerTurn && handInProgress && !playerIsAllIn;
-			foldButton.Disabled = !enableButtons;
-			checkCallButton.Disabled = !enableButtons;
-			betRaiseButton.Disabled = !enableButtons;
+			if (!disableButtons)
+			{
+				bool enableButtons = isPlayerTurn && handInProgress && !playerIsAllIn;
+				foldButton.Disabled = !enableButtons;
+				checkCallButton.Disabled = !enableButtons;
+				betRaiseButton.Disabled = !enableButtons;
+			}
 		}
 
 		UpdatePlayerStackLabels();
 		opponentStackLabel.Text = $"{currentOpponentName}: ${opponentChips}";
-		potLabel.Text = $"Pot: ${displayPot}";
+		potLabel.Text = $"Pot: ${pot}";
 		UpdatePotDisplay(displayPot);
 		UpdatePlayerChipDisplay();
 		UpdateOpponentChipDisplay();
