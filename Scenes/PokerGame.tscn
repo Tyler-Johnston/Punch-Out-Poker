@@ -96,6 +96,7 @@ font_size = 48
 outline_size = 1
 outline_color = Color(0, 0, 0, 1)
 shadow_size = 3
+shadow_color = Color(0, 0, 0, 0.09803922)
 shadow_offset = Vector2(5, 5)
 
 [sub_resource type="LabelSettings" id="LabelSettings_u1fmj"]
@@ -103,7 +104,7 @@ font_size = 48
 outline_size = 1
 outline_color = Color(0, 0, 0, 1)
 shadow_size = 3
-shadow_color = Color(0, 0, 0, 0.05882353)
+shadow_color = Color(0, 0, 0, 0.09803922)
 shadow_offset = Vector2(5, 5)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_jpe82"]
@@ -706,7 +707,7 @@ font_size = 56
 outline_size = 1
 outline_color = Color(0, 0, 0, 1)
 shadow_size = 3
-shadow_color = Color(0, 0, 0, 0.05882353)
+shadow_color = Color(0, 0, 0, 0.09803922)
 shadow_offset = Vector2(5, 5)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_jn1cq"]
@@ -720,11 +721,18 @@ corner_radius_top_left = 5
 corner_radius_top_right = 5
 corner_radius_bottom_right = 5
 corner_radius_bottom_left = 5
+expand_margin_left = 10.0
+expand_margin_top = 2.0
+expand_margin_right = 10.0
+expand_margin_bottom = 2.0
 
 [sub_resource type="LabelSettings" id="LabelSettings_u5b2p"]
 font_size = 48
 outline_size = 1
 outline_color = Color(0, 0, 0, 1)
+shadow_size = 3
+shadow_color = Color(0, 0, 0, 0.09803922)
+shadow_offset = Vector2(5, 5)
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_h5gdr"]
 shader = ExtResource("8_34q52")
@@ -885,6 +893,7 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(150, 72)
 layout_mode = 2
 size_flags_horizontal = 3
+focus_mode = 0
 theme_override_font_sizes/font_size = 48
 theme_override_styles/normal = SubResource("StyleBoxFlat_jpe82")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_dvnhm")
@@ -1180,7 +1189,7 @@ grow_vertical = 1
 scale = Vector2(0.16, 0.16)
 
 [node name="PotArea" type="Node2D" parent="CanvasLayer/Control"]
-position = Vector2(954, 63)
+position = Vector2(936, 63)
 scale = Vector2(1.5, 1.5)
 
 [node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/Control/PotArea"]

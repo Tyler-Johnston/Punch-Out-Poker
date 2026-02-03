@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dusvueh81hvl2"
-path="res://.godot/imported/Hippie Large.png-39e54c116a307bb98a1464a278885e1c.ctex"
+uid="uid://2mucgdaw0owc"
+path="res://.godot/imported/Malandro Small.png-f4be7a49e0e674d973d80d5f65659d13.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/Textures/Portraits/Hippie Large.png"
-dest_files=["res://.godot/imported/Hippie Large.png-39e54c116a307bb98a1464a278885e1c.ctex"]
+source_file="res://Assets/Textures/Portraits/Malandro Small.png"
+dest_files=["res://.godot/imported/Malandro Small.png-f4be7a49e0e674d973d80d5f65659d13.ctex"]
 
 [params]
 

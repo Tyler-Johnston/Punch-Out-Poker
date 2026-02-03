@@ -13,7 +13,7 @@ public partial class PokerGame
 			"Aryll"        => PersonalityPresets.CreateAryll(),
 			"Boy Wizard"   => PersonalityPresets.CreateBoyWizard(),
 			"Apprentice"   => PersonalityPresets.CreateApprentice(),
-			"Hippie"       => PersonalityPresets.CreateHippie(),
+			"Malandro"     => PersonalityPresets.CreateMalandro(),
 			"Cowboy"       => PersonalityPresets.CreateCowboy(),
 			"King"         => PersonalityPresets.CreateKing(),
 			"Old Wizard"   => PersonalityPresets.CreateOldWizard(),

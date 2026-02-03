@@ -53,7 +53,7 @@ public partial class CharacterSelect : Control
 		new List<OpponentData>
 		{
 			new OpponentData("Apprentice", 500),
-			new OpponentData("Hippie", 750),
+			new OpponentData("Malandro", 750),
 			new OpponentData("Cowboy", 1250)
 		},
 

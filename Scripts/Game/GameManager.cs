@@ -59,7 +59,7 @@ public partial class GameManager : Node
 		UnlockOpponent("Aryll");
 		UnlockOpponent("Boy Wizard");
 		UnlockOpponent("Apprentice");
-		UnlockOpponent("Hippie");
+		UnlockOpponent("Malandro");
 		UnlockOpponent("Cowboy");
 		UnlockOpponent("King");
 		UnlockOpponent("Old Wizard");
@@ -187,10 +187,10 @@ public partial class GameManager : Node
 				break;
 				
 			case "Apprentice":
-				UnlockOpponent("Hippie");
+				UnlockOpponent("Malandro");
 				break;
 				
-			case "Hippie":
+			case "Malandro":
 				UnlockOpponent("Cowboy");
 				break;
 				

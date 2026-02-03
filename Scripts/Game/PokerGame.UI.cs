@@ -863,8 +863,8 @@ public partial class PokerGame
 		}
 
 		UpdatePlayerStackLabels();
-		opponentStackLabel.Text = $"{currentOpponentName}: {opponentChips}";
-		potLabel.Text = $"Pot: {pot}";
+		opponentStackLabel.Text = $"{currentOpponentName}: ${opponentChips}";
+		potLabel.Text = $"Pot: ${pot}";
 		UpdatePotDisplay(pot);
 		UpdatePotSizeButtons();
 	}
