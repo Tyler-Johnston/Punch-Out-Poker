@@ -112,9 +112,6 @@ public partial class PokerGame
 		return (minBet, maxBet);
 	}
 
-
-
-	
 	private int CalculatePotSizeBet(float potMultiplier)
 	{
 		var (minBet, maxBet) = GetLegalBetRange();

@@ -80,16 +80,20 @@ font_size = 48
 font_color = Color(0, 0, 0, 1)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_y8qw4"]
-bg_color = Color(0, 0, 0, 0.33333334)
+bg_color = Color(0, 0, 0, 0.27450982)
 border_width_left = 3
 border_width_top = 3
 border_width_right = 3
 border_width_bottom = 3
-border_color = Color(0.84705883, 0.84705883, 0.84705883, 0.33333334)
-corner_radius_top_left = 5
-corner_radius_top_right = 5
-corner_radius_bottom_right = 5
-corner_radius_bottom_left = 5
+border_color = Color(0.105882354, 0.105882354, 0.105882354, 0.4)
+border_blend = true
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+shadow_color = Color(0, 0, 0, 0.09803922)
+shadow_size = 2
+shadow_offset = Vector2(0, 3)
 
 [sub_resource type="LabelSettings" id="LabelSettings_vtryj"]
 font_size = 48
@@ -703,20 +707,24 @@ shadow_size = 2
 shadow_offset = Vector2(2, 2)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_jn1cq"]
-bg_color = Color(0, 0, 0, 0.33333334)
+bg_color = Color(0, 0, 0, 0.27450982)
 border_width_left = 3
 border_width_top = 3
 border_width_right = 3
 border_width_bottom = 3
-border_color = Color(0.84705883, 0.84705883, 0.84705883, 0.33333334)
-corner_radius_top_left = 5
-corner_radius_top_right = 5
-corner_radius_bottom_right = 5
-corner_radius_bottom_left = 5
+border_color = Color(0.105882354, 0.105882354, 0.105882354, 0.4)
+border_blend = true
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
 expand_margin_left = 10.0
 expand_margin_top = 2.0
 expand_margin_right = 10.0
 expand_margin_bottom = 2.0
+shadow_color = Color(0, 0, 0, 0.09803922)
+shadow_size = 2
+shadow_offset = Vector2(0, 3)
 
 [sub_resource type="LabelSettings" id="LabelSettings_u5b2p"]
 font_size = 48
@@ -731,16 +739,17 @@ content_margin_left = 10.0
 content_margin_top = 10.0
 content_margin_right = 10.0
 content_margin_bottom = 10.0
-bg_color = Color(0, 0, 0, 0.13725491)
+bg_color = Color(0, 0, 0, 0.27450982)
 border_width_left = 3
 border_width_top = 3
 border_width_right = 3
 border_width_bottom = 3
-border_color = Color(0.10747979, 0.107479714, 0.10747973, 0.33333334)
-corner_radius_top_left = 5
-corner_radius_top_right = 5
-corner_radius_bottom_right = 5
-corner_radius_bottom_left = 5
+border_color = Color(0.105882354, 0.105882354, 0.105882354, 0.4)
+border_blend = true
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
 shadow_color = Color(0, 0, 0, 0.09803922)
 shadow_size = 2
 shadow_offset = Vector2(0, 3)
@@ -792,7 +801,7 @@ texture = SubResource("GradientTexture2D_vtryj")
 
 [node name="OpponentView" type="Node2D" parent="CanvasLayer/Control"]
 unique_name_in_owner = true
-position = Vector2(-838, 33)
+position = Vector2(-843, 31.000002)
 scale = Vector2(0.9, 0.9)
 
 [node name="FrameShadow" type="PanelContainer" parent="CanvasLayer/Control/OpponentView"]
@@ -918,19 +927,19 @@ grow_vertical = 1
 
 [node name="ActionView" type="Node2D" parent="CanvasLayer/Control"]
 unique_name_in_owner = true
-position = Vector2(2, -3)
+position = Vector2(2, -7)
 
 [node name="ActionBar" type="PanelContainer" parent="CanvasLayer/Control/ActionView"]
-offset_left = 2.0
+offset_left = 5.0
 offset_top = 554.0
-offset_right = 1275.0
+offset_right = 1273.0
 offset_bottom = 720.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_y8qw4")
 
 [node name="BetweenHandsUI" type="Node2D" parent="CanvasLayer/Control/ActionView"]
 unique_name_in_owner = true
 visible = false
-position = Vector2(-2, -8)
+position = Vector2(-3, -4)
 
 [node name="BetweenHandsVBox" type="VBoxContainer" parent="CanvasLayer/Control/ActionView/BetweenHandsUI"]
 offset_left = 33.0
@@ -1151,10 +1160,10 @@ rotation = -0.12042772
 scale = Vector2(0.16, 0.16)
 
 [node name="PlayerChipGridBox" type="GridContainer" parent="CanvasLayer/Control/ActionView/PlayerArea"]
-offset_left = -144.66661
-offset_top = -44.666744
-offset_right = 49.777863
-offset_bottom = 5.333256
+offset_left = -146.44443
+offset_top = -43.333405
+offset_right = 48.000046
+offset_bottom = 6.6665955
 scale = Vector2(0.5, 0.5)
 theme_override_constants/h_separation = -10
 theme_override_constants/v_separation = -10
@@ -1187,7 +1196,7 @@ label_settings = SubResource("LabelSettings_u1fmj")
 horizontal_alignment = 1
 
 [node name="CommunityCardsArea" type="Node2D" parent="CanvasLayer/Control"]
-position = Vector2(336.00003, 321)
+position = Vector2(336.00003, 329)
 scale = Vector2(4.5, 4.5)
 
 [node name="Flop1" parent="CanvasLayer/Control/CommunityCardsArea" instance=ExtResource("3_c6vvi")]
@@ -1251,7 +1260,7 @@ grow_vertical = 1
 scale = Vector2(0.16, 0.16)
 
 [node name="PotArea" type="Node2D" parent="CanvasLayer/Control"]
-position = Vector2(936, 63)
+position = Vector2(938.00006, 54)
 scale = Vector2(1.5, 1.5)
 
 [node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/Control/PotArea"]
@@ -1302,10 +1311,10 @@ texture = ExtResource("11_xxe2x")
 
 [node name="GameStateControl" type="Control" parent="CanvasLayer/Control"]
 anchors_preset = 0
-offset_left = 178.0
-offset_top = 156.0
-offset_right = 1140.0
-offset_bottom = 196.0
+offset_left = 36.0
+offset_top = 158.0
+offset_right = 1280.0
+offset_bottom = 198.0
 
 [node name="PanelContainer" type="PanelContainer" parent="CanvasLayer/Control/GameStateControl"]
 layout_mode = 1
