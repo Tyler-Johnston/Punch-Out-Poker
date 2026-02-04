@@ -1039,6 +1039,7 @@ theme_override_styles/disabled = SubResource("StyleBoxFlat_h5gdr")
 text = "Cash Out"
 
 [node name="ActionButtonsContainer" type="VBoxContainer" parent="CanvasLayer/Control/ActionView"]
+unique_name_in_owner = true
 offset_left = 31.0
 offset_top = 567.0
 offset_right = 607.0

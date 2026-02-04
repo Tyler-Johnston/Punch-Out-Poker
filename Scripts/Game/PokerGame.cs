@@ -63,6 +63,7 @@ public partial class PokerGame : Node2D
 	private Node2D playerArea;
 	private Node2D betweenHandsUI;
 	
+	private Control actionButtonsContainer;
 	private Control actionButtons;
 	private Control sliderUI;
 	
@@ -166,6 +167,7 @@ public partial class PokerGame : Node2D
 		riverCard = communityCardsArea.GetNode<CardVisual>("River");
 
 		// action buttons
+		actionButtonsContainer = GetNode<Control>("%ActionButtonsContainer");
 		actionButtons = GetNode<Control>("%ActionButtons");
 		actionView = GetNode<Node2D>("%ActionView");
 		foldButton = actionButtons.GetNode<Button>("FoldButton");
