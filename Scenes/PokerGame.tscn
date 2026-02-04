@@ -1,4 +1,4 @@
-[gd_scene load_steps=74 format=3 uid="uid://b5sq1675fwcio"]
+[gd_scene load_steps=77 format=3 uid="uid://b5sq1675fwcio"]
 
 [ext_resource type="Script" uid="uid://8k6pqsmgt5pe" path="res://Scripts/Game/PokerGame.cs" id="1_8w0ed"]
 [ext_resource type="Texture2D" uid="uid://dqk4n2wxuqt2a" path="res://Assets/Textures/backgrounds/Cafe_Interior_Night.jpg" id="2_47o1s"]
@@ -8,7 +8,9 @@
 [ext_resource type="PackedScene" uid="uid://dm1t1olfbu82u" path="res://Scenes/CardVisual.tscn" id="3_c6vvi"]
 [ext_resource type="PackedScene" uid="uid://d3dtedqfbrtr8" path="res://Scenes/SpeechBubble.tscn" id="6_47o1s"]
 [ext_resource type="Shader" uid="uid://csfo7n8cjhc25" path="res://Assets/Shaders/crt_lcd.gdshader" id="8_34q52"]
+[ext_resource type="Texture2D" uid="uid://iry0wpfdi5cb" path="res://Assets/Textures/chip_pngs/black_1.png" id="9_u1fmj"]
 [ext_resource type="AudioStream" uid="uid://dss833xi3m8t5" path="res://Assets/Music/regrowth wip.wav" id="10_47o1s"]
+[ext_resource type="Texture2D" uid="uid://drsfofmrw3pya" path="res://Assets/Textures/chip_pngs/yellow_1.png" id="10_u5b2p"]
 [ext_resource type="Texture2D" uid="uid://dx26hyqgshnl4" path="res://Assets/Textures/chip_pngs/white_1.png" id="11_xxe2x"]
 [ext_resource type="Script" uid="uid://dgfw5uwspo7c3" path="res://Scripts/Game/SFXPlayer.cs" id="12_u5b2p"]
 
@@ -444,24 +446,48 @@ shadow_offset = Vector2(2, 4)
 anti_aliasing = false
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_vnib4"]
-bg_color = Color(0.84705883, 0.84705883, 0.84705883, 1)
+content_margin_top = 12.0
+content_margin_bottom = 12.0
+bg_color = Color(0, 0, 0, 0.57254905)
+border_width_left = 5
 border_width_top = 5
 border_width_right = 5
 border_width_bottom = 5
-border_color = Color(0.6133902, 0.6133903, 0.61339, 1)
+border_color = Color(0.105882354, 0.105882354, 0.105882354, 0.4)
+border_blend = true
 corner_radius_top_left = 10
 corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
-expand_margin_top = 8.0
-expand_margin_bottom = 8.0
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hkg01"]
+content_margin_left = 10.0
+content_margin_top = 10.0
+content_margin_right = 10.0
+content_margin_bottom = 10.0
 bg_color = Color(0.7137255, 0.4627451, 0.2901961, 1)
-corner_radius_top_left = 5
-corner_radius_top_right = 5
-corner_radius_bottom_right = 5
-corner_radius_bottom_left = 5
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+expand_margin_right = 10.0
+shadow_size = 3
+shadow_offset = Vector2(3, 3)
+anti_aliasing = false
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ok1jy"]
+content_margin_left = 10.0
+content_margin_top = 10.0
+content_margin_right = 10.0
+content_margin_bottom = 10.0
+bg_color = Color(0.7137255, 0.4627451, 0.2901961, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+expand_margin_right = 10.0
+shadow_size = 3
+shadow_offset = Vector2(3, 3)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_j3mk2"]
 bg_color = Color(0.13319641, 0.13319641, 0.13319638, 1)
@@ -660,8 +686,8 @@ shadow_size = 2
 shadow_offset = Vector2(2, 2)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_nj6s6"]
-content_margin_left = 5.0
-content_margin_right = 5.0
+content_margin_left = 10.0
+content_margin_right = 10.0
 bg_color = Color(0.5681407, 0.22382501, 0.22321442, 1)
 border_width_left = 1
 border_width_top = 1
@@ -1065,18 +1091,21 @@ text = "Bet"
 
 [node name="SliderUI" type="VBoxContainer" parent="CanvasLayer/Control/ActionView"]
 unique_name_in_owner = true
-offset_left = 642.0
-offset_top = 603.0
-offset_right = 994.0
-offset_bottom = 676.0
+offset_left = 643.0
+offset_top = 607.0
+offset_right = 995.0
+offset_bottom = 680.0
 theme_override_constants/separation = 15
 
 [node name="BetSlider" type="HSlider" parent="CanvasLayer/Control/ActionView/SliderUI"]
 unique_name_in_owner = true
 layout_mode = 2
+focus_mode = 0
+theme_override_icons/grabber = ExtResource("9_u1fmj")
+theme_override_icons/grabber_highlight = ExtResource("10_u5b2p")
 theme_override_styles/slider = SubResource("StyleBoxFlat_vnib4")
 theme_override_styles/grabber_area = SubResource("StyleBoxFlat_hkg01")
-theme_override_styles/grabber_area_highlight = SubResource("StyleBoxFlat_hkg01")
+theme_override_styles/grabber_area_highlight = SubResource("StyleBoxFlat_ok1jy")
 
 [node name="BetShortcuts" type="HBoxContainer" parent="CanvasLayer/Control/ActionView/SliderUI"]
 layout_mode = 2
