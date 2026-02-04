@@ -945,6 +945,7 @@ offset_left = 45.0
 offset_top = 565.0
 offset_right = 1022.0
 offset_bottom = 693.0
+mouse_filter = 2
 
 [node name="BetweenHandsLabelHBox" type="HBoxContainer" parent="CanvasLayer/Control/ActionView/BetweenHandsUI/BetweenHandsVBox"]
 layout_mode = 2
@@ -999,21 +1000,34 @@ theme_override_styles/hover = SubResource("StyleBoxFlat_0nmcr")
 theme_override_styles/disabled = SubResource("StyleBoxFlat_h5gdr")
 text = "Cash Out"
 
-[node name="ActionButtons" type="HBoxContainer" parent="CanvasLayer/Control/ActionView"]
+[node name="ActionButtonsContainer" type="VBoxContainer" parent="CanvasLayer/Control/ActionView"]
+offset_left = 31.0
+offset_top = 567.0
+offset_right = 607.0
+offset_bottom = 697.0
+mouse_filter = 2
+theme_override_constants/separation = 6
+
+[node name="PlayerStackLabel" type="Label" parent="CanvasLayer/Control/ActionView/ActionButtonsContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Money In-Hand: $0"
+label_settings = SubResource("LabelSettings_u1fmj")
+horizontal_alignment = 1
+
+[node name="ActionButtons" type="HBoxContainer" parent="CanvasLayer/Control/ActionView/ActionButtonsContainer"]
 unique_name_in_owner = true
 texture_filter = 1
-offset_left = 28.0
-offset_top = 615.0
-offset_right = 518.0
-offset_bottom = 687.0
+layout_mode = 2
 mouse_filter = 2
 theme_override_constants/separation = 20
 alignment = 1
 
-[node name="FoldButton" type="Button" parent="CanvasLayer/Control/ActionView/ActionButtons"]
+[node name="FoldButton" type="Button" parent="CanvasLayer/Control/ActionView/ActionButtonsContainer/ActionButtons"]
 texture_filter = 1
 custom_minimum_size = Vector2(150, 20)
 layout_mode = 2
+size_flags_horizontal = 3
 focus_mode = 0
 theme_override_font_sizes/font_size = 48
 theme_override_styles/normal = SubResource("StyleBoxFlat_47o1s")
@@ -1022,7 +1036,7 @@ theme_override_styles/hover = SubResource("StyleBoxFlat_vtryj")
 theme_override_styles/disabled = SubResource("StyleBoxFlat_m5pa5")
 text = "Fold"
 
-[node name="CheckCallButton" type="Button" parent="CanvasLayer/Control/ActionView/ActionButtons"]
+[node name="CheckCallButton" type="Button" parent="CanvasLayer/Control/ActionView/ActionButtonsContainer/ActionButtons"]
 custom_minimum_size = Vector2(150, 0)
 layout_mode = 2
 size_flags_horizontal = 3
@@ -1035,9 +1049,10 @@ theme_override_styles/hover = SubResource("StyleBoxFlat_mhpyu")
 theme_override_styles/disabled = SubResource("StyleBoxFlat_crlcv")
 text = "Check"
 
-[node name="BetRaiseButton" type="Button" parent="CanvasLayer/Control/ActionView/ActionButtons"]
+[node name="BetRaiseButton" type="Button" parent="CanvasLayer/Control/ActionView/ActionButtonsContainer/ActionButtons"]
 custom_minimum_size = Vector2(150, 0)
 layout_mode = 2
+size_flags_horizontal = 3
 focus_mode = 0
 theme_override_fonts/font = ExtResource("2_j8upv")
 theme_override_font_sizes/font_size = 48
@@ -1049,10 +1064,10 @@ text = "Bet"
 
 [node name="SliderUI" type="VBoxContainer" parent="CanvasLayer/Control/ActionView"]
 unique_name_in_owner = true
-offset_left = 626.0
-offset_top = 610.0
-offset_right = 978.0
-offset_bottom = 683.0
+offset_left = 642.0
+offset_top = 603.0
+offset_right = 994.0
+offset_bottom = 676.0
 theme_override_constants/separation = 15
 
 [node name="BetSlider" type="HSlider" parent="CanvasLayer/Control/ActionView/SliderUI"]
@@ -1182,17 +1197,6 @@ texture = ExtResource("11_xxe2x")
 custom_minimum_size = Vector2(50, 50)
 layout_mode = 2
 texture = ExtResource("11_xxe2x")
-
-[node name="PlayerStackLabel" type="Label" parent="CanvasLayer/Control"]
-unique_name_in_owner = true
-layout_mode = 0
-offset_left = 54.0
-offset_top = 554.0
-offset_right = 540.0
-offset_bottom = 606.0
-text = "Money In-Hand: $0"
-label_settings = SubResource("LabelSettings_u1fmj")
-horizontal_alignment = 1
 
 [node name="CommunityCardsArea" type="Node2D" parent="CanvasLayer/Control"]
 position = Vector2(336.00003, 329)
