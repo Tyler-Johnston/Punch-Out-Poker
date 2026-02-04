@@ -73,6 +73,7 @@ public partial class PokerGame
 		playerBet = 0;
 		opponentBet = 0;
 		currentBet = 0;
+		previousBet = 0; 
 		
 		// Reset action flags
 		playerHasActedThisStreet = false;
@@ -83,8 +84,6 @@ public partial class PokerGame
 
 	private (int minBet, int maxBet) GetLegalBetRange()
 	{
-		int amountToCall = currentBet - playerBet;
-		
 		int maxBet = playerChips + playerBet;
 		
 		if (maxBet <= 0) return (0, 0);
@@ -94,21 +93,25 @@ public partial class PokerGame
 		
 		if (opening)
 		{
+			// Opening bet - minimum is big blind
 			minBet = Math.Min(bigBlind, maxBet);
 		}
 		else
 		{
-			// Minimum raise increment (at least one big blind, or match last raise size)
-			int minRaiseIncrement = Math.Max(amountToCall, bigBlind);
+			// Calculate the LAST RAISE INCREMENT (not the full bet)
+			int lastRaiseAmount = currentBet - previousBet;
 			
-			// Minimum total bet = current bet + minimum raise increment
+			// Minimum raise must match the last raise size (min one BB)
+			int minRaiseIncrement = Math.Max(lastRaiseAmount, bigBlind);
+			
+			// Minimum total bet = current bet + raise increment
 			minBet = currentBet + minRaiseIncrement;
 			
+			// Allow all-in for less
 			if (minBet > maxBet)
 				minBet = maxBet;
 		}
 		
-		if (minBet > maxBet) minBet = maxBet;
 		return (minBet, maxBet);
 	}
 

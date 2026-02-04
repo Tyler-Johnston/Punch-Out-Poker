@@ -680,7 +680,6 @@ public partial class PokerGame
 		if (playerChipsInPot <= 0) return;
 		
 		List<string> chipImages = GetChipImagesForPot(playerChipsInPot);
-		//chipImages.Reverse();
 		
 		foreach (string chipFile in chipImages)
 		{
@@ -922,7 +921,7 @@ public partial class PokerGame
 			{
 				if (currentBet > 0)
 				{
-					betRaiseButton.Text = $"Raise to: {betAmount}";
+					betRaiseButton.Text = $"Raise to: ${betAmount}";
 				}
 				else
 				{
@@ -932,14 +931,7 @@ public partial class PokerGame
 		}
 		else
 		{
-			//if (toCall < 0)
-			//{
-				//checkCallButton.Text = $"Call (Take back ${Math.Abs(toCall)})";
-			//}
-			//else
-			//{
 			checkCallButton.Text = $"Call: ${Math.Min(toCall, playerChips)}";
-			//}
 
 			if (allInOnly || sliderAllIn)
 			{
@@ -947,10 +939,11 @@ public partial class PokerGame
 			}
 			else
 			{
-				betRaiseButton.Text = $"Raise: ${betAmount}";
+				betRaiseButton.Text = $"Raise to: ${betAmount}";  // Changed from "Raise:"
 			}
 		}
 	}
+
 
 	private void UpdateHud(bool disableButtons = false)
 	{
@@ -990,10 +983,14 @@ public partial class PokerGame
 			if (!disableButtons)
 			{
 				bool enableButtons = isPlayerTurn && handInProgress && !playerIsAllIn;
+				var (minBet, maxBet) = GetLegalBetRange();
+				bool canActuallyRaise = (maxBet > currentBet);
+				
 				foldButton.Disabled = !enableButtons;
 				checkCallButton.Disabled = !enableButtons;
-				betRaiseButton.Disabled = !enableButtons;
+				betRaiseButton.Disabled = !enableButtons || !canActuallyRaise;
 			}
+
 		}
 
 		UpdatePlayerStackLabels();

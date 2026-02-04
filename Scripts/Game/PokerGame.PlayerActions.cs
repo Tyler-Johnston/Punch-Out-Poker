@@ -157,6 +157,7 @@ public partial class PokerGame
 		
 		AddToPot(true, actualBet);
 		
+		previousBet = currentBet;
 		currentBet = playerBet;
 
 		playerBetOnStreet[currentStreet] = true;

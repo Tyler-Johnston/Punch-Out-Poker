@@ -923,7 +923,6 @@ offset_top = -58.0
 offset_right = 381.0
 offset_bottom = 89.0
 grow_horizontal = 1
-grow_vertical = 1
 
 [node name="ActionView" type="Node2D" parent="CanvasLayer/Control"]
 unique_name_in_owner = true
@@ -942,10 +941,10 @@ visible = false
 position = Vector2(-3, -4)
 
 [node name="BetweenHandsVBox" type="VBoxContainer" parent="CanvasLayer/Control/ActionView/BetweenHandsUI"]
-offset_left = 33.0
-offset_top = 569.0
-offset_right = 1010.0
-offset_bottom = 697.0
+offset_left = 45.0
+offset_top = 565.0
+offset_right = 1022.0
+offset_bottom = 693.0
 
 [node name="BetweenHandsLabelHBox" type="HBoxContainer" parent="CanvasLayer/Control/ActionView/BetweenHandsUI/BetweenHandsVBox"]
 layout_mode = 2
@@ -1050,10 +1049,10 @@ text = "Bet"
 
 [node name="SliderUI" type="VBoxContainer" parent="CanvasLayer/Control/ActionView"]
 unique_name_in_owner = true
-offset_left = 593.0
-offset_top = 605.0
-offset_right = 945.0
-offset_bottom = 678.0
+offset_left = 626.0
+offset_top = 610.0
+offset_right = 978.0
+offset_bottom = 683.0
 theme_override_constants/separation = 15
 
 [node name="BetSlider" type="HSlider" parent="CanvasLayer/Control/ActionView/SliderUI"]
@@ -1187,10 +1186,10 @@ texture = ExtResource("11_xxe2x")
 [node name="PlayerStackLabel" type="Label" parent="CanvasLayer/Control"]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 32.0
-offset_top = 558.0
-offset_right = 518.0
-offset_bottom = 610.0
+offset_left = 54.0
+offset_top = 554.0
+offset_right = 540.0
+offset_bottom = 606.0
 text = "Money In-Hand: $0"
 label_settings = SubResource("LabelSettings_u1fmj")
 horizontal_alignment = 1

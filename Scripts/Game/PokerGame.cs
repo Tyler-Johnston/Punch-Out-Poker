@@ -84,6 +84,7 @@ public partial class PokerGame : Node2D
 	private int _lastPotLabel = -1;
 	private int _lastDisplayedPlayerChips = -1;
 	private int _lastDisplayedOpponentChips = -1;
+	private int previousBet = 0;
 	private int betAmount = 20;
 	private int currentBet = 0;
 	private int playerBet = 0;

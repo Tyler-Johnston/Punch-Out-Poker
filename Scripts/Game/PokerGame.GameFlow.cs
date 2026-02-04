@@ -655,7 +655,15 @@ public partial class PokerGame
 
 	private void ExecuteAIAction(PlayerAction action)
 	{
-		GD.Print($"[AI ACTION] {currentOpponentName}: {action}");
+		string actionText = action.ToString();
+		
+		if (action == PlayerAction.Raise)
+		{
+			bool isBet = (currentBet == 0);
+			actionText = isBet ? "Bet" : "Raise";
+		}
+		
+		GD.Print($"[AI ACTION] {currentOpponentName}: {actionText}");
 		
 		UpdateOpponentExpression(action);
 		if (tellTimer != null) tellTimer.Start();
@@ -686,6 +694,7 @@ public partial class PokerGame
 		UpdateHud();
 		UpdateOpponentVisuals();
 	}
+
 
 	// --- AI ACTION HANDLERS ---
 
@@ -762,7 +771,7 @@ public partial class PokerGame
 	{
 		GameState gameState = CreateGameState();
 		
-		// calculate bet size
+		// Calculate bet size
 		float handStrength = aiOpponent.DetermineHandStrengthCategory(gameState) switch
 		{
 			HandStrength.Strong => 0.8f,
@@ -774,45 +783,69 @@ public partial class PokerGame
 		
 		int raiseAmount = decisionMaker.CalculateBetSize(aiOpponent, gameState, handStrength);
 		
-		int minRaise = (currentBet - opponentBet) + bigBlind;
-		raiseAmount = Math.Max(raiseAmount, minRaise);
-		raiseAmount = Math.Min(raiseAmount, opponentChips);
+		// FIXED: Proper minimum raise calculation
+		int minRaiseIncrement;
+		if (currentBet == 0)
+		{
+			// Opening bet - minimum is big blind
+			minRaiseIncrement = bigBlind;
+		}
+		else
+		{
+			// Raising - must match the last raise size
+			int lastRaiseAmount = currentBet - previousBet;
+			minRaiseIncrement = Math.Max(lastRaiseAmount, bigBlind);
+		}
 		
-		if (raiseAmount >= opponentChips)
+		int minTotalBet = currentBet + minRaiseIncrement;
+		int adjustedRaise = raiseAmount - opponentBet;  // How much AI needs to add
+		int minRaiseToAdd = minTotalBet - opponentBet;
+		
+		adjustedRaise = Math.Max(adjustedRaise, minRaiseToAdd);
+		adjustedRaise = Math.Min(adjustedRaise, opponentChips);
+		
+		if (adjustedRaise >= opponentChips)
 		{
 			OnOpponentAllIn();
 			return;
 		}
 		
-		opponentChips -= raiseAmount;
+		// FIXED: Check BEFORE updating currentBet
+		bool isBet = (currentBet == 0);
+		
+		opponentChips -= adjustedRaise;
 		aiOpponent.ChipStack = opponentChips;
-		AddToPot(false, raiseAmount);
-		opponentBet += raiseAmount;
-		opponentChipsInPot += raiseAmount;  // Track in current betting round
+		AddToPot(false, adjustedRaise);
+		opponentBet += adjustedRaise;
+		opponentChipsInPot += adjustedRaise;
+		
+		// Update tracking variables
+		previousBet = currentBet;
 		currentBet = opponentBet;
 		
 		playerHasActedThisStreet = false;
 		
-		bool isOpening = (currentBet == bigBlind && currentStreet == Street.Preflop) || (currentBet == 0 && currentStreet != Street.Preflop);
-		
-		if (isOpening)
+		// FIXED: Proper terminology
+		if (isBet)
 		{
-			ShowMessage($"{currentOpponentName} bets ${raiseAmount}");
-			GD.Print($"{currentOpponentName} bets: {raiseAmount}");
+			ShowMessage($"{currentOpponentName} bets ${adjustedRaise}");
+			GD.Print($"{currentOpponentName} bets: {adjustedRaise}");
 		}
 		else
 		{
-			ShowMessage($"{currentOpponentName} raises to ${currentBet}");
-			GD.Print($"{currentOpponentName} raises to: {currentBet}");
+			ShowMessage($"{currentOpponentName} raises to ${opponentBet}");
+			GD.Print($"{currentOpponentName} raises to: {opponentBet}");
 		}
+		
 		sfxPlayer.PlayRandomChip();
 		
-		// track if this might be a bluff
+		// Track if this might be a bluff
 		if (handStrength < 0.4f)
 		{
 			aiBluffedThisHand = true;
 		}
 	}
+
 
 	private void OnOpponentAllIn()
 	{
