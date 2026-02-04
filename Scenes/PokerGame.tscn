@@ -938,14 +938,15 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_y8qw4")
 [node name="BetweenHandsUI" type="Node2D" parent="CanvasLayer/Control/ActionView"]
 unique_name_in_owner = true
 visible = false
-position = Vector2(-3, -4)
+position = Vector2(-14, -1)
 
 [node name="BetweenHandsVBox" type="VBoxContainer" parent="CanvasLayer/Control/ActionView/BetweenHandsUI"]
 offset_left = 45.0
-offset_top = 565.0
+offset_top = 568.0
 offset_right = 1022.0
-offset_bottom = 693.0
+offset_bottom = 698.0
 mouse_filter = 2
+theme_override_constants/separation = 6
 
 [node name="BetweenHandsLabelHBox" type="HBoxContainer" parent="CanvasLayer/Control/ActionView/BetweenHandsUI/BetweenHandsVBox"]
 layout_mode = 2

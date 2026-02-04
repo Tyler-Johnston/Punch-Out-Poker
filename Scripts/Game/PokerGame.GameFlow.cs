@@ -28,7 +28,6 @@ public partial class PokerGame
 		GD.Print("\n=== New Hand ===");
 		ShowMessage("");
 
-		//gameStatePanel.Visible = false;
 		playerStackLabel.Visible = true;
 		actionButtons.Visible = true;
 		betweenHandsUI.Visible = false;
@@ -55,7 +54,7 @@ public partial class PokerGame
 		playerTotalBetsThisHand = 0;
 		playerBet = 0;
 		opponentBet = 0;
-		currentBet = 0;  // Reset this too for safety
+		currentBet = 0;
 		
 		playerChipsInPot = 0;
 		opponentChipsInPot = 0;
@@ -143,7 +142,7 @@ public partial class PokerGame
 			UpdateHud(true);
 			
 			// Wait before big blind
-			await ToSignal(GetTree().CreateTimer(2.5f), SceneTreeTimer.SignalName.Timeout);
+			await ToSignal(GetTree().CreateTimer(2.0f), SceneTreeTimer.SignalName.Timeout);
 			
 			// BIG BLIND: Opponent
 			int bbAmount = Math.Min(bigBlind, opponentChips); 
@@ -184,7 +183,7 @@ public partial class PokerGame
 			sfxPlayer.PlayRandomChip();
 			
 			// Wait before big blind
-			await ToSignal(GetTree().CreateTimer(2.5f), SceneTreeTimer.SignalName.Timeout);
+			await ToSignal(GetTree().CreateTimer(2.0f), SceneTreeTimer.SignalName.Timeout);
 			
 			// BIG BLIND: Human player
 			int bbAmount = Math.Min(bigBlind, playerChips); 
@@ -285,7 +284,7 @@ public partial class PokerGame
 	
 	private async Task DealInitialHands()
 	{
-		GD.Print("\\n=== Dealing Initial Hands ===");
+		GD.Print("\n=== Dealing Initial Hands ===");
 		playerHand.Clear();
 		opponentHand.Clear();
 		communityCards.Clear();
@@ -338,10 +337,10 @@ public partial class PokerGame
 				
 				sfxPlayer.PlaySound("card_flip");
 				await flop1.RevealCard(communityCards[0]);
-				await ToSignal(GetTree().CreateTimer(0.75f), SceneTreeTimer.SignalName.Timeout);
+				await ToSignal(GetTree().CreateTimer(0.45f), SceneTreeTimer.SignalName.Timeout);
 				sfxPlayer.PlaySound("card_flip");
 				await flop2.RevealCard(communityCards[1]);
-				await ToSignal(GetTree().CreateTimer(0.75f), SceneTreeTimer.SignalName.Timeout);
+				await ToSignal(GetTree().CreateTimer(0.45f), SceneTreeTimer.SignalName.Timeout);
 				sfxPlayer.PlaySound("card_flip");
 				await flop3.RevealCard(communityCards[2]);
 				break;
@@ -353,7 +352,7 @@ public partial class PokerGame
 				
 				sfxPlayer.PlaySound("card_flip");
 				await turnCard.RevealCard(communityCards[3]);
-				await ToSignal(GetTree().CreateTimer(0.75f), SceneTreeTimer.SignalName.Timeout);
+				await ToSignal(GetTree().CreateTimer(0.45f), SceneTreeTimer.SignalName.Timeout);
 				break;
 				
 			case Street.River:
@@ -363,7 +362,7 @@ public partial class PokerGame
 				
 				sfxPlayer.PlaySound("card_flip");
 				await riverCard.RevealCard(communityCards[4]);
-				await ToSignal(GetTree().CreateTimer(0.75f), SceneTreeTimer.SignalName.Timeout);
+				await ToSignal(GetTree().CreateTimer(0.45f), SceneTreeTimer.SignalName.Timeout);
 				break;
 		}
 		ShowTell(true);
