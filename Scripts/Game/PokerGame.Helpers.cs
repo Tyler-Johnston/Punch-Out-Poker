@@ -26,8 +26,11 @@ public partial class PokerGame
 	
 	private void ShowMessage(string text)
 	{
+		
+		gameStatePanel.Visible = !string.IsNullOrEmpty(text);
 		gameStateLabel.Text = text;
 	}
+
 	
 	private void UpdatePlayerStackLabels()
 	{

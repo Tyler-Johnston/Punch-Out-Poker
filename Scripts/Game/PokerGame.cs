@@ -45,6 +45,8 @@ public partial class PokerGame : Node2D
 	private Label checkCallLabel;
 	private Label betRaiseLabel;
 	
+	private PanelContainer gameStatePanel;
+	
 	private Texture2D foldBtnImg;
 	private Texture2D checkBtnImg;
 	private Texture2D callBtnImg;
@@ -148,6 +150,7 @@ public partial class PokerGame : Node2D
 		PlayerChipGridBox = playerArea.GetNode<GridContainer>("PlayerChipGridBox");
 		OpponentChipGridBox = GetNode<GridContainer>("%OpponentChipGridBox");
 		chipContainer = potArea.GetNode<GridContainer>("%PotGridBox");
+		gameStatePanel = GetNode<PanelContainer>("%GameStatePanel");
 
 		// pocket cards
 		playerCard1 = playerArea.GetNode<CardVisual>("PlayerCard1");

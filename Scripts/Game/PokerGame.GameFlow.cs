@@ -28,6 +28,7 @@ public partial class PokerGame
 		GD.Print("\n=== New Hand ===");
 		ShowMessage("");
 
+		//gameStatePanel.Visible = false;
 		playerStackLabel.Visible = true;
 		actionButtons.Visible = true;
 		betweenHandsUI.Visible = false;

@@ -1319,7 +1319,8 @@ offset_top = 158.0
 offset_right = 1280.0
 offset_bottom = 198.0
 
-[node name="PanelContainer" type="PanelContainer" parent="CanvasLayer/Control/GameStateControl"]
+[node name="GameStatePanel" type="PanelContainer" parent="CanvasLayer/Control/GameStateControl"]
+unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -1334,7 +1335,7 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_g5j4w")
 
-[node name="GameStateLabel" type="Label" parent="CanvasLayer/Control/GameStateControl/PanelContainer"]
+[node name="GameStateLabel" type="Label" parent="CanvasLayer/Control/GameStateControl/GameStatePanel"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Game State Label"
