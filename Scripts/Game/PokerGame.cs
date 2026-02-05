@@ -44,6 +44,7 @@ public partial class PokerGame : Node2D
 	private Label gameStateLabel;
 	private Label checkCallLabel;
 	private Label betRaiseLabel;
+	private Label handTypeLabel;
 	
 	private PanelContainer gameStatePanel;
 	
@@ -181,6 +182,7 @@ public partial class PokerGame : Node2D
 		playerStackLabel2 = GetNode<Label>("%PlayerStackLabel2");
 		playerEarningsLabel = GetNode<Label>("%PlayerEarningsLabel");
 		opponentStackLabel = opponentView.GetNode<Label>("OpponentStackLabel");
+		handTypeLabel = GetNode<Label>("%HandTypeLabel");
 		potLabel = GetNode<Label>("%PotLabel");
 		gameStateLabel = GetNode<Label>("%GameStateLabel");
 		

@@ -28,6 +28,8 @@ public partial class PokerGame
 		GD.Print("\n=== New Hand ===");
 		ShowMessage("");
 
+		handTypeLabel.Text = "";
+		handTypeLabel.Visible = false;
 		playerStackLabel.Visible = true;
 		actionButtons.Visible = true;
 		betweenHandsUI.Visible = false;
@@ -449,7 +451,7 @@ public partial class PokerGame
 		opponentChipsInPot = 0;
 		GD.Print($"[Showdown] Combined all chips into pot: {pot}");
 		
-		GD.Print("\\n=== Showdown ===");
+		GD.Print("\n=== Showdown ===");
 		
 		// process refunds first
 		bool refundOccurred = ReturnUncalledChips();
@@ -474,6 +476,9 @@ public partial class PokerGame
 		string playerHandName = HandEvaluator.GetHandDescription(playerHand, communityCards);
 		string opponentHandName = HandEvaluator.GetHandDescription(opponentHand, communityCards);
 
+
+		handTypeLabel.Text = $"Player: {playerHandName} VS {currentOpponentName}: {opponentHandName}";
+		handTypeLabel.Visible = true;
 		int result = HandEvaluator.CompareHands(playerRank, opponentRank);
 		string message;
 		HandResult aiHandResult;
@@ -482,7 +487,7 @@ public partial class PokerGame
 		if (result > 0)
 		{
 			GD.Print("\nPLAYER WINS!");
-			message = $"You win ${finalPot} with {playerHandName}!";
+			message = $"You won the ${finalPot} pot!";
 			
 			PlayReactionDialogue("OnLosePot");
 
@@ -519,7 +524,7 @@ public partial class PokerGame
 		else if (result < 0)
 		{
 			GD.Print("\nOPPONENT WINS!");
-			message = $"{currentOpponentName} wins ${finalPot} with {opponentHandName}";
+			message = $"{currentOpponentName} won the ${finalPot} pot!";
 			
 			PlayReactionDialogue("OnWinPot");
 
@@ -551,7 +556,7 @@ public partial class PokerGame
 		{
 			GD.Print("\nSPLIT POT!");
 			int split = pot / 2;
-			message = $"Split pot - ${split} each!";
+			message = $"Split pot. ${split} each!";
 			playerChips += split;
 			opponentChips += pot - split;
 			aiOpponent.ChipStack = opponentChips;

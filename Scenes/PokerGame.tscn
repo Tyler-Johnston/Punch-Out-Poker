@@ -1,4 +1,4 @@
-[gd_scene load_steps=77 format=3 uid="uid://b5sq1675fwcio"]
+[gd_scene load_steps=78 format=3 uid="uid://b5sq1675fwcio"]
 
 [ext_resource type="Script" uid="uid://8k6pqsmgt5pe" path="res://Scripts/Game/PokerGame.cs" id="1_8w0ed"]
 [ext_resource type="Texture2D" uid="uid://dqk4n2wxuqt2a" path="res://Assets/Textures/backgrounds/Cafe_Interior_Night.jpg" id="2_47o1s"]
@@ -512,7 +512,7 @@ corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
 shadow_size = 2
-shadow_offset = Vector2(2, 2)
+shadow_offset = Vector2(2, 3)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_2m4hi"]
 border_width_left = 1
@@ -524,7 +524,7 @@ corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
 shadow_size = 2
-shadow_offset = Vector2(2, 2)
+shadow_offset = Vector2(2, 3)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_xloky"]
 border_width_left = 1
@@ -536,7 +536,7 @@ corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
 shadow_size = 2
-shadow_offset = Vector2(2, 2)
+shadow_offset = Vector2(2, 3)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_f2l75"]
 bg_color = Color(0.6117647, 0.6117647, 0.6117647, 1)
@@ -549,7 +549,7 @@ corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
 shadow_size = 2
-shadow_offset = Vector2(2, 2)
+shadow_offset = Vector2(2, 3)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_m7dep"]
 bg_color = Color(0.13333334, 0.13333334, 0.13333334, 1)
@@ -562,7 +562,7 @@ corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
 shadow_size = 2
-shadow_offset = Vector2(2, 2)
+shadow_offset = Vector2(2, 3)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_b0ir2"]
 border_width_left = 1
@@ -575,7 +575,7 @@ corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
 shadow_size = 2
-shadow_offset = Vector2(2, 2)
+shadow_offset = Vector2(2, 3)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_6qdjg"]
 corner_radius_top_left = 10
@@ -583,7 +583,7 @@ corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
 shadow_size = 2
-shadow_offset = Vector2(2, 2)
+shadow_offset = Vector2(2, 3)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_8fm0h"]
 bg_color = Color(0.6117647, 0.6117647, 0.6117647, 1)
@@ -592,7 +592,7 @@ corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
 shadow_size = 2
-shadow_offset = Vector2(2, 2)
+shadow_offset = Vector2(2, 3)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_5ar8g"]
 bg_color = Color(0.13333334, 0.13333334, 0.13333334, 1)
@@ -606,7 +606,7 @@ corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
 shadow_size = 2
-shadow_offset = Vector2(2, 2)
+shadow_offset = Vector2(2, 3)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_emhtb"]
 border_width_left = 1
@@ -618,7 +618,7 @@ corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
 shadow_size = 2
-shadow_offset = Vector2(2, 2)
+shadow_offset = Vector2(2, 3)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_at0be"]
 border_width_left = 1
@@ -630,7 +630,7 @@ corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
 shadow_size = 2
-shadow_offset = Vector2(2, 2)
+shadow_offset = Vector2(2, 3)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_adxoh"]
 bg_color = Color(0.6117647, 0.6117647, 0.6117647, 1)
@@ -643,7 +643,7 @@ corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
 shadow_size = 2
-shadow_offset = Vector2(2, 2)
+shadow_offset = Vector2(2, 3)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_m1ugq"]
 bg_color = Color(0.13333334, 0.13333334, 0.13333334, 1)
@@ -656,7 +656,7 @@ corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
 shadow_size = 2
-shadow_offset = Vector2(2, 2)
+shadow_offset = Vector2(2, 3)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_m7b72"]
 border_width_left = 1
@@ -668,7 +668,7 @@ corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
 shadow_size = 2
-shadow_offset = Vector2(2, 2)
+shadow_offset = Vector2(2, 3)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_sfxlf"]
 border_width_left = 1
@@ -680,7 +680,7 @@ corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
 shadow_size = 2
-shadow_offset = Vector2(2, 2)
+shadow_offset = Vector2(2, 3)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_k8u0e"]
 bg_color = Color(0.6117647, 0.6117647, 0.6117647, 1)
@@ -694,7 +694,7 @@ corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
 shadow_size = 2
-shadow_offset = Vector2(2, 2)
+shadow_offset = Vector2(2, 3)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_nj6s6"]
 content_margin_left = 10.0
@@ -710,7 +710,7 @@ corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
 shadow_size = 2
-shadow_offset = Vector2(2, 2)
+shadow_offset = Vector2(2, 3)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_c27go"]
 content_margin_left = 5.0
@@ -720,7 +720,7 @@ corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
 shadow_size = 2
-shadow_offset = Vector2(2, 2)
+shadow_offset = Vector2(2, 3)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_3sgh4"]
 content_margin_left = 10.0
@@ -730,7 +730,7 @@ corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
 shadow_size = 2
-shadow_offset = Vector2(2, 2)
+shadow_offset = Vector2(2, 3)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_qmc8i"]
 content_margin_left = 10.0
@@ -741,7 +741,7 @@ corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
 shadow_size = 2
-shadow_offset = Vector2(2, 2)
+shadow_offset = Vector2(2, 3)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_jn1cq"]
 bg_color = Color(0, 0, 0, 0.27450982)
@@ -793,11 +793,14 @@ shadow_offset = Vector2(0, 3)
 
 [sub_resource type="LabelSettings" id="LabelSettings_xxe2x"]
 font_size = 56
-outline_size = 1
+outline_size = 2
 outline_color = Color(0, 0, 0, 1)
-shadow_size = 3
+shadow_size = 4
 shadow_color = Color(0, 0, 0, 0.09803922)
 shadow_offset = Vector2(5, 5)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_aylv1"]
+bg_color = Color(0.6, 0.6, 0.6, 0)
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_h5gdr"]
 shader = ExtResource("8_34q52")
@@ -1369,9 +1372,9 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -178.0
+offset_left = -179.0
 offset_top = -40.0
-offset_right = 178.0
+offset_right = 177.0
 offset_bottom = 40.0
 grow_horizontal = 2
 grow_vertical = 2
@@ -1381,6 +1384,34 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_g5j4w")
 unique_name_in_owner = true
 layout_mode = 2
 text = "Game State Label"
+label_settings = SubResource("LabelSettings_xxe2x")
+horizontal_alignment = 1
+
+[node name="HandTypeControl" type="Control" parent="CanvasLayer/Control"]
+anchors_preset = 0
+offset_left = 36.0
+offset_top = 459.0
+offset_right = 1280.0
+offset_bottom = 499.0
+
+[node name="HandTypePanel" type="PanelContainer" parent="CanvasLayer/Control/HandTypeControl"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -179.0
+offset_top = -40.0
+offset_right = 177.0
+offset_bottom = 40.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_aylv1")
+
+[node name="HandTypeLabel" type="Label" parent="CanvasLayer/Control/HandTypeControl/HandTypePanel"]
+unique_name_in_owner = true
+layout_mode = 2
 label_settings = SubResource("LabelSettings_xxe2x")
 horizontal_alignment = 1
 

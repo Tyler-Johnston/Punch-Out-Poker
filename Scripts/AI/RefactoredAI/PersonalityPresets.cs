@@ -252,19 +252,16 @@ public static class PersonalityPresets
 		var personality = new PokerPersonality
 		{
 			CharacterName = "Boy Wizard",
-			BaseAggression = 0.85f,
-			BaseBluffFrequency = 0.80f,
+			BaseAggression = 0.75f,
+			BaseBluffFrequency = 0.60f,
 			BaseFoldThreshold = 0.65f,
 			BaseRiskTolerance = 0.80f,
 			CallTendency = 0.40f, 
 			Chattiness = 0.7f,      
 			TellReliability = 0.85f,
-
 			TiltSensitivity = 0.90f,
 			RageQuitThreshold = 28.0f,
 			SurrenderChipPercent = 0.10f,
-
-			// NEW: Slightly higher/youthful pitch
 			VoicePitch = 1.15f
 		};
 
@@ -606,7 +603,7 @@ public static class PersonalityPresets
 			CharacterName = "Apprentice",
 			BaseAggression = 0.50f,        
 			BaseBluffFrequency = 0.28f,    
-			BaseFoldThreshold = 0.47f,     
+			BaseFoldThreshold = 0.57f,     
 			BaseRiskTolerance = 0.52f,     
 			CallTendency = 0.50f,          
 			Chattiness = 0.65f,       
@@ -726,15 +723,13 @@ public static class PersonalityPresets
 			CharacterName = "King",
 			BaseAggression = 0.65f,        
 			BaseBluffFrequency = 0.40f,    
-			BaseFoldThreshold = 0.52f,     
+			BaseFoldThreshold = 0.58f,     
 			BaseRiskTolerance = 0.55f,     
 			CallTendency = 0.42f,          
 			Chattiness = 0.55f,      
 			TellReliability = 0.675f, 
-
-			// BALANCED FOR GAMEPLAY: The Entitled Boss
 			TiltSensitivity = 0.65f,
-			RageQuitThreshold = 50.0f,
+			RageQuitThreshold = 32.0f,
 			SurrenderChipPercent = 0.175f,
 
 			// NEW: Deep/Commanding pitch
@@ -854,7 +849,7 @@ public static class PersonalityPresets
 			TellReliability = 0.65f,  
 
 			TiltSensitivity = 0.50f,
-			RageQuitThreshold = 55.0f,
+			RageQuitThreshold = 40.0f,
 			SurrenderChipPercent = 0.30f,
 
 			// NEW: Creaky/Old voice pitch
@@ -973,10 +968,8 @@ public static class PersonalityPresets
 			Chattiness = 0.36f,      
 			TellReliability = 0.50f, 
 			TiltSensitivity = 0.40f,
-			RageQuitThreshold = 60.0f,    
+			RageQuitThreshold = 50.0f,    
 			SurrenderChipPercent = 0.10f,
-
-			// NEW: Aloof/Slightly high but controlled pitch
 			VoicePitch = 1.12f
 		};
 
