@@ -39,9 +39,8 @@ public partial class PokerGame
 		// Step 1: opponent wins the effective pot (settled + current street commits)
 		int winAmount = GetEffectivePot();
 
-		opponentChips += winAmount;
-		aiOpponent.ChipStack = opponentChips;
-
+		AddOpponentChips(winAmount);
+		
 		// Clear all pot tracking for end of hand
 		pot = 0;
 		playerChipsInPot = 0;

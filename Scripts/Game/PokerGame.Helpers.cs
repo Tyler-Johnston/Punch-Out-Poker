@@ -125,12 +125,39 @@ public partial class PokerGame
 		
 		if (maxBet <= 0) return 0;
 		
-		int targetRaiseAmount = (int)Math.Round(pot * potMultiplier);
+		int targetRaiseAmount = (int)Math.Round(GetEffectivePot() * potMultiplier);
 		return Math.Clamp(targetRaiseAmount, minBet, maxBet);
 	}
 	
 	// --- POT HELPERS ---
-	
+
+	private void SetOpponentChips(int newAmount)
+	{
+		newAmount = Math.Max(0, newAmount);
+		opponentChips = newAmount;
+		if (aiOpponent != null) aiOpponent.ChipStack = newAmount;
+	}
+
+	private void AddOpponentChips(int delta)
+	{
+		if (delta == 0) return;
+		SetOpponentChips(opponentChips + delta);
+	}
+
+	private void SpendOpponentChips(int amount)
+	{
+		if (amount <= 0) return;
+		if (amount > opponentChips) amount = opponentChips; // safety
+		SetOpponentChips(opponentChips - amount);
+	}
+
+	private void AssertOpponentChipsSynced(string context)
+	{
+		if (aiOpponent == null) return;
+		if (aiOpponent.ChipStack != opponentChips)
+			GD.PrintErr($"[SYNC] Opponent chips desync in {context}: opponentChips={opponentChips}, aiOpponent.ChipStack={aiOpponent.ChipStack}");
+	}
+
 	public void CommitToStreetPot(bool isPlayer, int amount)
 	{
 		if (amount <= 0) return;
@@ -169,13 +196,10 @@ public partial class PokerGame
 		else if (opponentContributed > playerContributed)
 		{
 			int refund = opponentContributed - playerContributed;
-			opponentChips += refund;
+			AddOpponentChips(refund);
+
 			pot -= refund;
 			opponentContributed -= refund;
-
-			// FIX: keep AI's ChipStack in sync with opponentChips after refund
-			aiOpponent.ChipStack = opponentChips;
-
 			GD.Print($"Side Pot: Returned {refund} uncalled chips to Opponent.");
 			return true;
 		}
@@ -202,14 +226,9 @@ public partial class PokerGame
 			Street = currentStreet,
 			BigBlind = bigBlind,
 			IsAIInPosition = DetermineAIPosition(),
-
-			// Optional: only needed if you plan to use this field in AI logic
-			OpponentChipStack = aiOpponent.ChipStack
+			OpponentChipStack = opponentChips
 		};
-		// Required for AI to compute toCall correctly
 		state.SetPlayerBet(aiOpponent, opponentBet);
-		// Optional (recommended later): also store the human’s bet for debugging/future heuristics
-		// state.SetPlayerBet(humanPlayerProxy, playerBet);
 		return state;
 	}
 

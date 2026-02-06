@@ -23,7 +23,7 @@ public partial class PokerGame
 		
 		// reset AI opponent for new hand
 		aiOpponent.ResetForNewHand();
-		aiOpponent.ChipStack = opponentChips;
+		SetOpponentChips(opponentChips);
 
 		GD.Print("\n=== New Hand ===");
 		ShowMessage("");
@@ -148,8 +148,7 @@ public partial class PokerGame
 
 			// BIG BLIND: Opponent
 			int bbAmount = Math.Min(bigBlind, opponentChips);
-			opponentChips -= bbAmount;
-			aiOpponent.ChipStack = opponentChips;
+			SpendOpponentChips(bbAmount);
 			opponentBet = bbAmount;
 			currentBet = opponentBet;
 			if (opponentChips == 0) opponentIsAllIn = true;
@@ -169,8 +168,8 @@ public partial class PokerGame
 		{
 			// SMALL BLIND: Opponent
 			int sbAmount = Math.Min(smallBlind, opponentChips);
-			opponentChips -= sbAmount;
-			aiOpponent.ChipStack = opponentChips;
+			SpendOpponentChips(sbAmount);
+
 			opponentBet = sbAmount;
 			if (opponentChips == 0) opponentIsAllIn = true;
 
@@ -207,6 +206,7 @@ public partial class PokerGame
 
 		// Re-enable AI processing after blinds complete
 		isProcessingAIAction = wasProcessing;
+		AssertOpponentChipsSynced("PostBlinds");
 	}
 
 
@@ -503,8 +503,7 @@ private async void AdvanceStreet()
 			message = $"{currentOpponentName} won the ${finalPot} pot!";
 			PlayReactionDialogue("OnWinPot");
 
-			opponentChips += finalPot;
-			aiOpponent.ChipStack = opponentChips;
+			AddOpponentChips(finalPot);
 			aiOpponent.ProcessHandResult(HandResult.Win, finalPot, bigBlind);
 		}
 		else
@@ -514,10 +513,8 @@ private async void AdvanceStreet()
 			message = $"Split pot. ${split} each!";
 
 			playerChips += split;
-			opponentChips += finalPot - split;
-			aiOpponent.ChipStack = opponentChips;
+			AddOpponentChips(finalPot - split);
 			aiOpponent.ProcessHandResult(HandResult.Neutral, finalPot, bigBlind);
-
 			SetExpression(Expression.Neutral);
 		}
 
@@ -656,6 +653,7 @@ private async void AdvanceStreet()
 		
 		UpdateHud();
 		UpdateOpponentVisuals();
+		AssertOpponentChipsSynced("ExecuteAIAction");
 	}
 
 
@@ -723,8 +721,8 @@ private async void AdvanceStreet()
 			return;
 		}
 
-		opponentChips -= callAmount;
-		aiOpponent.ChipStack = opponentChips;
+		SpendOpponentChips(callAmount);
+
 
 		// NEW: street-commit only (do not touch settled pot here)
 		CommitToStreetPot(false, callAmount);
@@ -771,8 +769,8 @@ private async void AdvanceStreet()
 
 		bool isBet = (currentBet == 0);
 
-		opponentChips -= amountToAdd;
-		aiOpponent.ChipStack = opponentChips;
+		SpendOpponentChips(amountToAdd);
+
 		CommitToStreetPot(false, amountToAdd);
 		opponentBet += amountToAdd;
 
@@ -797,9 +795,8 @@ private async void AdvanceStreet()
 			return;
 		}
 
-		// Chips leave opponent stack
-		opponentChips = 0;
-		aiOpponent.ChipStack = 0;
+		SetOpponentChips(0);
+
 
 		// NEW: street-commit only (do not touch settled pot here)
 		CommitToStreetPot(false, allInAmount);
