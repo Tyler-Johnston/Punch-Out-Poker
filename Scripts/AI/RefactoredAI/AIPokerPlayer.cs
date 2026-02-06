@@ -106,37 +106,37 @@ public partial class AIPokerPlayer : Node
 	public PlayerAction MakeDecision(GameState gameState)
 	{
 		GD.Print($"[{PlayerName}] MakeDecision called - IsFolded: {IsFolded}, IsAllIn: {IsAllIn}, ChipStack: {ChipStack}");
-		
+
 		// if IsAllIn but we have chips, reset it
 		if (IsAllIn && ChipStack > 0)
 		{
 			GD.PrintErr($"[{PlayerName}] ERROR: IsAllIn=true but ChipStack={ChipStack}! Resetting IsAllIn.");
 			IsAllIn = false;
 		}
-		
+
 		// only return early if actually folded/all-in
 		if (IsFolded)
 		{
 			GD.Print($"[{PlayerName}] Folded - returning Check");
 			return PlayerAction.Check;
 		}
-		
+
 		if (IsAllIn)
 		{
 			GD.Print($"[{PlayerName}] All-in with 0 chips - returning Check");
 			return PlayerAction.Check;
 		}
-		
+
 		if (decisionMaker == null)
 		{
 			GD.PrintErr($"[{PlayerName}] DecisionMaker is null! Folding as fallback.");
 			return PlayerAction.Fold;
 		}
-		
+
 		// Call the actual decision logic
 		GD.Print($"[{PlayerName}] Calling DecisionMaker.DecideAction()");
 		PlayerAction action = decisionMaker.DecideAction(this, gameState);
-		
+
 		// Validation: can't check when facing a bet
 		float toCall = gameState.CurrentBet - gameState.GetPlayerCurrentBet(this);
 		if (action == PlayerAction.Check && toCall > 0)
@@ -144,25 +144,13 @@ public partial class AIPokerPlayer : Node
 			GD.PrintErr($"[{PlayerName}] ERROR: Tried to check when facing {toCall} bet! Converting to Fold.");
 			action = PlayerAction.Fold;
 		}
-		
-		// Handle specific action execution
-		int betAmount = 0;
-		switch (action)
-		{
-			case PlayerAction.Raise:
-				float handStrength = EvaluateCurrentHandStrength(gameState);
-				betAmount = decisionMaker.CalculateBetSize(this, gameState, handStrength);
-				break;
-			case PlayerAction.AllIn:
-				betAmount = ChipStack;
-				IsAllIn = true;
-				break;
-		}
-		
-		EmitSignal(SignalName.ActionTaken, (int)action, betAmount);
+
+		// Step 2: Do not size bets here. PokerGame is the single executor/sizer.
+		EmitSignal(SignalName.ActionTaken, (int)action, 0);
+
 		return action;
 	}
-	
+
 	public void OnFolded(float betRatio)
 	{
 		IsFolded = true;
@@ -174,7 +162,7 @@ public partial class AIPokerPlayer : Node
 
 		if (tiltPenalty > 0)
 		{
-			GD.Print($"[TILT] Bullied. Ratio {betRatio:F2}. Tilt +{tiltPenalty}");
+			GD.Print($"[TILT] Bullied. Ratio {betRatio:F2}. Tilt +{tiltPenalty}.");
 			Personality.AddTilt(tiltPenalty);
 		}
 	}

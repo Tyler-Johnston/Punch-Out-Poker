@@ -484,68 +484,88 @@ public partial class PokerDecisionMaker : Node
 		return PlayerAction.Call;
 	}
 	
-	public int CalculateBetSize(AIPokerPlayer player, GameState gameState, float handStrength)
+	public int CalculateRaiseToTotal(AIPokerPlayer player, GameState gameState, float handStrength)
 	{
 		var personality = player.Personality;
-		float potSize = gameState.PotSize;
+
+		float effectivePot = Mathf.Max(gameState.PotSize, 1f); // you now pass effective pot into GameState
 		float currentBet = gameState.CurrentBet;
 		float toCall = currentBet - gameState.GetPlayerCurrentBet(player);
-		
+
+		// 1) Base target sizing from your existing ratio model
 		float baseBetRatio = CalculatePlannedBetRatio(handStrength, personality, gameState.Street, player.BetSizeSeed, player);
-		float betSize = potSize * baseBetRatio;
-		
+		float targetTotal = effectivePot * baseBetRatio;
+
+		// Optional tilt nudge (keep small; you're already tilt-scaling personality.CurrentAggression elsewhere)
 		if (player.CurrentTiltState >= TiltState.Steaming)
+			targetTotal *= 1.15f;
+
+		// 2) Compute minimum legal total bet for this action
+		float minTotal;
+		if (currentBet <= 0)
 		{
-			betSize *= 1.15f;
-			GD.Print($"[{player.PlayerName}] Tilted betting ({player.CurrentTiltState})");
-		}
-		
-		float minRaise;
-		if (toCall > 0)
-		{
-			float lastRaiseSize = Mathf.Max(currentBet - gameState.PreviousBet, gameState.BigBlind);
-			minRaise = currentBet + lastRaiseSize;
+			// Opening bet: min is big blind (your house rule)
+			minTotal = gameState.BigBlind;
 		}
 		else
 		{
-			minRaise = gameState.BigBlind;
+			// Raise: must increase by at least last raise increment
+			float lastRaiseIncrement = Mathf.Max(currentBet - gameState.PreviousBet, gameState.BigBlind);
+			minTotal = currentBet + lastRaiseIncrement;
 		}
-		
-		betSize = Mathf.Max(betSize, minRaise);
-		
+
+		// 3) Max total = opponent's current bet + remaining stack (raise-to all-in)
+		float maxTotal = gameState.GetPlayerCurrentBet(player) + player.ChipStack;
+
+		// 4) Clamp target into legal range.
+		// If we can't reach minTotal, all-in for less is still legal.
+		float legalTotal;
+		if (maxTotal < minTotal)
+			legalTotal = maxTotal; // short all-in
+		else
+			legalTotal = Mathf.Clamp(targetTotal, minTotal, maxTotal);
+
+		// 5) River stack-commitment rule (must also respect legality)
 		if (gameState.Street == Street.River && handStrength >= 0.60f)
 		{
-			float stackToPotRatio = player.ChipStack / potSize;
-			
-			if (stackToPotRatio < 1.0f && betSize >= player.ChipStack * 0.60f)
+			float spr = player.ChipStack / effectivePot;
+			if (spr < 1.0f)
 			{
-				if (handStrength >= 0.70f || player.AllInCommitmentSeed < 0.70f)
+				// if we're already putting in most of stack, prefer shove
+				float committedFrac = (legalTotal - gameState.GetPlayerCurrentBet(player)) / Mathf.Max(player.ChipStack, 1f);
+				if (committedFrac >= 0.60f)
 				{
-					GD.Print($"[{player.PlayerName}] River stack commitment! ({player.ChipStack} chips, {handStrength:F2} strength)");
-					return player.ChipStack;
+					if (handStrength >= 0.70f || player.AllInCommitmentSeed < 0.70f)
+						legalTotal = maxTotal;
 				}
 			}
 		}
-		
-		if (betSize >= player.ChipStack * 0.9f)
+
+		// 6) Near-all-in handling: if we end up at >=90% stack, either shove or back off BUT remain legal.
+		float amountToAdd = legalTotal - gameState.GetPlayerCurrentBet(player);
+		if (amountToAdd >= player.ChipStack * 0.90f)
 		{
 			if (player.AllInCommitmentSeed < personality.CurrentRiskTolerance || handStrength > 0.80f)
 			{
-				GD.Print($"[{player.PlayerName}] Going all-in! ({player.ChipStack} chips)");
-				return player.ChipStack;
+				legalTotal = maxTotal;
 			}
 			else
 			{
-				betSize = player.ChipStack * 0.6f;
+				// back off to 60% stack, but ensure we don't go below minTotal when a full raise is possible
+				float backedOffTotal = gameState.GetPlayerCurrentBet(player) + player.ChipStack * 0.60f;
+				if (maxTotal >= minTotal)
+					legalTotal = Mathf.Clamp(backedOffTotal, minTotal, maxTotal);
+				else
+					legalTotal = maxTotal; // can't make min raise anyway -> all-in is only legal raise size
 			}
 		}
-		
-		int finalBet = (int)Mathf.Min(betSize, player.ChipStack);
-		finalBet = Mathf.Max(1, finalBet);
-		
-		GD.Print($"[{player.PlayerName}] Bet size: {finalBet} (pot: {potSize}, strength: {handStrength:F2})");
-		
-		return finalBet;
+
+		int finalTotal = Mathf.Clamp((int)Mathf.Floor(legalTotal), 1, (int)maxTotal);
+		finalTotal = Math.Max(finalTotal, (int)Mathf.Ceil(minTotal));
+		finalTotal = Math.Min(finalTotal, (int)maxTotal);
+
+		GD.Print($"[{player.PlayerName}] Raise-to total: {finalTotal} (effPot: {effectivePot}, strength: {handStrength:F2}, minTotal: {minTotal}, maxTotal: {maxTotal})");
+		return finalTotal;
 	}
 	
 	public float EvaluateHandStrength(List<Card> holeCards, List<Card> communityCards, Street street, float randomnessSeed)

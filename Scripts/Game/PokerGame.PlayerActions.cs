@@ -1,39 +1,65 @@
 // PokerGame.PlayerActions.cs
+// Step 1 (Settled-pot semantics):
+// - Do NOT use AddToPot anywhere.
+// - Use CommitToStreetPot(...) when chips move from stack to the middle during the street.
+// - Use GetEffectivePot() for award amounts when a hand ends mid-street.
+
 using Godot;
 using System;
 
 public partial class PokerGame
 {
+	// Helper: remove chips from current street pot + contributed totals (for uncalled bet refunds)
+	// This is needed because you allow a "refund" path when toCall < 0.
+	private void UncommitFromStreetPot(bool isPlayer, int amount)
+	{
+		if (amount <= 0) return;
+
+		if (isPlayer)
+		{
+			playerChipsInPot = Math.Max(0, playerChipsInPot - amount);
+			playerContributed = Math.Max(0, playerContributed - amount);
+		}
+		else
+		{
+			opponentChipsInPot = Math.Max(0, opponentChipsInPot - amount);
+			opponentContributed = Math.Max(0, opponentContributed - amount);
+		}
+	}
+
 	private void OnFoldPressed()
 	{
 		if (!handInProgress || !isPlayerTurn) return;
 
 		playerHasActedThisStreet = true;
-		
+
 		ShowMessage("You fold");
 		GD.Print("Player folds");
 
-		// Combine all chips before awarding
-		int winAmount = pot;
+		// Step 1: opponent wins the effective pot (settled + current street commits)
+		int winAmount = GetEffectivePot();
+
 		opponentChips += winAmount;
 		aiOpponent.ChipStack = opponentChips;
+
+		// Clear all pot tracking for end of hand
 		pot = 0;
 		playerChipsInPot = 0;
 		opponentChipsInPot = 0;
-		
+		playerContributed = 0;
+		opponentContributed = 0;
+
 		aiOpponent.ProcessHandResult(HandResult.Win, winAmount, bigBlind);
-		
+
 		UpdateOpponentVisuals();
-		
 		GD.Print($"Stacks -> Player: {playerChips}, Opponent: {opponentChips}");
 		EndHand();
 	}
 
-
 	private void OnCheckCallPressed()
 	{
 		if (!handInProgress || !isPlayerTurn) return;
-		
+
 		playerHasActedThisStreet = true;
 		int toCall = currentBet - playerBet;
 
@@ -45,31 +71,30 @@ public partial class PokerGame
 		}
 		else if (toCall < 0)
 		{
-			// === Uncalled Bet Return ===
+			// Uncalled bet return (e.g., opponent all-in short and player had more invested this street)
 			int refundAmount = Math.Abs(toCall);
-			
+
 			playerChips += refundAmount;
 			playerBet -= refundAmount;
-			playerChipsInPot -= refundAmount;  // Remove from current round tracking
-			
-			// Pass negative value to remove from pot/contribution tracking
-			AddToPot(true, -refundAmount);
 
-			playerIsAllIn = false; // because we have the chips back now
-			
+			// Step 1: undo current-street commit + contributed totals
+			UncommitFromStreetPot(true, refundAmount);
+
+			playerIsAllIn = false;
+
 			ShowMessage($"You take back {refundAmount} excess chips (Match All-In)");
 			GD.Print($"Player matched All-In. Refunded {refundAmount} chips.");
 			sfxPlayer.PlayRandomChip();
 		}
 		else
 		{
-			// Normal Call Logic
+			// Normal call
 			int actualCall = Math.Min(toCall, playerChips);
 			playerChips -= actualCall;
 			playerBet += actualCall;
-			playerChipsInPot += actualCall;  // Track in current betting round
-			
-			AddToPot(true, actualCall);
+
+			// Step 1: commit to current street pot only
+			CommitToStreetPot(true, actualCall);
 
 			if (playerChips == 0)
 			{
@@ -80,8 +105,9 @@ public partial class PokerGame
 			else
 			{
 				ShowMessage($"You call ${actualCall}");
-				GD.Print($"Player calls {actualCall}, Player stack: {playerChips}, Pot: {pot}");
+				GD.Print($"Player calls {actualCall}, Player stack: {playerChips}, EffectivePot: {GetEffectivePot()}");
 			}
+
 			sfxPlayer.PlayRandomChip();
 		}
 
@@ -94,7 +120,7 @@ public partial class PokerGame
 		bool betsAreEqual = (playerBet == opponentBet);
 		bool bothPlayersActed = playerHasActedThisStreet && opponentHasActedThisStreet;
 		bool bothAllIn = playerIsAllIn && opponentIsAllIn;
-		
+
 		// 1. Standard Round End (Equal bets) OR Both All-In
 		if ((betsAreEqual && bothPlayersActed) || bothAllIn)
 		{
@@ -141,22 +167,22 @@ public partial class PokerGame
 		bool isRaise = currentBet > 0;
 
 		playerHasActedThisStreet = true;
-		
+
 		// Ensure bet amount is valid
 		var (minBet, maxBet) = GetLegalBetRange();
 		betAmount = Math.Clamp(betAmount, minBet, maxBet);
 
-		int totalBet = betAmount;
-		int toAdd = totalBet - playerBet;
-		
+		int totalBet = betAmount;         // raise-to total
+		int toAdd = totalBet - playerBet; // how much player must add
+
 		int actualBet = Math.Min(toAdd, playerChips);
 
 		playerChips -= actualBet;
 		playerBet += actualBet;
-		playerChipsInPot += actualBet;  // Track in current betting round
-		
-		AddToPot(true, actualBet);
-		
+
+		// Step 1: commit to current street pot only
+		CommitToStreetPot(true, actualBet);
+
 		previousBet = currentBet;
 		currentBet = playerBet;
 
@@ -180,7 +206,7 @@ public partial class PokerGame
 			ShowMessage($"You bet ${actualBet}");
 			GD.Print($"Player bets {actualBet}");
 		}
-		
+
 		sfxPlayer.PlayRandomChip();
 
 		isPlayerTurn = false;
@@ -221,26 +247,26 @@ public partial class PokerGame
 			GetTree().CreateTimer(1.2).Timeout += CheckAndProcessAITurn;
 		}
 	}
-	
+
 	// --- POT-SIZED BET BUTTONS ---
-	
+
 	/// <summary>
 	/// Handles pot-sized bet buttons (1/3, 1/2, 2/3, 1x pot)
 	/// </summary>
 	private void OnPotSizeButtonPressed(float potMultiplier)
 	{
 		if (!handInProgress || !isPlayerTurn) return;
-		
+
 		var (minBet, maxBet) = GetLegalBetRange();
 		if (maxBet <= 0) return;
-		
+
 		int targetBet = CalculatePotSizeBet(potMultiplier);
-		
+
 		betAmount = targetBet;
 		betSlider.Value = targetBet;
-		
+
 		UpdateButtonLabels();
-		
+
 		GD.Print($"Set bet to {potMultiplier:P0} pot: {targetBet}");
 	}
 
@@ -250,22 +276,21 @@ public partial class PokerGame
 	private void OnAllInButtonPressed()
 	{
 		if (!handInProgress || !isPlayerTurn) return;
-		
+
 		var (minBet, maxBet) = GetLegalBetRange();
 		if (maxBet <= 0) return;
-		
+
 		// Set to maximum (all-in amount)
 		betAmount = maxBet;
 		betSlider.Value = maxBet;
-		
+
 		UpdateButtonLabels();
-		
+
 		GD.Print($"Set bet to ALL-IN: {maxBet}");
 	}
-	
+
 	private void OnCashOutPressed()
 	{
 		GetTree().ChangeSceneToFile("res://Scenes/CharacterSelect.tscn");
 	}
-
 }

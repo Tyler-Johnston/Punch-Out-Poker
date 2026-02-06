@@ -63,20 +63,21 @@ public partial class PokerGame
 	
 	// --- BETTING HELPERS ---
 	
+	private int GetEffectivePot()
+	{
+		return pot + playerChipsInPot + opponentChipsInPot;
+	}
+
 	private void ResetBettingRound()
 	{
-		// Move current round chips to display pot
-		displayPot += playerChipsInPot + opponentChipsInPot;
-		
-		// Reset current round displays
-		playerChipsInPot = 0;
-		opponentChipsInPot = 0;
+		SettleStreetIntoPot();
 		
 		// Reset betting amounts for new street
 		playerBet = 0;
 		opponentBet = 0;
 		currentBet = 0;
 		previousBet = 0; 
+		displayPot = pot;
 		
 		// Reset action flags
 		playerHasActedThisStreet = false;
@@ -130,13 +131,27 @@ public partial class PokerGame
 	
 	// --- POT HELPERS ---
 	
-	public void AddToPot(bool isPlayer, int amount)
+	public void CommitToStreetPot(bool isPlayer, int amount)
 	{
-		pot += amount;
+		if (amount <= 0) return;
+
 		if (isPlayer)
+		{
+			playerChipsInPot += amount;
 			playerContributed += amount;
+		}
 		else
+		{
+			opponentChipsInPot += amount;
 			opponentContributed += amount;
+		}
+	}
+	
+	private void SettleStreetIntoPot()
+	{
+		pot += playerChipsInPot + opponentChipsInPot;
+		playerChipsInPot = 0;
+		opponentChipsInPot = 0;
 	}
 	
 	private bool ReturnUncalledChips()
@@ -147,7 +162,7 @@ public partial class PokerGame
 			playerChips += refund;
 			pot -= refund;
 			playerContributed -= refund;
-			
+
 			GD.Print($"Side Pot: Returned {refund} uncalled chips to Player.");
 			return true;
 		}
@@ -157,13 +172,16 @@ public partial class PokerGame
 			opponentChips += refund;
 			pot -= refund;
 			opponentContributed -= refund;
-			
+
+			// FIX: keep AI's ChipStack in sync with opponentChips after refund
+			aiOpponent.ChipStack = opponentChips;
+
 			GD.Print($"Side Pot: Returned {refund} uncalled chips to Opponent.");
 			return true;
 		}
 		return false;
 	}
-	
+
 	// --- STATE HELPERS ---
 
 	private bool IsGameOver()
@@ -177,13 +195,21 @@ public partial class PokerGame
 		var state = new GameState
 		{
 			CommunityCards = new List<Card>(communityCards),
-			PotSize = pot,
+
+			PotSize = GetEffectivePot(),
 			CurrentBet = currentBet,
+			PreviousBet = previousBet,
 			Street = currentStreet,
 			BigBlind = bigBlind,
-			IsAIInPosition = DetermineAIPosition()
+			IsAIInPosition = DetermineAIPosition(),
+
+			// Optional: only needed if you plan to use this field in AI logic
+			OpponentChipStack = aiOpponent.ChipStack
 		};
+		// Required for AI to compute toCall correctly
 		state.SetPlayerBet(aiOpponent, opponentBet);
+		// Optional (recommended later): also store the human’s bet for debugging/future heuristics
+		// state.SetPlayerBet(humanPlayerProxy, playerBet);
 		return state;
 	}
 

@@ -993,10 +993,12 @@ public partial class PokerGame
 
 		}
 
+		int effectivePot = GetEffectivePot();
+		
 		UpdatePlayerStackLabels();
 		opponentStackLabel.Text = $"{currentOpponentName}: ${opponentChips}";
-		UpdatePotLabel(pot);  
-		UpdatePotDisplay(displayPot);
+		UpdatePotLabel(displayPot); 
+		UpdatePotDisplay(displayPot); 
 		UpdatePlayerChipDisplay();
 		UpdateOpponentChipDisplay();
 		UpdatePotSizeButtons();
