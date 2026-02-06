@@ -35,7 +35,7 @@ public partial class PokerDecisionMaker : Node
 		{
 			Decision decision = DecideCheckOrBet(handStrength, gameState, personality, player, out float plannedBetRatio);
 			PlayerAction action = (decision == Decision.Bet) ? PlayerAction.Raise : PlayerAction.Check;
-			GD.Print($"[AI ACTION] {player.PlayerName} {action} (plan: {plannedBetRatio:F2}x pot)");
+			//GD.Print($"[AI ACTION] {player.PlayerName} {action} (plan: {plannedBetRatio:F2}x pot)");
 			return action;
 		}
 

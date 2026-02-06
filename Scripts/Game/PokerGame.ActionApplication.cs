@@ -133,8 +133,16 @@ public partial class PokerGame
 			case PlayerAction.Raise:
 			{
 				// raiseToTotal is the actor's intended FINAL total bet this street.
+				// Must be at least a call; otherwise we can leave actorBet < currentBet (illegal partial raise).
+				if (raiseToTotal < currentBet)
+				{
+					// Treat as a call request.
+					return ApplyAction(isPlayer, PlayerAction.Call);
+				}
+
+				// No-op guard (covers raiseToTotal == actorBet and raiseToTotal < actorBet).
 				if (raiseToTotal <= actorBet)
-					raiseToTotal = actorBet; // no-op guard
+					raiseToTotal = actorBet;
 
 				int toAdd = raiseToTotal - actorBet;
 				if (toAdd <= 0)
