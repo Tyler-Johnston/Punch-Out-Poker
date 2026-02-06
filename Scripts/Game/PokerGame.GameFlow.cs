@@ -748,6 +748,8 @@ public partial class PokerGame
 		float hs = aiOpponent.EvaluateCurrentHandStrength(gameState);
 
 		int raiseToTotal = decisionMaker.CalculateRaiseToTotal(aiOpponent, gameState, hs);
+		float effPot = Mathf.Max(gameState.PotSize, 1f);
+		GD.Print($"[AI SIZE] hs={hs:F2} effPot={effPot:F0} raiseToTotal={raiseToTotal} finalRatio={(raiseToTotal / effPot):F2}x");
 
 		var result = ApplyAction(isPlayer: false, action: PlayerAction.Raise, raiseToTotal: raiseToTotal);
 
