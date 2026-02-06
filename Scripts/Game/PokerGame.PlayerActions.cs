@@ -9,24 +9,6 @@ using System;
 
 public partial class PokerGame
 {
-	// Helper: remove chips from current street pot + contributed totals (for uncalled bet refunds)
-	// This is needed because you allow a "refund" path when toCall < 0.
-	private void UncommitFromStreetPot(bool isPlayer, int amount)
-	{
-		if (amount <= 0) return;
-
-		if (isPlayer)
-		{
-			playerChipsInPot = Math.Max(0, playerChipsInPot - amount);
-			playerContributed = Math.Max(0, playerContributed - amount);
-		}
-		else
-		{
-			opponentChipsInPot = Math.Max(0, opponentChipsInPot - amount);
-			opponentContributed = Math.Max(0, opponentContributed - amount);
-		}
-	}
-
 	private void OnFoldPressed()
 	{
 		if (!handInProgress || !isPlayerTurn) return;
@@ -36,11 +18,12 @@ public partial class PokerGame
 		ShowMessage("You fold");
 		GD.Print("Player folds");
 
-		// Step 1: opponent wins the effective pot (settled + current street commits)
+		// Opponent wins the effective pot (settled + current street commits)
 		int winAmount = GetEffectivePot();
 
 		AddOpponentChips(winAmount);
-		
+		RefreshAllInFlagsFromStacks();
+
 		// Clear all pot tracking for end of hand
 		pot = 0;
 		playerChipsInPot = 0;
@@ -60,85 +43,77 @@ public partial class PokerGame
 		if (!handInProgress || !isPlayerTurn) return;
 
 		playerHasActedThisStreet = true;
-		int toCall = currentBet - playerBet;
 
+		// IMPORTANT: Decide check vs call based on current state BEFORE applying.
+		int toCall = currentBet - playerBet;
 		if (toCall == 0)
 		{
+			ApplyAction(isPlayer: true, action: PlayerAction.Check);
+
 			ShowMessage("You check");
 			sfxPlayer.PlaySound("check");
 			GD.Print($"Player checks on {currentStreet}");
 		}
-		else if (toCall < 0)
-		{
-			// Uncalled bet return (e.g., opponent all-in short and player had more invested this street)
-			int refundAmount = Math.Abs(toCall);
-
-			playerChips += refundAmount;
-			playerBet -= refundAmount;
-
-			// Step 1: undo current-street commit + contributed totals
-			UncommitFromStreetPot(true, refundAmount);
-
-			playerIsAllIn = false;
-
-			ShowMessage($"You take back {refundAmount} excess chips (Match All-In)");
-			GD.Print($"Player matched All-In. Refunded {refundAmount} chips.");
-			sfxPlayer.PlayRandomChip();
-		}
 		else
 		{
-			// Normal call
-			int actualCall = Math.Min(toCall, playerChips);
-			playerChips -= actualCall;
-			playerBet += actualCall;
+			var result = ApplyAction(isPlayer: true, action: PlayerAction.Call);
 
-			// Step 1: commit to current street pot only
-			CommitToStreetPot(true, actualCall);
-
-			if (playerChips == 0)
+			// Refund path (over-invested correction)
+			if (result.AmountMoved < 0)
 			{
-				playerIsAllIn = true;
-				ShowMessage($"You call ${actualCall} (ALL-IN!)");
-				GD.Print($"Player calls {actualCall} (ALL-IN)");
+				int refundAmount = -result.AmountMoved;
+				ShowMessage($"You take back {refundAmount} excess chips (Match All-In)");
+				GD.Print($"Player matched All-In. Refunded {refundAmount} chips.");
+				sfxPlayer.PlayRandomChip();
+			}
+			// Normal call (including short all-in calls)
+			else if (result.AmountMoved > 0)
+			{
+				if (result.BecameAllIn || playerChips == 0)
+				{
+					ShowMessage($"You call ${result.AmountMoved} (ALL-IN!)");
+					GD.Print($"Player calls {result.AmountMoved} (ALL-IN)");
+				}
+				else
+				{
+					ShowMessage($"You call ${result.AmountMoved}");
+					GD.Print($"Player calls {result.AmountMoved}, Player stack: {playerChips}, EffectivePot: {GetEffectivePot()}");
+				}
+				sfxPlayer.PlayRandomChip();
 			}
 			else
 			{
-				ShowMessage($"You call ${actualCall}");
-				GD.Print($"Player calls {actualCall}, Player stack: {playerChips}, EffectivePot: {GetEffectivePot()}");
+				// Defensive: nothing moved, treat as check
+				ShowMessage("You check");
+				sfxPlayer.PlaySound("check");
+				GD.Print($"Player checks on {currentStreet} (call produced 0 move)");
 			}
-
-			sfxPlayer.PlayRandomChip();
 		}
 
 		isPlayerTurn = false;
 		UpdateHud();
-		UpdateOpponentVisuals(); // Ensure visuals are current
+		UpdateOpponentVisuals();
 		RefreshBetSlider();
 
-		// Check for end of betting round
 		bool betsAreEqual = (playerBet == opponentBet);
 		bool bothPlayersActed = playerHasActedThisStreet && opponentHasActedThisStreet;
 		bool bothAllIn = playerIsAllIn && opponentIsAllIn;
 
-		// 1. Standard Round End (Equal bets) OR Both All-In
 		if ((betsAreEqual && bothPlayersActed) || bothAllIn)
 		{
 			GD.Print($"Betting round complete: Standard/Equal. betsEqual={betsAreEqual}");
 			GetTree().CreateTimer(0.8).Timeout += AdvanceStreet;
 		}
-		// 2. Player All-In AND Bets Equal (Standard Call All-In)
 		else if (playerIsAllIn && betsAreEqual)
 		{
 			GD.Print($"Betting round complete: Player All-In (Matched).");
 			GetTree().CreateTimer(0.8).Timeout += AdvanceStreet;
 		}
-		// 3. Player All-In (Short) - Calling for LESS than opponent bet
 		else if (playerIsAllIn && playerBet < opponentBet)
 		{
 			GD.Print($"Betting round complete: Player All-In (Short/Partial Call).");
 			GetTree().CreateTimer(0.8).Timeout += AdvanceStreet;
 		}
-		// 4. Opponent All-In (Short) - Calling for LESS than player bet
 		else if (opponentIsAllIn && opponentBet < playerBet)
 		{
 			GD.Print($"Betting round complete: Opponent All-In (Short).");
@@ -163,39 +138,28 @@ public partial class PokerGame
 	{
 		if (!handInProgress || !isPlayerTurn) return;
 
-		bool isRaise = currentBet > 0;
-
 		playerHasActedThisStreet = true;
 
-		// Ensure bet amount is valid
 		var (minBet, maxBet) = GetLegalBetRange();
 		betAmount = Math.Clamp(betAmount, minBet, maxBet);
 
-		int totalBet = betAmount;         // raise-to total
-		int toAdd = totalBet - playerBet; // how much player must add
+		int totalBet = betAmount; // raise-to total
 
-		int actualBet = Math.Min(toAdd, playerChips);
+		var result = ApplyAction(isPlayer: true, action: PlayerAction.Raise, raiseToTotal: totalBet);
 
-		playerChips -= actualBet;
-		playerBet += actualBet;
-
-		// Step 1: commit to current street pot only
-		CommitToStreetPot(true, actualBet);
-
-		previousBet = currentBet;
-		currentBet = playerBet;
+		// result.AmountMoved is how many chips actually left the player's stack into the street pot
+		int actualBet = Math.Max(0, result.AmountMoved);
 
 		playerBetOnStreet[currentStreet] = true;
 		playerBetSizeOnStreet[currentStreet] = actualBet;
 		playerTotalBetsThisHand++;
 
-		if (playerChips == 0)
+		if (result.BecameAllIn || playerChips == 0)
 		{
-			playerIsAllIn = true;
 			ShowMessage($"You raise to ${playerBet} (ALL-IN!)");
 			GD.Print($"Player raises to {playerBet} (ALL-IN)");
 		}
-		else if (isRaise)
+		else if (!result.IsBet)
 		{
 			ShowMessage($"You raise to ${playerBet}");
 			GD.Print($"Player raises to {playerBet}");
@@ -217,25 +181,21 @@ public partial class PokerGame
 		bool bothPlayersActed = playerHasActedThisStreet && opponentHasActedThisStreet;
 		bool bothAllIn = playerIsAllIn && opponentIsAllIn;
 
-		// 1. Standard Round End (Equal bets) OR Both All-In
 		if ((betsAreEqual && bothPlayersActed) || bothAllIn)
 		{
 			GD.Print($"Betting round complete: Standard/Equal. betsEqual={betsAreEqual}");
 			GetTree().CreateTimer(0.8).Timeout += AdvanceStreet;
 		}
-		// 2. Player All-In AND Bets Equal (Standard Call All-In)
 		else if (playerIsAllIn && betsAreEqual)
 		{
 			GD.Print($"Betting round complete: Player All-In (Matched).");
 			GetTree().CreateTimer(0.8).Timeout += AdvanceStreet;
 		}
-		// 3. Player All-In (Short) - Calling for LESS than opponent bet
 		else if (playerIsAllIn && playerBet < opponentBet)
 		{
 			GD.Print($"Betting round complete: Player All-In (Short/Partial Call).");
 			GetTree().CreateTimer(0.8).Timeout += AdvanceStreet;
 		}
-		// 4. Opponent All-In (Short) - Calling for LESS than player bet
 		else if (opponentIsAllIn && opponentBet < playerBet)
 		{
 			GD.Print($"Betting round complete: Opponent All-In (Short).");

@@ -181,30 +181,52 @@ public partial class PokerGame
 		opponentChipsInPot = 0;
 	}
 	
+	private void UncommitFromStreetPot(bool isPlayer, int amount)
+	{
+		if (amount <= 0) return;
+
+		if (isPlayer)
+		{
+			playerChipsInPot = Math.Max(0, playerChipsInPot - amount);
+			playerContributed = Math.Max(0, playerContributed - amount);
+		}
+		else
+		{
+			opponentChipsInPot = Math.Max(0, opponentChipsInPot - amount);
+			opponentContributed = Math.Max(0, opponentContributed - amount);
+		}
+	}
+	
 	private bool ReturnUncalledChips()
 	{
 		if (playerContributed > opponentContributed)
 		{
 			int refund = playerContributed - opponentContributed;
-			playerChips += refund;
+
+			AddPlayerChips(refund);
 			pot -= refund;
 			playerContributed -= refund;
 
+			RefreshAllInFlagsFromStacks();
 			GD.Print($"Side Pot: Returned {refund} uncalled chips to Player.");
 			return true;
 		}
 		else if (opponentContributed > playerContributed)
 		{
 			int refund = opponentContributed - playerContributed;
-			AddOpponentChips(refund);
 
+			AddOpponentChips(refund);
 			pot -= refund;
 			opponentContributed -= refund;
+
+			RefreshAllInFlagsFromStacks();
 			GD.Print($"Side Pot: Returned {refund} uncalled chips to Opponent.");
 			return true;
 		}
+
 		return false;
 	}
+
 
 	// --- STATE HELPERS ---
 
@@ -230,6 +252,25 @@ public partial class PokerGame
 		};
 		state.SetPlayerBet(aiOpponent, opponentBet);
 		return state;
+	}
+	
+	// -- AI HELPERS --
+	
+	private PlayerAction DecideAIAction(GameState gameState)
+	{
+		return aiOpponent.MakeDecision(gameState);
+	}
+	
+	private bool DetermineAIPosition()
+	{
+		if (currentStreet == Street.Preflop)
+		{
+			return playerHasButton;
+		}
+		else
+		{
+			return !playerHasButton;
+		}
 	}
 
 }
