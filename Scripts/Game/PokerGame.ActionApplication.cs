@@ -30,6 +30,8 @@ public partial class PokerGame
 		if (delta == 0) return;
 		playerChips += delta;
 		if (playerChips < 0) playerChips = 0;
+		
+		RefreshAllInFlagsFromStacks();
 	}
 
 	private void RefreshAllInFlagsFromStacks()
