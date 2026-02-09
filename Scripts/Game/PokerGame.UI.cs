@@ -906,43 +906,40 @@ public partial class PokerGame
 		int toCall = currentBet - playerBet;
 		var (minBet, maxBet) = GetLegalBetRange();
 
-		bool allInOnly = (minBet == maxBet && maxBet == playerChips);
-		bool sliderAllIn = (maxBet == playerChips && betAmount == maxBet);
+		bool isAllIn = (betAmount >= playerChips);
 
 		if (toCall == 0)
 		{
 			checkCallButton.Text = "Check";
 
-			if (allInOnly || sliderAllIn)
+			if (isAllIn)
 			{
-				betRaiseButton.Text = $"ALL IN: ${maxBet}";
+				betRaiseButton.Text = $"ALL IN: ${betAmount}";
+			}
+			else if (currentBet > 0)
+			{
+				betRaiseButton.Text = $"Raise to: ${betAmount}";
 			}
 			else
 			{
-				if (currentBet > 0)
-				{
-					betRaiseButton.Text = $"Raise to: ${betAmount}";
-				}
-				else
-				{
-					betRaiseButton.Text = $"Bet: ${betAmount}";
-				}
+				betRaiseButton.Text = $"Bet: ${betAmount}";
 			}
 		}
 		else
 		{
 			checkCallButton.Text = $"Call: ${Math.Min(toCall, playerChips)}";
 
-			if (allInOnly || sliderAllIn)
+			if (isAllIn)
 			{
-				betRaiseButton.Text = $"ALL IN: ${maxBet}";
+				betRaiseButton.Text = $"ALL IN: ${betAmount}";
 			}
 			else
 			{
-				betRaiseButton.Text = $"Raise to: ${betAmount}";  // Changed from "Raise:"
+				betRaiseButton.Text = $"Raise to: ${betAmount}";
 			}
 		}
 	}
+
 
 
 	private void UpdateHud(bool disableButtons = false)
