@@ -591,7 +591,6 @@ public partial class PokerGame
 		bool bothActed = playerHasActedThisStreet && opponentHasActedThisStreet;
 		bool bothAllIn = playerIsAllIn && opponentIsAllIn;
 		
-		// ✅ Check reopening flags
 		bool playerCannotAct = playerIsAllIn || !playerCanReopenBetting;
 		bool opponentCannotAct = opponentIsAllIn || !opponentCanReopenBetting;
 
@@ -601,7 +600,7 @@ public partial class PokerGame
 		// Betting round complete if:
 		// 1. Both all-in, OR
 		// 2. Bets equal, both acted, and BOTH cannot reopen, OR
-		// 3. ✅ NEW: Opponent all-in with under-raise (can't reopen) and player already acted
+		// 3. Opponent all-in with under-raise (can't reopen) and player already acted
 		if (bothAllIn || 
 			(betsEqual && bothActed && playerCannotAct && opponentCannotAct) ||
 			(opponentIsAllIn && !opponentCanReopenBetting && bothActed))

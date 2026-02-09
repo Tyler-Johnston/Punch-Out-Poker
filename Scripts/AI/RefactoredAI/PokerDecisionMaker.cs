@@ -500,21 +500,36 @@ public partial class PokerDecisionMaker : Node
 		float effectivePot = Mathf.Max(gameState.PotSize, 1f);
 		float currentBet = gameState.CurrentBet;
 
+		// ✅ STEP 1: Early-out if raising is not allowed (under-raise all-in rule)
+		if (!gameState.CanAIReopenBetting)
+		{
+			GD.Print($"[{player.PlayerName}] Cannot raise - betting not reopened. Returning currentBet.");
+			return (int)currentBet;  // No raise available
+		}
+
 		float baseBetRatio = CalculatePlannedBetRatio(handStrength, personality, gameState.Street, player.BetSizeSeed, player);
 		float targetTotal = effectivePot * baseBetRatio;
 
 		if (player.CurrentTiltState >= TiltState.Steaming)
 			targetTotal *= 1.15f;
 
+		// ✅ STEP 2: Calculate min-raise using LastFullRaiseIncrement
 		float minTotal;
 		if (currentBet <= 0)
 		{
+			// Opening bet
 			minTotal = gameState.BigBlind;
 		}
 		else
 		{
-			float lastRaiseIncrement = Mathf.Max(currentBet - gameState.PreviousBet, gameState.BigBlind);
+			// Use the last FULL raise increment (not an under-raise)
+			float lastRaiseIncrement = (gameState.LastFullRaiseIncrement > 0)
+				? gameState.LastFullRaiseIncrement
+				: Mathf.Max(currentBet - gameState.PreviousBet, gameState.BigBlind);
+			
 			minTotal = currentBet + lastRaiseIncrement;
+			
+			GD.Print($"[AI RAISE CALC] LastFullRaiseInc={gameState.LastFullRaiseIncrement}, MinRaise={lastRaiseIncrement}, MinTotal={minTotal}");
 		}
 
 		float maxTotal = gameState.GetPlayerCurrentBet(player) + player.ChipStack;
@@ -523,6 +538,7 @@ public partial class PokerDecisionMaker : Node
 			? maxTotal
 			: Mathf.Clamp(targetTotal, minTotal, maxTotal);
 
+		// River commitment logic
 		if (gameState.Street == Street.River && handStrength >= 0.60f)
 		{
 			float spr = player.ChipStack / effectivePot;
@@ -537,6 +553,7 @@ public partial class PokerDecisionMaker : Node
 			}
 		}
 
+		// All-in commitment logic
 		float amountToAdd = legalTotal - gameState.GetPlayerCurrentBet(player);
 		if (amountToAdd >= player.ChipStack * 0.90f)
 		{
@@ -560,6 +577,7 @@ public partial class PokerDecisionMaker : Node
 		GD.Print($"[{player.PlayerName}] Raise-to total: {finalTotal} (effPot: {effectivePot}, strength: {handStrength:F2}, minTotal: {minTotal}, maxTotal: {maxTotal})");
 		return finalTotal;
 	}
+
 
 	public float EvaluateHandStrength(List<Card> holeCards, List<Card> communityCards, Street street, float randomnessSeed)
 	{

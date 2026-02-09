@@ -255,9 +255,11 @@ public partial class PokerGame
 		
 		state.SetPlayerBet(aiOpponent, opponentBet);
 		state.SetCanAIReopenBetting(opponentCanReopenBetting);
+		state.SetLastFullRaiseIncrement(lastRaiseAmount);
 		
 		return state;
 	}
+
 
 	
 	// -- AI HELPERS --
