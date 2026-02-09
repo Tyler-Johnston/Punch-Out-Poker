@@ -205,28 +205,40 @@ public partial class PokerGame
 		if (playerContributed > opponentContributed)
 		{
 			int refund = playerContributed - opponentContributed;
-
-			AddPlayerChips(refund);
-			pot -= refund;
+			
+			// ✅ Pull from street commits first, then settled pot
+			int fromStreet = Mathf.Min(refund, playerChipsInPot);
+			int fromPot = refund - fromStreet;
+			
+			playerChipsInPot -= fromStreet;
+			pot -= fromPot;
 			playerContributed -= refund;
-
+			
+			AddPlayerChips(refund);
 			RefreshAllInFlagsFromStacks();
-			GD.Print($"Side Pot: Returned {refund} uncalled chips to Player.");
+			
+			GD.Print($"[REFUND] Player: ${refund} total (${fromStreet} from street, ${fromPot} from settled pot)");
 			return true;
 		}
 		else if (opponentContributed > playerContributed)
 		{
 			int refund = opponentContributed - playerContributed;
-
-			AddOpponentChips(refund);
-			pot -= refund;
+			
+			// ✅ Pull from street commits first, then settled pot
+			int fromStreet = Mathf.Min(refund, opponentChipsInPot);
+			int fromPot = refund - fromStreet;
+			
+			opponentChipsInPot -= fromStreet;
+			pot -= fromPot;
 			opponentContributed -= refund;
-
+			
+			AddOpponentChips(refund);
 			RefreshAllInFlagsFromStacks();
-			GD.Print($"Side Pot: Returned {refund} uncalled chips to Opponent.");
+			
+			GD.Print($"[REFUND] Opponent: ${refund} total (${fromStreet} from street, ${fromPot} from settled pot)");
 			return true;
 		}
-
+		
 		return false;
 	}
 

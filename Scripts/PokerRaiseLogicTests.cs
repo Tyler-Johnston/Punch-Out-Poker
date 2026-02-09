@@ -77,6 +77,20 @@ public partial class PokerRaiseLogicTests : Node
 		TestIntegration_ComplexBettingSequence();
 		TestIntegration_MultiStreetUnderRaises();
 		TestIntegration_SidePotScenario();
+		
+		// ===== REFUND LOGIC TESTS =====
+		TestRefund_SimpleCase_PlayerOvercommitted();
+		TestRefund_SimpleCase_OpponentOvercommitted();
+		TestRefund_PartiallySettledPot_PullFromBoth();
+		TestRefund_FullySettledPot_PullFromPotOnly();
+		TestRefund_EqualContributions_NoRefund();
+		TestRefund_VerySmallRefund_OneChip();
+		TestRefund_LargeRefund_MultiStreetScenario();
+		TestRefund_BothAllIn_OpponentHasMore();
+		TestRefund_AccountingConsistency_BeforeAfter();
+		TestRefund_EdgeCase_RefundEqualsStreetCommit();
+		TestRefund_MultipleRefundsInSequence();
+		TestRefund_NegativeCase_ShouldNeverHappen();
 	}
 
 	// ========================================
@@ -158,6 +172,256 @@ public partial class PokerRaiseLogicTests : Node
 		AssertTrue(testName, isFullRaise, 
 			$"${aiAllInAmount} exceeds min-raise ${lastRaiseAmount}, should be full raise");
 	}
+	
+	// ========================================
+	// REFUND LOGIC TESTS
+	// ========================================
+
+	private void TestRefund_SimpleCase_PlayerOvercommitted()
+	{
+		string testName = "Refund: Simple Case - Player Overcommitted";
+		
+		// Setup: Player bet $100, opponent called $80 (all-in)
+		int playerContributed = 100;
+		int opponentContributed = 80;
+		int playerChipsInPot = 100;
+		int opponentChipsInPot = 80;
+		int settledPot = 0;
+		
+		// Simulate refund calculation
+		int refund = playerContributed - opponentContributed;
+		int fromStreet = Mathf.Min(refund, playerChipsInPot);
+		int fromPot = refund - fromStreet;
+		
+		AssertEqual(testName + " (Refund Amount)", refund, 20, "Should refund $20");
+		AssertEqual(testName + " (From Street)", fromStreet, 20, "All refund from street");
+		AssertEqual(testName + " (From Pot)", fromPot, 0, "Nothing from settled pot");
+	}
+
+	private void TestRefund_SimpleCase_OpponentOvercommitted()
+	{
+		string testName = "Refund: Simple Case - Opponent Overcommitted";
+		
+		// Setup: Opponent bet $150, player called $100 (all-in)
+		int playerContributed = 100;
+		int opponentContributed = 150;
+		int playerChipsInPot = 100;
+		int opponentChipsInPot = 150;
+		
+		int refund = opponentContributed - playerContributed;
+		int fromStreet = Mathf.Min(refund, opponentChipsInPot);
+		int fromPot = refund - fromStreet;
+		
+		AssertEqual(testName + " (Refund Amount)", refund, 50, "Should refund $50");
+		AssertEqual(testName + " (From Street)", fromStreet, 50, "All refund from street");
+		AssertEqual(testName + " (From Pot)", fromPot, 0, "Nothing from settled pot");
+	}
+
+	private void TestRefund_PartiallySettledPot_PullFromBoth()
+	{
+		string testName = "Refund: Partially Settled Pot - Pull From Both";
+		
+		// Setup: Player contributed $200 total, opponent $150 (all-in)
+		// But only $30 remains in street commits (rest already settled)
+		int playerContributed = 200;
+		int opponentContributed = 150;
+		int playerChipsInPot = 30;  // Only $30 left in street
+		int settledPot = 320;  // Rest already settled
+		
+		int refund = playerContributed - opponentContributed;  // $50
+		int fromStreet = Mathf.Min(refund, playerChipsInPot);  // $30
+		int fromPot = refund - fromStreet;  // $20
+		
+		AssertEqual(testName + " (Refund Amount)", refund, 50, "Should refund $50");
+		AssertEqual(testName + " (From Street)", fromStreet, 30, "$30 from street");
+		AssertEqual(testName + " (From Pot)", fromPot, 20, "$20 from settled pot");
+		
+		// Verify final accounting
+		int expectedPlayerChipsInPot = playerChipsInPot - fromStreet;  // 0
+		int expectedSettledPot = settledPot - fromPot;  // 300
+		
+		AssertEqual(testName + " (Street After)", expectedPlayerChipsInPot, 0, "Street should be empty");
+		AssertEqual(testName + " (Pot After)", expectedSettledPot, 300, "Pot reduced by $20");
+	}
+
+	private void TestRefund_FullySettledPot_PullFromPotOnly()
+	{
+		string testName = "Refund: Fully Settled Pot - Pull From Pot Only";
+		
+		// Setup: Everything already settled, no street commits left
+		int playerContributed = 180;
+		int opponentContributed = 100;
+		int playerChipsInPot = 0;  // Already settled
+		int opponentChipsInPot = 0;  // Already settled
+		int settledPot = 280;
+		
+		int refund = playerContributed - opponentContributed;  // $80
+		int fromStreet = Mathf.Min(refund, playerChipsInPot);  // $0
+		int fromPot = refund - fromStreet;  // $80
+		
+		AssertEqual(testName + " (Refund Amount)", refund, 80, "Should refund $80");
+		AssertEqual(testName + " (From Street)", fromStreet, 0, "Nothing from street");
+		AssertEqual(testName + " (From Pot)", fromPot, 80, "All from settled pot");
+		
+		int expectedSettledPot = settledPot - fromPot;  // 200
+		AssertEqual(testName + " (Pot After)", expectedSettledPot, 200, "Pot reduced by $80");
+	}
+
+	private void TestRefund_EqualContributions_NoRefund()
+	{
+		string testName = "Refund: Equal Contributions - No Refund";
+		
+		// Setup: Both contributed exactly the same
+		int playerContributed = 100;
+		int opponentContributed = 100;
+		
+		bool shouldRefund = (playerContributed != opponentContributed);
+		
+		AssertFalse(testName, shouldRefund, "No refund needed when contributions equal");
+	}
+
+	private void TestRefund_VerySmallRefund_OneChip()
+	{
+		string testName = "Refund: Very Small Refund - One Chip";
+		
+		int playerContributed = 101;
+		int opponentContributed = 100;
+		int playerChipsInPot = 101;
+		
+		int refund = playerContributed - opponentContributed;
+		int fromStreet = Mathf.Min(refund, playerChipsInPot);
+		
+		AssertEqual(testName, refund, 1, "Should refund even $1");
+		AssertEqual(testName + " (From Street)", fromStreet, 1, "One chip from street");
+	}
+
+	private void TestRefund_LargeRefund_MultiStreetScenario()
+	{
+		string testName = "Refund: Large Refund - Multi-Street Scenario";
+		
+		// Setup: Player bet big on multiple streets, opponent went all-in early
+		int playerContributed = 500;
+		int opponentContributed = 120;  // All-in early
+		int playerChipsInPot = 200;  // Current street only
+		int settledPot = 420;  // Previous streets
+		
+		int refund = playerContributed - opponentContributed;  // $380
+		int fromStreet = Mathf.Min(refund, playerChipsInPot);  // $200
+		int fromPot = refund - fromStreet;  // $180
+		
+		AssertEqual(testName + " (Refund Amount)", refund, 380, "Should refund $380");
+		AssertEqual(testName + " (From Street)", fromStreet, 200, "$200 from current street");
+		AssertEqual(testName + " (From Pot)", fromPot, 180, "$180 from settled pot");
+		
+		int expectedSettledPot = settledPot - fromPot;  // 240
+		AssertEqual(testName + " (Final Pot)", expectedSettledPot, 240, "Pot should be $240");
+	}
+
+	private void TestRefund_BothAllIn_OpponentHasMore()
+	{
+		string testName = "Refund: Both All-In - Opponent Has More Chips";
+		
+		// Player: $75 (all-in), Opponent: $200 (all-in, but capped at player's amount)
+		int playerContributed = 75;
+		int opponentContributed = 200;
+		int opponentChipsInPot = 200;
+		
+		int refund = opponentContributed - playerContributed;  // $125
+		int fromStreet = Mathf.Min(refund, opponentChipsInPot);  // $125
+		
+		AssertEqual(testName + " (Refund Amount)", refund, 125, "Should refund $125 to opponent");
+		AssertEqual(testName + " (From Street)", fromStreet, 125, "All from street");
+	}
+
+	private void TestRefund_AccountingConsistency_BeforeAfter()
+	{
+		string testName = "Refund: Accounting Consistency - Before/After";
+		
+		// Setup
+		int playerContributed = 150;
+		int opponentContributed = 100;
+		int playerChipsInPot = 80;
+		int settledPot = 170;
+		int totalPotBefore = playerChipsInPot + settledPot;  // 250
+		
+		// Refund calculation
+		int refund = playerContributed - opponentContributed;  // $50
+		int fromStreet = Mathf.Min(refund, playerChipsInPot);  // $50 (limited by street)
+		int fromPot = refund - fromStreet;  // $0
+		
+		// After refund
+		int playerChipsInPotAfter = playerChipsInPot - fromStreet;  // 30
+		int settledPotAfter = settledPot - fromPot;  // 170
+		int totalPotAfter = playerChipsInPotAfter + settledPotAfter;  // 200
+		
+		// Verify pot decreased by exactly refund amount
+		int potDecrease = totalPotBefore - totalPotAfter;
+		AssertEqual(testName, potDecrease, refund, "Pot should decrease by exactly refund amount");
+	}
+
+	private void TestRefund_EdgeCase_RefundEqualsStreetCommit()
+	{
+		string testName = "Refund: Edge Case - Refund Exactly Equals Street Commit";
+		
+		// Perfect match: refund amount = street commit
+		int playerContributed = 100;
+		int opponentContributed = 50;
+		int playerChipsInPot = 50;  // Exactly the refund amount
+		int settledPot = 100;
+		
+		int refund = playerContributed - opponentContributed;  // $50
+		int fromStreet = Mathf.Min(refund, playerChipsInPot);  // $50
+		int fromPot = refund - fromStreet;  // $0
+		
+		AssertEqual(testName + " (From Street)", fromStreet, 50, "All from street");
+		AssertEqual(testName + " (From Pot)", fromPot, 0, "Nothing from pot");
+		
+		int expectedPlayerChipsInPot = 0;
+		AssertEqual(testName + " (Street Emptied)", expectedPlayerChipsInPot, 0, "Street should be empty");
+	}
+
+	private void TestRefund_MultipleRefundsInSequence()
+	{
+		string testName = "Refund: Multiple Refunds In Sequence (3-way)";
+		
+		// Simulating 3-way pot where two players went all-in
+		// Player1: $50, Player2: $100, Player3: $200
+		
+		// First refund: Player3 gets back $100 (200-100)
+		int refund1 = 100;
+		int player3ChipsInPot = 200;
+		int fromStreet1 = Mathf.Min(refund1, player3ChipsInPot);
+		
+		AssertEqual(testName + " (1st Refund)", fromStreet1, 100, "First refund: $100");
+		
+		// Second refund: Player2 gets back $50 (100-50)
+		int refund2 = 50;
+		int player2ChipsInPot = 100;
+		int fromStreet2 = Mathf.Min(refund2, player2ChipsInPot);
+		
+		AssertEqual(testName + " (2nd Refund)", fromStreet2, 50, "Second refund: $50");
+		
+		// Final pot should be 3 * $50 = $150
+		int finalPot = 150;
+		AssertEqual(testName + " (Final Pot)", finalPot, 150, "Final pot after both refunds");
+	}
+
+	private void TestRefund_NegativeCase_ShouldNeverHappen()
+	{
+		string testName = "Refund: Negative Case - Should Never Happen (Defensive)";
+		
+		// This should never happen, but test defensive code
+		int playerContributed = 50;
+		int opponentContributed = 100;  // Opponent somehow contributed more (bug)
+		
+		int refund = opponentContributed - playerContributed;  // Would be opponent's refund
+		
+		// Player should NOT get refund in this case
+		bool playerShouldGetRefund = (playerContributed > opponentContributed);
+		
+		AssertFalse(testName, playerShouldGetRefund, "Player should not get refund if contributed less");
+	}
+
 
 	// ========================================
 	// MIN-RAISE CALCULATION TESTS

@@ -439,6 +439,19 @@ public partial class PokerGame
 		if (isShowdownInProgress) return;
 		isShowdownInProgress = true;
 
+		GD.Print("\n=== Showdown ===");
+
+		// ✅ Process refunds BEFORE settling pot
+		bool refundOccurred = ReturnUncalledChips();
+		if (refundOccurred)
+		{
+			displayPot = pot;
+			UpdateHud();
+			ShowMessage("Returned Uncalled Chips");
+			await ToSignal(GetTree().CreateTimer(1.5f), SceneTreeTimer.SignalName.Timeout);
+		}
+
+		// ✅ NOW settle any remaining street commits into pot
 		if (playerChipsInPot > 0 || opponentChipsInPot > 0)
 		{
 			SettleStreetIntoPot();
@@ -447,17 +460,6 @@ public partial class PokerGame
 		else
 		{
 			GD.Print($"[Showdown] Pot already settled: {pot}");
-		}
-		GD.Print("\n=== Showdown ===");
-
-		// process refunds first (after pot is fully settled)
-		bool refundOccurred = ReturnUncalledChips();
-		if (refundOccurred)
-		{
-			displayPot = pot;
-			UpdateHud();
-			ShowMessage("Returned Uncalled Chips");
-			await ToSignal(GetTree().CreateTimer(1.5f), SceneTreeTimer.SignalName.Timeout);
 		}
 
 		// Toss cards
@@ -522,7 +524,7 @@ public partial class PokerGame
 
 		// Clear hand pot tracking
 		pot = 0;
-		displayPot = 0; // optional if you still keep it
+		displayPot = 0;
 		playerChipsInPot = 0;
 		opponentChipsInPot = 0;
 		playerContributed = 0;
@@ -533,6 +535,7 @@ public partial class PokerGame
 		UpdateHud();
 		EndHand();
 	}
+
 
 	// --- AI TURN PROCESSING ---
 
