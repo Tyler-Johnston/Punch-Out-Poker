@@ -71,7 +71,7 @@ public partial class PokerGame : Node2D
 	// Chip display containers
 	private GridContainer PlayerChipGridBox;      // Player's chips in current betting round
 	private GridContainer OpponentChipGridBox;    // Opponent's chips in current betting round
-	private GridContainer chipContainer;          // Main pot display (center of table)
+	private GridContainer chipContainer;          // Main pot display
 	
 	private Sprite2D faceSprite;
 	private SpeechBubble speechBubble;

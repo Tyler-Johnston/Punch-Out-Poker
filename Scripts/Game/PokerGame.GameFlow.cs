@@ -575,7 +575,7 @@ public partial class PokerGame
 			await ToSignal(GetTree().CreateTimer(waitTime + 1.0f), SceneTreeTimer.SignalName.Timeout);
 		}
 		
-		ExecuteAIAction(action);
+		await ExecuteAIAction(action);
 
 		if (action == PlayerAction.Fold || !handInProgress)
 		{
@@ -611,7 +611,7 @@ public partial class PokerGame
 		}
 	}
 
-	private void ExecuteAIAction(PlayerAction action)
+	private async Task ExecuteAIAction(PlayerAction action)
 	{
 		string actionText = action.ToString();
 		
@@ -629,7 +629,7 @@ public partial class PokerGame
 		switch (action)
 		{
 			case PlayerAction.Fold:
-				OnOpponentFold();
+				await OnOpponentFold();
 				break;
 				
 			case PlayerAction.Check:
@@ -656,7 +656,7 @@ public partial class PokerGame
 
 	// --- AI ACTION HANDLERS ---
 
-	private async void OnOpponentFold()
+	private async Task OnOpponentFold()
 	{
 		ShowMessage($"{currentOpponentName} folds");
 		GD.Print($"{currentOpponentName} folds");
