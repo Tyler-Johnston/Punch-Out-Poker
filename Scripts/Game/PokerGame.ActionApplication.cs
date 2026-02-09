@@ -63,7 +63,6 @@ public partial class PokerGame
 				return new ActionApplyResult(0, false, false, actorBet);
 
 			case PlayerAction.Check:
-				// ✅ Checking closes action for this player
 				if (isPlayer)
 					playerCanReopenBetting = false;
 				else
@@ -75,7 +74,6 @@ public partial class PokerGame
 			{
 				if (toCall == 0)
 				{
-					// ✅ This is actually a check
 					if (isPlayer)
 						playerCanReopenBetting = false;
 					else
@@ -130,7 +128,6 @@ public partial class PokerGame
 				bool isAllInNow2 = GetIsAllIn(isPlayer);
 				bool becameAllIn2 = (!wasAllIn && isAllInNow2);
 
-				// ✅ Calling closes action for this player
 				if (isPlayer)
 					playerCanReopenBetting = false;
 				else
@@ -173,7 +170,6 @@ public partial class PokerGame
 				CommitToStreetPot(isPlayer, add);
 				actorBet += add;
 				
-				// ✅ Track full raise vs under-raise
 				int raiseIncrement = raiseToTotal - currentBet;
 				int minRaiseIncrement = (lastRaiseAmount > 0) ? lastRaiseAmount : bigBlind;
 				
@@ -194,7 +190,6 @@ public partial class PokerGame
 						opponentCanReopenBetting = false;
 					}
 					
-					// ✅ Only reset acted flags for FULL raises
 					if (isPlayer) opponentHasActedThisStreet = false; 
 					else playerHasActedThisStreet = false;
 					
@@ -207,8 +202,6 @@ public partial class PokerGame
 						playerCanReopenBetting = false;
 					else
 						opponentCanReopenBetting = false;
-					
-					// ✅ DON'T reset acted flags for under-raises - action stays closed
 					
 					GD.Print($"[UNDER-RAISE] Increment={raiseIncrement} < min={minRaiseIncrement}, NOT reopening");
 				}
@@ -223,7 +216,6 @@ public partial class PokerGame
 				return new ActionApplyResult(add, becameAllIn, opening, actorBet);
 			}
 
-
 			case PlayerAction.AllIn:
 			{
 				int shove = actorChips;
@@ -236,11 +228,10 @@ public partial class PokerGame
 				CommitToStreetPot(isPlayer, shove);
 				actorBet += shove;
 				
-				// ✅ Track full raise vs under-raise for all-ins
-				int raiseIncrement = actorBet - currentBet;
+				int raiseIncrement = shove;
 				int minRaiseIncrement = (lastRaiseAmount > 0) ? lastRaiseAmount : bigBlind;
 				
-				bool isFullRaise = raiseIncrement >= minRaiseIncrement;
+				bool isFullRaise = (raiseIncrement >= minRaiseIncrement) && (actorBet > currentBet);
 				
 				if (isFullRaise)
 				{
@@ -256,7 +247,6 @@ public partial class PokerGame
 						opponentCanReopenBetting = false;
 					}
 					
-					// ✅ Only reset acted flags for FULL raises
 					if (isPlayer) opponentHasActedThisStreet = false; 
 					else playerHasActedThisStreet = false;
 					
@@ -269,15 +259,11 @@ public partial class PokerGame
 					else
 						opponentCanReopenBetting = false;
 					
-					// ✅ DON'T reset acted flags for under-raises - action stays closed
-					
 					GD.Print($"[UNDER-RAISE ALL-IN] Increment={raiseIncrement} < min={minRaiseIncrement}, NOT reopening");
 				}
 				
 				previousBet = currentBet;
 				currentBet = Math.Max(currentBet, actorBet);
-				
-				// ✅ REMOVED: if (isPlayer) opponentHasActedThisStreet = false; else playerHasActedThisStreet = false;
 				
 				RefreshAllInFlagsFromStacks();
 				bool isAllInNow = GetIsAllIn(isPlayer);
@@ -285,6 +271,7 @@ public partial class PokerGame
 				
 				return new ActionApplyResult(shove, becameAllIn, opening, actorBet);
 			}
+
 
 
 			default:

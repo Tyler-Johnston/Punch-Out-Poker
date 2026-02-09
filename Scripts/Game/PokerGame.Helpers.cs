@@ -244,7 +244,6 @@ public partial class PokerGame
 		var state = new GameState
 		{
 			CommunityCards = new List<Card>(communityCards),
-
 			PotSize = GetEffectivePot(),
 			CurrentBet = currentBet,
 			PreviousBet = previousBet,
@@ -253,9 +252,13 @@ public partial class PokerGame
 			IsAIInPosition = DetermineAIPosition(),
 			OpponentChipStack = opponentChips
 		};
+		
 		state.SetPlayerBet(aiOpponent, opponentBet);
+		state.SetCanAIReopenBetting(opponentCanReopenBetting);
+		
 		return state;
 	}
+
 	
 	// -- AI HELPERS --
 	

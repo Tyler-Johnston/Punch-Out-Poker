@@ -65,6 +65,14 @@ public partial class PokerDecisionMaker : Node
 			GD.Print($"[AI ACTION] {player.PlayerName} Fold");
 			return PlayerAction.Fold;
 		}
+		
+		if (!gameState.CanAIReopenBetting)
+		{
+			GD.Print($"[AI] Cannot raise - betting not reopened (under-raise all-in rule). Forcing Call.");
+			GD.Print($"[AI ACTION] {player.PlayerName} Call");
+			return PlayerAction.Call;
+		}
+
 
 		// We're continuing - now decide call vs raise.
 		PlayerAction finalAction = DecideCallOrRaise(handStrength, betRatio, gameState.Street, personality, player, toCall);
@@ -487,19 +495,6 @@ public partial class PokerDecisionMaker : Node
 
 	public int CalculateRaiseToTotal(AIPokerPlayer player, GameState gameState, float handStrength)
 	{
-		//
-		//if (GameManager.Instance.DevTestMode)
-		//{
-			//// Check if Ctrl+Shift are held (this won't work in _Input, must poll)
-			//bool ctrlHeld = Input.IsKeyPressed(Key.Ctrl);
-			//bool shiftHeld = Input.IsKeyPressed(Key.Shift);
-			//
-			//int tinyRaise = (int)(gameState.CurrentBet * 0.5f); // 50% of currentBet (illegal!)
-			//GD.Print($"[DEBUG OVERRIDE] 🔧 Forcing illegal tiny raise: {tinyRaise} (currentBet: {gameState.CurrentBet})");
-			//GD.Print($"[DEBUG OVERRIDE] This should trigger safety checks in OnOpponentRaise()");
-			//return tinyRaise;
-		//}
-	
 		PokerPersonality personality = player.Personality;
 
 		float effectivePot = Mathf.Max(gameState.PotSize, 1f);

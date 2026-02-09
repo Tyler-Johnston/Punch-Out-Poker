@@ -69,6 +69,7 @@ public partial class GameState : RefCounted
 	public float BigBlind { get; set; }
 	public int OpponentChipStack { get; set; }
 	public bool IsAIInPosition { get; set; }
+	public bool CanAIReopenBetting { get; private set; }
 	
 	private Dictionary<AIPokerPlayer, float> playerBets = new Dictionary<AIPokerPlayer, float>();
 	
@@ -80,6 +81,11 @@ public partial class GameState : RefCounted
 	public void SetPlayerBet(AIPokerPlayer player, float amount)
 	{
 		playerBets[player] = amount;
+	}
+	
+	public void SetCanAIReopenBetting(bool canReopen)
+	{
+		CanAIReopenBetting = canReopen;
 	}
 	
 	public void ResetBetsForNewStreet()
