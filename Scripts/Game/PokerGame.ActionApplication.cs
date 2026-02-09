@@ -1,4 +1,5 @@
 using System;
+using Godot;
 
 public partial class PokerGame
 {
@@ -134,20 +135,28 @@ public partial class PokerGame
 			{
 				// raiseToTotal is the actor's intended FINAL total bet this street.
 				// Must be at least a call; otherwise we can leave actorBet < currentBet (illegal partial raise).
+			  	GD.Print($"[APPLY RAISE] raiseToTotal={raiseToTotal}, currentBet={currentBet}, actorBet={actorBet}, actorChips={actorChips}");
 				if (raiseToTotal < currentBet)
 				{
-					// Treat as a call request.
+					GD.Print($"[APPLY RAISE] ⚠️ raiseToTotal ({raiseToTotal}) < currentBet ({currentBet}), converting to CALL");
 					return ApplyAction(isPlayer, PlayerAction.Call);
 				}
 
 				// No-op guard (covers raiseToTotal == actorBet and raiseToTotal < actorBet).
 				if (raiseToTotal <= actorBet)
+				{
+					GD.Print($"[APPLY RAISE] ⚠️ raiseToTotal ({raiseToTotal}) <= actorBet ({actorBet}), clamping to actorBet (no-op)");
 					raiseToTotal = actorBet;
+				}
 
 				int toAdd = raiseToTotal - actorBet;
 				if (toAdd <= 0)
+				{
+					GD.Print($"[APPLY RAISE] ❌ toAdd = {toAdd}, returning 0 chips moved");
 					return new ActionApplyResult(0, false, false, actorBet);
-
+				}
+				GD.Print($"[APPLY RAISE] ✅ Moving {toAdd} chips from stack to pot");
+				
 				int add = Math.Min(toAdd, actorChips);
 				if (add <= 0)
 					return new ActionApplyResult(0, false, false, actorBet);
