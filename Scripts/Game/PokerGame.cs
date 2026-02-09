@@ -118,6 +118,12 @@ public partial class PokerGame : Node2D
 	private bool playerHasActedThisStreet = false;
 	private bool opponentHasActedThisStreet = false;
 	
+		// New fields to add:
+	private int lastRaiseAmount = 0;        // Size of the last *raise increment*
+	private bool playerCanReopenBetting = true;
+	private bool opponentCanReopenBetting = true;
+
+	
 	private Dictionary<Street, bool> playerBetOnStreet = new Dictionary<Street, bool>();
 	private Dictionary<Street, int> playerBetSizeOnStreet = new Dictionary<Street, int>();
 

@@ -41,7 +41,6 @@ public partial class PokerGame
 	private void OnCheckCallPressed()
 	{
 		if (!handInProgress || !isPlayerTurn) return;
-
 		playerHasActedThisStreet = true;
 
 		// IMPORTANT: Decide check vs call based on current state BEFORE applying.
@@ -49,7 +48,6 @@ public partial class PokerGame
 		if (toCall == 0)
 		{
 			ApplyAction(isPlayer: true, action: PlayerAction.Check);
-
 			ShowMessage("You check");
 			sfxPlayer.PlaySound("check");
 			GD.Print($"Player checks on {currentStreet}");
@@ -98,29 +96,40 @@ public partial class PokerGame
 		bool betsAreEqual = (playerBet == opponentBet);
 		bool bothPlayersActed = playerHasActedThisStreet && opponentHasActedThisStreet;
 		bool bothAllIn = playerIsAllIn && opponentIsAllIn;
+		
+		// ✅ Check reopening flags
+		bool playerCannotAct = playerIsAllIn || !playerCanReopenBetting;
+		bool opponentCannotAct = opponentIsAllIn || !opponentCanReopenBetting;
+		
+		GD.Print($"After player call/check: betsEqual={betsAreEqual}, bothActed={bothPlayersActed}");
+		GD.Print($"Reopening: playerCan={playerCanReopenBetting}, opponentCan={opponentCanReopenBetting}");
 
-		if ((betsAreEqual && bothPlayersActed) || bothAllIn)
+		// Betting round complete if:
+		// 1. Both all-in, OR
+		// 2. Bets equal, both acted, and both cannot reopen, OR
+		// 3. ✅ Player all-in with under-raise (can't reopen) and opponent already acted
+		if (bothAllIn || 
+			(betsAreEqual && bothPlayersActed && playerCannotAct && opponentCannotAct) ||
+			(playerIsAllIn && !playerCanReopenBetting && bothPlayersActed))
 		{
-			GD.Print($"Betting round complete: Standard/Equal. betsEqual={betsAreEqual}");
+			GD.Print($"Betting round complete: Standard/Equal/Both-Cannot-Reopen");
 			GetTree().CreateTimer(0.8).Timeout += AdvanceStreet;
 		}
-		else if (playerIsAllIn && betsAreEqual)
+		else if (opponentIsAllIn && betsAreEqual)
 		{
-			GD.Print($"Betting round complete: Player All-In (Matched).");
+			// Opponent all-in, player matched (or over-called short stack)
+			GD.Print($"Betting round complete: Opponent All-In (Matched).");
 			GetTree().CreateTimer(0.8).Timeout += AdvanceStreet;
 		}
-		else if (playerIsAllIn && playerBet < opponentBet)
+		else if (opponentIsAllIn && !opponentCanReopenBetting)
 		{
-			GD.Print($"Betting round complete: Player All-In (Short/Partial Call).");
-			GetTree().CreateTimer(0.8).Timeout += AdvanceStreet;
-		}
-		else if (opponentIsAllIn && opponentBet < playerBet)
-		{
-			GD.Print($"Betting round complete: Opponent All-In (Short).");
+			// ✅ Opponent went all-in with under-raise, betting is closed
+			GD.Print($"Betting round complete: Opponent All-In (Under-Raise).");
 			GetTree().CreateTimer(0.8).Timeout += AdvanceStreet;
 		}
 		else
 		{
+			// Opponent can still act (or needs to act)
 			GetTree().CreateTimer(1.2).Timeout += CheckAndProcessAITurn;
 		}
 	}
@@ -137,19 +146,16 @@ public partial class PokerGame
 	private void OnBetRaisePressed()
 	{
 		if (!handInProgress || !isPlayerTurn) return;
-
 		playerHasActedThisStreet = true;
 
 		var (minBet, maxBet) = GetLegalBetRange();
 		betAmount = Math.Clamp(betAmount, minBet, maxBet);
-
 		int totalBet = betAmount; // raise-to total
 
 		var result = ApplyAction(isPlayer: true, action: PlayerAction.Raise, raiseToTotal: totalBet);
 
 		// result.AmountMoved is how many chips actually left the player's stack into the street pot
 		int actualBet = Math.Max(0, result.AmountMoved);
-
 		playerBetOnStreet[currentStreet] = true;
 		playerBetSizeOnStreet[currentStreet] = actualBet;
 		playerTotalBetsThisHand++;
@@ -171,7 +177,6 @@ public partial class PokerGame
 		}
 
 		sfxPlayer.PlayRandomChip();
-
 		isPlayerTurn = false;
 		UpdateHud();
 		UpdateOpponentVisuals();
@@ -180,32 +185,45 @@ public partial class PokerGame
 		bool betsAreEqual = (playerBet == opponentBet);
 		bool bothPlayersActed = playerHasActedThisStreet && opponentHasActedThisStreet;
 		bool bothAllIn = playerIsAllIn && opponentIsAllIn;
+		
+		// ✅ Check reopening flags
+		bool playerCannotAct = playerIsAllIn || !playerCanReopenBetting;
+		bool opponentCannotAct = opponentIsAllIn || !opponentCanReopenBetting;
+		
+		GD.Print($"After player bet/raise: betsEqual={betsAreEqual}, bothActed={bothPlayersActed}");
+		GD.Print($"Reopening: playerCan={playerCanReopenBetting}, opponentCan={opponentCanReopenBetting}");
 
-		if ((betsAreEqual && bothPlayersActed) || bothAllIn)
+		// Betting round complete if:
+		// 1. Both all-in, OR
+		// 2. Bets equal, both acted, and both cannot reopen, OR
+		// 3. ✅ Player all-in with under-raise (can't reopen) and opponent already acted
+		if (bothAllIn || 
+			(betsAreEqual && bothPlayersActed && playerCannotAct && opponentCannotAct) ||
+			(playerIsAllIn && !playerCanReopenBetting && bothPlayersActed))
 		{
-			GD.Print($"Betting round complete: Standard/Equal. betsEqual={betsAreEqual}");
+			GD.Print($"Betting round complete: Standard/Equal/Both-Cannot-Reopen");
 			GetTree().CreateTimer(0.8).Timeout += AdvanceStreet;
 		}
-		else if (playerIsAllIn && betsAreEqual)
+		else if (opponentIsAllIn && betsAreEqual)
 		{
-			GD.Print($"Betting round complete: Player All-In (Matched).");
+			// Opponent all-in, player matched
+			GD.Print($"Betting round complete: Opponent All-In (Matched).");
 			GetTree().CreateTimer(0.8).Timeout += AdvanceStreet;
 		}
-		else if (playerIsAllIn && playerBet < opponentBet)
+		else if (opponentIsAllIn && !opponentCanReopenBetting)
 		{
-			GD.Print($"Betting round complete: Player All-In (Short/Partial Call).");
-			GetTree().CreateTimer(0.8).Timeout += AdvanceStreet;
-		}
-		else if (opponentIsAllIn && opponentBet < playerBet)
-		{
-			GD.Print($"Betting round complete: Opponent All-In (Short).");
+			// ✅ Opponent went all-in with under-raise, betting is closed
+			GD.Print($"Betting round complete: Opponent All-In (Under-Raise).");
 			GetTree().CreateTimer(0.8).Timeout += AdvanceStreet;
 		}
 		else
 		{
+			// Opponent can still act
 			GetTree().CreateTimer(1.2).Timeout += CheckAndProcessAITurn;
 		}
 	}
+
+
 
 	// --- POT-SIZED BET BUTTONS ---
 

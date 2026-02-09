@@ -54,6 +54,12 @@ using System.Threading.Tasks;
  *   Ctrl+Shift+B = Force AI Max Tilt (rage quit risk)
  *   Ctrl+Shift+C = Force Counterfeit Board (trips/quads)
  *   Ctrl+Shift+X = Print Detailed AI State
+ *   
+ * FULL-RAISE / UNDER-RAISE TESTING:
+ *   Ctrl+Shift+U = Test Under-Raise All-In (should NOT reopen betting)
+ *   Ctrl+Shift+I = Test Full-Raise All-In (SHOULD reopen betting)
+ *   Ctrl+Shift+M = Test Min-Raise Boundary (exactly at threshold)
+ *   Ctrl+Shift+P = Print Reopening Flags State
  */
 
 public partial class PokerGame : Node2D
@@ -196,8 +202,232 @@ public partial class PokerGame : Node2D
 			case Key.X:
 				DebugPrintDetailedAIState();
 				break;
+			// ✅ NEW: Full-raise / Under-raise testing
+			case Key.U:
+				DebugTestUnderRaiseAllIn();
+				break;
+			case Key.I:
+				DebugTestFullRaiseAllIn();
+				break;
+			case Key.M:
+				DebugTestMinRaiseBoundary();
+				break;
+			case Key.P:
+				DebugPrintReopeningFlags();
+				break;
 		}
 	}
+	
+	// ✅ NEW: Test under-raise all-in (should NOT reopen betting)
+	private void DebugTestUnderRaiseAllIn()
+	{
+		if (!handInProgress)
+		{
+			GD.Print("[DEBUG REOPEN] No hand in progress");
+			return;
+		}
+		
+		if (currentStreet < Street.Flop)
+		{
+			GD.Print("[DEBUG REOPEN] Use Ctrl+F to skip to flop first");
+			return;
+		}
+		
+		// Scenario: Player raises to $80 (last raise was $40)
+		// AI has only $95 total, goes all-in for $95 (only $15 more)
+		// This is an UNDER-RAISE and should NOT reopen betting for player
+		
+		playerChips = 200;
+		opponentChips = 15;  // AI has 15 chips left
+		
+		playerBet = 80;
+		opponentBet = 40;
+		currentBet = 80;
+		previousBet = 40;
+		lastRaiseAmount = 40;  // Last raise increment was $40
+		
+		pot = 100;
+		displayPot = 100;
+		playerChipsInPot = 80;
+		opponentChipsInPot = 40;
+		
+		playerHasActedThisStreet = true;
+		opponentHasActedThisStreet = true;  // Both acted before
+		playerCanReopenBetting = false;  // Player already raised
+		opponentCanReopenBetting = true;   // Opponent can act
+		
+		isPlayerTurn = false;
+		playerIsAllIn = false;
+		opponentIsAllIn = false;
+		
+		aiOpponent.ChipStack = opponentChips;
+		aiOpponent.IsAllIn = false;
+		
+		UpdateHud();
+		
+		GD.Print("\n[DEBUG REOPEN] ===== UNDER-RAISE ALL-IN TEST =====");
+		GD.Print($"[DEBUG REOPEN] Setup:");
+		GD.Print($"  Player: ${playerChips} stack, bet ${playerBet}");
+		GD.Print($"  Opponent: ${opponentChips} stack, bet ${opponentBet}");
+		GD.Print($"  CurrentBet: ${currentBet}, LastRaiseAmount: ${lastRaiseAmount}");
+		GD.Print($"  Min-raise required: ${lastRaiseAmount} (to ${currentBet + lastRaiseAmount})");
+		GD.Print($"\n[DEBUG REOPEN] AI will now go all-in for ${opponentChips + opponentBet} total");
+		GD.Print($"[DEBUG REOPEN] That's only ${opponentChips} more (< ${lastRaiseAmount} min-raise)");
+		GD.Print($"[DEBUG REOPEN] EXPECTED: Under-raise, playerCanReopenBetting should stay FALSE");
+		GD.Print($"[DEBUG REOPEN] EXPECTED: Street should advance immediately, NO action for player");
+		GD.Print($"[DEBUG REOPEN] Watch for '[UNDER-RAISE ALL-IN]' log message\n");
+		
+		GetTree().CreateTimer(1.0f).Timeout += () => CheckAndProcessAITurn();
+	}
+	
+	// ✅ NEW: Test full-raise all-in (SHOULD reopen betting)
+	private void DebugTestFullRaiseAllIn()
+	{
+		if (!handInProgress)
+		{
+			GD.Print("[DEBUG REOPEN] No hand in progress");
+			return;
+		}
+		
+		if (currentStreet < Street.Flop)
+		{
+			GD.Print("[DEBUG REOPEN] Use Ctrl+F to skip to flop first");
+			return;
+		}
+		
+		// Scenario: Player raises to $50 (last raise was $30)
+		// AI has $100 left, goes all-in for $150 total ($100 more)
+		// This is a FULL RAISE and SHOULD reopen betting for player
+		
+		playerChips = 200;
+		opponentChips = 100;  // AI has 100 chips left
+		
+		playerBet = 50;
+		opponentBet = 20;
+		currentBet = 50;
+		previousBet = 20;
+		lastRaiseAmount = 30;  // Last raise increment was $30
+		
+		pot = 80;
+		displayPot = 80;
+		playerChipsInPot = 50;
+		opponentChipsInPot = 20;
+		
+		playerHasActedThisStreet = true;
+		opponentHasActedThisStreet = false;
+		playerCanReopenBetting = false;  // Player already raised
+		opponentCanReopenBetting = true;
+		
+		isPlayerTurn = false;
+		playerIsAllIn = false;
+		opponentIsAllIn = false;
+		
+		aiOpponent.ChipStack = opponentChips;
+		aiOpponent.IsAllIn = false;
+		
+		UpdateHud();
+		
+		GD.Print("\n[DEBUG REOPEN] ===== FULL-RAISE ALL-IN TEST =====");
+		GD.Print($"[DEBUG REOPEN] Setup:");
+		GD.Print($"  Player: ${playerChips} stack, bet ${playerBet}");
+		GD.Print($"  Opponent: ${opponentChips} stack, bet ${opponentBet}");
+		GD.Print($"  CurrentBet: ${currentBet}, LastRaiseAmount: ${lastRaiseAmount}");
+		GD.Print($"  Min-raise required: ${lastRaiseAmount} (to ${currentBet + lastRaiseAmount})");
+		GD.Print($"\n[DEBUG REOPEN] AI will now go all-in for ${opponentChips + opponentBet} total");
+		GD.Print($"[DEBUG REOPEN] That's ${opponentChips} more (>= ${lastRaiseAmount} min-raise)");
+		GD.Print($"[DEBUG REOPEN] EXPECTED: Full raise, playerCanReopenBetting should become TRUE");
+		GD.Print($"[DEBUG REOPEN] EXPECTED: Player should get action back");
+		GD.Print($"[DEBUG REOPEN] Watch for '[FULL ALL-IN]' log message\n");
+		
+		GetTree().CreateTimer(1.0f).Timeout += () => CheckAndProcessAITurn();
+	}
+	
+	// ✅ NEW: Test exact min-raise boundary
+	private void DebugTestMinRaiseBoundary()
+	{
+		if (!handInProgress)
+		{
+			GD.Print("[DEBUG REOPEN] No hand in progress");
+			return;
+		}
+		
+		if (currentStreet < Street.Flop)
+		{
+			GD.Print("[DEBUG REOPEN] Use Ctrl+F to skip to flop first");
+			return;
+		}
+		
+		// Scenario: Player bets $50, last raise was $50 (from 0 to 50)
+		// AI goes all-in for exactly $100 (exactly $50 more = min-raise)
+		// This is EXACTLY at the boundary and SHOULD be a full raise
+		
+		playerChips = 200;
+		opponentChips = 50;  // AI has exactly 50 chips left
+		
+		playerBet = 50;
+		opponentBet = 0;
+		currentBet = 50;
+		previousBet = 0;
+		lastRaiseAmount = 50;  // Last raise increment was $50
+		
+		pot = 60;
+		displayPot = 60;
+		playerChipsInPot = 50;
+		opponentChipsInPot = 0;
+		
+		playerHasActedThisStreet = true;
+		opponentHasActedThisStreet = false;
+		playerCanReopenBetting = false;
+		opponentCanReopenBetting = true;
+		
+		isPlayerTurn = false;
+		playerIsAllIn = false;
+		opponentIsAllIn = false;
+		
+		aiOpponent.ChipStack = opponentChips;
+		aiOpponent.IsAllIn = false;
+		
+		UpdateHud();
+		
+		GD.Print("\n[DEBUG REOPEN] ===== MIN-RAISE BOUNDARY TEST =====");
+		GD.Print($"[DEBUG REOPEN] Setup:");
+		GD.Print($"  Player: ${playerChips} stack, bet ${playerBet}");
+		GD.Print($"  Opponent: ${opponentChips} stack, bet ${opponentBet}");
+		GD.Print($"  CurrentBet: ${currentBet}, LastRaiseAmount: ${lastRaiseAmount}");
+		GD.Print($"  Min-raise required: ${lastRaiseAmount} (to ${currentBet + lastRaiseAmount})");
+		GD.Print($"\n[DEBUG REOPEN] AI will now go all-in for ${opponentChips + opponentBet} total");
+		GD.Print($"[DEBUG REOPEN] That's EXACTLY ${opponentChips} more (= ${lastRaiseAmount} min-raise)");
+		GD.Print($"[DEBUG REOPEN] EXPECTED: Full raise (boundary case), playerCanReopenBetting should become TRUE");
+		GD.Print($"[DEBUG REOPEN] EXPECTED: Player should get action back");
+		GD.Print($"[DEBUG REOPEN] Watch for '[FULL ALL-IN]' log message\n");
+		
+		GetTree().CreateTimer(1.0f).Timeout += () => CheckAndProcessAITurn();
+	}
+
+	
+	// ✅ NEW: Print reopening flags state
+	private void DebugPrintReopeningFlags()
+	{
+		GD.Print("\n[DEBUG REOPEN] ===== REOPENING FLAGS STATE =====");
+		GD.Print($"lastRaiseAmount: ${lastRaiseAmount}");
+		GD.Print($"playerCanReopenBetting: {playerCanReopenBetting}");
+		GD.Print($"opponentCanReopenBetting: {opponentCanReopenBetting}");
+		GD.Print($"");
+		GD.Print($"currentBet: ${currentBet}");
+		GD.Print($"previousBet: ${previousBet}");
+		GD.Print($"playerBet: ${playerBet}");
+		GD.Print($"opponentBet: ${opponentBet}");
+		GD.Print($"");
+		GD.Print($"playerHasActedThisStreet: {playerHasActedThisStreet}");
+		GD.Print($"opponentHasActedThisStreet: {opponentHasActedThisStreet}");
+		GD.Print($"playerIsAllIn: {playerIsAllIn}");
+		GD.Print($"opponentIsAllIn: {opponentIsAllIn}");
+		GD.Print($"");
+		GD.Print($"Min-raise would be: ${currentBet} + ${lastRaiseAmount} = ${currentBet + lastRaiseAmount}");
+		GD.Print($"============================================\n");
+	}
+	
+	// [Rest of your existing edge case methods remain unchanged]
 	
 	// EDGE CASE 1: AI has very few chips (tests min-raise logic)
 	private void DebugForceAIShortStack()

@@ -63,12 +63,26 @@ public partial class PokerGame
 				return new ActionApplyResult(0, false, false, actorBet);
 
 			case PlayerAction.Check:
+				// ✅ Checking closes action for this player
+				if (isPlayer)
+					playerCanReopenBetting = false;
+				else
+					opponentCanReopenBetting = false;
+				
 				return new ActionApplyResult(0, false, false, actorBet);
 
 			case PlayerAction.Call:
 			{
 				if (toCall == 0)
+				{
+					// ✅ This is actually a check
+					if (isPlayer)
+						playerCanReopenBetting = false;
+					else
+						opponentCanReopenBetting = false;
+					
 					return new ActionApplyResult(0, false, false, actorBet);
+				}
 
 				if (toCall < 0)
 				{
@@ -86,13 +100,25 @@ public partial class PokerGame
 					bool isAllInNow = GetIsAllIn(isPlayer);
 					bool becameAllIn = (!wasAllIn && isAllInNow);
 
+					if (isPlayer)
+						playerCanReopenBetting = false;
+					else
+						opponentCanReopenBetting = false;
+
 					return new ActionApplyResult(-refund, becameAllIn, false, actorBet);
 				}
 
 				// Normal call (may be all-in for less)
 				int callAmount = Math.Min(toCall, actorChips);
 				if (callAmount <= 0)
+				{
+					if (isPlayer)
+						playerCanReopenBetting = false;
+					else
+						opponentCanReopenBetting = false;
+					
 					return new ActionApplyResult(0, false, false, actorBet);
+				}
 
 				if (isPlayer) SpendPlayerChips(callAmount);
 				else SpendOpponentChips(callAmount);
@@ -104,81 +130,162 @@ public partial class PokerGame
 				bool isAllInNow2 = GetIsAllIn(isPlayer);
 				bool becameAllIn2 = (!wasAllIn && isAllInNow2);
 
+				// ✅ Calling closes action for this player
+				if (isPlayer)
+					playerCanReopenBetting = false;
+				else
+					opponentCanReopenBetting = false;
+
 				return new ActionApplyResult(callAmount, becameAllIn2, false, actorBet);
 			}
-
-			case PlayerAction.AllIn:
-			{
-				int shove = actorChips;
-				if (shove <= 0)
-					return new ActionApplyResult(0, false, false, actorBet);
-
-				if (isPlayer) SpendPlayerChips(shove);
-				else SpendOpponentChips(shove);
-
-				CommitToStreetPot(isPlayer, shove);
-				actorBet += shove;
-
-				// All-in can be a bet or a raise depending on currentBet.
-				previousBet = currentBet;
-				currentBet = Math.Max(currentBet, actorBet);
-				if (isPlayer) opponentHasActedThisStreet = false; else playerHasActedThisStreet = false;
-
-				RefreshAllInFlagsFromStacks();
-				bool isAllInNow = GetIsAllIn(isPlayer);
-				bool becameAllIn = (!wasAllIn && isAllInNow);
-
-				return new ActionApplyResult(shove, becameAllIn, opening, actorBet);
-			}
-
+			
 			case PlayerAction.Raise:
 			{
-				// raiseToTotal is the actor's intended FINAL total bet this street.
-				// Must be at least a call; otherwise we can leave actorBet < currentBet (illegal partial raise).
-			  	GD.Print($"[APPLY RAISE] raiseToTotal={raiseToTotal}, currentBet={currentBet}, actorBet={actorBet}, actorChips={actorChips}");
+				GD.Print($"[APPLY RAISE] raiseToTotal={raiseToTotal}, currentBet={currentBet}, actorBet={actorBet}, actorChips={actorChips}");
+				
 				if (raiseToTotal < currentBet)
 				{
 					GD.Print($"[APPLY RAISE] ⚠️ raiseToTotal ({raiseToTotal}) < currentBet ({currentBet}), converting to CALL");
 					return ApplyAction(isPlayer, PlayerAction.Call);
 				}
-
-				// No-op guard (covers raiseToTotal == actorBet and raiseToTotal < actorBet).
+				
 				if (raiseToTotal <= actorBet)
 				{
 					GD.Print($"[APPLY RAISE] ⚠️ raiseToTotal ({raiseToTotal}) <= actorBet ({actorBet}), clamping to actorBet (no-op)");
 					raiseToTotal = actorBet;
 				}
-
+				
 				int toAdd = raiseToTotal - actorBet;
 				if (toAdd <= 0)
 				{
 					GD.Print($"[APPLY RAISE] ❌ toAdd = {toAdd}, returning 0 chips moved");
 					return new ActionApplyResult(0, false, false, actorBet);
 				}
-				GD.Print($"[APPLY RAISE] ✅ Moving {toAdd} chips from stack to pot");
 				
+				GD.Print($"[APPLY RAISE] ✅ Moving {toAdd} chips from stack to pot");
 				int add = Math.Min(toAdd, actorChips);
 				if (add <= 0)
 					return new ActionApplyResult(0, false, false, actorBet);
-
+				
 				if (isPlayer) SpendPlayerChips(add);
 				else SpendOpponentChips(add);
-
+				
 				CommitToStreetPot(isPlayer, add);
 				actorBet += add;
-
+				
+				// ✅ Track full raise vs under-raise
+				int raiseIncrement = raiseToTotal - currentBet;
+				int minRaiseIncrement = (lastRaiseAmount > 0) ? lastRaiseAmount : bigBlind;
+				
+				bool isFullRaise = raiseIncrement >= minRaiseIncrement;
+				
+				if (isFullRaise)
+				{
+					// Full raise: update lastRaiseAmount and reopen betting for opponent
+					lastRaiseAmount = raiseIncrement;
+					if (isPlayer)
+					{
+						opponentCanReopenBetting = true;
+						playerCanReopenBetting = false; // raiser can't act again
+					}
+					else
+					{
+						playerCanReopenBetting = true;
+						opponentCanReopenBetting = false;
+					}
+					
+					// ✅ Only reset acted flags for FULL raises
+					if (isPlayer) opponentHasActedThisStreet = false; 
+					else playerHasActedThisStreet = false;
+					
+					GD.Print($"[FULL RAISE] Increment={raiseIncrement}, reopening for opponent");
+				}
+				else
+				{
+					// Under-raise (short all-in): does NOT reopen betting
+					if (isPlayer)
+						playerCanReopenBetting = false;
+					else
+						opponentCanReopenBetting = false;
+					
+					// ✅ DON'T reset acted flags for under-raises - action stays closed
+					
+					GD.Print($"[UNDER-RAISE] Increment={raiseIncrement} < min={minRaiseIncrement}, NOT reopening");
+				}
+				
 				previousBet = currentBet;
 				currentBet = Math.Max(currentBet, actorBet);
-
-				// A bet/raise re-opens action for the other player
-				if (isPlayer) opponentHasActedThisStreet = false; else playerHasActedThisStreet = false;
-
+				
 				RefreshAllInFlagsFromStacks();
 				bool isAllInNow = GetIsAllIn(isPlayer);
 				bool becameAllIn = (!wasAllIn && isAllInNow);
-
+				
 				return new ActionApplyResult(add, becameAllIn, opening, actorBet);
 			}
+
+
+			case PlayerAction.AllIn:
+			{
+				int shove = actorChips;
+				if (shove <= 0)
+					return new ActionApplyResult(0, false, false, actorBet);
+				
+				if (isPlayer) SpendPlayerChips(shove);
+				else SpendOpponentChips(shove);
+				
+				CommitToStreetPot(isPlayer, shove);
+				actorBet += shove;
+				
+				// ✅ Track full raise vs under-raise for all-ins
+				int raiseIncrement = actorBet - currentBet;
+				int minRaiseIncrement = (lastRaiseAmount > 0) ? lastRaiseAmount : bigBlind;
+				
+				bool isFullRaise = raiseIncrement >= minRaiseIncrement;
+				
+				if (isFullRaise)
+				{
+					lastRaiseAmount = raiseIncrement;
+					if (isPlayer)
+					{
+						opponentCanReopenBetting = true;
+						playerCanReopenBetting = false;
+					}
+					else
+					{
+						playerCanReopenBetting = true;
+						opponentCanReopenBetting = false;
+					}
+					
+					// ✅ Only reset acted flags for FULL raises
+					if (isPlayer) opponentHasActedThisStreet = false; 
+					else playerHasActedThisStreet = false;
+					
+					GD.Print($"[FULL ALL-IN] Increment={raiseIncrement}, reopening for opponent");
+				}
+				else
+				{
+					if (isPlayer)
+						playerCanReopenBetting = false;
+					else
+						opponentCanReopenBetting = false;
+					
+					// ✅ DON'T reset acted flags for under-raises - action stays closed
+					
+					GD.Print($"[UNDER-RAISE ALL-IN] Increment={raiseIncrement} < min={minRaiseIncrement}, NOT reopening");
+				}
+				
+				previousBet = currentBet;
+				currentBet = Math.Max(currentBet, actorBet);
+				
+				// ✅ REMOVED: if (isPlayer) opponentHasActedThisStreet = false; else playerHasActedThisStreet = false;
+				
+				RefreshAllInFlagsFromStacks();
+				bool isAllInNow = GetIsAllIn(isPlayer);
+				bool becameAllIn = (!wasAllIn && isAllInNow);
+				
+				return new ActionApplyResult(shove, becameAllIn, opening, actorBet);
+			}
+
 
 			default:
 				return new ActionApplyResult(0, false, false, actorBet);

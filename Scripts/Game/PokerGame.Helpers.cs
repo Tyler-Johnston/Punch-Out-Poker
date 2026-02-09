@@ -78,10 +78,13 @@ public partial class PokerGame
 		currentBet = 0;
 		previousBet = 0; 
 		displayPot = pot;
+	 	lastRaiseAmount = 0; 
 		
 		// Reset action flags
 		playerHasActedThisStreet = false;
 		opponentHasActedThisStreet = false;
+		playerCanReopenBetting = true;  // NEW: reset reopening flags
+		opponentCanReopenBetting = true;
 		UpdateHud();
 		GD.Print($"[ResetBettingRound] New street - Total Pot: {pot}, Display Pot: {displayPot}");
 	}

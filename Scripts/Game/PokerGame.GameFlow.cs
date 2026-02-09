@@ -28,6 +28,7 @@ public partial class PokerGame
 		GD.Print("\n=== New Hand ===");
 		ShowMessage("");
 
+		lastRaiseAmount = 0;
 		handTypeLabel.Text = "";
 		handTypeLabel.Visible = false;
 		playerStackLabel.Visible = true;
@@ -204,6 +205,9 @@ public partial class PokerGame
 
 		// Derived all-in flags from stacks (single source of truth)
 		RefreshAllInFlagsFromStacks();
+		playerCanReopenBetting = true;
+		opponentCanReopenBetting = true;
+		lastRaiseAmount = bigBlind;  // Initial raise increment is the big blind
 
 		// Re-enable AI processing after blinds complete
 		isProcessingAIAction = wasProcessing;
@@ -586,10 +590,21 @@ public partial class PokerGame
 		bool betsEqual = (playerBet == opponentBet);
 		bool bothActed = playerHasActedThisStreet && opponentHasActedThisStreet;
 		bool bothAllIn = playerIsAllIn && opponentIsAllIn;
+		
+		// ✅ Check reopening flags
+		bool playerCannotAct = playerIsAllIn || !playerCanReopenBetting;
+		bool opponentCannotAct = opponentIsAllIn || !opponentCanReopenBetting;
 
 		GD.Print($"After AI action: betsEqual={betsEqual}, bothActed={bothActed}, bothAllIn={bothAllIn}");
+		GD.Print($"Reopening: playerCan={playerCanReopenBetting} (allIn={playerIsAllIn}), opponentCan={opponentCanReopenBetting} (allIn={opponentIsAllIn})");
 
-		if ((betsEqual && bothActed) || bothAllIn || (playerIsAllIn && betsEqual))
+		// Betting round complete if:
+		// 1. Both all-in, OR
+		// 2. Bets equal, both acted, and BOTH cannot reopen, OR
+		// 3. ✅ NEW: Opponent all-in with under-raise (can't reopen) and player already acted
+		if (bothAllIn || 
+			(betsEqual && bothActed && playerCannotAct && opponentCannotAct) ||
+			(opponentIsAllIn && !opponentCanReopenBetting && bothActed))
 		{
 			GD.Print("Betting round complete after AI action");
 			isProcessingAIAction = false;
@@ -597,12 +612,14 @@ public partial class PokerGame
 		}
 		else if (playerIsAllIn && !betsEqual)
 		{
+			// Player is all-in and can't match AI raise
 			GD.Print("Betting round complete: Player all-in, cannot match AI raise");
 			isProcessingAIAction = false;
 			GetTree().CreateTimer(0.8).Timeout += AdvanceStreet;
 		}
 		else
 		{
+			// Player can still act
 			isProcessingAIAction = false;
 			isPlayerTurn = true;
 			UpdateHud();
@@ -610,6 +627,7 @@ public partial class PokerGame
 			RefreshBetSlider();
 		}
 	}
+
 
 	private async Task ExecuteAIAction(PlayerAction action)
 	{
@@ -699,6 +717,7 @@ public partial class PokerGame
 
 	private async Task OnOpponentCheck()
 	{
+		ApplyAction(isPlayer: false, action: PlayerAction.Check);
 		sfxPlayer.PlaySound("check", true);
 		ShowMessage($"{currentOpponentName} checks");
 		GD.Print($"{currentOpponentName} checks");
@@ -710,8 +729,7 @@ public partial class PokerGame
 
 		if (result.AmountMoved == 0)
 		{
-			ShowMessage($"{currentOpponentName} checks");
-			GD.Print($"{currentOpponentName} checks (callAmount <= 0)");
+			await OnOpponentCheck();
 			return;
 		}
 
@@ -751,7 +769,6 @@ public partial class PokerGame
 		float effPot = Mathf.Max(gameState.PotSize, 1f);
 		GD.Print($"[AI SIZE] hs={hs:F2} effPot={effPot:F0} raiseToTotal={raiseToTotal} finalRatio={(raiseToTotal / effPot):F2}x");
 		
-		// ✅ SAFETY CHECK: Ensure raiseToTotal is always a valid raise above currentBet
 		int originalRaiseToTotal = raiseToTotal;
 		
 		// If there's an existing bet and our raise isn't higher, fix it
@@ -771,7 +788,7 @@ public partial class PokerGame
 				await OnOpponentCall();
 				return;
 			}
-			else if (maxPossible < minRaiseTotal)
+			else if (maxPossible < minRaiseTotal) 
 			{
 				// AI can call but can't min-raise - go all-in if it makes sense, otherwise call
 				GD.Print($"[RAISE SAFETY] ⚠️ AI can't afford min-raise (maxPossible={maxPossible} < minRaise={minRaiseTotal}). Converting to All-In.");
