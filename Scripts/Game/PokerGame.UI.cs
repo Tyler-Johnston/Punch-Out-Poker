@@ -109,7 +109,7 @@ public partial class PokerGame
 		if (button == null) return;
 		
 		button.PivotOffset = button.Size / 2;
-		button.CustomMinimumSize = button.Size;
+		//button.CustomMinimumSize = button.Size;
 		button.TextureFilter = CanvasItem.TextureFilterEnum.Linear;
 	}
 	
@@ -903,7 +903,9 @@ public partial class PokerGame
 	{
 		if (waitingForNextGame) return;
 
-		int toCall = currentBet - playerBet;
+		// [FIX] Prevent negative call amounts (e.g. during blind posting transitions)
+		int toCall = Math.Max(0, currentBet - playerBet);
+		
 		var (minBet, maxBet) = GetLegalBetRange();
 
 		bool isAllIn = (betAmount >= playerChips);
@@ -918,16 +920,20 @@ public partial class PokerGame
 			}
 			else if (currentBet > 0)
 			{
+				// Raising against an existing bet
 				betRaiseButton.Text = $"Raise to: ${betAmount}";
 			}
 			else
 			{
+				// Opening a new bet
 				betRaiseButton.Text = $"Bet: ${betAmount}";
 			}
 		}
 		else
 		{
-			checkCallButton.Text = $"Call: ${Math.Min(toCall, playerChips)}";
+			// Calling an existing bet
+			int callAmount = Math.Min(toCall, playerChips);
+			checkCallButton.Text = $"Call: ${callAmount}";
 
 			if (isAllIn)
 			{
@@ -939,7 +945,6 @@ public partial class PokerGame
 			}
 		}
 	}
-
 
 
 	private void UpdateHud(bool disableButtons = false)
