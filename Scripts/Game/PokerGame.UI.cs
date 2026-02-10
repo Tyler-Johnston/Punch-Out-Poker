@@ -109,7 +109,6 @@ public partial class PokerGame
 		if (button == null) return;
 		
 		button.PivotOffset = button.Size / 2;
-		//button.CustomMinimumSize = button.Size;
 		button.TextureFilter = CanvasItem.TextureFilterEnum.Linear;
 	}
 	
@@ -800,9 +799,9 @@ public partial class PokerGame
 
 	// --- HUD UPDATE METHODS ---
 
-	private void UpdatePotSizeButtons()
+	private void UpdatePotSizeButtons(bool enabled = true)
 	{
-		if (!handInProgress || !isPlayerTurn || playerIsAllIn)
+		if (!enabled || !handInProgress || !isPlayerTurn || playerIsAllIn)
 		{
 			thirdPot.Disabled = true;
 			halfPot.Disabled = true;
@@ -903,7 +902,25 @@ public partial class PokerGame
 	{
 		if (waitingForNextGame) return;
 
-		// [FIX] Prevent negative call amounts (e.g. during blind posting transitions)
+		if (!isPlayerTurn && handInProgress) 
+		{
+			if (currentBet > playerBet)
+			{
+				checkCallButton.Text = "Call";
+				betRaiseButton.Text = "Raise";
+			}
+			else
+			{
+				checkCallButton.Text = "Check";
+				
+				if (currentBet > 0) 
+					betRaiseButton.Text = "Raise";
+				else
+					betRaiseButton.Text = "Bet";
+			}
+			return;
+		}
+
 		int toCall = Math.Max(0, currentBet - playerBet);
 		
 		var (minBet, maxBet) = GetLegalBetRange();
@@ -968,6 +985,9 @@ public partial class PokerGame
 			playerStackLabel.Visible = false;
 			betweenHandsUI.Visible = true;
 			
+			// [FIX #4] Reset slider value visual when waiting for next hand
+			if (betSlider != null) betSlider.Value = 0; 
+			
 			UpdateSessionProfitLabel();
 			UpdatePotDisplay(0);
 			UpdatePlayerChipDisplay();
@@ -981,18 +1001,35 @@ public partial class PokerGame
 
 			betweenHandsUI.Visible = false;
 			actionButtons.Visible = true;
+			
+			bool enableButtons = true;
+			bool canActuallyRaise = true;
 
 			if (!disableButtons)
 			{
-				bool enableButtons = isPlayerTurn && handInProgress && !playerIsAllIn;
+				enableButtons = isPlayerTurn && handInProgress && !playerIsAllIn;
 				var (minBet, maxBet) = GetLegalBetRange();
-				bool canActuallyRaise = (maxBet > currentBet);
-				
-				foldButton.Disabled = !enableButtons;
-				checkCallButton.Disabled = !enableButtons;
-				betRaiseButton.Disabled = !enableButtons || !canActuallyRaise;
+				canActuallyRaise = (maxBet > currentBet);
 			}
-
+			else
+			{
+				enableButtons = false;
+				canActuallyRaise = false;
+			}
+			
+			foldButton.Disabled = !enableButtons;
+			checkCallButton.Disabled = !enableButtons;
+			betRaiseButton.Disabled = !enableButtons || !canActuallyRaise;
+			
+			bool enableSlider = enableButtons && canActuallyRaise;
+			
+			if (betSlider != null)
+			{
+				betSlider.Editable = enableSlider;
+				betSlider.Modulate = enableSlider ? Colors.White : new Color(0.7f, 0.7f, 0.7f, 0.5f);
+			}
+			
+			UpdatePotSizeButtons(enableSlider); 
 		}
 
 		int effectivePot = GetEffectivePot();
@@ -1003,7 +1040,6 @@ public partial class PokerGame
 		UpdatePotDisplay(displayPot); 
 		UpdatePlayerChipDisplay();
 		UpdateOpponentChipDisplay();
-		UpdatePotSizeButtons();
 	}
 
 	private void RefreshBetSlider()
@@ -1012,9 +1048,13 @@ public partial class PokerGame
 			return;
 
 		var (minBet, maxBet) = GetLegalBetRange();
+		
+		// [DEBUG] Log the recalculated range
+		GD.Print($"[SLIDER REFRESH] Legal Range: ${minBet} - ${maxBet} | Current betAmount: ${betAmount}");
 
 		if (maxBet <= 0)
 		{
+			GD.Print("[SLIDER REFRESH] MaxBet <= 0. Disabling slider.");
 			betSlider.MinValue = 0;
 			betSlider.MaxValue = 0;
 			betSlider.Value = 0;
@@ -1022,26 +1062,40 @@ public partial class PokerGame
 			return;
 		}
 
-		betSlider.Editable = true;
+		//betSlider.Editable = true;
 		betSlider.MinValue = minBet;
 		betSlider.MaxValue = maxBet;
 
+		int oldBetAmount = betAmount;
 		betAmount = Math.Clamp(betAmount, minBet, maxBet);
-		betSlider.Value = betAmount;
-		UpdatePotSizeButtons();
+		
+		// [DEBUG] Log if clamping occurred
+		if (oldBetAmount != betAmount)
+		{
+			GD.Print($"[SLIDER CLAMP] betAmount adjusted: {oldBetAmount} -> {betAmount}");
+		}
+		
+		// Use SetValueNoSignal to avoid triggering OnBetSliderValueChanged
+		betSlider.SetValueNoSignal(betAmount);
+
+		GD.Print($"[SLIDER SET] Min: {betSlider.MinValue}, Max: {betSlider.MaxValue}, Value: {betSlider.Value}");
+		
+		//UpdatePotSizeButtons(true);
 	}
 
 	private void OnBetSliderValueChanged(double value)
 	{
 		int sliderValue = (int)Math.Round(value);
 		var (minBet, maxBet) = GetLegalBetRange();
+	
 		sliderValue = Math.Clamp(sliderValue, minBet, maxBet);
 
 		betAmount = sliderValue;
 		betSlider.Value = betAmount;
 		UpdateButtonLabels();
-		UpdatePotSizeButtons();
+		//UpdatePotSizeButtons(true); 
 	}
+
 
 	// --- DIALOGUE SYSTEM ---
 	

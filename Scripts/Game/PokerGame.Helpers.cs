@@ -79,7 +79,8 @@ public partial class PokerGame
 		previousBet = 0; 
 		displayPot = pot;
 	 	lastRaiseAmount = 0; 
-		
+		betAmount = 0;
+
 		// Reset action flags
 		playerHasActedThisStreet = false;
 		opponentHasActedThisStreet = false;

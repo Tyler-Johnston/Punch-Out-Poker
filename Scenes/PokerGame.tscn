@@ -1,4 +1,4 @@
-[gd_scene load_steps=77 format=3 uid="uid://b5sq1675fwcio"]
+[gd_scene load_steps=78 format=3 uid="uid://b5sq1675fwcio"]
 
 [ext_resource type="Script" uid="uid://8k6pqsmgt5pe" path="res://Scripts/Game/PokerGame.cs" id="1_8w0ed"]
 [ext_resource type="Shader" uid="uid://xgv2p7pj4e3u" path="res://Assets/Shaders/EnemyView.gdshader" id="2_h5gdr"]
@@ -10,6 +10,7 @@
 [ext_resource type="Texture2D" uid="uid://6gcsofdmh4cp" path="res://Assets/Textures/chip_pngs/slider_chip.png" id="9_u5b2p"]
 [ext_resource type="AudioStream" uid="uid://dss833xi3m8t5" path="res://Assets/Music/regrowth wip.wav" id="10_47o1s"]
 [ext_resource type="Texture2D" uid="uid://drsfofmrw3pya" path="res://Assets/Textures/chip_pngs/yellow_1.png" id="10_u5b2p"]
+[ext_resource type="Texture2D" uid="uid://5xr0k26ovooc" path="res://Assets/Textures/chip_pngs/slider_chip_disabled.png" id="10_vtryj"]
 [ext_resource type="Texture2D" uid="uid://dx26hyqgshnl4" path="res://Assets/Textures/chip_pngs/white_1.png" id="11_xxe2x"]
 [ext_resource type="Script" uid="uid://dgfw5uwspo7c3" path="res://Scripts/Game/SFXPlayer.cs" id="12_u5b2p"]
 
@@ -1120,6 +1121,7 @@ layout_mode = 2
 focus_mode = 0
 theme_override_icons/grabber = ExtResource("9_u5b2p")
 theme_override_icons/grabber_highlight = ExtResource("10_u5b2p")
+theme_override_icons/grabber_disabled = ExtResource("10_vtryj")
 theme_override_styles/slider = SubResource("StyleBoxFlat_vnib4")
 theme_override_styles/grabber_area = SubResource("StyleBoxFlat_hkg01")
 theme_override_styles/grabber_area_highlight = SubResource("StyleBoxFlat_ok1jy")

@@ -63,6 +63,7 @@ public partial class PokerGame
 		playerChipsInPot = 0;
 		opponentChipsInPot = 0;
 		
+		isPlayerTurn = false;
 		aiBluffedThisHand = false;
 		playerIsAllIn = false;
 		opponentIsAllIn = false;
@@ -92,6 +93,8 @@ public partial class PokerGame
 		turnCard.ShowBack();
 		riverCard.ShowBack();
 
+		checkCallButton.Text = "Check";
+		betRaiseButton.Text = "Bet";
 		await DealInitialHands();
 		
 		tellTimer.Start();
@@ -162,7 +165,7 @@ public partial class PokerGame
 			sfxPlayer.PlayRandomChip();
 			UpdateHud(true);
 
-			isPlayerTurn = true;
+			//isPlayerTurn = true;
 			GD.Print($"Blinds posted: SB={sbAmount}, BB={bbAmount}. EffectivePot: {GetEffectivePot()} (Settled pot: {pot})");
 		}
 		else
@@ -199,7 +202,7 @@ public partial class PokerGame
 			currentBet = Math.Max(playerBet, opponentBet);
 			UpdateHud(true);
 
-			isPlayerTurn = false;
+			//isPlayerTurn = false;
 			GD.Print($"Blinds posted: SB={sbAmount}, BB={bbAmount}. EffectivePot: {GetEffectivePot()} (Settled pot: {pot})");
 		}
 
@@ -224,6 +227,7 @@ public partial class PokerGame
 		displayPot = 0;
 		playerChipsInPot = 0;
 		opponentChipsInPot = 0;
+		betAmount = 0;
 		handInProgress = false;
 		waitingForNextGame = true;
 
