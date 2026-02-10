@@ -1,36 +1,39 @@
 using Godot;
 using System;
 
-/// <summary>
-/// Pure logic class for Poker mechanics.
-/// Stateless: Input -> Math -> Output.
-/// </summary>
 public static class PokerRules 
 {
 	public struct RefundCalculation 
 	{
 		public int RefundAmount;
-		public int FromStreet; // How much to pull from current street bets
-		// public int FromPot; // (Reserved for future side-pot logic)
+		public int FromStreet; // How much came from the current street buffer
+		public int FromPot;    // How much needs to come from the main settled pot
 	}
 
 	/// <summary>
-	/// Calculates how much to refund a player if they are over-committed (e.g. uncalled bet).
+	/// Calculates refund breakdown between unsettled street bets and settled main pot.
 	/// </summary>
-	public static RefundCalculation CalculateRefund(int amountToCallNegative, int currentActorStreetBet)
+	/// <param name="excessAmount">Positive integer: Amount player contributed over opponent</param>
+	/// <param name="unsettledStreetBet">Positive integer: Chips currently in the street buffer for this player</param>
+	public static RefundCalculation CalculateRefund(int excessAmount, int unsettledStreetBet)
 	{
-		int rawRefund = -amountToCallNegative;
-		
-		// You cannot be refunded more than you put in this street 
-		// (unless we are handling complex side-pot settlements, but for standard uncalled bets: limit to street bet)
-		int actualRefund = Math.Min(rawRefund, currentActorStreetBet);
+		// 1. Ensure strictly positive input handling
+		int refundTotal = Math.Max(0, excessAmount);
+
+		// 2. Take as much as possible from the unsettled street buffer
+		int fromStreet = Math.Min(refundTotal, unsettledStreetBet);
+
+		// 3. The rest must come from the settled pot
+		int fromPot = refundTotal - fromStreet;
 
 		return new RefundCalculation 
 		{
-			RefundAmount = actualRefund,
-			FromStreet = actualRefund
+			RefundAmount = refundTotal,
+			FromStreet = fromStreet,
+			FromPot = fromPot
 		};
 	}
+
 
 	/// <summary>
 	/// Determines if an action constitutes a "Full Raise" which reopens betting.
@@ -48,9 +51,6 @@ public static class PokerRules
 		// If it's an opening bet (currentBet is 0)
 		if (currentBet <= 0) return bigBlind;
 
-		// Use the last FULL raise increment. 
-		// If lastFullRaiseIncrement is 0 (first raise of street), calculate difference from previous.
-		// Fallback to BigBlind if math is weird.
 		int increment = (lastFullRaiseIncrement > 0)
 			? lastFullRaiseIncrement
 			: Math.Max(currentBet - previousBet, bigBlind);

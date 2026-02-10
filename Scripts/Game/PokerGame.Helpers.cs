@@ -194,52 +194,45 @@ public partial class PokerGame
 	
 	private bool ReturnUncalledChips()
 	{
-		// Determine who contributed more
-		int playerDiff = playerContributed - opponentContributed;
+		// Determine who contributed more (Positive difference)
+		int diff = playerContributed - opponentContributed;
 
-		if (playerDiff > 0)
+		if (diff == 0) return false;
+
+		if (diff > 0)
 		{
-			var result = PokerRules.CalculateRefund(-playerDiff, playerChipsInPot);
+			// Player gets refund (diff is positive)
+			var result = PokerRules.CalculateRefund(diff, playerChipsInPot);
 			
-			int refund = result.RefundAmount;
-			int fromStreet = result.FromStreet;
-			int fromPot = refund - fromStreet;
-
-			playerChipsInPot -= fromStreet;
-			pot -= fromPot;
-			playerContributed -= refund;
+			// Apply Refund
+			playerChipsInPot -= result.FromStreet;
+			pot -= result.FromPot;
+			playerContributed -= result.RefundAmount;
 			
-			AddPlayerChips(refund);
+			AddPlayerChips(result.RefundAmount);
 			RefreshAllInFlagsFromStacks();
 			
-			GD.Print($"[REFUND] Player: ${refund} total (${fromStreet} from street, ${fromPot} from settled pot)");
+			GD.Print($"[REFUND] Player: ${result.RefundAmount} total (${result.FromStreet} from street, ${result.FromPot} from settled pot)");
 			return true;
 		}
-		else if (playerDiff < 0)
+		else
 		{
-			// Opponent needs refund
-			int opponentDiff = opponentContributed - playerContributed; // Positive number
-			var result = PokerRules.CalculateRefund(-opponentDiff, opponentChipsInPot);
+			// Opponent gets refund (diff is negative, make positive)
+			int opponentDiff = Math.Abs(diff);
+			var result = PokerRules.CalculateRefund(opponentDiff, opponentChipsInPot);
 
-			int refund = result.RefundAmount;
-			int fromStreet = result.FromStreet;
-			int fromPot = refund - fromStreet;
-
-			opponentChipsInPot -= fromStreet;
-			pot -= fromPot;
-			opponentContributed -= refund;
+			// Apply Refund
+			opponentChipsInPot -= result.FromStreet;
+			pot -= result.FromPot;
+			opponentContributed -= result.RefundAmount;
 			
-			AddOpponentChips(refund);
+			AddOpponentChips(result.RefundAmount);
 			RefreshAllInFlagsFromStacks();
 			
-			GD.Print($"[REFUND] Opponent: ${refund} total (${fromStreet} from street, ${fromPot} from settled pot)");
+			GD.Print($"[REFUND] Opponent: ${result.RefundAmount} total (${result.FromStreet} from street, ${result.FromPot} from settled pot)");
 			return true;
 		}
-		
-		return false;
 	}
-
-
 
 	// --- STATE HELPERS ---
 
