@@ -27,6 +27,14 @@ public partial class PokerGame
 
 		GD.Print("\n=== New Hand ===");
 		ShowMessage("");
+		
+		betAmount = 0;
+		if (betSlider != null)
+		{
+			betSlider.MinValue = 0;
+			betSlider.MaxValue = 100;
+			betSlider.SetValueNoSignal(0); 
+		}
 
 		lastRaiseAmount = 0;
 		handTypeLabel.Text = "";
@@ -103,11 +111,9 @@ public partial class PokerGame
 		handInProgress = true;
 		
 		RefreshAllInFlagsFromStacks();
-		UpdateOpponentVisuals();
+		//UpdateOpponentVisuals();
 		await PostBlinds();
 		UpdateHud();
-		UpdateButtonLabels();
-		RefreshBetSlider();
 		
 		// if both are all-in (or player is forced all-in), skip betting logic
 		if (playerIsAllIn || opponentIsAllIn)

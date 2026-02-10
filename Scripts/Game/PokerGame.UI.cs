@@ -902,7 +902,7 @@ public partial class PokerGame
 	{
 		if (waitingForNextGame) return;
 
-		if (!isPlayerTurn && handInProgress) 
+		if (!isPlayerTurn || !handInProgress) 
 		{
 			if (currentBet > playerBet)
 			{
@@ -985,7 +985,6 @@ public partial class PokerGame
 			playerStackLabel.Visible = false;
 			betweenHandsUI.Visible = true;
 			
-			// [FIX #4] Reset slider value visual when waiting for next hand
 			if (betSlider != null) betSlider.Value = 0; 
 			
 			UpdateSessionProfitLabel();
@@ -996,9 +995,6 @@ public partial class PokerGame
 		else
 		{
 			// Active hand - show gameplay buttons and hide between hands UI
-			RefreshBetSlider();
-			UpdateButtonLabels();
-
 			betweenHandsUI.Visible = false;
 			actionButtons.Visible = true;
 			
@@ -1032,14 +1028,17 @@ public partial class PokerGame
 			UpdatePotSizeButtons(enableSlider); 
 		}
 
+		opponentStackLabel.Text = $"{currentOpponentName}: ${opponentChips}";
 		int effectivePot = GetEffectivePot();
 		
+		RefreshBetSlider();
+		UpdateButtonLabels();
 		UpdatePlayerStackLabels();
-		opponentStackLabel.Text = $"{currentOpponentName}: ${opponentChips}";
 		UpdatePotLabel(displayPot); 
 		UpdatePotDisplay(displayPot); 
 		UpdatePlayerChipDisplay();
 		UpdateOpponentChipDisplay();
+		UpdateOpponentVisuals();
 	}
 
 	private void RefreshBetSlider()
@@ -1049,12 +1048,8 @@ public partial class PokerGame
 
 		var (minBet, maxBet) = GetLegalBetRange();
 		
-		// [DEBUG] Log the recalculated range
-		GD.Print($"[SLIDER REFRESH] Legal Range: ${minBet} - ${maxBet} | Current betAmount: ${betAmount}");
-
 		if (maxBet <= 0)
 		{
-			GD.Print("[SLIDER REFRESH] MaxBet <= 0. Disabling slider.");
 			betSlider.MinValue = 0;
 			betSlider.MaxValue = 0;
 			betSlider.Value = 0;
@@ -1062,25 +1057,11 @@ public partial class PokerGame
 			return;
 		}
 
-		//betSlider.Editable = true;
 		betSlider.MinValue = minBet;
 		betSlider.MaxValue = maxBet;
 
-		int oldBetAmount = betAmount;
 		betAmount = Math.Clamp(betAmount, minBet, maxBet);
-		
-		// [DEBUG] Log if clamping occurred
-		if (oldBetAmount != betAmount)
-		{
-			GD.Print($"[SLIDER CLAMP] betAmount adjusted: {oldBetAmount} -> {betAmount}");
-		}
-		
-		// Use SetValueNoSignal to avoid triggering OnBetSliderValueChanged
 		betSlider.SetValueNoSignal(betAmount);
-
-		GD.Print($"[SLIDER SET] Min: {betSlider.MinValue}, Max: {betSlider.MaxValue}, Value: {betSlider.Value}");
-		
-		//UpdatePotSizeButtons(true);
 	}
 
 	private void OnBetSliderValueChanged(double value)
@@ -1093,7 +1074,6 @@ public partial class PokerGame
 		betAmount = sliderValue;
 		betSlider.Value = betAmount;
 		UpdateButtonLabels();
-		//UpdatePotSizeButtons(true); 
 	}
 
 
