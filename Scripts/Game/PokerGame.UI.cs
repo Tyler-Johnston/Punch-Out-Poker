@@ -925,7 +925,7 @@ public partial class PokerGame
 		
 		var (minBet, maxBet) = GetLegalBetRange();
 
-		bool isAllIn = (betAmount >= playerChips);
+		bool isAllIn = (betAmount >= playerChips + playerBet);
 
 		if (toCall == 0)
 		{
