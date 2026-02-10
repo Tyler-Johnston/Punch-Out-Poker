@@ -95,32 +95,28 @@ public partial class PokerGame
 		
 		if (maxBet <= 0) return (0, 0);
 		
-		bool opening = currentBet == 0;
-		int minBet;
+		// [INTEGRATION] Use PokerRules
+		// This calculates the legal minimum TOTAL bet required to make a full raise
+		int minRaiseTotal = PokerRules.CalculateMinRaiseTotal(
+			currentBet, 
+			previousBet, 
+			lastRaiseAmount, // This is updated in ActionApplication via PokerRules
+			bigBlind
+		);
 		
-		if (opening)
+		int minBet = minRaiseTotal;
+
+		// If the minimum legal raise is more than we have, 
+		// our only option is All-In (maxBet).
+		// The slider should just lock to maxBet in this case.
+		if (minBet > maxBet)
 		{
-			// Opening bet - minimum is big blind
-			minBet = Math.Min(bigBlind, maxBet);
-		}
-		else
-		{
-			// Calculate the LAST RAISE INCREMENT (not the full bet)
-			int lastRaiseAmount = currentBet - previousBet;
-			
-			// Minimum raise must match the last raise size (min one BB)
-			int minRaiseIncrement = Math.Max(lastRaiseAmount, bigBlind);
-			
-			// Minimum total bet = current bet + raise increment
-			minBet = currentBet + minRaiseIncrement;
-			
-			// Allow all-in for less
-			if (minBet > maxBet)
-				minBet = maxBet;
+			minBet = maxBet;
 		}
 		
 		return (minBet, maxBet);
 	}
+
 
 	private int CalculatePotSizeBet(float potMultiplier)
 	{
@@ -202,13 +198,20 @@ public partial class PokerGame
 	
 	private bool ReturnUncalledChips()
 	{
-		if (playerContributed > opponentContributed)
+		// Determine who contributed more
+		int playerDiff = playerContributed - opponentContributed;
+
+		if (playerDiff > 0)
 		{
-			int refund = playerContributed - opponentContributed;
+			// Player needs refund
+			// Pass negative diff because CalculateRefund expects "Amount to call" (which is negative)
+			// OR just pass the diff directly if we overload the rule, but sticking to your API:
+			var result = PokerRules.CalculateRefund(-playerDiff, playerChipsInPot);
 			
-			int fromStreet = Mathf.Min(refund, playerChipsInPot);
+			int refund = result.RefundAmount;
+			int fromStreet = result.FromStreet;
 			int fromPot = refund - fromStreet;
-			
+
 			playerChipsInPot -= fromStreet;
 			pot -= fromPot;
 			playerContributed -= refund;
@@ -219,13 +222,16 @@ public partial class PokerGame
 			GD.Print($"[REFUND] Player: ${refund} total (${fromStreet} from street, ${fromPot} from settled pot)");
 			return true;
 		}
-		else if (opponentContributed > playerContributed)
+		else if (playerDiff < 0)
 		{
-			int refund = opponentContributed - playerContributed;
-			
-			int fromStreet = Mathf.Min(refund, opponentChipsInPot);
+			// Opponent needs refund
+			int opponentDiff = opponentContributed - playerContributed; // Positive number
+			var result = PokerRules.CalculateRefund(-opponentDiff, opponentChipsInPot);
+
+			int refund = result.RefundAmount;
+			int fromStreet = result.FromStreet;
 			int fromPot = refund - fromStreet;
-			
+
 			opponentChipsInPot -= fromStreet;
 			pot -= fromPot;
 			opponentContributed -= refund;
@@ -239,6 +245,7 @@ public partial class PokerGame
 		
 		return false;
 	}
+
 
 
 	// --- STATE HELPERS ---
