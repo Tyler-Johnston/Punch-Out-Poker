@@ -83,7 +83,7 @@ public partial class PokerGame
 		// Reset action flags
 		playerHasActedThisStreet = false;
 		opponentHasActedThisStreet = false;
-		playerCanReopenBetting = true;  // NEW: reset reopening flags
+		playerCanReopenBetting = true;
 		opponentCanReopenBetting = true;
 		UpdateHud();
 		GD.Print($"[ResetBettingRound] New street - Total Pot: {pot}, Display Pot: {displayPot}");
@@ -206,7 +206,6 @@ public partial class PokerGame
 		{
 			int refund = playerContributed - opponentContributed;
 			
-			// ✅ Pull from street commits first, then settled pot
 			int fromStreet = Mathf.Min(refund, playerChipsInPot);
 			int fromPot = refund - fromStreet;
 			
@@ -224,7 +223,6 @@ public partial class PokerGame
 		{
 			int refund = opponentContributed - playerContributed;
 			
-			// ✅ Pull from street commits first, then settled pot
 			int fromStreet = Mathf.Min(refund, opponentChipsInPot);
 			int fromPot = refund - fromStreet;
 			
@@ -272,8 +270,6 @@ public partial class PokerGame
 		return state;
 	}
 
-
-	
 	// -- AI HELPERS --
 	
 	private PlayerAction DecideAIAction(GameState gameState)

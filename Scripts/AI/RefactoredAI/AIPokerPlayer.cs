@@ -440,4 +440,11 @@ public partial class AIPokerPlayer : Node
 		return $"{PlayerName} | Chips: {ChipStack} | Tilt: {Personality.TiltMeter:F1} | " +
 			   $"Aggression: {Personality.CurrentAggression:F2} | Losses: {Personality.ConsecutiveLosses}";
 	}
+	
+	#if TOOLS
+		public void ForceBetSizeSeedForTesting(float seed)
+		{
+			this.BetSizeSeed = seed;
+		}
+	#endif
 }

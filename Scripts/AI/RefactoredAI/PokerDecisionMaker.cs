@@ -513,24 +513,17 @@ public partial class PokerDecisionMaker : Node
 		if (player.CurrentTiltState >= TiltState.Steaming)
 			targetTotal *= 1.15f;
 
-		// ✅ STEP 2: Calculate min-raise using LastFullRaiseIncrement
-		float minTotal;
-		if (currentBet <= 0)
-		{
-			// Opening bet
-			minTotal = gameState.BigBlind;
-		}
-		else
-		{
-			// Use the last FULL raise increment (not an under-raise)
-			float lastRaiseIncrement = (gameState.LastFullRaiseIncrement > 0)
-				? gameState.LastFullRaiseIncrement
-				: Mathf.Max(currentBet - gameState.PreviousBet, gameState.BigBlind);
-			
-			minTotal = currentBet + lastRaiseIncrement;
-			
-			GD.Print($"[AI RAISE CALC] LastFullRaiseInc={gameState.LastFullRaiseIncrement}, MinRaise={lastRaiseIncrement}, MinTotal={minTotal}");
-		}
+		// ✅ STEP 2: Calculate min-raise using PokerRules [INTEGRATION]
+		// We use the shared logic to ensure the AI calculates the exact same minimum as the Engine enforces.
+		int minTotalInt = PokerRules.CalculateMinRaiseTotal(
+			(int)currentBet,
+			(int)gameState.PreviousBet,
+			gameState.LastFullRaiseIncrement,
+			(int)gameState.BigBlind
+		);
+		float minTotal = (float)minTotalInt;
+		
+		GD.Print($"[AI RAISE CALC] LastFullRaiseInc={gameState.LastFullRaiseIncrement}, MinTotal={minTotal}");
 
 		float maxTotal = gameState.GetPlayerCurrentBet(player) + player.ChipStack;
 
@@ -577,6 +570,7 @@ public partial class PokerDecisionMaker : Node
 		GD.Print($"[{player.PlayerName}] Raise-to total: {finalTotal} (effPot: {effectivePot}, strength: {handStrength:F2}, minTotal: {minTotal}, maxTotal: {maxTotal})");
 		return finalTotal;
 	}
+
 
 
 	public float EvaluateHandStrength(List<Card> holeCards, List<Card> communityCards, Street street, float randomnessSeed)
