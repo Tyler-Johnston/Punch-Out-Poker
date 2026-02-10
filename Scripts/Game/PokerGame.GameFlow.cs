@@ -766,6 +766,9 @@ public partial class PokerGame
 	{
 		GameState gameState = CreateGameState();
 		float hs = aiOpponent.EvaluateCurrentHandStrength(gameState);
+		
+		// 1. Ask AI for desired raise amount
+		// (DecisionMaker now uses PokerRules, so this should already be legal, but we double-check)
 		int raiseToTotal = decisionMaker.CalculateRaiseToTotal(aiOpponent, gameState, hs);
 		
 		float effPot = Mathf.Max(gameState.PotSize, 1f);
@@ -773,61 +776,72 @@ public partial class PokerGame
 		
 		int originalRaiseToTotal = raiseToTotal;
 		
-		// If there's an existing bet and our raise isn't higher, fix it
-		if (currentBet > 0 && raiseToTotal <= currentBet)
+		// 2. SAFETY CHECK: Verify against PokerRules min-raise
+		int minLegalRaiseTotal = PokerRules.CalculateMinRaiseTotal(
+			currentBet, 
+			previousBet, 
+			lastRaiseAmount, 
+			bigBlind
+		);
+		
+		int maxPossible = opponentBet + opponentChips;
+
+		// If AI wants to raise LESS than legal minimum (or same as current bet), fix it.
+		if (raiseToTotal < minLegalRaiseTotal)
 		{
-			// Calculate minimum legal raise
-			int minRaiseIncrement = Math.Max(currentBet - previousBet, bigBlind);
-			int minRaiseTotal = currentBet + minRaiseIncrement;
-			
-			// Check if AI can afford min-raise
-			int maxPossible = opponentBet + opponentChips;
-			
-			if (maxPossible <= currentBet)
+			if (maxPossible < minLegalRaiseTotal)
 			{
-				// AI can't even call the current bet - should have folded or called
-				GD.Print($"[RAISE SAFETY] ⚠️ AI can't afford to raise or call (maxPossible={maxPossible} <= currentBet={currentBet}). Converting to Call.");
-				await OnOpponentCall();
-				return;
-			}
-			else if (maxPossible < minRaiseTotal) 
-			{
-				// AI can call but can't min-raise - go all-in if it makes sense, otherwise call
-				GD.Print($"[RAISE SAFETY] ⚠️ AI can't afford min-raise (maxPossible={maxPossible} < minRaise={minRaiseTotal}). Converting to All-In.");
-				await OnOpponentAllIn();
-				return;
+				// AI is SHORT-STACKED: It physically cannot afford a full legal raise.
+				
+				if (maxPossible <= currentBet)
+				{
+					// AI cannot even Call. Logic error in DecisionMaker? 
+					// Fallback: Attempt Call (which ApplyAction handles as All-In Call).
+					GD.Print($"[RAISE SAFETY] ⚠️ AI short (max={maxPossible} <= current={currentBet}). Converting to Call/All-In.");
+					await OnOpponentCall();
+					return;
+				}
+				else
+				{
+					// AI can Call, but not Min-Raise.
+					// Convert to All-In Shove (which is an "Under-Raise" but legal action).
+					GD.Print($"[RAISE SAFETY] ⚠️ AI short (max={maxPossible} < min={minLegalRaiseTotal}). Converting to All-In Shove.");
+					await OnOpponentAllIn();
+					return;
+				}
 			}
 			else
 			{
-				// AI can afford min-raise, so bump to that
-				raiseToTotal = minRaiseTotal;
-				GD.Print($"[RAISE SAFETY] ⚠️ raiseToTotal ({originalRaiseToTotal}) <= currentBet ({currentBet}). Bumped to minRaise: {raiseToTotal}");
+				// AI has chips, but calculated too small. Force to Min-Raise.
+				raiseToTotal = minLegalRaiseTotal;
+				GD.Print($"[RAISE SAFETY] ⚠️ raiseToTotal ({originalRaiseToTotal}) < minLegal ({minLegalRaiseTotal}). Bumped to min.");
 			}
 		}
 		
-		// Additional safety: if raiseToTotal is still at or below opponentBet, something is very wrong
+		// 3. CRITICAL VALIDATION: raiseToTotal must be > opponentBet
 		if (raiseToTotal <= opponentBet)
 		{
-			GD.Print($"[RAISE SAFETY] ❌ CRITICAL: raiseToTotal ({raiseToTotal}) <= opponentBet ({opponentBet}). This should never happen. Converting to Check.");
+			GD.Print($"[RAISE SAFETY] ❌ CRITICAL: raiseToTotal ({raiseToTotal}) <= opponentBet ({opponentBet}). Logic Error. Converting to Check.");
 			ShowMessage($"{currentOpponentName} checks");
 			return;
 		}
 		
-		GD.Print($"[RAISE DEBUG BEFORE] raiseToTotal={raiseToTotal}, currentBet={currentBet}, opponentBet={opponentBet}, opponentChips={opponentChips}");
+		GD.Print($"[RAISE DEBUG BEFORE] raiseToTotal={raiseToTotal}, currentBet={currentBet}, opponentBet={opponentBet}, chips={opponentChips}");
 		
+		// 4. EXECUTE
 		var result = ApplyAction(isPlayer: false, action: PlayerAction.Raise, raiseToTotal: raiseToTotal);
 		
 		GD.Print($"[RAISE DEBUG AFTER] AmountMoved={result.AmountMoved}, NewOpponentBet={opponentBet}, NewCurrentBet={currentBet}, IsBet={result.IsBet}, BecameAllIn={result.BecameAllIn}");
 		
-		// Defensive check (should never trigger now with safety checks above)
+		// Final defensive check
 		if (result.AmountMoved <= 0)
 		{
 			ShowMessage($"{currentOpponentName} checks");
-			GD.Print($"[RAISE DEBUG ERROR] ❌ Raise still produced 0 chips moved after safety checks! This is a bug.");
+			GD.Print($"[RAISE DEBUG ERROR] ❌ Raise produced 0 chips moved! Bug.");
 			return;
 		}
 		
-		// Determine if this is an opening bet or a raise
+		// Determine display text
 		bool isBet = result.IsBet;
 		string actionWord = isBet ? "bets" : "raises to";
 		
@@ -842,6 +856,7 @@ public partial class PokerGame
 			GD.Print($"[AI ALL-IN] Recorded strength: {aiStrengthAtAllIn:F2}");
 		}
 	}
+
 
 
 	private async Task OnOpponentAllIn()

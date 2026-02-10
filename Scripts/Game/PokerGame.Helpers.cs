@@ -95,20 +95,15 @@ public partial class PokerGame
 		
 		if (maxBet <= 0) return (0, 0);
 		
-		// [INTEGRATION] Use PokerRules
-		// This calculates the legal minimum TOTAL bet required to make a full raise
 		int minRaiseTotal = PokerRules.CalculateMinRaiseTotal(
 			currentBet, 
 			previousBet, 
-			lastRaiseAmount, // This is updated in ActionApplication via PokerRules
+			lastRaiseAmount,
 			bigBlind
 		);
 		
 		int minBet = minRaiseTotal;
 
-		// If the minimum legal raise is more than we have, 
-		// our only option is All-In (maxBet).
-		// The slider should just lock to maxBet in this case.
 		if (minBet > maxBet)
 		{
 			minBet = maxBet;
@@ -203,9 +198,6 @@ public partial class PokerGame
 
 		if (playerDiff > 0)
 		{
-			// Player needs refund
-			// Pass negative diff because CalculateRefund expects "Amount to call" (which is negative)
-			// OR just pass the diff directly if we overload the rule, but sticking to your API:
 			var result = PokerRules.CalculateRefund(-playerDiff, playerChipsInPot);
 			
 			int refund = result.RefundAmount;

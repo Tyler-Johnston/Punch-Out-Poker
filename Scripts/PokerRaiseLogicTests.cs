@@ -28,7 +28,6 @@ public partial class PokerRaiseLogicTests : Node
 		{
 			PlayerName = "TestAI",
 			ChipStack = 1000,
-			// Make sure you have this preset, or create a dummy personality
 			Personality = PersonalityPresets.CreateSteve() 
 		};
 		testAI.SetDecisionMaker(decisionMaker);
@@ -38,17 +37,19 @@ public partial class PokerRaiseLogicTests : Node
 
 	private void RunAllTests()
 	{
-		// 1. Test the Pure Math (PokerRules.cs)
-		// These ensure the core logic used by the Engine is correct.
+		// 1. PURE MATH TESTS
 		TestRule_RefundLogic();
 		TestRule_FullRaiseLogic();
 		TestRule_MinRaiseCalculation();
 
-		// 2. Test the AI Integration (PokerDecisionMaker.cs)
-		// These ensure the AI asks the Engine (PokerRules) for the correct limits.
+		// 2. AI INTEGRATION TESTS
 		TestAI_RespectsReopenFlag();
 		TestAI_CalculatesCorrectMinRaise();
 		TestAI_HandlesOpeningBet();
+		
+		// 3. NEW TESTS (Edge Cases)
+		TestAI_CapsAtStackSize();
+		TestAI_HandlesShortStackMinRaise();
 	}
 
 	// ========================================
@@ -57,48 +58,32 @@ public partial class PokerRaiseLogicTests : Node
 
 	private void TestRule_RefundLogic()
 	{
-		// Scenario: Uncalled Bet Refund
-		// Opponent is All-in for 80. We bet 100.
-		// Diff is -20 (relative to opponent call). Our street bet is 100.
 		var result = PokerRules.CalculateRefund(-20, 100);
-
 		AssertEqual("Rules: Refund Amount", result.RefundAmount, 20, "Should refund 20 chips");
 		AssertEqual("Rules: Refund Source", result.FromStreet, 20, "Should take from street");
 
-		// Scenario: Multi-Street Refund
-		// We have 500 total in. Opponent 120. Diff 380.
-		// We only have 200 in current street.
 		result = PokerRules.CalculateRefund(-380, 200);
-
 		AssertEqual("Rules: Multi-Street Refund Cap", result.RefundAmount, 200, 
-			"Should cap refund at current street bet (standard rule)");
+			"Should cap refund at current street bet");
 	}
 
 	private void TestRule_FullRaiseLogic()
 	{
-		// Min raise is 50.
-		
-		// Case A: Under-raise (30)
 		bool isFull = PokerRules.IsFullRaise(30, 50);
 		AssertFalse("Rules: Detect Under-Raise", isFull, "30 < 50 is NOT a full raise");
 
-		// Case B: Exact Min-Raise (50)
 		isFull = PokerRules.IsFullRaise(50, 50);
 		AssertTrue("Rules: Detect Exact Raise", isFull, "50 == 50 IS a full raise");
 
-		// Case C: Over-Raise (100)
 		isFull = PokerRules.IsFullRaise(100, 50);
 		AssertTrue("Rules: Detect Over-Raise", isFull, "100 > 50 IS a full raise");
 	}
 
 	private void TestRule_MinRaiseCalculation()
 	{
-		// Current Bet 100. Last Full Raise was 50.
-		// Min Total should be 150.
 		int minTotal = PokerRules.CalculateMinRaiseTotal(100, 50, 50, 10);
 		AssertEqual("Rules: Calc Min Raise", minTotal, 150, "100 + 50 = 150");
 
-		// Opening Bet (Current 0). BB is 10.
 		minTotal = PokerRules.CalculateMinRaiseTotal(0, 0, 0, 10);
 		AssertEqual("Rules: Calc Opening Bet", minTotal, 10, "Opening bet min is BB");
 	}
@@ -110,44 +95,82 @@ public partial class PokerRaiseLogicTests : Node
 	private void TestAI_RespectsReopenFlag()
 	{
 		var gameState = new GameState();
-		// Setup: River, Pot 200, Bet 100. 
-		// CRITICAL: canAIReopen = false (Under-raise happened previously)
 		gameState.SetupTestScenario(100, 100, 200, Street.River, 50, 10, canAIReopen: false);
 
-		// Give AI the "Nuts" (Strength 1.0) -> It definitely wants to raise
 		int raiseTo = decisionMaker.CalculateRaiseToTotal(testAI, gameState, 1.0f);
-
-		// Since Reopen is FALSE, it must return CurrentBet (Call), not Raise.
-		AssertEqual("AI: Respect Reopen Flag", raiseTo, 100, 
-			"AI should return CurrentBet (Call) if betting is closed");
+		AssertEqual("AI: Respect Reopen Flag", raiseTo, 100, "Should return CurrentBet (Call) if closed");
 	}
 
 	private void TestAI_CalculatesCorrectMinRaise()
 	{
 		var gameState = new GameState();
-		// Setup: Flop, Bet 100, Last Raise 50. Min Legal Raise is 150.
 		gameState.SetupTestScenario(100, 50, 200, Street.Flop, 50, 10, canAIReopen: true);
-
-		// Force AI to want a small bet (0 size seed)
-		testAI.ForceBetSizeSeedForTesting(0.0f);
+		testAI.ForceBetSizeSeedForTesting(0.0f); // Wants small bet
 
 		int raiseTo = decisionMaker.CalculateRaiseToTotal(testAI, gameState, 0.9f);
-
-		// Even though AI wants small bet, logic must clamp it to 150.
-		AssertGreaterOrEqual("AI: Enforce Min Raise", raiseTo, 150, 
-			"AI raise must be >= MinRaise (150)");
+		AssertGreaterOrEqual("AI: Enforce Min Raise", raiseTo, 150, "Must be >= 150");
 	}
 
 	private void TestAI_HandlesOpeningBet()
 	{
 		var gameState = new GameState();
-		// Setup: Preflop, CurrentBet 0. BB 10.
 		gameState.SetupTestScenario(0, 0, 0, Street.Preflop, 0, 10, canAIReopen: true);
 
 		int raiseTo = decisionMaker.CalculateRaiseToTotal(testAI, gameState, 0.5f);
+		AssertGreaterOrEqual("AI: Opening Bet Size", raiseTo, 10, "Must be >= BB");
+	}
 
-		AssertGreaterOrEqual("AI: Opening Bet Size", raiseTo, 10, 
-			"Opening bet must be at least BB");
+	// ========================================
+	// 3. NEW EDGE CASE TESTS
+	// ========================================
+
+	private void TestAI_CapsAtStackSize()
+	{
+		var gameState = new GameState();
+		// Pot is HUGE (10,000). AI has 1000 chips.
+		// AI wants to bet Pot Size (10,000), but only has 1000.
+		gameState.SetupTestScenario(0, 0, 10000, Street.Flop, 0, 10, canAIReopen: true);
+		
+		// Reset AI stack to known amount
+		testAI.ChipStack = 1000;
+		gameState.SetPlayerBet(testAI, 0); // Currently bet 0
+
+		// Force HUGE bet desire
+		testAI.ForceBetSizeSeedForTesting(1.0f); 
+
+		int raiseTo = decisionMaker.CalculateRaiseToTotal(testAI, gameState, 1.0f);
+
+		// Should be exactly 1000 (All-In), not 10,000.
+		AssertEqual("AI: Cap at Stack", raiseTo, 1000, 
+			"Raise should never exceed player's chip stack");
+	}
+
+	private void TestAI_HandlesShortStackMinRaise()
+	{
+		var gameState = new GameState();
+		// Current Bet 100. Min Raise is 150.
+		// AI only has 120 chips total (including current bet).
+		// Wait... if AI has 0 bet currently, and stack is 120.
+		// Max legal bet is 120 (All-In).
+		// Min 'Full' Raise is 150.
+		
+		gameState.SetupTestScenario(100, 50, 500, Street.Turn, 50, 10, canAIReopen: true);
+		
+		testAI.ChipStack = 120;
+		gameState.SetPlayerBet(testAI, 0);
+
+		// AI wants to raise big
+		testAI.ForceBetSizeSeedForTesting(1.0f);
+
+		int raiseTo = decisionMaker.CalculateRaiseToTotal(testAI, gameState, 0.95f);
+
+		// Logic dictates: 
+		// Min is 150. Max is 120.
+		// Clamp(Target, Min, Max) logic in DecisionMaker handles this:
+		// if (Max < Min) return Max;
+		
+		AssertEqual("AI: Short Stack All-In", raiseTo, 120, 
+			"If Stack < MinRaise, AI should return Stack (All-In)");
 	}
 
 	// ========================================
