@@ -226,9 +226,9 @@ shadow_size = 4
 shadow_offset = Vector2(2, 4)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_47o1s"]
-content_margin_left = 10.0
+content_margin_left = 5.0
 content_margin_top = 10.0
-content_margin_right = 10.0
+content_margin_right = 5.0
 content_margin_bottom = 10.0
 bg_color = Color(0.6784314, 0, 0.15686275, 1)
 border_width_left = 1
@@ -245,9 +245,9 @@ shadow_offset = Vector2(2, 4)
 anti_aliasing = false
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_u5b2p"]
-content_margin_left = 10.0
+content_margin_left = 5.0
 content_margin_top = 10.0
-content_margin_right = 10.0
+content_margin_right = 5.0
 content_margin_bottom = 10.0
 bg_color = Color(0.6331879, 0, 0.14385304, 1)
 border_width_left = 1
@@ -264,9 +264,9 @@ shadow_offset = Vector2(2, 4)
 anti_aliasing = false
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_vtryj"]
-content_margin_left = 10.0
+content_margin_left = 5.0
 content_margin_top = 10.0
-content_margin_right = 10.0
+content_margin_right = 5.0
 content_margin_bottom = 10.0
 bg_color = Color(0.8283891, 9.50101e-05, 0.20019525, 1)
 border_width_left = 1
@@ -283,9 +283,9 @@ shadow_offset = Vector2(2, 4)
 anti_aliasing = false
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_m5pa5"]
-content_margin_left = 10.0
+content_margin_left = 5.0
 content_margin_top = 10.0
-content_margin_right = 10.0
+content_margin_right = 5.0
 content_margin_bottom = 10.0
 bg_color = Color(0.6117647, 0.6117647, 0.6117647, 1)
 border_width_left = 1
@@ -302,9 +302,9 @@ shadow_offset = Vector2(2, 4)
 anti_aliasing = false
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_xxe2x"]
-content_margin_left = 10.0
+content_margin_left = 5.0
 content_margin_top = 10.0
-content_margin_right = 10.0
+content_margin_right = 5.0
 content_margin_bottom = 10.0
 bg_color = Color(0.18431373, 0.34509805, 0.7764706, 1)
 border_width_left = 1
@@ -321,9 +321,9 @@ shadow_offset = Vector2(2, 4)
 anti_aliasing = false
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_6gitu"]
-content_margin_left = 10.0
+content_margin_left = 5.0
 content_margin_top = 10.0
-content_margin_right = 10.0
+content_margin_right = 5.0
 content_margin_bottom = 10.0
 bg_color = Color(0.13769913, 0.27821404, 0.6658435, 1)
 border_width_left = 1
@@ -340,9 +340,9 @@ shadow_offset = Vector2(2, 4)
 anti_aliasing = false
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_mhpyu"]
-content_margin_left = 10.0
+content_margin_left = 5.0
 content_margin_top = 10.0
-content_margin_right = 10.0
+content_margin_right = 5.0
 content_margin_bottom = 10.0
 bg_color = Color(0.24937052, 0.4229884, 0.8669834, 1)
 border_width_left = 1
@@ -359,9 +359,9 @@ shadow_offset = Vector2(2, 4)
 anti_aliasing = false
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_crlcv"]
-content_margin_left = 10.0
+content_margin_left = 5.0
 content_margin_top = 10.0
-content_margin_right = 10.0
+content_margin_right = 5.0
 content_margin_bottom = 10.0
 bg_color = Color(0.6117647, 0.6117647, 0.6117647, 1)
 border_width_left = 1
@@ -378,9 +378,9 @@ shadow_offset = Vector2(2, 4)
 anti_aliasing = false
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_u1fmj"]
-content_margin_left = 20.0
+content_margin_left = 5.0
 content_margin_top = 10.0
-content_margin_right = 20.0
+content_margin_right = 5.0
 content_margin_bottom = 10.0
 bg_color = Color(0.7137255, 0.4627451, 0.2901961, 1)
 border_width_left = 1
@@ -397,9 +397,9 @@ shadow_offset = Vector2(2, 4)
 anti_aliasing = false
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_epj03"]
-content_margin_left = 20.0
+content_margin_left = 5.0
 content_margin_top = 10.0
-content_margin_right = 20.0
+content_margin_right = 5.0
 content_margin_bottom = 10.0
 bg_color = Color(0.6251021, 0.3965849, 0.23819709, 1)
 border_width_left = 1
@@ -416,9 +416,9 @@ shadow_offset = Vector2(2, 4)
 anti_aliasing = false
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_p0x7j"]
-content_margin_left = 20.0
+content_margin_left = 5.0
 content_margin_top = 10.0
-content_margin_right = 20.0
+content_margin_right = 5.0
 content_margin_bottom = 10.0
 bg_color = Color(0.85093796, 0.5918597, 0.41853422, 1)
 border_width_left = 1
@@ -435,9 +435,9 @@ shadow_offset = Vector2(2, 4)
 anti_aliasing = false
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bvnvu"]
-content_margin_left = 20.0
+content_margin_left = 5.0
 content_margin_top = 10.0
-content_margin_right = 20.0
+content_margin_right = 5.0
 content_margin_bottom = 10.0
 bg_color = Color(0.6117647, 0.6117647, 0.6117647, 1)
 border_width_left = 1
@@ -1056,7 +1056,7 @@ text = "Cash Out"
 unique_name_in_owner = true
 offset_left = 31.0
 offset_top = 567.0
-offset_right = 607.0
+offset_right = 622.0
 offset_bottom = 697.0
 mouse_filter = 2
 theme_override_constants/separation = 6
@@ -1078,7 +1078,7 @@ alignment = 1
 
 [node name="FoldButton" type="Button" parent="CanvasLayer/Control/ActionView/ActionButtonsContainer/ActionButtons"]
 texture_filter = 1
-custom_minimum_size = Vector2(150, 20)
+custom_minimum_size = Vector2(125, 20)
 layout_mode = 2
 size_flags_horizontal = 3
 focus_mode = 0
@@ -1090,7 +1090,7 @@ theme_override_styles/disabled = SubResource("StyleBoxFlat_m5pa5")
 text = "Fold"
 
 [node name="CheckCallButton" type="Button" parent="CanvasLayer/Control/ActionView/ActionButtonsContainer/ActionButtons"]
-custom_minimum_size = Vector2(150, 0)
+custom_minimum_size = Vector2(125, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 focus_mode = 0
@@ -1103,7 +1103,7 @@ theme_override_styles/disabled = SubResource("StyleBoxFlat_crlcv")
 text = "Check"
 
 [node name="BetRaiseButton" type="Button" parent="CanvasLayer/Control/ActionView/ActionButtonsContainer/ActionButtons"]
-custom_minimum_size = Vector2(150, 0)
+custom_minimum_size = Vector2(125, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 focus_mode = 0
