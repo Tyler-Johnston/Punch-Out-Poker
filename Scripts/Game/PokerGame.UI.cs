@@ -801,102 +801,74 @@ public partial class PokerGame
 
 	private void UpdatePotSizeButtons(bool enabled = true)
 	{
+		// Gate: only when the slider/betting UI is actually usable
 		if (!enabled || !handInProgress || !isPlayerTurn || playerIsAllIn)
 		{
 			thirdPot.Disabled = true;
 			halfPot.Disabled = true;
-			standardPot.Disabled = true;
 			twoThirdsPot.Disabled = true;
+			standardPot.Disabled = true;
 			allInPot.Disabled = true;
 			return;
 		}
-		
+
 		var (minBet, maxBet) = GetLegalBetRange();
-		
+
 		if (maxBet <= 0)
 		{
 			thirdPot.Disabled = true;
 			halfPot.Disabled = true;
-			standardPot.Disabled = true;
 			twoThirdsPot.Disabled = true;
+			standardPot.Disabled = true;
 			allInPot.Disabled = true;
 			return;
 		}
-		
-		// Calculate pot-sized bet amounts
-		int thirdPotRaise = (int)Math.Round(pot * 0.33f);
-		int halfPotRaise = (int)Math.Round(pot * 0.5f);
-		int twoThirdsPotRaise = (int)Math.Round(pot * 0.67f);
-		int fullPotRaise = pot;
-		int allInRaise = maxBet;
-		
-		// Clamp to legal range
-		thirdPotRaise = Math.Clamp(thirdPotRaise, minBet, maxBet);
-		halfPotRaise = Math.Clamp(halfPotRaise, minBet, maxBet);
-		twoThirdsPotRaise = Math.Clamp(twoThirdsPotRaise, minBet, maxBet);
-		fullPotRaise = Math.Clamp(fullPotRaise, minBet, maxBet);
-		
-		// Track seen values to disable duplicates
-		HashSet<int> seenValues = new HashSet<int>();
-		
-		// 1/3 Pot
-		bool thirdValid = (thirdPotRaise >= minBet && thirdPotRaise <= maxBet);
-		if (thirdValid && !seenValues.Contains(thirdPotRaise))
-		{
-			thirdPot.Disabled = false;
-			seenValues.Add(thirdPotRaise);
-		}
-		else
+
+		int basePot = GetEffectivePot();
+
+		// All-in: always available (even if it matches another preset)
+		allInPot.Disabled = false;
+		allInPot.SetMeta("raise_to", maxBet); // store for click handler [web:10]
+
+		// If pot is 0, disable pot-% presets (but keep All-in usable)
+		if (basePot <= 0)
 		{
 			thirdPot.Disabled = true;
-		}
-		
-		// 1/2 Pot
-		bool halfValid = (halfPotRaise >= minBet && halfPotRaise <= maxBet);
-		if (halfValid && !seenValues.Contains(halfPotRaise))
-		{
-			halfPot.Disabled = false;
-			seenValues.Add(halfPotRaise);
-		}
-		else
-		{
 			halfPot.Disabled = true;
-		}
-		
-		// 2/3 Pot
-		bool twoThirdsValid = (twoThirdsPotRaise >= minBet && twoThirdsPotRaise <= maxBet);
-		if (twoThirdsValid && !seenValues.Contains(twoThirdsPotRaise))
-		{
-			twoThirdsPot.Disabled = false;
-			seenValues.Add(twoThirdsPotRaise);
-		}
-		else
-		{
 			twoThirdsPot.Disabled = true;
-		}
-		
-		// Full Pot
-		bool fullValid = (fullPotRaise >= minBet && fullPotRaise <= maxBet);
-		if (fullValid && !seenValues.Contains(fullPotRaise))
-		{
-			standardPot.Disabled = false;
-			seenValues.Add(fullPotRaise);
-		}
-		else
-		{
 			standardPot.Disabled = true;
+			return;
 		}
-		
-		// All-In (always enable if different from others)
-		if (!seenValues.Contains(allInRaise))
+
+		int thirdPotRaise     = Math.Clamp((int)Math.Round(basePot * 0.33f), minBet, maxBet);
+		int halfPotRaise      = Math.Clamp((int)Math.Round(basePot * 0.50f), minBet, maxBet);
+		int twoThirdsPotRaise = Math.Clamp((int)Math.Round(basePot * 0.67f), minBet, maxBet);
+		int fullPotRaise      = Math.Clamp(basePot, minBet, maxBet);
+
+		var seen = new HashSet<int>();
+
+		bool EnablePreset(Button btn, int amount)
 		{
-			allInPot.Disabled = false;
+			if (amount < minBet || amount > maxBet) return false;
+			if (seen.Contains(amount)) return false;
+
+			btn.Disabled = false;
+			btn.SetMeta("raise_to", amount); // store for click handler [web:10]
+			seen.Add(amount);
+			return true;
 		}
-		else
-		{
-			allInPot.Disabled = true;
-		}
+
+		thirdPot.Disabled = true;
+		halfPot.Disabled = true;
+		twoThirdsPot.Disabled = true;
+		standardPot.Disabled = true;
+
+		EnablePreset(thirdPot, thirdPotRaise);
+		EnablePreset(halfPot, halfPotRaise);
+		EnablePreset(twoThirdsPot, twoThirdsPotRaise);
+		EnablePreset(standardPot, fullPotRaise);
 	}
+
 	
 	private void UpdateButtonLabels()
 	{
