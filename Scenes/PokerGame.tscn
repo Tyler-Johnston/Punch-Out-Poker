@@ -1,11 +1,12 @@
-[gd_scene load_steps=78 format=3 uid="uid://b5sq1675fwcio"]
+[gd_scene load_steps=84 format=3 uid="uid://b5sq1675fwcio"]
 
 [ext_resource type="Script" uid="uid://8k6pqsmgt5pe" path="res://Scripts/Game/PokerGame.cs" id="1_8w0ed"]
 [ext_resource type="Shader" uid="uid://xgv2p7pj4e3u" path="res://Assets/Shaders/EnemyView.gdshader" id="2_h5gdr"]
 [ext_resource type="FontFile" uid="uid://dmret52s833gh" path="res://Assets/Fonts/Jersey_10/Jersey10-Regular.ttf" id="2_j8upv"]
-[ext_resource type="Texture2D" uid="uid://ti27q2cg6o2y" path="res://Assets/Textures/expressions/steve_expressions.png" id="3_47o1s"]
+[ext_resource type="Texture2D" uid="uid://d4a0lxfxbq30" path="res://Assets/Textures/expressions/boy wizard_expressions.png" id="2_vtryj"]
 [ext_resource type="PackedScene" uid="uid://dm1t1olfbu82u" path="res://Scenes/CardVisual.tscn" id="3_c6vvi"]
 [ext_resource type="PackedScene" uid="uid://d3dtedqfbrtr8" path="res://Scenes/SpeechBubble.tscn" id="6_47o1s"]
+[ext_resource type="Shader" uid="uid://bexxv8xqypdyj" path="res://Assets/Shaders/WebcamFeed.gdshader" id="6_vtryj"]
 [ext_resource type="Shader" uid="uid://csfo7n8cjhc25" path="res://Assets/Shaders/crt_lcd.gdshader" id="8_34q52"]
 [ext_resource type="Texture2D" uid="uid://6gcsofdmh4cp" path="res://Assets/Textures/chip_pngs/slider_chip.png" id="9_u5b2p"]
 [ext_resource type="AudioStream" uid="uid://dss833xi3m8t5" path="res://Assets/Music/regrowth wip.wav" id="10_47o1s"]
@@ -28,18 +29,31 @@ fill_to = Vector2(1, 0.5)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_0mxy1"]
 bg_color = Color(0.6, 0.6, 0.6, 0)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
 shadow_color = Color(0.0035191667, 0.0035191681, 0.0035191672, 0.6)
 shadow_size = 4
 shadow_offset = Vector2(4, 4)
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_uh6rn"]
-bg_color = Color(0.6, 0.6, 0.6, 0.13333334)
-border_width_left = 10
-border_width_top = 10
-border_width_right = 10
-border_width_bottom = 45
-border_color = Color(0.84705883, 0.84705883, 0.84705883, 1)
-shadow_color = Color(0, 0, 0, 0.19607843)
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_inoj0"]
+bg_color = Color(0.87329835, 0.87329847, 0.87329817, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="LabelSettings" id="LabelSettings_m5pa5"]
+font_size = 36
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_2hre2"]
+bg_color = Color(0.12303705, 0.24242797, 0.21459052, 0.62352943)
+border_width_top = 3
 
 [sub_resource type="Gradient" id="Gradient_xxe2x"]
 offsets = PackedFloat32Array(0, 0.89615387)
@@ -66,6 +80,23 @@ colors = PackedColorArray(0.32156864, 0.6509804, 0.49803922, 1, 0.33995035, 0.74
 gradient = SubResource("Gradient_u1fmj")
 fill = 1
 fill_from = Vector2(0.49726775, 0.5409836)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_2khn6"]
+bg_color = Color(0.14509805, 0.14509805, 0.14509805, 0.83137256)
+border_width_top = 3
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="LabelSettings" id="LabelSettings_6gitu"]
+font_size = 36
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_m5pa5"]
+shader = ExtResource("6_vtryj")
+shader_parameter/noise_amount = 0.430000020425
+shader_parameter/static_intensity = 0.02
+shader_parameter/scanline_alpha = 0.1690000080275
+shader_parameter/tint_color = Color(1, 1, 1, 1)
+shader_parameter/distortion = 0.02
 
 [sub_resource type="Gradient" id="Gradient_u5b2p"]
 colors = PackedColorArray(0, 0, 0, 0.11764706, 0, 0, 0, 0.43137255)
@@ -823,7 +854,7 @@ scale = Vector2(3, 3)
 script = ExtResource("1_8w0ed")
 OpponentFrame = NodePath("CanvasLayer/Control/OpponentView/FrameShadow/OpponentFrame")
 MainTableRect = NodePath("CanvasLayer/Control/MainTable")
-MiniTableRect = NodePath("CanvasLayer/Control/OpponentView/FrameShadow/OpponentFrame/InnerWrapper/MiniTable")
+MiniTableRect = NodePath("CanvasLayer/Control/OpponentView/FrameShadow/OpponentFrame/VBoxContainer/VideoContainer/OverlayUI/MiniTable")
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 layer = -1
@@ -849,8 +880,7 @@ texture = SubResource("GradientTexture2D_vtryj")
 
 [node name="OpponentView" type="Node2D" parent="CanvasLayer/Control"]
 unique_name_in_owner = true
-position = Vector2(-843, 31.000002)
-scale = Vector2(0.9, 0.9)
+position = Vector2(-933, 34)
 
 [node name="FrameShadow" type="PanelContainer" parent="CanvasLayer/Control/OpponentView"]
 offset_left = 960.0
@@ -860,105 +890,166 @@ offset_bottom = 253.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_0mxy1")
 
 [node name="OpponentFrame" type="PanelContainer" parent="CanvasLayer/Control/OpponentView/FrameShadow"]
-clip_contents = true
 layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_uh6rn")
+theme_override_styles/panel = SubResource("StyleBoxFlat_inoj0")
 
-[node name="InnerWrapper" type="Control" parent="CanvasLayer/Control/OpponentView/FrameShadow/OpponentFrame"]
-clip_contents = true
+[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/Control/OpponentView/FrameShadow/OpponentFrame"]
 layout_mode = 2
+theme_override_constants/separation = 0
 
-[node name="OpponentBackground" type="TextureRect" parent="CanvasLayer/Control/OpponentView/FrameShadow/OpponentFrame/InnerWrapper"]
-self_modulate = Color(0.9849369, 0.43876266, 0.51800776, 1)
-texture_filter = 1
-clip_contents = true
+[node name="TitleBar" type="ColorRect" parent="CanvasLayer/Control/OpponentView/FrameShadow/OpponentFrame/VBoxContainer"]
+custom_minimum_size = Vector2(0, 20)
+layout_mode = 2
+color = Color(0.052901633, 0.24926904, 0.35154027, 1)
+
+[node name="HBoxContainer" type="HBoxContainer" parent="CanvasLayer/Control/OpponentView/FrameShadow/OpponentFrame/VBoxContainer/TitleBar"]
 layout_mode = 0
-offset_left = -4.4444456
-offset_top = -5.222229
-offset_right = 305.55557
-offset_bottom = 182.55557
-expand_mode = 1
+offset_left = 3.666666
+offset_top = 3.333334
+offset_right = 314.77777
+offset_bottom = 42.333336
+theme_override_constants/separation = 10
 
-[node name="FaceSprite" type="Sprite2D" parent="CanvasLayer/Control/OpponentView/FrameShadow/OpponentFrame/InnerWrapper"]
+[node name="StatusDot" type="ColorRect" parent="CanvasLayer/Control/OpponentView/FrameShadow/OpponentFrame/VBoxContainer/TitleBar/HBoxContainer"]
+visible = false
+custom_minimum_size = Vector2(30, 0)
+layout_mode = 2
+color = Color(0.17077282, 0.5417782, 0.16808066, 1)
+
+[node name="NameLabel" type="Label" parent="CanvasLayer/Control/OpponentView/FrameShadow/OpponentFrame/VBoxContainer/TitleBar/HBoxContainer"]
 unique_name_in_owner = true
-position = Vector2(153.99988, 81.00001)
-scale = Vector2(1.375, 1.3680557)
-texture = ExtResource("3_47o1s")
+visible = false
+layout_mode = 2
+text = "Boy Wizard"
+label_settings = SubResource("LabelSettings_m5pa5")
+
+[node name="MinMaxCloseButtons" type="TextureRect" parent="CanvasLayer/Control/OpponentView/FrameShadow/OpponentFrame/VBoxContainer/TitleBar/HBoxContainer"]
+visible = false
+layout_mode = 2
+
+[node name="VideoContainer" type="PanelContainer" parent="CanvasLayer/Control/OpponentView/FrameShadow/OpponentFrame/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_2hre2")
+
+[node name="OverlayUI" type="Control" parent="CanvasLayer/Control/OpponentView/FrameShadow/OpponentFrame/VBoxContainer/VideoContainer"]
+clip_contents = true
+layout_mode = 2
+
+[node name="FaceSprite" type="Sprite2D" parent="CanvasLayer/Control/OpponentView/FrameShadow/OpponentFrame/VBoxContainer/VideoContainer/OverlayUI"]
+unique_name_in_owner = true
+position = Vector2(160.00003, 74.33335)
+scale = Vector2(1.1, 1.1)
+texture = ExtResource("2_vtryj")
 hframes = 8
 
-[node name="OpponentArea" type="Node2D" parent="CanvasLayer/Control/OpponentView/FrameShadow/OpponentFrame/InnerWrapper"]
+[node name="OpponentArea" type="Node2D" parent="CanvasLayer/Control/OpponentView/FrameShadow/OpponentFrame/VBoxContainer/VideoContainer/OverlayUI"]
 unique_name_in_owner = true
-position = Vector2(147.50002, 238.24998)
+position = Vector2(149.72223, 205.24997)
 rotation = -3.1415925
 scale = Vector2(3.7499993, 3.7499993)
 
-[node name="OpponentCard1" parent="CanvasLayer/Control/OpponentView/FrameShadow/OpponentFrame/InnerWrapper/OpponentArea" instance=ExtResource("3_c6vvi")]
+[node name="OpponentCard1" parent="CanvasLayer/Control/OpponentView/FrameShadow/OpponentFrame/VBoxContainer/VideoContainer/OverlayUI/OpponentArea" instance=ExtResource("3_c6vvi")]
 anchors_preset = 0
 anchor_right = 0.0
 anchor_bottom = 0.0
-offset_left = 4.0740805
-offset_top = 0.3333298
+offset_left = 4.0740814
+offset_top = -4.4665833
 offset_right = 146.07408
-offset_bottom = 192.33333
+offset_bottom = 187.53342
 grow_horizontal = 1
 grow_vertical = 1
 
-[node name="OpponentCard2" parent="CanvasLayer/Control/OpponentView/FrameShadow/OpponentFrame/InnerWrapper/OpponentArea" instance=ExtResource("3_c6vvi")]
+[node name="OpponentCard2" parent="CanvasLayer/Control/OpponentView/FrameShadow/OpponentFrame/VBoxContainer/VideoContainer/OverlayUI/OpponentArea" instance=ExtResource("3_c6vvi")]
 anchors_preset = 0
 anchor_right = 0.0
 anchor_bottom = 0.0
-offset_left = -28.814816
-offset_top = -0.25925946
+offset_left = -28.81482
+offset_top = -3.7259216
 offset_right = 113.18518
-offset_bottom = 191.74074
+offset_bottom = 188.27408
 grow_horizontal = 1
 grow_vertical = 1
 
-[node name="MiniTable" type="TextureRect" parent="CanvasLayer/Control/OpponentView/FrameShadow/OpponentFrame/InnerWrapper"]
+[node name="MiniTable" type="TextureRect" parent="CanvasLayer/Control/OpponentView/FrameShadow/OpponentFrame/VBoxContainer/VideoContainer/OverlayUI"]
 material = SubResource("ShaderMaterial_u5b2p")
+clip_contents = true
 layout_mode = 0
-offset_left = -53.0
-offset_top = 26.0
-offset_right = 353.0
-offset_bottom = 392.0
+offset_left = -96.0
+offset_top = -7.0
+offset_right = 391.0
+offset_bottom = 389.0
 texture = SubResource("GradientTexture2D_h5gdr")
 
-[node name="OpponentChipGridBox" type="GridContainer" parent="CanvasLayer/Control/OpponentView/FrameShadow/OpponentFrame/InnerWrapper"]
+[node name="OpponentChipGridBox" type="GridContainer" parent="CanvasLayer/Control/OpponentView/FrameShadow/OpponentFrame/VBoxContainer/VideoContainer/OverlayUI"]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 192.50009
-offset_top = 219.49998
-offset_right = 350.50006
-offset_bottom = 269.5
+offset_left = 210.16666
+offset_top = 199.72223
+offset_right = 368.16656
+offset_bottom = 249.72223
 rotation = 3.1415927
 scale = Vector2(1.15, 1.15)
 theme_override_constants/h_separation = -10
 theme_override_constants/v_separation = -10
 columns = 4
 
-[node name="ChipSprite1" type="TextureRect" parent="CanvasLayer/Control/OpponentView/FrameShadow/OpponentFrame/InnerWrapper/OpponentChipGridBox"]
+[node name="ChipSprite1" type="TextureRect" parent="CanvasLayer/Control/OpponentView/FrameShadow/OpponentFrame/VBoxContainer/VideoContainer/OverlayUI/OpponentChipGridBox"]
 custom_minimum_size = Vector2(50, 50)
 layout_mode = 2
 texture = ExtResource("11_xxe2x")
 
-[node name="ChipSprite2" type="TextureRect" parent="CanvasLayer/Control/OpponentView/FrameShadow/OpponentFrame/InnerWrapper/OpponentChipGridBox"]
+[node name="ChipSprite2" type="TextureRect" parent="CanvasLayer/Control/OpponentView/FrameShadow/OpponentFrame/VBoxContainer/VideoContainer/OverlayUI/OpponentChipGridBox"]
 custom_minimum_size = Vector2(50, 50)
 layout_mode = 2
 texture = ExtResource("11_xxe2x")
 
-[node name="ChipSprite3" type="TextureRect" parent="CanvasLayer/Control/OpponentView/FrameShadow/OpponentFrame/InnerWrapper/OpponentChipGridBox"]
+[node name="ChipSprite3" type="TextureRect" parent="CanvasLayer/Control/OpponentView/FrameShadow/OpponentFrame/VBoxContainer/VideoContainer/OverlayUI/OpponentChipGridBox"]
 custom_minimum_size = Vector2(50, 50)
 layout_mode = 2
 texture = ExtResource("11_xxe2x")
 
-[node name="Vignette" type="TextureRect" parent="CanvasLayer/Control/OpponentView/FrameShadow/OpponentFrame/InnerWrapper"]
+[node name="RecLabel" type="Label" parent="CanvasLayer/Control/OpponentView/FrameShadow/OpponentFrame/VBoxContainer/VideoContainer/OverlayUI"]
+visible = false
 layout_mode = 0
-offset_right = 301.0
-offset_bottom = 239.0
+offset_right = 40.0
+offset_bottom = 18.0
+
+[node name="ConnectionIcon" type="TextureRect" parent="CanvasLayer/Control/OpponentView/FrameShadow/OpponentFrame/VBoxContainer/VideoContainer/OverlayUI"]
+visible = false
+layout_mode = 0
+offset_left = -1.1111112
+offset_top = -37.000004
+offset_right = 38.88889
+offset_bottom = 2.9999962
+
+[node name="OpponentMoneyPanel" type="PanelContainer" parent="CanvasLayer/Control/OpponentView/FrameShadow/OpponentFrame/VBoxContainer/VideoContainer/OverlayUI"]
+layout_mode = 0
+offset_left = 0.33333206
+offset_top = 189.0
+offset_right = 315.88892
+offset_bottom = 231.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_2khn6")
+
+[node name="OpponentStackLabel" type="Label" parent="CanvasLayer/Control/OpponentView/FrameShadow/OpponentFrame/VBoxContainer/VideoContainer/OverlayUI/OpponentMoneyPanel"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "$10"
+label_settings = SubResource("LabelSettings_6gitu")
+horizontal_alignment = 1
+
+[node name="Vignette" type="TextureRect" parent="CanvasLayer/Control/OpponentView/FrameShadow/OpponentFrame/VBoxContainer/VideoContainer/OverlayUI"]
+material = SubResource("ShaderMaterial_m5pa5")
+layout_mode = 0
+offset_left = 0.33333206
+offset_top = 0.44445038
+offset_right = 315.88892
+offset_bottom = 190.0
 texture = SubResource("GradientTexture2D_u5b2p")
 
-[node name="OpponentStackLabel" type="Label" parent="CanvasLayer/Control/OpponentView"]
+[node name="oldStackLabel" type="Label" parent="CanvasLayer/Control/OpponentView"]
 unique_name_in_owner = true
+visible = false
 offset_left = 966.2501
 offset_top = 205.0
 offset_right = 1277.5001
@@ -1256,7 +1347,7 @@ layout_mode = 2
 texture = ExtResource("11_xxe2x")
 
 [node name="CommunityCardsArea" type="Node2D" parent="CanvasLayer/Control"]
-position = Vector2(336.00003, 329)
+position = Vector2(355.00003, 329)
 scale = Vector2(4.5, 4.5)
 
 [node name="Flop1" parent="CanvasLayer/Control/CommunityCardsArea" instance=ExtResource("3_c6vvi")]
