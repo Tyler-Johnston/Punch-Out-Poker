@@ -37,7 +37,7 @@ public partial class PokerGame : Node2D
 	private Button allInPot;
 
 	private Label playerStackLabel;
-	//private Label playerStackLabel2;
+	private Label playerStackLabel2;
 	private Label playerEarningsLabel;
 	private Label opponentStackLabel;
 	private Label potLabel;
@@ -61,7 +61,7 @@ public partial class PokerGame : Node2D
 	private Node2D opponentView;
 	private Node2D potArea;
 	private Node2D playerArea;
-	private HBoxContainer betweenHandsUI;
+	private Node2D betweenHandsUI;
 	
 	private Control actionButtonsContainer;
 	private Control actionButtons;
@@ -151,7 +151,7 @@ public partial class PokerGame : Node2D
 		playerArea = GetNode<Node2D>("%PlayerArea");
 		opponentView = hudControl.GetNode<Node2D>("OpponentView");
 		potArea = hudControl.GetNode<Node2D>("PotArea");
-		betweenHandsUI = GetNode<HBoxContainer>("%BetweenHandsHBox");
+		betweenHandsUI = GetNode<Node2D>("%BetweenHandsUI");
 		
 		// Get chip display containers
 		PlayerChipGridBox = playerArea.GetNode<GridContainer>("PlayerChipGridBox");
@@ -182,7 +182,7 @@ public partial class PokerGame : Node2D
 		
 		// labels
 		playerStackLabel = GetNode<Label>("%PlayerStackLabel");
-		//playerStackLabel2 = GetNode<Label>("%PlayerStackLabel2");
+		playerStackLabel2 = GetNode<Label>("%PlayerStackLabel2");
 		playerEarningsLabel = GetNode<Label>("%PlayerEarningsLabel");
 		opponentStackLabel = GetNode<Label>("%OpponentStackLabel");
 		handTypeLabel = GetNode<Label>("%HandTypeLabel");

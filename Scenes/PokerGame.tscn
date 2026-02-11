@@ -46,8 +46,10 @@ border_width_right = 5
 border_width_bottom = 5
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_47o1s"]
-content_margin_left = 30.0
-content_margin_right = 30.0
+content_margin_left = 5.0
+content_margin_top = 10.0
+content_margin_right = 5.0
+content_margin_bottom = 10.0
 bg_color = Color(0.6784314, 0, 0.15686275, 1)
 border_width_left = 1
 border_width_top = 1
@@ -120,8 +122,10 @@ shadow_offset = Vector2(2, 4)
 anti_aliasing = false
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_xxe2x"]
-content_margin_left = 30.0
-content_margin_right = 30.0
+content_margin_left = 5.0
+content_margin_top = 10.0
+content_margin_right = 5.0
+content_margin_bottom = 10.0
 bg_color = Color(0.18431373, 0.34509805, 0.7764706, 1)
 border_width_left = 1
 border_width_top = 1
@@ -194,6 +198,10 @@ shadow_offset = Vector2(2, 4)
 anti_aliasing = false
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_u1fmj"]
+content_margin_left = 5.0
+content_margin_top = 10.0
+content_margin_right = 5.0
+content_margin_bottom = 10.0
 bg_color = Color(0.7137255, 0.4627451, 0.2901961, 1)
 border_width_left = 1
 border_width_top = 1
@@ -695,6 +703,14 @@ corner_radius_bottom_left = 10
 shadow_size = 4
 shadow_offset = Vector2(2, 4)
 
+[sub_resource type="LabelSettings" id="LabelSettings_u1fmj"]
+font_size = 36
+outline_size = 1
+outline_color = Color(0, 0, 0, 1)
+shadow_size = 3
+shadow_color = Color(0, 0, 0, 0.24705882)
+shadow_offset = Vector2(5, 5)
+
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_0mxy1"]
 bg_color = Color(0.6, 0.6, 0.6, 0)
 corner_radius_top_left = 5
@@ -774,14 +790,6 @@ gradient = SubResource("Gradient_u5b2p")
 fill = 1
 fill_from = Vector2(0.5, 0.5)
 fill_to = Vector2(0.5, 0)
-
-[sub_resource type="LabelSettings" id="LabelSettings_u1fmj"]
-font_size = 48
-outline_size = 1
-outline_color = Color(0, 0, 0, 1)
-shadow_size = 3
-shadow_color = Color(0, 0, 0, 0.09803922)
-shadow_offset = Vector2(5, 5)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_jn1cq"]
 bg_color = Color(0, 0, 0, 0.27450982)
@@ -911,6 +919,7 @@ offset_left = 26.0
 offset_top = 680.0
 offset_right = 491.0
 offset_bottom = 739.0
+size_flags_horizontal = 3
 mouse_filter = 2
 theme_override_constants/separation = 30
 
@@ -918,6 +927,7 @@ theme_override_constants/separation = 30
 texture_filter = 1
 custom_minimum_size = Vector2(135, 0)
 layout_mode = 2
+size_flags_horizontal = 3
 focus_mode = 0
 theme_override_font_sizes/font_size = 36
 theme_override_styles/normal = SubResource("StyleBoxFlat_47o1s")
@@ -929,6 +939,7 @@ text = "Fold"
 [node name="CheckCallButton" type="Button" parent="CanvasLayer/Control/BottomDashboard/ActionButtons"]
 custom_minimum_size = Vector2(135, 0)
 layout_mode = 2
+size_flags_horizontal = 3
 focus_mode = 0
 theme_override_fonts/font = ExtResource("2_j8upv")
 theme_override_font_sizes/font_size = 36
@@ -941,6 +952,7 @@ text = "Check"
 [node name="BetRaiseButton" type="Button" parent="CanvasLayer/Control/BottomDashboard/ActionButtons"]
 custom_minimum_size = Vector2(135, 0)
 layout_mode = 2
+size_flags_horizontal = 3
 focus_mode = 0
 theme_override_fonts/font = ExtResource("2_j8upv")
 theme_override_font_sizes/font_size = 36
@@ -958,7 +970,7 @@ label_settings = SubResource("LabelSettings_mhpyu")
 
 [node name="PlayerArea" type="Node2D" parent="CanvasLayer/Control/BottomDashboard/ActionButtons"]
 unique_name_in_owner = true
-position = Vector2(1152, -21)
+position = Vector2(1145, -21)
 scale = Vector2(4.5, 4.5)
 
 [node name="PlayerCard1" parent="CanvasLayer/Control/BottomDashboard/ActionButtons/PlayerArea" instance=ExtResource("3_c6vvi")]
@@ -1016,10 +1028,10 @@ texture = ExtResource("11_xxe2x")
 unique_name_in_owner = true
 layout_mode = 3
 anchors_preset = 0
-offset_left = 17.0
-offset_top = 9.0
-offset_right = 57.0
-offset_bottom = 49.0
+offset_left = 3.0
+offset_top = 8.0
+offset_right = 43.0
+offset_bottom = 48.0
 
 [node name="BetSlider" type="HSlider" parent="CanvasLayer/Control/BottomDashboard/SliderUI"]
 unique_name_in_owner = true
@@ -1109,7 +1121,7 @@ text = "All-In"
 
 [node name="CommunityCardsArea" type="Node2D" parent="CanvasLayer/Control/BottomDashboard"]
 unique_name_in_owner = true
-position = Vector2(151, 520)
+position = Vector2(148, 520)
 
 [node name="HBoxContainer" type="HBoxContainer" parent="CanvasLayer/Control/BottomDashboard/CommunityCardsArea"]
 offset_left = 198.0
@@ -1117,6 +1129,7 @@ offset_top = 14.0
 offset_right = 988.0
 offset_bottom = 206.0
 scale = Vector2(0.75, 0.75)
+mouse_filter = 2
 theme_override_constants/separation = 105
 
 [node name="Flop1" parent="CanvasLayer/Control/BottomDashboard/CommunityCardsArea/HBoxContainer" instance=ExtResource("3_c6vvi")]
@@ -1154,19 +1167,21 @@ text = "Money In Hand"
 label_settings = SubResource("LabelSettings_crlcv")
 horizontal_alignment = 1
 
-[node name="BetweenHandsHBox" type="HBoxContainer" parent="CanvasLayer/Control/BottomDashboard"]
+[node name="BetweenHandsUI" type="Node2D" parent="CanvasLayer/Control/BottomDashboard"]
 unique_name_in_owner = true
-visible = false
+
+[node name="BetweenHandsHBox" type="HBoxContainer" parent="CanvasLayer/Control/BottomDashboard/BetweenHandsUI"]
+unique_name_in_owner = true
 z_index = 2
-offset_left = 50.0
-offset_top = 667.0
-offset_right = 470.0
-offset_bottom = 726.0
+offset_left = -25.0
+offset_top = 680.0
+offset_right = 539.0
+offset_bottom = 739.0
 mouse_filter = 2
 theme_override_constants/separation = 30
 alignment = 1
 
-[node name="NextHandButton" type="Button" parent="CanvasLayer/Control/BottomDashboard/BetweenHandsHBox"]
+[node name="NextHandButton" type="Button" parent="CanvasLayer/Control/BottomDashboard/BetweenHandsUI/BetweenHandsHBox"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(195, 0)
 layout_mode = 2
@@ -1178,7 +1193,7 @@ theme_override_styles/hover = SubResource("StyleBoxFlat_8x3rv")
 theme_override_styles/disabled = SubResource("StyleBoxFlat_76q2j")
 text = "Next Hand"
 
-[node name="CashOutButton" type="Button" parent="CanvasLayer/Control/BottomDashboard/BetweenHandsHBox"]
+[node name="CashOutButton" type="Button" parent="CanvasLayer/Control/BottomDashboard/BetweenHandsUI/BetweenHandsHBox"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(195, 0)
 layout_mode = 2
@@ -1190,6 +1205,27 @@ theme_override_styles/pressed = SubResource("StyleBoxFlat_end58")
 theme_override_styles/hover = SubResource("StyleBoxFlat_0nmcr")
 theme_override_styles/disabled = SubResource("StyleBoxFlat_h5gdr")
 text = "Cash Out"
+
+[node name="PlayerStackLabel2" type="Label" parent="CanvasLayer/Control/BottomDashboard/BetweenHandsUI"]
+unique_name_in_owner = true
+offset_left = 6.0
+offset_top = 603.0
+offset_right = 343.0
+offset_bottom = 642.0
+text = "Money In Hand"
+label_settings = SubResource("LabelSettings_crlcv")
+horizontal_alignment = 1
+
+[node name="PlayerEarningsLabel" type="Label" parent="CanvasLayer/Control/BottomDashboard/BetweenHandsUI"]
+unique_name_in_owner = true
+offset_left = 1060.0
+offset_top = 604.0
+offset_right = 1174.0
+offset_bottom = 643.0
+size_flags_horizontal = 6
+text = "Net: +$40"
+label_settings = SubResource("LabelSettings_u1fmj")
+horizontal_alignment = 1
 
 [node name="OpponentView" type="Node2D" parent="CanvasLayer/Control"]
 unique_name_in_owner = true
@@ -1370,18 +1406,6 @@ offset_bottom = 164.0
 grow_horizontal = 1
 grow_vertical = 1
 
-[node name="PlayerEarningsLabel" type="Label" parent="CanvasLayer/Control/OpponentView"]
-unique_name_in_owner = true
-visible = false
-offset_left = 2441.6
-offset_top = 346.4
-offset_right = 2593.6
-offset_bottom = 398.4
-size_flags_horizontal = 6
-text = "Net: +$50"
-label_settings = SubResource("LabelSettings_u1fmj")
-horizontal_alignment = 2
-
 [node name="PotArea" type="Node2D" parent="CanvasLayer/Control"]
 position = Vector2(934, 58)
 scale = Vector2(1.5, 1.5)
@@ -1464,6 +1488,7 @@ label_settings = SubResource("LabelSettings_xxe2x")
 horizontal_alignment = 1
 
 [node name="HandTypeControl" type="Control" parent="CanvasLayer/Control"]
+visible = false
 anchors_preset = 0
 offset_left = 36.0
 offset_top = 459.0

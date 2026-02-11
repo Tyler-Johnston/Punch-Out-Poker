@@ -940,7 +940,6 @@ public partial class PokerGame
 	{
 		if (isMatchComplete)
 		{
-			actionButtonsContainer.Visible = false;
 			betweenHandsUI.Visible = true;
 			sliderUI.Visible = false;
 			potArea.Visible = false;
