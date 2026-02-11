@@ -28,7 +28,7 @@ public partial class PokerGame
 		string playerHandName = HandEvaluator.GetHandDescription(playerHand, communityCards);
 		
 		// We don't reveal opponent's hand on a player fold (unless you want to add a 'Show One' feature later)
-		lastHandDescription = $"Player: {playerHandName} VS {currentOpponentName}: ???";
+		lastHandDescription = $"You: {playerHandName} VS {currentOpponentName}: ???";
 		// -------------------------------------
 
 		// Clear all pot tracking for end of hand

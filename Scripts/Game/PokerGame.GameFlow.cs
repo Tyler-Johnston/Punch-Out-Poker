@@ -484,7 +484,7 @@ public partial class PokerGame
 		string playerHandName = HandEvaluator.GetHandDescription(playerHand, communityCards);
 		string opponentHandName = HandEvaluator.GetHandDescription(opponentHand, communityCards);
 
-		lastHandDescription = $"Player: {playerHandName} VS {currentOpponentName}: {opponentHandName}";
+		lastHandDescription = $"You: {playerHandName} VS {currentOpponentName}: {opponentHandName}";
 
 		handTypeLabel.Text = lastHandDescription; 
 		handTypeLabel.Visible = true;
@@ -715,7 +715,7 @@ public partial class PokerGame
 		// Evaluate player's hand so they see what they won with.
 		// Opponent hand is unknown ("Folded" or "???")
 		string playerHandName = HandEvaluator.GetHandDescription(playerHand, communityCards);
-		lastHandDescription = $"Player: {playerHandName} VS {currentOpponentName}: ???";
+		lastHandDescription = $"You: {playerHandName} VS {currentOpponentName}: ???";
 
 		// Step 4: Reset Pot Tracking
 		pot = 0;

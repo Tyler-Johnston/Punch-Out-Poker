@@ -999,14 +999,14 @@ rotation = -0.19024089
 scale = Vector2(0.18, 0.18)
 
 [node name="PlayerChipGridBox" type="GridContainer" parent="CanvasLayer/Control/BottomDashboard/ActivePlayUI/ActionButtons/PlayerArea"]
-offset_left = -52.888885
-offset_top = -43.333336
-offset_right = 141.55559
-offset_bottom = 6.666664
+offset_left = -32.888885
+offset_top = -92.0
+offset_right = 161.55557
+offset_bottom = -42.0
 scale = Vector2(0.5, 0.5)
 theme_override_constants/h_separation = -10
 theme_override_constants/v_separation = -10
-columns = 8
+columns = 3
 
 [node name="ChipSprite1" type="TextureRect" parent="CanvasLayer/Control/BottomDashboard/ActivePlayUI/ActionButtons/PlayerArea/PlayerChipGridBox"]
 custom_minimum_size = Vector2(50, 50)
@@ -1240,7 +1240,7 @@ horizontal_alignment = 1
 
 [node name="OpponentView" type="Node2D" parent="CanvasLayer/Control"]
 unique_name_in_owner = true
-position = Vector2(-1124.0001, 31.000002)
+position = Vector2(-768.0001, 34.000004)
 scale = Vector2(1.25, 1.25)
 
 [node name="FrameShadow" type="PanelContainer" parent="CanvasLayer/Control/OpponentView"]
@@ -1338,7 +1338,7 @@ clip_contents = true
 layout_mode = 0
 offset_left = -96.0
 offset_top = -7.0
-offset_right = 391.0
+offset_right = 411.40005
 offset_bottom = 389.0
 texture = SubResource("GradientTexture2D_h5gdr")
 
@@ -1410,10 +1410,10 @@ texture = SubResource("GradientTexture2D_u5b2p")
 
 [node name="SpeechBubble" parent="CanvasLayer/Control/OpponentView" instance=ExtResource("6_47o1s")]
 top_level = true
-offset_left = 447.0
-offset_top = 17.0
-offset_right = 571.0
-offset_bottom = 164.0
+offset_left = 699.0
+offset_top = 35.0
+offset_right = 823.0
+offset_bottom = 182.0
 grow_horizontal = 1
 grow_vertical = 1
 
@@ -1506,7 +1506,6 @@ script = ExtResource("12_u5b2p")
 stream = ExtResource("10_47o1s")
 
 [node name="lcdCanvasLayer" type="CanvasLayer" parent="."]
-visible = false
 
 [node name="ColorRect" type="ColorRect" parent="lcdCanvasLayer"]
 material = SubResource("ShaderMaterial_h5gdr")
