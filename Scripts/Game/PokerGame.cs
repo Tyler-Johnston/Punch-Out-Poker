@@ -37,7 +37,7 @@ public partial class PokerGame : Node2D
 	private Button allInPot;
 
 	private Label playerStackLabel;
-	private Label playerStackLabel2;
+	//private Label playerStackLabel2;
 	private Label playerEarningsLabel;
 	private Label opponentStackLabel;
 	private Label potLabel;
@@ -59,10 +59,9 @@ public partial class PokerGame : Node2D
 	[Export] public TextureRect MiniTableRect;
 	
 	private Node2D opponentView;
-	private Node2D actionView;
 	private Node2D potArea;
 	private Node2D playerArea;
-	private Node2D betweenHandsUI;
+	private HBoxContainer betweenHandsUI;
 	
 	private Control actionButtonsContainer;
 	private Control actionButtons;
@@ -148,11 +147,11 @@ public partial class PokerGame : Node2D
 		
 		// ui areas
 		Node2D opponentArea = GetNode<Node2D>("%OpponentArea");
-		Node2D communityCardsArea = hudControl.GetNode<Node2D>("CommunityCardsArea");
+		Node2D communityCardsArea = GetNode<Node2D>("%CommunityCardsArea");
 		playerArea = GetNode<Node2D>("%PlayerArea");
 		opponentView = hudControl.GetNode<Node2D>("OpponentView");
 		potArea = hudControl.GetNode<Node2D>("PotArea");
-		betweenHandsUI = GetNode<Node2D>("%BetweenHandsUI");
+		betweenHandsUI = GetNode<HBoxContainer>("%BetweenHandsHBox");
 		
 		// Get chip display containers
 		PlayerChipGridBox = playerArea.GetNode<GridContainer>("PlayerChipGridBox");
@@ -167,16 +166,14 @@ public partial class PokerGame : Node2D
 		opponentCard2 = opponentArea.GetNode<CardVisual>("OpponentCard2");
 
 		// community cards
-		flop1 = communityCardsArea.GetNode<CardVisual>("Flop1");
-		flop2 = communityCardsArea.GetNode<CardVisual>("Flop2");
-		flop3 = communityCardsArea.GetNode<CardVisual>("Flop3");
-		turnCard = communityCardsArea.GetNode<CardVisual>("Turn");
-		riverCard = communityCardsArea.GetNode<CardVisual>("River");
+		flop1 = GetNode<CardVisual>("%Flop1");
+		flop2 = GetNode<CardVisual>("%Flop2");
+		flop3 = GetNode<CardVisual>("%Flop3");
+		turnCard = GetNode<CardVisual>("%Turn");
+		riverCard = GetNode<CardVisual>("%River");
 
 		// action buttons
-		actionButtonsContainer = GetNode<Control>("%ActionButtonsContainer");
 		actionButtons = GetNode<Control>("%ActionButtons");
-		actionView = GetNode<Node2D>("%ActionView");
 		foldButton = actionButtons.GetNode<Button>("FoldButton");
 		checkCallButton = actionButtons.GetNode<Button>("CheckCallButton");
 		betRaiseButton = actionButtons.GetNode<Button>("BetRaiseButton");
@@ -185,7 +182,7 @@ public partial class PokerGame : Node2D
 		
 		// labels
 		playerStackLabel = GetNode<Label>("%PlayerStackLabel");
-		playerStackLabel2 = GetNode<Label>("%PlayerStackLabel2");
+		//playerStackLabel2 = GetNode<Label>("%PlayerStackLabel2");
 		playerEarningsLabel = GetNode<Label>("%PlayerEarningsLabel");
 		opponentStackLabel = GetNode<Label>("%OpponentStackLabel");
 		handTypeLabel = GetNode<Label>("%HandTypeLabel");

@@ -36,7 +36,7 @@ public partial class PokerGame
 	{
 		string text = $"Money In-Hand: ${playerChips}";
 		playerStackLabel.Text = text;
-		playerStackLabel2.Text = text;
+		//playerStackLabel2.Text = text;
 	}
 	
 	private void UpdateSessionProfitLabel()
