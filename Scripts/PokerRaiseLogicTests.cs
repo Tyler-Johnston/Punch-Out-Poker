@@ -58,14 +58,27 @@ public partial class PokerRaiseLogicTests : Node
 
 	private void TestRule_RefundLogic()
 	{
-		var result = PokerRules.CalculateRefund(-20, 100);
+		// Test Case 1: Refund is smaller than street bet (Standard Case)
+		// Excess = 20, StreetBet = 100
+		// Should take 20 from street, 0 from pot.
+		var result = PokerRules.CalculateRefund(20, 100);
 		AssertEqual("Rules: Refund Amount", result.RefundAmount, 20, "Should refund 20 chips");
-		AssertEqual("Rules: Refund Source", result.FromStreet, 20, "Should take from street");
+		AssertEqual("Rules: Refund From Street", result.FromStreet, 20, "Should take all 20 from street");
+		AssertEqual("Rules: Refund From Pot", result.FromPot, 0, "Should take 0 from settled pot");
 
-		result = PokerRules.CalculateRefund(-380, 200);
-		AssertEqual("Rules: Multi-Street Refund Cap", result.RefundAmount, 200, 
-			"Should cap refund at current street bet");
+		// Test Case 2: Refund is LARGER than street bet (Pot Dip Case)
+		// Excess = 380, StreetBet = 200
+		// Should take 200 from street, 180 from pot.
+		result = PokerRules.CalculateRefund(380, 200);
+		AssertEqual("Rules: Deep Refund Amount", result.RefundAmount, 380, "Should refund total 380");
+		AssertEqual("Rules: Deep Refund From Street", result.FromStreet, 200, "Should drain street buffer (200)");
+		AssertEqual("Rules: Deep Refund From Pot", result.FromPot, 180, "Should take remainder (180) from pot");
+		
+		// Test Case 3: Invalid Input Safety (Optional)
+		result = PokerRules.CalculateRefund(-50, 100);
+		AssertEqual("Rules: Negative Input Safety", result.RefundAmount, 0, "Negative excess should return 0 refund");
 	}
+
 
 	private void TestRule_FullRaiseLogic()
 	{
