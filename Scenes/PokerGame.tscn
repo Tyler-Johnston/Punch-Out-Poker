@@ -194,8 +194,6 @@ shadow_offset = Vector2(2, 4)
 anti_aliasing = false
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_u1fmj"]
-content_margin_left = 30.0
-content_margin_right = 30.0
 bg_color = Color(0.7137255, 0.4627451, 0.2901961, 1)
 border_width_left = 1
 border_width_top = 1
@@ -883,7 +881,7 @@ grow_vertical = 2
 texture = SubResource("GradientTexture2D_vtryj")
 
 [node name="BottomDashboard" type="Node2D" parent="CanvasLayer/Control"]
-position = Vector2(0, -25)
+position = Vector2(0, -50)
 
 [node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/Control/BottomDashboard"]
 offset_top = 595.0
@@ -901,7 +899,7 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_uh6rn")
 
 [node name="BottomPanel" type="PanelContainer" parent="CanvasLayer/Control/BottomDashboard/VBoxContainer"]
 z_index = 1
-custom_minimum_size = Vector2(0, 100)
+custom_minimum_size = Vector2(0, 125)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_gwhxk")
 
@@ -909,10 +907,10 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_gwhxk")
 unique_name_in_owner = true
 z_index = 2
 texture_filter = 1
-offset_left = 25.0
-offset_top = 667.0
-offset_right = 490.0
-offset_bottom = 726.0
+offset_left = 26.0
+offset_top = 680.0
+offset_right = 491.0
+offset_bottom = 739.0
 mouse_filter = 2
 theme_override_constants/separation = 30
 
@@ -960,7 +958,7 @@ label_settings = SubResource("LabelSettings_mhpyu")
 
 [node name="PlayerArea" type="Node2D" parent="CanvasLayer/Control/BottomDashboard/ActionButtons"]
 unique_name_in_owner = true
-position = Vector2(1176, -21)
+position = Vector2(1152, -21)
 scale = Vector2(4.5, 4.5)
 
 [node name="PlayerCard1" parent="CanvasLayer/Control/BottomDashboard/ActionButtons/PlayerArea" instance=ExtResource("3_c6vvi")]
@@ -1014,13 +1012,23 @@ custom_minimum_size = Vector2(50, 50)
 layout_mode = 2
 texture = ExtResource("11_xxe2x")
 
-[node name="BetSlider" type="HSlider" parent="CanvasLayer/Control/BottomDashboard"]
+[node name="SliderUI" type="Control" parent="CanvasLayer/Control/BottomDashboard"]
+unique_name_in_owner = true
+layout_mode = 3
+anchors_preset = 0
+offset_left = 17.0
+offset_top = 9.0
+offset_right = 57.0
+offset_bottom = 49.0
+
+[node name="BetSlider" type="HSlider" parent="CanvasLayer/Control/BottomDashboard/SliderUI"]
 unique_name_in_owner = true
 z_index = 2
-offset_left = 629.0
-offset_top = 657.0
-offset_right = 851.0
-offset_bottom = 687.0
+layout_mode = 0
+offset_left = 566.0
+offset_top = 661.0
+offset_right = 921.0
+offset_bottom = 691.0
 focus_mode = 0
 theme_override_icons/grabber = ExtResource("9_u5b2p")
 theme_override_icons/grabber_highlight = ExtResource("10_u5b2p")
@@ -1029,16 +1037,17 @@ theme_override_styles/slider = SubResource("StyleBoxFlat_vnib4")
 theme_override_styles/grabber_area = SubResource("StyleBoxFlat_hkg01")
 theme_override_styles/grabber_area_highlight = SubResource("StyleBoxFlat_ok1jy")
 
-[node name="BetShortcuts" type="HBoxContainer" parent="CanvasLayer/Control/BottomDashboard"]
+[node name="BetShortcuts" type="HBoxContainer" parent="CanvasLayer/Control/BottomDashboard/SliderUI"]
 z_index = 2
+layout_mode = 0
 offset_left = 562.0
-offset_top = 693.0
+offset_top = 698.0
 offset_right = 924.0
-offset_bottom = 734.0
+offset_bottom = 739.0
 theme_override_constants/separation = 10
 alignment = 1
 
-[node name="ThirdPot" type="Button" parent="CanvasLayer/Control/BottomDashboard/BetShortcuts"]
+[node name="ThirdPot" type="Button" parent="CanvasLayer/Control/BottomDashboard/SliderUI/BetShortcuts"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(60, 0)
 layout_mode = 2
@@ -1050,7 +1059,7 @@ theme_override_styles/hover = SubResource("StyleBoxFlat_xloky")
 theme_override_styles/disabled = SubResource("StyleBoxFlat_f2l75")
 text = "1/3"
 
-[node name="HalfPot" type="Button" parent="CanvasLayer/Control/BottomDashboard/BetShortcuts"]
+[node name="HalfPot" type="Button" parent="CanvasLayer/Control/BottomDashboard/SliderUI/BetShortcuts"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(60, 0)
 layout_mode = 2
@@ -1062,7 +1071,7 @@ theme_override_styles/hover = SubResource("StyleBoxFlat_6qdjg")
 theme_override_styles/disabled = SubResource("StyleBoxFlat_8fm0h")
 text = "1/2"
 
-[node name="TwoThirdsPot" type="Button" parent="CanvasLayer/Control/BottomDashboard/BetShortcuts"]
+[node name="TwoThirdsPot" type="Button" parent="CanvasLayer/Control/BottomDashboard/SliderUI/BetShortcuts"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(60, 0)
 layout_mode = 2
@@ -1074,7 +1083,7 @@ theme_override_styles/hover = SubResource("StyleBoxFlat_at0be")
 theme_override_styles/disabled = SubResource("StyleBoxFlat_adxoh")
 text = "2/3"
 
-[node name="StandardPot" type="Button" parent="CanvasLayer/Control/BottomDashboard/BetShortcuts"]
+[node name="StandardPot" type="Button" parent="CanvasLayer/Control/BottomDashboard/SliderUI/BetShortcuts"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(60, 0)
 layout_mode = 2
@@ -1086,7 +1095,7 @@ theme_override_styles/hover = SubResource("StyleBoxFlat_sfxlf")
 theme_override_styles/disabled = SubResource("StyleBoxFlat_k8u0e")
 text = "Pot"
 
-[node name="AllInPot" type="Button" parent="CanvasLayer/Control/BottomDashboard/BetShortcuts"]
+[node name="AllInPot" type="Button" parent="CanvasLayer/Control/BottomDashboard/SliderUI/BetShortcuts"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(60, 0)
 layout_mode = 2
