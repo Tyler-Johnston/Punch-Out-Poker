@@ -18,11 +18,18 @@ public partial class PokerGame
 		ShowMessage("You fold");
 		GD.Print("Player folds");
 
-		// Opponent wins the effective pot (settled + current street commits)
+		// Opponent wins the effective pot
 		int winAmount = GetEffectivePot();
 
 		AddOpponentChips(winAmount);
 		RefreshAllInFlagsFromStacks();
+
+		// --- SET HAND DESCRIPTION (The Fix) ---
+		string playerHandName = HandEvaluator.GetHandDescription(playerHand, communityCards);
+		
+		// We don't reveal opponent's hand on a player fold (unless you want to add a 'Show One' feature later)
+		lastHandDescription = $"Player: {playerHandName} VS {currentOpponentName}: ???";
+		// -------------------------------------
 
 		// Clear all pot tracking for end of hand
 		pot = 0;
@@ -31,10 +38,12 @@ public partial class PokerGame
 		playerContributed = 0;
 		opponentContributed = 0;
 
+		// AI processes the free win
 		aiOpponent.ProcessHandResult(HandResult.Win, winAmount, bigBlind);
 
 		UpdateOpponentVisuals();
 		GD.Print($"Stacks -> Player: {playerChips}, Opponent: {opponentChips}");
+		
 		EndHand();
 	}
 

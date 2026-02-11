@@ -147,17 +147,21 @@ public static class HandEvaluator
 
 	private static string GetPreflopDescription(List<Card> hand)
 	{
-		string card1 = hand[0].Rank.ToString();
-		string card2 = hand[1].Rank.ToString();
+		var sorted = hand.OrderByDescending(c => (int)c.Rank).ToList();
 		
-		// Check if pair
-		if (hand[0].Rank == hand[1].Rank)
-			return $"Pair of {card1}s";
+		Rank highRank = sorted[0].Rank;
+		Rank lowRank = sorted[1].Rank;
 		
-		// Check if suited
-		bool suited = hand[0].Suit == hand[1].Suit;
-		return suited ? $"{card1}{card2}s" : $"{card1}{card2}o";
+		if (highRank == lowRank)
+		{
+			return $"Pair of {highRank}s"; 
+		}
+		
+		string highName = highRank.ToString(); // "Ace", "Seven"
+		
+		return $"{highName} High"; // "Ace High"
 	}
+
 
 	private static string GetDetailedHandName(List<Card> cards, string handType)
 	{

@@ -37,10 +37,12 @@ public partial class PokerGame
 		}
 
 		lastRaiseAmount = 0;
+		lastHandDescription = "";
 		handTypeLabel.Text = "";
 		handTypeLabel.Visible = false;
 		playerStackLabel.Visible = true;
 		actionButtons.Visible = true;
+		activePlayUI.Visible = true;
 		betweenHandsUI.Visible = false;
 		potArea.Visible = true;
 		opponentCard1.Visible = false;
@@ -451,7 +453,6 @@ public partial class PokerGame
 
 		GD.Print("\n=== Showdown ===");
 
-		// ✅ Process refunds BEFORE settling pot
 		bool refundOccurred = ReturnUncalledChips();
 		if (refundOccurred)
 		{
@@ -461,7 +462,6 @@ public partial class PokerGame
 			await ToSignal(GetTree().CreateTimer(1.5f), SceneTreeTimer.SignalName.Timeout);
 		}
 
-		// ✅ NOW settle any remaining street commits into pot
 		if (playerChipsInPot > 0 || opponentChipsInPot > 0)
 		{
 			SettleStreetIntoPot();
@@ -484,7 +484,9 @@ public partial class PokerGame
 		string playerHandName = HandEvaluator.GetHandDescription(playerHand, communityCards);
 		string opponentHandName = HandEvaluator.GetHandDescription(opponentHand, communityCards);
 
-		handTypeLabel.Text = $"Player: {playerHandName} VS {currentOpponentName}: {opponentHandName}";
+		lastHandDescription = $"Player: {playerHandName} VS {currentOpponentName}: {opponentHandName}";
+
+		handTypeLabel.Text = lastHandDescription; 
 		handTypeLabel.Visible = true;
 
 		int result = HandEvaluator.CompareHands(playerRank, opponentRank);
@@ -691,24 +693,31 @@ public partial class PokerGame
 		ShowMessage($"{currentOpponentName} folds");
 		GD.Print($"{currentOpponentName} folds");
 
+		// Toss cards face-down (revealCard=false)
 		Task card1Task = TossCard(opponentCard1, opponentHand[0], 2.5f, 1.5f, false);
 		Task card2Task = TossCard(opponentCard2, opponentHand[1], 1.5f, 1.5f, false);
 
 		await Task.WhenAll(card1Task, card2Task);
 		await ToSignal(GetTree().CreateTimer(1.0f), SceneTreeTimer.SignalName.Timeout);
 
-		// Step 1: use effective pot for betRatio (since pot is settled-only)
+		// Step 1: Tilt Calculation
 		int effectivePot = GetEffectivePot();
 		float betRatio = (effectivePot > 0) ? (float)currentBet / effectivePot : 0f;
 		GD.Print($"[TILT] Bullied ratio={betRatio:F2}, currentBet={currentBet}, effectivePot={effectivePot}");
 		aiOpponent.OnFolded(betRatio);
 
-		// Step 1: award effective pot (settled + current street commits)
+		// Step 2: Award Pot
 		int winAmount = effectivePot;
 		AddPlayerChips(winAmount);
 		RefreshAllInFlagsFromStacks();
 
-		// Clear all pot tracking for end of hand
+		// Step 3: Set Hand Description for UI
+		// Evaluate player's hand so they see what they won with.
+		// Opponent hand is unknown ("Folded" or "???")
+		string playerHandName = HandEvaluator.GetHandDescription(playerHand, communityCards);
+		lastHandDescription = $"Player: {playerHandName} VS {currentOpponentName}: ???";
+
+		// Step 4: Reset Pot Tracking
 		pot = 0;
 		displayPot = 0;
 		playerChipsInPot = 0;
@@ -723,7 +732,7 @@ public partial class PokerGame
 		GetTree().CreateTimer(1.5).Timeout += () =>
 		{
 			ShowMessage($"You win ${winAmount}!");
-			EndHand();
+			EndHand(); // This triggers waitingForNextGame = true, which Updates HUD
 		};
 	}
 

@@ -935,13 +935,13 @@ public partial class PokerGame
 		}
 	}
 
-
 	private void UpdateHud(bool disableButtons = false)
 	{
 		if (isMatchComplete)
 		{
 			betweenHandsUI.Visible = true;
-			sliderUI.Visible = false;
+			activePlayUI.Visible = false;
+			//sliderUI.Visible = false;
 			potArea.Visible = false;
 			nextHandButton.Disabled = true;
 			UpdateSessionProfitLabel();
@@ -950,11 +950,14 @@ public partial class PokerGame
 
 		if (waitingForNextGame)
 		{
-			actionButtons.Visible = false;
-			sliderUI.Visible = false;
-			potArea.Visible = false;
-			playerStackLabel.Visible = false;
+			//actionButtons.Visible = false;
+			//sliderUI.Visible = false;
 			betweenHandsUI.Visible = true;
+			activePlayUI.Visible = false;
+			potArea.Visible = false;
+			//playerStackLabel.Visible = false;
+			handTypeLabel.Text = lastHandDescription;
+			handTypeLabel.Visible = true; 
 			
 			if (betSlider != null) betSlider.Value = 0; 
 			
@@ -968,6 +971,7 @@ public partial class PokerGame
 			// Active hand - show gameplay buttons and hide between hands UI
 			betweenHandsUI.Visible = false;
 			actionButtons.Visible = true;
+			handTypeLabel.Visible = false; 
 			
 			bool enableButtons = true;
 			bool canActuallyRaise = true;

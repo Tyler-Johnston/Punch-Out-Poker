@@ -62,6 +62,7 @@ public partial class PokerGame : Node2D
 	private Node2D potArea;
 	private Node2D playerArea;
 	private Node2D betweenHandsUI;
+	private Node2D activePlayUI;
 	
 	private Control actionButtonsContainer;
 	private Control actionButtons;
@@ -132,6 +133,7 @@ public partial class PokerGame : Node2D
 	private DialogueManager dialogueManager; 
 	private string currentOpponentName;
 	private int buyInAmount;
+	private string lastHandDescription = "";
 	
 	// audio
 	private SFXPlayer sfxPlayer;
@@ -152,6 +154,7 @@ public partial class PokerGame : Node2D
 		opponentView = hudControl.GetNode<Node2D>("OpponentView");
 		potArea = hudControl.GetNode<Node2D>("PotArea");
 		betweenHandsUI = GetNode<Node2D>("%BetweenHandsUI");
+		activePlayUI = GetNode<Node2D>("%ActivePlayUI");
 		
 		// Get chip display containers
 		PlayerChipGridBox = playerArea.GetNode<GridContainer>("PlayerChipGridBox");

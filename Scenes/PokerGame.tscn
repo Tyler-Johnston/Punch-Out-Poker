@@ -908,19 +908,21 @@ custom_minimum_size = Vector2(0, 125)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_gwhxk")
 
-[node name="ActionButtons" type="HBoxContainer" parent="CanvasLayer/Control/BottomDashboard"]
+[node name="ActivePlayUI" type="Node2D" parent="CanvasLayer/Control/BottomDashboard"]
+unique_name_in_owner = true
+position = Vector2(26, 680)
+
+[node name="ActionButtons" type="HBoxContainer" parent="CanvasLayer/Control/BottomDashboard/ActivePlayUI"]
 unique_name_in_owner = true
 z_index = 2
 texture_filter = 1
-offset_left = 26.0
-offset_top = 680.0
-offset_right = 491.0
-offset_bottom = 739.0
+offset_right = 465.0
+offset_bottom = 59.0
 size_flags_horizontal = 3
 mouse_filter = 2
 theme_override_constants/separation = 30
 
-[node name="FoldButton" type="Button" parent="CanvasLayer/Control/BottomDashboard/ActionButtons"]
+[node name="FoldButton" type="Button" parent="CanvasLayer/Control/BottomDashboard/ActivePlayUI/ActionButtons"]
 texture_filter = 1
 custom_minimum_size = Vector2(135, 0)
 layout_mode = 2
@@ -933,7 +935,7 @@ theme_override_styles/hover = SubResource("StyleBoxFlat_vtryj")
 theme_override_styles/disabled = SubResource("StyleBoxFlat_m5pa5")
 text = "Fold"
 
-[node name="CheckCallButton" type="Button" parent="CanvasLayer/Control/BottomDashboard/ActionButtons"]
+[node name="CheckCallButton" type="Button" parent="CanvasLayer/Control/BottomDashboard/ActivePlayUI/ActionButtons"]
 custom_minimum_size = Vector2(135, 0)
 layout_mode = 2
 size_flags_horizontal = 3
@@ -946,7 +948,7 @@ theme_override_styles/hover = SubResource("StyleBoxFlat_mhpyu")
 theme_override_styles/disabled = SubResource("StyleBoxFlat_crlcv")
 text = "Check"
 
-[node name="BetRaiseButton" type="Button" parent="CanvasLayer/Control/BottomDashboard/ActionButtons"]
+[node name="BetRaiseButton" type="Button" parent="CanvasLayer/Control/BottomDashboard/ActivePlayUI/ActionButtons"]
 custom_minimum_size = Vector2(135, 0)
 layout_mode = 2
 size_flags_horizontal = 3
@@ -959,18 +961,18 @@ theme_override_styles/hover = SubResource("StyleBoxFlat_p0x7j")
 theme_override_styles/disabled = SubResource("StyleBoxFlat_bvnvu")
 text = "Bet"
 
-[node name="BetRaiseAmount" type="Label" parent="CanvasLayer/Control/BottomDashboard/ActionButtons"]
+[node name="BetRaiseAmount" type="Label" parent="CanvasLayer/Control/BottomDashboard/ActivePlayUI/ActionButtons"]
 visible = false
 layout_mode = 2
 text = "$2000"
 label_settings = SubResource("LabelSettings_mhpyu")
 
-[node name="PlayerArea" type="Node2D" parent="CanvasLayer/Control/BottomDashboard/ActionButtons"]
+[node name="PlayerArea" type="Node2D" parent="CanvasLayer/Control/BottomDashboard/ActivePlayUI/ActionButtons"]
 unique_name_in_owner = true
 position = Vector2(1145, -21)
 scale = Vector2(4.5, 4.5)
 
-[node name="PlayerCard1" parent="CanvasLayer/Control/BottomDashboard/ActionButtons/PlayerArea" instance=ExtResource("3_c6vvi")]
+[node name="PlayerCard1" parent="CanvasLayer/Control/BottomDashboard/ActivePlayUI/ActionButtons/PlayerArea" instance=ExtResource("3_c6vvi")]
 anchors_preset = 0
 anchor_right = 0.0
 anchor_bottom = 0.0
@@ -983,7 +985,7 @@ grow_vertical = 1
 rotation = 0.1675516
 scale = Vector2(0.18, 0.18)
 
-[node name="PlayerCard2" parent="CanvasLayer/Control/BottomDashboard/ActionButtons/PlayerArea" instance=ExtResource("3_c6vvi")]
+[node name="PlayerCard2" parent="CanvasLayer/Control/BottomDashboard/ActivePlayUI/ActionButtons/PlayerArea" instance=ExtResource("3_c6vvi")]
 anchors_preset = 0
 anchor_right = 0.0
 anchor_bottom = 0.0
@@ -996,7 +998,7 @@ grow_vertical = 1
 rotation = -0.19024089
 scale = Vector2(0.18, 0.18)
 
-[node name="PlayerChipGridBox" type="GridContainer" parent="CanvasLayer/Control/BottomDashboard/ActionButtons/PlayerArea"]
+[node name="PlayerChipGridBox" type="GridContainer" parent="CanvasLayer/Control/BottomDashboard/ActivePlayUI/ActionButtons/PlayerArea"]
 offset_left = -52.888885
 offset_top = -43.333336
 offset_right = 141.55559
@@ -1006,31 +1008,31 @@ theme_override_constants/h_separation = -10
 theme_override_constants/v_separation = -10
 columns = 8
 
-[node name="ChipSprite1" type="TextureRect" parent="CanvasLayer/Control/BottomDashboard/ActionButtons/PlayerArea/PlayerChipGridBox"]
+[node name="ChipSprite1" type="TextureRect" parent="CanvasLayer/Control/BottomDashboard/ActivePlayUI/ActionButtons/PlayerArea/PlayerChipGridBox"]
 custom_minimum_size = Vector2(50, 50)
 layout_mode = 2
 texture = ExtResource("11_xxe2x")
 
-[node name="ChipSprite2" type="TextureRect" parent="CanvasLayer/Control/BottomDashboard/ActionButtons/PlayerArea/PlayerChipGridBox"]
+[node name="ChipSprite2" type="TextureRect" parent="CanvasLayer/Control/BottomDashboard/ActivePlayUI/ActionButtons/PlayerArea/PlayerChipGridBox"]
 custom_minimum_size = Vector2(50, 50)
 layout_mode = 2
 texture = ExtResource("11_xxe2x")
 
-[node name="ChipSprite3" type="TextureRect" parent="CanvasLayer/Control/BottomDashboard/ActionButtons/PlayerArea/PlayerChipGridBox"]
+[node name="ChipSprite3" type="TextureRect" parent="CanvasLayer/Control/BottomDashboard/ActivePlayUI/ActionButtons/PlayerArea/PlayerChipGridBox"]
 custom_minimum_size = Vector2(50, 50)
 layout_mode = 2
 texture = ExtResource("11_xxe2x")
 
-[node name="SliderUI" type="Control" parent="CanvasLayer/Control/BottomDashboard"]
+[node name="SliderUI" type="Control" parent="CanvasLayer/Control/BottomDashboard/ActivePlayUI"]
 unique_name_in_owner = true
 layout_mode = 3
 anchors_preset = 0
-offset_left = 3.0
-offset_top = 8.0
-offset_right = 43.0
-offset_bottom = 48.0
+offset_left = -23.0
+offset_top = -672.0
+offset_right = 17.0
+offset_bottom = -632.0
 
-[node name="BetSlider" type="HSlider" parent="CanvasLayer/Control/BottomDashboard/SliderUI"]
+[node name="BetSlider" type="HSlider" parent="CanvasLayer/Control/BottomDashboard/ActivePlayUI/SliderUI"]
 unique_name_in_owner = true
 z_index = 2
 layout_mode = 0
@@ -1046,7 +1048,7 @@ theme_override_styles/slider = SubResource("StyleBoxFlat_vnib4")
 theme_override_styles/grabber_area = SubResource("StyleBoxFlat_hkg01")
 theme_override_styles/grabber_area_highlight = SubResource("StyleBoxFlat_ok1jy")
 
-[node name="BetShortcuts" type="HBoxContainer" parent="CanvasLayer/Control/BottomDashboard/SliderUI"]
+[node name="BetShortcuts" type="HBoxContainer" parent="CanvasLayer/Control/BottomDashboard/ActivePlayUI/SliderUI"]
 z_index = 2
 layout_mode = 0
 offset_left = 562.0
@@ -1056,7 +1058,7 @@ offset_bottom = 739.0
 theme_override_constants/separation = 10
 alignment = 1
 
-[node name="ThirdPot" type="Button" parent="CanvasLayer/Control/BottomDashboard/SliderUI/BetShortcuts"]
+[node name="ThirdPot" type="Button" parent="CanvasLayer/Control/BottomDashboard/ActivePlayUI/SliderUI/BetShortcuts"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(60, 0)
 layout_mode = 2
@@ -1068,7 +1070,7 @@ theme_override_styles/hover = SubResource("StyleBoxFlat_xloky")
 theme_override_styles/disabled = SubResource("StyleBoxFlat_f2l75")
 text = "1/3"
 
-[node name="HalfPot" type="Button" parent="CanvasLayer/Control/BottomDashboard/SliderUI/BetShortcuts"]
+[node name="HalfPot" type="Button" parent="CanvasLayer/Control/BottomDashboard/ActivePlayUI/SliderUI/BetShortcuts"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(60, 0)
 layout_mode = 2
@@ -1080,7 +1082,7 @@ theme_override_styles/hover = SubResource("StyleBoxFlat_6qdjg")
 theme_override_styles/disabled = SubResource("StyleBoxFlat_8fm0h")
 text = "1/2"
 
-[node name="TwoThirdsPot" type="Button" parent="CanvasLayer/Control/BottomDashboard/SliderUI/BetShortcuts"]
+[node name="TwoThirdsPot" type="Button" parent="CanvasLayer/Control/BottomDashboard/ActivePlayUI/SliderUI/BetShortcuts"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(60, 0)
 layout_mode = 2
@@ -1092,7 +1094,7 @@ theme_override_styles/hover = SubResource("StyleBoxFlat_at0be")
 theme_override_styles/disabled = SubResource("StyleBoxFlat_adxoh")
 text = "2/3"
 
-[node name="StandardPot" type="Button" parent="CanvasLayer/Control/BottomDashboard/SliderUI/BetShortcuts"]
+[node name="StandardPot" type="Button" parent="CanvasLayer/Control/BottomDashboard/ActivePlayUI/SliderUI/BetShortcuts"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(60, 0)
 layout_mode = 2
@@ -1104,7 +1106,7 @@ theme_override_styles/hover = SubResource("StyleBoxFlat_sfxlf")
 theme_override_styles/disabled = SubResource("StyleBoxFlat_k8u0e")
 text = "Pot"
 
-[node name="AllInPot" type="Button" parent="CanvasLayer/Control/BottomDashboard/SliderUI/BetShortcuts"]
+[node name="AllInPot" type="Button" parent="CanvasLayer/Control/BottomDashboard/ActivePlayUI/SliderUI/BetShortcuts"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(60, 0)
 layout_mode = 2
@@ -1115,6 +1117,16 @@ theme_override_styles/pressed = SubResource("StyleBoxFlat_c27go")
 theme_override_styles/hover = SubResource("StyleBoxFlat_3sgh4")
 theme_override_styles/disabled = SubResource("StyleBoxFlat_qmc8i")
 text = "All-In"
+
+[node name="PlayerStackLabel" type="Label" parent="CanvasLayer/Control/BottomDashboard/ActivePlayUI"]
+unique_name_in_owner = true
+offset_left = -20.0
+offset_top = -80.0
+offset_right = 322.0
+offset_bottom = -28.0
+text = "Money In-Hand: $2000"
+label_settings = SubResource("LabelSettings_crlcv")
+horizontal_alignment = 1
 
 [node name="CommunityCardsArea" type="Node2D" parent="CanvasLayer/Control/BottomDashboard"]
 unique_name_in_owner = true
@@ -1153,16 +1165,6 @@ mouse_filter = 2
 unique_name_in_owner = true
 layout_mode = 2
 mouse_filter = 2
-
-[node name="PlayerStackLabel" type="Label" parent="CanvasLayer/Control/BottomDashboard"]
-unique_name_in_owner = true
-offset_left = 6.0
-offset_top = 600.0
-offset_right = 348.0
-offset_bottom = 652.0
-text = "Money In-Hand: $2000"
-label_settings = SubResource("LabelSettings_crlcv")
-horizontal_alignment = 1
 
 [node name="BetweenHandsUI" type="Node2D" parent="CanvasLayer/Control/BottomDashboard"]
 unique_name_in_owner = true
