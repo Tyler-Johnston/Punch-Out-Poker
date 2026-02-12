@@ -1,4 +1,4 @@
-[gd_scene load_steps=86 format=3 uid="uid://b5sq1675fwcio"]
+[gd_scene load_steps=85 format=3 uid="uid://b5sq1675fwcio"]
 
 [ext_resource type="Script" uid="uid://8k6pqsmgt5pe" path="res://Scripts/Game/PokerGame.cs" id="1_8w0ed"]
 [ext_resource type="Shader" uid="uid://xgv2p7pj4e3u" path="res://Assets/Shaders/EnemyView.gdshader" id="2_h5gdr"]
@@ -33,13 +33,13 @@ fill_from = Vector2(0.5, 0.5)
 fill_to = Vector2(1, 0.5)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_uh6rn"]
-bg_color = Color(0.47546536, 0.6402389, 0.60822463, 1)
+bg_color = Color(0.7137255, 0.4627451, 0.2901961, 1)
 border_width_left = 5
 border_width_top = 5
 border_width_right = 5
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_gwhxk"]
-bg_color = Color(0.014055936, 0.28578308, 0.33078352, 1)
+bg_color = Color(0.13387549, 0.31531465, 0.23270336, 1)
 border_width_left = 5
 border_width_top = 5
 border_width_right = 5
@@ -272,12 +272,6 @@ corner_radius_bottom_left = 10
 shadow_size = 4
 shadow_offset = Vector2(2, 4)
 anti_aliasing = false
-
-[sub_resource type="LabelSettings" id="LabelSettings_mhpyu"]
-font_size = 36
-shadow_size = 3
-shadow_color = Color(0, 0, 0, 0.24705882)
-shadow_offset = Vector2(5, 5)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_vnib4"]
 content_margin_top = 12.0
@@ -872,6 +866,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 2
 
 [node name="MainTable" type="TextureRect" parent="CanvasLayer/Control"]
 texture_filter = 1
@@ -898,14 +893,17 @@ theme_override_constants/separation = 0
 alignment = 1
 
 [node name="TopPanel" type="PanelContainer" parent="CanvasLayer/Control/BottomDashboard/VBoxContainer"]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_uh6rn")
 
 [node name="BottomPanel" type="PanelContainer" parent="CanvasLayer/Control/BottomDashboard/VBoxContainer"]
+unique_name_in_owner = true
 z_index = 1
 custom_minimum_size = Vector2(0, 125)
 layout_mode = 2
+mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_gwhxk")
 
 [node name="ActivePlayUI" type="Node2D" parent="CanvasLayer/Control/BottomDashboard"]
@@ -960,12 +958,6 @@ theme_override_styles/pressed = SubResource("StyleBoxFlat_epj03")
 theme_override_styles/hover = SubResource("StyleBoxFlat_p0x7j")
 theme_override_styles/disabled = SubResource("StyleBoxFlat_bvnvu")
 text = "Bet"
-
-[node name="BetRaiseAmount" type="Label" parent="CanvasLayer/Control/BottomDashboard/ActivePlayUI/ActionButtons"]
-visible = false
-layout_mode = 2
-text = "$2000"
-label_settings = SubResource("LabelSettings_mhpyu")
 
 [node name="PlayerArea" type="Node2D" parent="CanvasLayer/Control/BottomDashboard/ActivePlayUI/ActionButtons"]
 unique_name_in_owner = true
@@ -1144,27 +1136,22 @@ theme_override_constants/separation = 105
 [node name="Flop1" parent="CanvasLayer/Control/BottomDashboard/CommunityCardsArea/HBoxContainer" instance=ExtResource("3_c6vvi")]
 unique_name_in_owner = true
 layout_mode = 2
-mouse_filter = 2
 
 [node name="Flop2" parent="CanvasLayer/Control/BottomDashboard/CommunityCardsArea/HBoxContainer" instance=ExtResource("3_c6vvi")]
 unique_name_in_owner = true
 layout_mode = 2
-mouse_filter = 2
 
 [node name="Flop3" parent="CanvasLayer/Control/BottomDashboard/CommunityCardsArea/HBoxContainer" instance=ExtResource("3_c6vvi")]
 unique_name_in_owner = true
 layout_mode = 2
-mouse_filter = 2
 
 [node name="Turn" parent="CanvasLayer/Control/BottomDashboard/CommunityCardsArea/HBoxContainer" instance=ExtResource("3_c6vvi")]
 unique_name_in_owner = true
 layout_mode = 2
-mouse_filter = 2
 
 [node name="River" parent="CanvasLayer/Control/BottomDashboard/CommunityCardsArea/HBoxContainer" instance=ExtResource("3_c6vvi")]
 unique_name_in_owner = true
 layout_mode = 2
-mouse_filter = 2
 
 [node name="BetweenHandsUI" type="Node2D" parent="CanvasLayer/Control/BottomDashboard"]
 unique_name_in_owner = true
@@ -1240,8 +1227,8 @@ horizontal_alignment = 1
 
 [node name="OpponentView" type="Node2D" parent="CanvasLayer/Control"]
 unique_name_in_owner = true
-position = Vector2(-768.0001, 34.000004)
-scale = Vector2(1.25, 1.25)
+position = Vector2(-875, 30)
+scale = Vector2(1.35, 1.35)
 
 [node name="FrameShadow" type="PanelContainer" parent="CanvasLayer/Control/OpponentView"]
 offset_left = 960.0
@@ -1415,7 +1402,6 @@ offset_top = 35.0
 offset_right = 823.0
 offset_bottom = 182.0
 grow_horizontal = 1
-grow_vertical = 1
 
 [node name="PotArea" type="Node2D" parent="CanvasLayer/Control"]
 position = Vector2(934, 58)

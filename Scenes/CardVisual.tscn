@@ -23,16 +23,19 @@ offset_bottom = -500.0
 grow_horizontal = 2
 grow_vertical = 2
 scale = Vector2(0.15, 0.15)
+mouse_filter = 2
 script = ExtResource("1_svlf2")
 
 [node name="CardTexture" type="TextureRect" parent="."]
 layout_mode = 0
 offset_right = 153.33333
 offset_bottom = 220.0
+mouse_filter = 2
 
 [node name="FrameShadow" type="PanelContainer" parent="CardTexture"]
 show_behind_parent = true
 layout_mode = 0
 offset_right = 150.0
 offset_bottom = 216.0
+mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_u2807")

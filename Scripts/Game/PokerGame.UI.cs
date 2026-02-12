@@ -270,13 +270,24 @@ public partial class PokerGame
 	private void SetTableColor()
 	{
 		Color baseColor = new Color("#52a67f");
-		switch (GameManager.Instance.GetCircuitType())
+		Color trimColor = new Color("#8b5a2b");
+	  	switch (GameManager.Instance.GetCircuitType())
 		{
-			case 0: baseColor = new Color("#52a67f"); break;
-			case 1: baseColor = new Color("b0333dff"); break;
-			case 2: baseColor = new Color("#127AE3"); break;
+			case 0: // Circuit A
+				baseColor = new Color("#52a67f");
+				trimColor = new Color("#b6764a"); 
+				break;
+			case 1: // Circuit B
+				baseColor = new Color("b0333dff");
+				trimColor = new Color("#336cb0");
+				break;
+			case 2: // Circuit C
+				baseColor = new Color("#127AE3");  // Royal Blue
+				trimColor = new Color("#c0c0c0");  // Silver
+				break;
 		}
-
+		
+		Color outlineColor = trimColor.Darkened(0.35f); 
 		if (MiniTableRect != null)
 		{
 			var enemyViewShader = GD.Load<Shader>("res://Assets/Shaders/EnemyView.gdshader");
@@ -293,6 +304,7 @@ public partial class PokerGame
 			mat.SetShaderParameter("gradient_texture", newGradient);
 			mat.SetShaderParameter("border_width", 0.073f);
 			mat.SetShaderParameter("pixel_factor", 0.01f);
+		  	mat.SetShaderParameter("border_color", outlineColor); 
 			
 			MiniTableRect.Material = mat;
 		}
@@ -306,6 +318,7 @@ public partial class PokerGame
 			mat.Shader = pixelShader;
 			MainTableRect.Material = mat;
 		}
+		UpdateDashboardColors(baseColor, trimColor, outlineColor);
 	}
 
 	private void UpdateMainTableGradient(TextureRect rect, Color baseColor)
@@ -322,6 +335,49 @@ public partial class PokerGame
 			gradTex.Gradient.SetColor(1, edgeColor);
 		}
 	}
+	
+	private void UpdateDashboardColors(Color baseFeltColor, Color trimColor, Color outlineColor)
+	{
+		int borderThick = 4;
+
+		if (dashboardTopPanel != null)
+		{
+			var style = dashboardTopPanel.GetThemeStylebox("panel") as StyleBoxFlat;
+			if (style != null)
+			{
+				style = (StyleBoxFlat)style.Duplicate();
+				style.BgColor = trimColor;
+
+				style.BorderWidthTop = borderThick;
+				style.BorderWidthLeft = borderThick;
+				style.BorderWidthRight = borderThick;
+				style.BorderWidthBottom = borderThick;
+				style.BorderColor = outlineColor;
+				
+				dashboardTopPanel.AddThemeStyleboxOverride("panel", style);
+			}
+		}
+
+		if (dashboardBottomPanel != null)
+		{
+			var style = dashboardBottomPanel.GetThemeStylebox("panel") as StyleBoxFlat;
+			if (style != null)
+			{
+				style = (StyleBoxFlat)style.Duplicate();
+				style.BgColor = baseFeltColor.Darkened(0.65f); 
+				
+				style.BorderWidthTop = 0;
+				style.BorderWidthLeft = borderThick;
+				style.BorderWidthRight = borderThick;
+				style.BorderWidthBottom = borderThick;
+				style.BorderColor = outlineColor;
+				
+				dashboardBottomPanel.AddThemeStyleboxOverride("panel", style);
+			}
+		}
+	}
+
+	
 	
 	private async Task TossCard(CardVisual card, Card cardData, float maxAngleDegrees = 3.0f, float maxPixelOffset = 2.0f, bool revealCard=true)
 	{
