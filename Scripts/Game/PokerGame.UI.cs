@@ -283,9 +283,10 @@ public partial class PokerGame
 				break;
 			case 2: // Circuit C
 				baseColor = new Color("#127AE3");  // Royal Blue
-				trimColor = new Color("#c0c0c0");  // Silver
+				//trimColor = new Color("#c0c0c0");  // Silver
+				trimColor = new Color("9b59b6");  // Silver
 				break;
-		}
+		} 
 		
 		Color outlineColor = trimColor.Darkened(0.35f); 
 		if (MiniTableRect != null)
@@ -374,6 +375,78 @@ public partial class PokerGame
 				style.BorderColor = outlineColor;
 				
 				dashboardBottomPanel.AddThemeStyleboxOverride("panel", style);
+			}
+		}
+		
+		if (betSlider != null)
+		{
+			// 1. Define the Fill Style (Trim Color)
+			int radius = 10;
+			int borderWidth = 5;
+			
+			var fillStyle = new StyleBoxFlat();
+			fillStyle.BgColor = trimColor;
+			fillStyle.CornerRadiusTopLeft = radius;
+			fillStyle.CornerRadiusTopRight = radius;
+			fillStyle.CornerRadiusBottomLeft = radius;
+			fillStyle.CornerRadiusBottomRight = radius;
+			fillStyle.BorderBlend = false;
+		   	fillStyle.BorderColor = new Color(1, 1, 1, 1); // Pure White
+			fillStyle.BorderWidthTop = 1;
+			fillStyle.BorderWidthBottom = 1;
+			fillStyle.BorderWidthLeft = 1;
+			fillStyle.BorderWidthRight = 1;
+			betSlider.AddThemeStyleboxOverride("grabber_area", fillStyle);
+
+			var hoverStyle = (StyleBoxFlat)fillStyle.Duplicate();
+			hoverStyle.BgColor = trimColor.Lightened(0.2f);
+			betSlider.AddThemeStyleboxOverride("grabber_area_highlight", hoverStyle);
+			
+			var trackStyle = new StyleBoxFlat();
+			trackStyle.BgColor = new Color ("00000092");
+			trackStyle.CornerRadiusTopLeft = radius;
+			trackStyle.CornerRadiusTopRight = radius;
+			trackStyle.CornerRadiusBottomLeft = radius;
+			trackStyle.CornerRadiusBottomRight = radius;
+
+			trackStyle.BorderWidthTop = borderWidth;
+			trackStyle.BorderWidthLeft = borderWidth;
+			trackStyle.BorderWidthRight = borderWidth;
+			trackStyle.BorderWidthBottom = borderWidth;
+			trackStyle.ContentMarginTop = 12;
+			trackStyle.ContentMarginBottom = 12;
+			trackStyle.BorderColor = new Color("1b1b1b66");
+			trackStyle.BorderBlend = true;
+			betSlider.AddThemeStyleboxOverride("slider", trackStyle);
+		}
+		
+		if (betSlider != null)
+		{
+			string chipPath = "res://Assets/Textures/chip_pngs/yellow_1.png";
+			switch (GameManager.Instance.GetCircuitType())
+			{
+				case 0: // Circuit A (Green Felt) -> Gold Chip
+					chipPath = "res://Assets/Textures/chip_pngs/yellow_1.png";
+					break;
+				case 1: // Circuit B (Red Felt) -> Blue Chip
+					chipPath = "res://Assets/Textures/chip_pngs/blue_1.png";
+					break;
+				case 2: // Circuit C (Blue Felt) -> Black Chip
+					chipPath = "res://Assets/Textures/chip_pngs/purple_1.png";
+					break;
+			}
+
+			// 2. Load the Texture
+			var chipTexture = GD.Load<Texture2D>(chipPath);
+			if (chipTexture != null)
+			{
+				betSlider.AddThemeIconOverride("grabber", chipTexture);
+				betSlider.AddThemeIconOverride("grabber_highlight", chipTexture);
+				betSlider.AddThemeIconOverride("grabber_disabled", chipTexture);
+			}
+			else
+			{
+				GD.PrintErr($"Failed to load chip texture at: {chipPath}");
 			}
 		}
 	}
