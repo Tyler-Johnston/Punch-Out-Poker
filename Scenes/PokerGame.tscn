@@ -1247,6 +1247,7 @@ layout_mode = 2
 theme_override_constants/separation = 0
 
 [node name="TitleBar" type="ColorRect" parent="CanvasLayer/Control/OpponentView/FrameShadow/OpponentFrame/VBoxContainer"]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 20)
 layout_mode = 2
 color = Color(0.052901633, 0.24926904, 0.35154027, 1)

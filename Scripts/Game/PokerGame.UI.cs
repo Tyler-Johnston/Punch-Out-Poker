@@ -51,11 +51,11 @@ public partial class PokerGame
 	
 	public void InitializeUI()
 	{
-		SetTableColor();
 		LoadOpponentSprite();
 		InitializeButtonAnimations();
 		InitializeOpponentViewAnimation();
 		InitializePotLabel();
+		InitiateCircuitColors();
 		UpdateHud();
 	}
 
@@ -267,7 +267,7 @@ public partial class PokerGame
 
 	// --- TABLE VISUALS ---
 	
-	private void SetTableColor()
+	private void InitiateCircuitColors()
 	{
 		Color baseColor = new Color("#52a67f");
 		Color trimColor = new Color("#8b5a2b");
@@ -282,12 +282,18 @@ public partial class PokerGame
 				trimColor = new Color("#336cb0");
 				break;
 			case 2: // Circuit C
-				baseColor = new Color("#127AE3");  // Royal Blue
+				baseColor = new Color("#127AE3");
 				trimColor = new Color("9b59b6");
 				break;
 		} 
-		
 		Color outlineColor = trimColor.Darkened(0.35f); 
+		
+		SetTableColor(baseColor, outlineColor);
+		UpdateDashboardColors(baseColor, trimColor, outlineColor);
+		UpdateOppponentFrame(trimColor, outlineColor);
+	}
+	private void SetTableColor(Color baseColor, Color outlineColor)
+	{
 		if (MiniTableRect != null)
 		{
 			var enemyViewShader = GD.Load<Shader>("res://Assets/Shaders/EnemyView.gdshader");
@@ -312,37 +318,51 @@ public partial class PokerGame
 		if (MainTableRect != null)
 		{
 			var pixelShader = GD.Load<Shader>("res://Assets/Shaders/Pixelate.gdshader");
-			UpdateMainTableGradient(MainTableRect, baseColor);
+
+			var gradTex = MainTableRect.Texture as GradientTexture2D;
+			if (gradTex != null)
+			{
+				gradTex.Gradient = (Gradient)gradTex.Gradient.Duplicate();
+				Color edgeColor = baseColor.Darkened(0.3f);
+
+				gradTex.Gradient.SetColor(0, baseColor);
+				gradTex.Gradient.SetColor(1, edgeColor);
+			}
 
 			var mat = new ShaderMaterial();
 			mat.Shader = pixelShader;
 			MainTableRect.Material = mat;
 		}
-		UpdateDashboardColors(baseColor, trimColor, outlineColor);
-	}
-
-	private void UpdateMainTableGradient(TextureRect rect, Color baseColor)
-	{
-		if (rect == null) return;
-
-		var gradTex = rect.Texture as GradientTexture2D;
-		if (gradTex != null)
-		{
-			gradTex.Gradient = (Gradient)gradTex.Gradient.Duplicate();
-			Color edgeColor = baseColor.Darkened(0.3f);
-
-			gradTex.Gradient.SetColor(0, baseColor);
-			gradTex.Gradient.SetColor(1, edgeColor);
-		}
 	}
 	
+	private void UpdateOppponentFrame(Color trimColor, Color outlineColor)
+	{
+		if (OpponentFrame != null)
+		{
+			titleBar.Color = outlineColor;
+			var currentStyle = OpponentFrame.GetThemeStylebox("panel");
+			if (currentStyle is StyleBoxFlat)
+			{
+				StyleBoxFlat style = (StyleBoxFlat)currentStyle.Duplicate();
+				style.BgColor = outlineColor; 
+				style.BorderColor = trimColor;
+				
+				style.BorderWidthTop = 4;
+				style.BorderWidthBottom = 4;
+				style.BorderWidthLeft = 4;
+				style.BorderWidthRight = 4;
+
+				OpponentFrame.AddThemeStyleboxOverride("panel", style);
+			}
+		}
+	}
+
 	private void UpdateDashboardColors(Color baseFeltColor, Color trimColor, Color outlineColor)
 	{
 		int borderThick = 4;
 
 		if (dashboardTopPanel != null)
 		{
-			
 			var style = dashboardTopPanel.GetThemeStylebox("panel") as StyleBoxFlat;
 			if (style != null)
 			{
@@ -450,8 +470,6 @@ public partial class PokerGame
 		}
 	}
 
-	
-	
 	private async Task TossCard(CardVisual card, Card cardData, float maxAngleDegrees = 3.0f, float maxPixelOffset = 2.0f, bool revealCard=true)
 	{
 		Vector2 finalPosition = card.Position;
@@ -607,41 +625,7 @@ public partial class PokerGame
 		faceSprite.Vframes = 1;
 		faceSprite.Frame = 0;
 	}
-
-	private void UpdateOpponentVisuals()
-	{
-		if (OpponentFrame == null) return;
-
-		TiltState state = aiOpponent.CurrentTiltState;
-
-		var currentStyle = OpponentFrame.GetThemeStylebox("panel");
-		if (currentStyle is StyleBoxFlat)
-		{
-			StyleBoxFlat style = (StyleBoxFlat)currentStyle.Duplicate();
-
-			switch (state)
-			{
-				case TiltState.Zen:
-					style.BorderColor = new Color("d8d8d8");
-					break;
-
-				case TiltState.Annoyed:
-					style.BorderColor = new Color("e1cb1eff");
-					break;
-
-				case TiltState.Steaming:
-					style.BorderColor = new Color("be5d1bff");
-					break;
-
-				case TiltState.Monkey:
-					style.BorderColor = Colors.Red;
-					break;
-			}
-
-			OpponentFrame.AddThemeStyleboxOverride("panel", style);
-		}
-	}
-
+	
 	// --- POT & CHIP DISPLAY ---
 
 	/// <summary>
@@ -1070,7 +1054,6 @@ public partial class PokerGame
 		{
 			betweenHandsUI.Visible = true;
 			activePlayUI.Visible = false;
-			//sliderUI.Visible = false;
 			potArea.Visible = false;
 			nextHandButton.Disabled = true;
 			UpdateSessionProfitLabel();
@@ -1079,12 +1062,9 @@ public partial class PokerGame
 
 		if (waitingForNextGame)
 		{
-			//actionButtons.Visible = false;
-			//sliderUI.Visible = false;
 			betweenHandsUI.Visible = true;
 			activePlayUI.Visible = false;
 			potArea.Visible = false;
-			//playerStackLabel.Visible = false;
 			handTypeLabel.Text = lastHandDescription;
 			handTypeLabel.Visible = true; 
 			
@@ -1144,7 +1124,6 @@ public partial class PokerGame
 		}
 
 		opponentStackLabel.Text = $"{currentOpponentName}: ${opponentChips}";
-		int effectivePot = GetEffectivePot();
 		
 		RefreshBetSlider();
 		UpdateButtonLabels();
@@ -1153,7 +1132,6 @@ public partial class PokerGame
 		UpdatePotDisplay(displayPot); 
 		UpdatePlayerChipDisplay();
 		UpdateOpponentChipDisplay();
-		UpdateOpponentVisuals();
 	}
 
 	private void RefreshBetSlider()

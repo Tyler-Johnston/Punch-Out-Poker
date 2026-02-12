@@ -41,7 +41,7 @@ public partial class PokerGame
 		// AI processes the free win
 		aiOpponent.ProcessHandResult(HandResult.Win, winAmount, bigBlind);
 
-		UpdateOpponentVisuals();
+		//UpdateOpponentVisuals();
 		GD.Print($"Stacks -> Player: {playerChips}, Opponent: {opponentChips}");
 		
 		EndHand();
@@ -99,7 +99,7 @@ public partial class PokerGame
 
 		isPlayerTurn = false;
 		UpdateHud();
-		UpdateOpponentVisuals();
+		//UpdateOpponentVisuals();
 		RefreshBetSlider();
 
 		bool betsAreEqual = (playerBet == opponentBet);
@@ -126,13 +126,11 @@ public partial class PokerGame
 		}
 		else if (opponentIsAllIn && betsAreEqual)
 		{
-			// Opponent all-in, player matched (or over-called short stack)
 			GD.Print($"Betting round complete: Opponent All-In (Matched).");
 			GetTree().CreateTimer(0.8).Timeout += AdvanceStreet;
 		}
 		else if (opponentIsAllIn && !opponentCanReopenBetting)
 		{
-			// ✅ Opponent went all-in with under-raise, betting is closed
 			GD.Print($"Betting round complete: Opponent All-In (Under-Raise).");
 			GetTree().CreateTimer(0.8).Timeout += AdvanceStreet;
 		}
@@ -188,14 +186,12 @@ public partial class PokerGame
 		sfxPlayer.PlayRandomChip();
 		isPlayerTurn = false;
 		UpdateHud();
-		UpdateOpponentVisuals();
 		RefreshBetSlider();
 
 		bool betsAreEqual = (playerBet == opponentBet);
 		bool bothPlayersActed = playerHasActedThisStreet && opponentHasActedThisStreet;
 		bool bothAllIn = playerIsAllIn && opponentIsAllIn;
 		
-		// ✅ Check reopening flags
 		bool playerCannotAct = playerIsAllIn || !playerCanReopenBetting;
 		bool opponentCannotAct = opponentIsAllIn || !opponentCanReopenBetting;
 		
@@ -215,19 +211,16 @@ public partial class PokerGame
 		}
 		else if (opponentIsAllIn && betsAreEqual)
 		{
-			// Opponent all-in, player matched
 			GD.Print($"Betting round complete: Opponent All-In (Matched).");
 			GetTree().CreateTimer(0.8).Timeout += AdvanceStreet;
 		}
 		else if (opponentIsAllIn && !opponentCanReopenBetting)
 		{
-			// ✅ Opponent went all-in with under-raise, betting is closed
 			GD.Print($"Betting round complete: Opponent All-In (Under-Raise).");
 			GetTree().CreateTimer(0.8).Timeout += AdvanceStreet;
 		}
 		else
 		{
-			// Opponent can still act
 			GetTree().CreateTimer(1.2).Timeout += CheckAndProcessAITurn;
 		}
 	}

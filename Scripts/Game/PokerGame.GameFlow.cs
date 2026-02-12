@@ -113,7 +113,6 @@ public partial class PokerGame
 		handInProgress = true;
 		
 		RefreshAllInFlagsFromStacks();
-		//UpdateOpponentVisuals();
 		await PostBlinds();
 		UpdateHud();
 		
@@ -401,7 +400,6 @@ public partial class PokerGame
 		}
 
 		await ToSignal(GetTree().CreateTimer(1.2f), SceneTreeTimer.SignalName.Timeout);
-		UpdateOpponentVisuals();
 		aiBluffedThisHand = false;
 		isProcessingAIAction = false;
 
@@ -682,7 +680,6 @@ public partial class PokerGame
 		}
 		
 		UpdateHud();
-		UpdateOpponentVisuals();
 		AssertOpponentChipsSynced("ExecuteAIAction");
 	}
 

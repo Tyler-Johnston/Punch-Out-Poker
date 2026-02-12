@@ -735,7 +735,7 @@ private void TestMinRaiseAfterUnderRaise()
 		GD.Print($"[DEBUG EDGE] TiltState={aiOpponent.CurrentTiltState}");
 		GD.Print("[DEBUG EDGE] AI may rage quit or play erratically");
 		
-		UpdateOpponentVisuals();
+		//UpdateOpponentVisuals();
 	}
 	
 	// EDGE CASE: Counterfeit board (trips/quads on board)

@@ -49,6 +49,7 @@ public partial class PokerGame : Node2D
 	private PanelContainer gameStatePanel;
 	private PanelContainer dashboardTopPanel;
 	private PanelContainer dashboardBottomPanel;
+	private ColorRect titleBar;
 	
 	private Texture2D foldBtnImg;
 	private Texture2D checkBtnImg;
@@ -165,6 +166,7 @@ public partial class PokerGame : Node2D
 		gameStatePanel = GetNode<PanelContainer>("%GameStatePanel");
 		dashboardTopPanel = GetNode<PanelContainer>("%TopPanel");
 		dashboardBottomPanel = GetNode<PanelContainer>("%BottomPanel");
+		titleBar = GetNode<ColorRect>("%TitleBar");
 
 		// pocket cards
 		playerCard1 = playerArea.GetNode<CardVisual>("PlayerCard1");
