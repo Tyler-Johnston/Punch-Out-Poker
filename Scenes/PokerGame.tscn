@@ -1019,18 +1019,18 @@ texture = ExtResource("11_xxe2x")
 unique_name_in_owner = true
 layout_mode = 3
 anchors_preset = 0
-offset_left = -23.0
-offset_top = -672.0
-offset_right = 17.0
-offset_bottom = -632.0
+offset_left = 2.0
+offset_top = -671.0
+offset_right = 42.0
+offset_bottom = -631.0
 
 [node name="BetSlider" type="HSlider" parent="CanvasLayer/Control/BottomDashboard/ActivePlayUI/SliderUI"]
 unique_name_in_owner = true
 z_index = 2
 layout_mode = 0
-offset_left = 566.0
+offset_left = 563.0
 offset_top = 661.0
-offset_right = 921.0
+offset_right = 887.0
 offset_bottom = 691.0
 focus_mode = 0
 theme_override_icons/grabber = ExtResource("9_u5b2p")
@@ -1047,6 +1047,7 @@ offset_left = 562.0
 offset_top = 698.0
 offset_right = 924.0
 offset_bottom = 739.0
+scale = Vector2(0.9, 0.9)
 theme_override_constants/separation = 10
 alignment = 1
 

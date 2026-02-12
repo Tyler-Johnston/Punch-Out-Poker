@@ -283,8 +283,7 @@ public partial class PokerGame
 				break;
 			case 2: // Circuit C
 				baseColor = new Color("#127AE3");  // Royal Blue
-				//trimColor = new Color("#c0c0c0");  // Silver
-				trimColor = new Color("9b59b6");  // Silver
+				trimColor = new Color("9b59b6");
 				break;
 		} 
 		
@@ -391,7 +390,7 @@ public partial class PokerGame
 			fillStyle.CornerRadiusBottomLeft = radius;
 			fillStyle.CornerRadiusBottomRight = radius;
 			fillStyle.BorderBlend = false;
-		   	fillStyle.BorderColor = new Color(1, 1, 1, 1); // Pure White
+		   	fillStyle.BorderColor = new Color(1, 1, 1, 1);
 			fillStyle.BorderWidthTop = 1;
 			fillStyle.BorderWidthBottom = 1;
 			fillStyle.BorderWidthLeft = 1;
@@ -425,13 +424,13 @@ public partial class PokerGame
 			string chipPath = "res://Assets/Textures/chip_pngs/yellow_1.png";
 			switch (GameManager.Instance.GetCircuitType())
 			{
-				case 0: // Circuit A (Green Felt) -> Gold Chip
+				case 0: // Circuit A
 					chipPath = "res://Assets/Textures/chip_pngs/yellow_1.png";
 					break;
-				case 1: // Circuit B (Red Felt) -> Blue Chip
+				case 1: // Circuit B
 					chipPath = "res://Assets/Textures/chip_pngs/blue_1.png";
 					break;
-				case 2: // Circuit C (Blue Felt) -> Black Chip
+				case 2: // Circuit C
 					chipPath = "res://Assets/Textures/chip_pngs/purple_1.png";
 					break;
 			}
@@ -1128,8 +1127,19 @@ public partial class PokerGame
 			{
 				betSlider.Editable = enableSlider;
 				betSlider.Modulate = enableSlider ? Colors.White : new Color(0.7f, 0.7f, 0.7f, 0.5f);
+
+				var fillStyle = betSlider.GetThemeStylebox("grabber_area") as StyleBoxFlat;
+				if (fillStyle != null)
+				{
+					Color color = fillStyle.BgColor;
+					color.A = enableSlider ? 1.0f : 0.0f;
+					fillStyle.BgColor = color;
+
+					Color borderColor = fillStyle.BorderColor;
+					borderColor.A = enableSlider ? 1.0f : 0.0f;
+					fillStyle.BorderColor = borderColor;
+				}
 			}
-			
 			UpdatePotSizeButtons(enableSlider); 
 		}
 
