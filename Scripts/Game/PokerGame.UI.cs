@@ -342,6 +342,7 @@ public partial class PokerGame
 
 		if (dashboardTopPanel != null)
 		{
+			
 			var style = dashboardTopPanel.GetThemeStylebox("panel") as StyleBoxFlat;
 			if (style != null)
 			{
@@ -364,7 +365,7 @@ public partial class PokerGame
 			if (style != null)
 			{
 				style = (StyleBoxFlat)style.Duplicate();
-				style.BgColor = baseFeltColor.Darkened(0.65f); 
+				style.BgColor = baseFeltColor.Darkened(0.50f); 
 				
 				style.BorderWidthTop = 0;
 				style.BorderWidthLeft = borderThick;

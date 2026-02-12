@@ -1323,9 +1323,9 @@ grow_vertical = 1
 material = SubResource("ShaderMaterial_u5b2p")
 clip_contents = true
 layout_mode = 0
-offset_left = -96.0
+offset_left = -96.74075
 offset_top = -7.0
-offset_right = 411.40005
+offset_right = 410.6593
 offset_bottom = 389.0
 texture = SubResource("GradientTexture2D_h5gdr")
 
