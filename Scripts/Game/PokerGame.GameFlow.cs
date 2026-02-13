@@ -559,8 +559,8 @@ public partial class PokerGame
 		bool isBet = result.IsBet;
 		string actionWord = isBet ? "bets" : "raises to";
 
-		ShowMessage($"{currentOpponentName} {actionWord}: {opponentBet}");
-		GD.Print($"{currentOpponentName} {actionWord}: {opponentBet}" + (result.BecameAllIn ? " (ALL-IN)" : ""));
+		ShowMessage($"{currentOpponentName} {actionWord}: ${opponentBet}");
+		GD.Print($"{currentOpponentName} {actionWord}: ${opponentBet}" + (result.BecameAllIn ? " (ALL-IN)" : ""));
 
 		sfxPlayer.PlayRandomChip();
 
