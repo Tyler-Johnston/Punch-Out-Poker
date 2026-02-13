@@ -192,8 +192,8 @@ public partial class PokerGame : Node2D
 
 	private void SetupCards()
 	{
-		playerCard1 = playerArea.GetNode<CardVisual>("PlayerCard1");
-		playerCard2 = playerArea.GetNode<CardVisual>("PlayerCard2");
+		playerCard1 = GetNode<CardVisual>("%PlayerCard1");
+		playerCard2 = GetNode<CardVisual>("%PlayerCard2");
 		opponentCard1 = opponentArea.GetNode<CardVisual>("OpponentCard1");
 		opponentCard2 = opponentArea.GetNode<CardVisual>("OpponentCard2");
 		
