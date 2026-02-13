@@ -142,53 +142,81 @@ public partial class PokerGame : Node2D
 
 	public override void _Ready()
 	{
-		Control hudControl = GetNode<Control>("CanvasLayer/Control");
+		// Load resources
 		cardVisualScene = GD.Load<PackedScene>("res://Scenes/CardVisual.tscn");
 		
+		// === GAME WORLD ===
 		miniTableRect = GetNode<TextureRect>("%MiniTable");
 		mainTableRect = GetNode<TextureRect>("%MainTable");
 		
-		// ui areas
+		// === AREAS ===
 		opponentArea = GetNode<Node2D>("%OpponentArea");
 		communityCardsArea = GetNode<Node2D>("%CommunityCardsArea");
 		playerArea = GetNode<Node2D>("%PlayerArea");
-		opponentView = hudControl.GetNode<Node2D>("OpponentView");
-		potArea = hudControl.GetNode<Node2D>("PotArea");
+		opponentView = GetNode<Control>("CanvasLayer/Control").GetNode<Node2D>("OpponentView");
+		potArea = GetNode<Control>("CanvasLayer/Control").GetNode<Node2D>("PotArea");
 		betweenHandsUI = GetNode<Node2D>("%BetweenHandsUI");
 		activePlayUI = GetNode<Node2D>("%ActivePlayUI");
 		
-		// chip display containers
+		// === CHIP CONTAINERS ===
 		playerChipGridBox = playerArea.GetNode<GridContainer>("PlayerChipGridBox");
 		opponentChipGridBox = GetNode<GridContainer>("%OpponentChipGridBox");
 		chipContainer = potArea.GetNode<GridContainer>("%PotGridBox");
 		
+		// === PANELS ===
 		gameStatePanel = GetNode<PanelContainer>("%GameStatePanel");
 		dashboardTopPanel = GetNode<PanelContainer>("%TopPanel");
 		dashboardBottomPanel = GetNode<PanelContainer>("%BottomPanel");
-		opponentFrame = GetNode<PanelContainer>("%OpponentFrame");
-	
-		// pocket cards
+		
+		// === CARDS ===
+		SetupCards();
+		
+		// === UI ELEMENTS ===
+		SetupButtons();
+		SetupLabels();
+		
+		// === AUDIO ===
+		SetupAudio();
+		
+		// === BEHAVIOR ===
+		SetupSpeechBubble();
+		SetupSlider();
+		SetupOpponent();
+		SetupEventHandlers();
+		
+		// === GAME INIT ===
+		SetupGameState();
+		InitializeAI();
+		InitializeUI();
+		StartNewHand();
+	}
+
+	private void SetupCards()
+	{
 		playerCard1 = playerArea.GetNode<CardVisual>("PlayerCard1");
 		playerCard2 = playerArea.GetNode<CardVisual>("PlayerCard2");
 		opponentCard1 = opponentArea.GetNode<CardVisual>("OpponentCard1");
 		opponentCard2 = opponentArea.GetNode<CardVisual>("OpponentCard2");
-
-		// community cards
+		
 		flop1 = GetNode<CardVisual>("%Flop1");
 		flop2 = GetNode<CardVisual>("%Flop2");
 		flop3 = GetNode<CardVisual>("%Flop3");
 		turnCard = GetNode<CardVisual>("%Turn");
 		riverCard = GetNode<CardVisual>("%River");
+	}
 
-		// action buttons
+	private void SetupButtons()
+	{
 		actionButtons = GetNode<Control>("%ActionButtons");
 		foldButton = actionButtons.GetNode<Button>("FoldButton");
 		checkCallButton = actionButtons.GetNode<Button>("CheckCallButton");
 		betRaiseButton = actionButtons.GetNode<Button>("BetRaiseButton");
 		cashOutButton = GetNode<Button>("%CashOutButton");
 		nextHandButton = GetNode<Button>("%NextHandButton");
-	
-		// labels
+	}
+
+	private void SetupLabels()
+	{
 		playerStackLabel = GetNode<Label>("%PlayerStackLabel");
 		playerStackLabel2 = GetNode<Label>("%PlayerStackLabel2");
 		playerEarningsLabel = GetNode<Label>("%PlayerEarningsLabel");
@@ -196,16 +224,22 @@ public partial class PokerGame : Node2D
 		handTypeLabel = GetNode<Label>("%HandTypeLabel");
 		potLabel = GetNode<Label>("%PotLabel");
 		gameStateLabel = GetNode<Label>("%GameStateLabel");
-		
-		// audio players
+	}
+
+	private void SetupAudio()
+	{
 		sfxPlayer = GetNode<SFXPlayer>("SFXPlayer");
-		musicPlayer = GetNode<MusicPlayer>("MusicPlayer");  
-		
-		// speech bubble
+		musicPlayer = GetNode<MusicPlayer>("MusicPlayer");
+	}
+
+	private void SetupSpeechBubble()
+	{
 		speechBubble = opponentView.GetNode<SpeechBubble>("SpeechBubble");
-		speechBubble.AudioPlayer = sfxPlayer; 
-		
-		// slider
+		speechBubble.AudioPlayer = sfxPlayer;
+	}
+
+	private void SetupSlider()
+	{
 		sliderUI = GetNode<Control>("%SliderUI");
 		betSlider = GetNode<HSlider>("%BetSlider");
 		thirdPot = GetNode<Button>("%ThirdPot");
@@ -213,32 +247,41 @@ public partial class PokerGame : Node2D
 		standardPot = GetNode<Button>("%StandardPot");
 		twoThirdsPot = GetNode<Button>("%TwoThirdsPot");
 		allInPot = GetNode<Button>("%AllInPot");
-		
-		// faceSprite
-		faceSprite = GetNode<Sprite2D>("%FaceSprite"); 
+	}
+
+	private void SetupOpponent()
+	{
+		opponentFrame = GetNode<PanelContainer>("%OpponentFrame");
+		faceSprite = GetNode<Sprite2D>("%FaceSprite");
 		titleBar = GetNode<ColorRect>("%TitleBar");
-		
-		// set on-press handlers
+	}
+
+	private void SetupEventHandlers()
+	{
 		foldButton.Pressed += OnFoldPressed;
 		checkCallButton.Pressed += OnCheckCallPressed;
 		betRaiseButton.Pressed += OnBetRaisePressed;
 		cashOutButton.Pressed += OnCashOutPressed;
 		nextHandButton.Pressed += OnNextHandPressed;
 		betSlider.ValueChanged += OnBetSliderValueChanged;
+		
 		thirdPot.Pressed += () => OnPotSizeButtonPressed(0.33f);
 		halfPot.Pressed += () => OnPotSizeButtonPressed(0.5f);
 		standardPot.Pressed += () => OnPotSizeButtonPressed(1.0f);
 		twoThirdsPot.Pressed += () => OnPotSizeButtonPressed(0.67f);
 		allInPot.Pressed += OnAllInButtonPressed;
-
-		// initialize Tell Timer
+		
+		// Tell Timer
 		tellTimer = new Timer();
 		tellTimer.WaitTime = 4.0f;
 		tellTimer.OneShot = false;
 		tellTimer.Timeout += OnTellTimerTimeout;
 		AddChild(tellTimer);
+	}
 
-		// initialize opponent information
+	private void SetupGameState()
+	{
+		// Opponent info
 		currentOpponentName = GameManager.Instance.CurrentOpponentName;
 		buyInAmount = GameManager.Instance.CurrentBuyIn;
 		
@@ -251,48 +294,48 @@ public partial class PokerGame : Node2D
 		
 		GD.Print($"---------- Player VS {currentOpponentName} ----------");
 		
-		// ai initialization
+		playerChips = buyInAmount;
+		opponentChips = buyInAmount;
+		
+		// Blinds
+		bigBlind = Math.Max(2, buyInAmount / 50);
+		if (bigBlind % 2 != 0) bigBlind++;
+		smallBlind = bigBlind / 2;
+		betAmount = bigBlind;
+		playerHasButton = false;
+		
+		GD.Print($"Blinds: {smallBlind}/{bigBlind}");
+	}
+
+	private void InitializeAI()
+	{
 		aiOpponent = new AIPokerPlayer();
 		aiOpponent.Personality = LoadOpponentPersonality(currentOpponentName);
 		aiOpponent.ChipStack = buyInAmount;
 		aiOpponent.PlayerName = currentOpponentName;
 		aiOpponent.InitializeForMatch(buyInAmount);
 		speechBubble.VoicePitch = aiOpponent.Personality.VoicePitch;
-
+		
 		decisionMaker = new PokerDecisionMaker();
-		AddChild(aiOpponent); 
+		AddChild(aiOpponent);
 		aiOpponent.SetDecisionMaker(decisionMaker);
 		
 		dialogueManager = new DialogueManager();
 		AddChild(dialogueManager);
 		dialogueManager.Initialize(aiOpponent.Personality);
 		
-		// music initialization
+		// Music
 		musicPlayer.PlayTrack($"{currentOpponentName.ToLower()}_bg_music");
 		
-		// log personality stats
+		// Log personality
 		var personality = aiOpponent.Personality;
 		GD.Print($"Personality Stats:");
 		GD.Print($"  Aggression: {personality.BaseAggression:F2}");
 		GD.Print($"  Bluff Freq: {personality.BaseBluffFrequency:F2}");
 		GD.Print($"  Call Tendency: {personality.CallTendency:F2}");
 		GD.Print($"  Tilt Sensitivity: {personality.TiltSensitivity:F2}");
-		
-		// chip amount
-		playerChips = buyInAmount;
-		opponentChips = buyInAmount;
-		
-		// blind calculation
-		bigBlind = Math.Max(2, buyInAmount / 50); 
-		if (bigBlind % 2 != 0) bigBlind++; 
-		smallBlind = bigBlind / 2;
-		betAmount = bigBlind; 
-		playerHasButton = false; 
-		GD.Print($"Blinds: {smallBlind}/{bigBlind}");
-
-		InitializeUI();
-		StartNewHand();
 	}
+
 
 	public override void _ExitTree()
 	{
