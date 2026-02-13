@@ -3,7 +3,7 @@ using Godot;
 
 public partial class PokerGame
 {
-	private readonly struct ActionApplyResult
+	public readonly struct ActionApplyResult
 	{
 		public readonly int AmountMoved;      // Chips moved from stack into street pot (negative if refunded)
 		public readonly bool BecameAllIn;
