@@ -60,7 +60,6 @@ public partial class PokerGame
 			var (minBet, maxBet) = GetLegalBetRange();
 			betAmount = Math.Clamp(betAmount, minBet, maxBet);
 			
-			// Uses your EXISTING ApplyAction from the other file
 			var result = ApplyAction(isPlayer: true, action: PlayerAction.Raise, raiseToTotal: betAmount);
 			
 			int chipsAdded = Math.Max(0, result.AmountMoved);

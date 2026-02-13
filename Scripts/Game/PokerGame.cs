@@ -47,7 +47,6 @@ public partial class PokerGame : Node2D
 	private Label handTypeLabel;
 	
 	private PanelContainer opponentFrame;
-	private PanelContainer gameStatePanel;
 	private PanelContainer dashboardTopPanel;
 	private PanelContainer dashboardBottomPanel;
 	
@@ -164,7 +163,6 @@ public partial class PokerGame : Node2D
 		chipContainer = potArea.GetNode<GridContainer>("%PotGridBox");
 		
 		// === PANELS ===
-		gameStatePanel = GetNode<PanelContainer>("%GameStatePanel");
 		dashboardTopPanel = GetNode<PanelContainer>("%TopPanel");
 		dashboardBottomPanel = GetNode<PanelContainer>("%BottomPanel");
 		
