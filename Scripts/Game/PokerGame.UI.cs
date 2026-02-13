@@ -1055,6 +1055,8 @@ public partial class PokerGame
 			activePlayUI.Visible = false;
 			potArea.Visible = false;
 			nextHandButton.Disabled = true;
+			handTypeLabel.Text = lastHandDescription;
+			handTypeLabel.Visible = true; 
 			UpdateSessionProfitLabel();
 			return;
 		}
