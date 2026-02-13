@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://4a4g1nqocla4"
+path="res://.godot/imported/Brainstorm_Keys.wav-7f363b4c4a21bb15b27c1d8a8d0ee42c.sample"
+
+[deps]
+
+source_file="res://Assets/Music/Mind Games/Brainstorm [180 BPM]/Stems/Brainstorm_Keys.wav"
+dest_files=["res://.godot/imported/Brainstorm_Keys.wav-7f363b4c4a21bb15b27c1d8a8d0ee42c.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

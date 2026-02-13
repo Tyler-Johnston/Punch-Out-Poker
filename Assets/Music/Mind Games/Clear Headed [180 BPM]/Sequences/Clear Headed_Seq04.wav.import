@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://q205v0w5a2pt"
+path="res://.godot/imported/Clear Headed_Seq04.wav-7a13ca51e17cc421bbbb6085f2e165cc.sample"
+
+[deps]
+
+source_file="res://Assets/Music/Mind Games/Clear Headed [180 BPM]/Sequences/Clear Headed_Seq04.wav"
+dest_files=["res://.godot/imported/Clear Headed_Seq04.wav-7a13ca51e17cc421bbbb6085f2e165cc.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

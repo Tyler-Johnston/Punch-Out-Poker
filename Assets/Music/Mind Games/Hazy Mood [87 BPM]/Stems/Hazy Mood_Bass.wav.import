@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://i4gtvgfbt2pp"
+path="res://.godot/imported/Hazy Mood_Bass.wav-bd23370b2d2abd235bac63966544868e.sample"
+
+[deps]
+
+source_file="res://Assets/Music/Mind Games/Hazy Mood [87 BPM]/Stems/Hazy Mood_Bass.wav"
+dest_files=["res://.godot/imported/Hazy Mood_Bass.wav-bd23370b2d2abd235bac63966544868e.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://d0qn00lnw53vh"
+path="res://.godot/imported/Wandering Rumination_Seq05.wav-9c2fc02cca89e2135820ce879b75c06e.sample"
+
+[deps]
+
+source_file="res://Assets/Music/Mind Games/Wandering Rumination [93 BPM]/Sequences/Wandering Rumination_Seq05.wav"
+dest_files=["res://.godot/imported/Wandering Rumination_Seq05.wav-9c2fc02cca89e2135820ce879b75c06e.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://dvs57ns556mv4"
+path="res://.godot/imported/Funky Feeling_Seq04.wav-7f45c377f3116e8733165361260077a4.sample"
+
+[deps]
+
+source_file="res://Assets/Music/Mind Games/Funky Feeling [120 BPM]/Sequences/Funky Feeling_Seq04.wav"
+dest_files=["res://.godot/imported/Funky Feeling_Seq04.wav-7f45c377f3116e8733165361260077a4.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

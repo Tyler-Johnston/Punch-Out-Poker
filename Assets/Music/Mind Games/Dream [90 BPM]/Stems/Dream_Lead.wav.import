@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://bifkslf3yuulq"
+path="res://.godot/imported/Dream_Lead.wav-7c7f7de211177ff7c8092cda3bbbdaf1.sample"
+
+[deps]
+
+source_file="res://Assets/Music/Mind Games/Dream [90 BPM]/Stems/Dream_Lead.wav"
+dest_files=["res://.godot/imported/Dream_Lead.wav-7c7f7de211177ff7c8092cda3bbbdaf1.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

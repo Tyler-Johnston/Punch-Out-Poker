@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://bfpc07ixbuktv"
+path="res://.godot/imported/Puzzled Mind_Seq04.wav-e094a158862a8127f6bb2f1ef6bb3524.sample"
+
+[deps]
+
+source_file="res://Assets/Music/Mind Games/Puzzled Mind [87 BPM]/Sequences/Puzzled Mind_Seq04.wav"
+dest_files=["res://.godot/imported/Puzzled Mind_Seq04.wav-e094a158862a8127f6bb2f1ef6bb3524.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

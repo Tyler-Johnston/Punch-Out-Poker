@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://qcgk5c4wrqrj"
+path="res://.godot/imported/Dream_Bass.wav-b2a2b9d07e3352c84d67772acd5c729a.sample"
+
+[deps]
+
+source_file="res://Assets/Music/Mind Games/Dream [90 BPM]/Stems/Dream_Bass.wav"
+dest_files=["res://.godot/imported/Dream_Bass.wav-b2a2b9d07e3352c84d67772acd5c729a.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

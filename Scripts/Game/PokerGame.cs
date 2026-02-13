@@ -140,7 +140,7 @@ public partial class PokerGame : Node2D
 	
 	// audio
 	private SFXPlayer sfxPlayer;
-	private AudioStreamPlayer musicPlayer;
+	private MusicPlayer musicPlayer;
 
 	// timer for idle tells
 	private Timer tellTimer;
@@ -200,7 +200,7 @@ public partial class PokerGame : Node2D
 		
 		// audio players
 		sfxPlayer = GetNode<SFXPlayer>("SFXPlayer");
-		musicPlayer = GetNode<AudioStreamPlayer>("MusicPlayer");  
+		musicPlayer = GetNode<MusicPlayer>("MusicPlayer");  
 		
 		// speech bubble
 		speechBubble = opponentView.GetNode<SpeechBubble>("SpeechBubble");
@@ -266,6 +266,9 @@ public partial class PokerGame : Node2D
 		dialogueManager = new DialogueManager();
 		AddChild(dialogueManager);
 		dialogueManager.Initialize(aiOpponent.Personality);
+		
+		// music initialization
+		musicPlayer.PlayTrack($"{currentOpponentName.ToLower()}_bg_music");
 		
 		// log personality stats
 		var personality = aiOpponent.Personality;

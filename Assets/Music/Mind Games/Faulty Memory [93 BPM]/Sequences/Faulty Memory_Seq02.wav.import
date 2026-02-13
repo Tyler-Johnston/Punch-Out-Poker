@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://bacmj5kq5vfwt"
+path="res://.godot/imported/Faulty Memory_Seq02.wav-53f968a1b8f24b9685ea820262bc3452.sample"
+
+[deps]
+
+source_file="res://Assets/Music/Mind Games/Faulty Memory [93 BPM]/Sequences/Faulty Memory_Seq02.wav"
+dest_files=["res://.godot/imported/Faulty Memory_Seq02.wav-53f968a1b8f24b9685ea820262bc3452.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

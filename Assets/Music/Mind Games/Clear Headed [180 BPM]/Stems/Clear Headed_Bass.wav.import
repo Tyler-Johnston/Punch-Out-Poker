@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://btyjin7umqjp2"
+path="res://.godot/imported/Clear Headed_Bass.wav-58d1a02e6526917fcd200f1012cf2b5a.sample"
+
+[deps]
+
+source_file="res://Assets/Music/Mind Games/Clear Headed [180 BPM]/Stems/Clear Headed_Bass.wav"
+dest_files=["res://.godot/imported/Clear Headed_Bass.wav-58d1a02e6526917fcd200f1012cf2b5a.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

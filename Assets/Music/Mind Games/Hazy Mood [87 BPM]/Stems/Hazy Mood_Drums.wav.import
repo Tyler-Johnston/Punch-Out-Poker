@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://burvotrg5tj3n"
+path="res://.godot/imported/Hazy Mood_Drums.wav-dc3c5d96ddcdb7f861e480ef3b6f1e41.sample"
+
+[deps]
+
+source_file="res://Assets/Music/Mind Games/Hazy Mood [87 BPM]/Stems/Hazy Mood_Drums.wav"
+dest_files=["res://.godot/imported/Hazy Mood_Drums.wav-dc3c5d96ddcdb7f861e480ef3b6f1e41.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

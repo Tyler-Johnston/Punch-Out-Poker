@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://bgi5x86c4d60m"
+path="res://.godot/imported/Dream_Seq05.wav-36a2289c5160ddc6e56731e0adcf01c5.sample"
+
+[deps]
+
+source_file="res://Assets/Music/Mind Games/Dream [90 BPM]/Sequences/Dream_Seq05.wav"
+dest_files=["res://.godot/imported/Dream_Seq05.wav-36a2289c5160ddc6e56731e0adcf01c5.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

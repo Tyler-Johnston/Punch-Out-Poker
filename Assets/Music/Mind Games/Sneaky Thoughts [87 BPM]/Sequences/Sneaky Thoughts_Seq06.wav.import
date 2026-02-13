@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://cxrjc7ij575pl"
+path="res://.godot/imported/Sneaky Thoughts_Seq06.wav-c69df9cbdf1ebafeb7a4ae3ca31db85e.sample"
+
+[deps]
+
+source_file="res://Assets/Music/Mind Games/Sneaky Thoughts [87 BPM]/Sequences/Sneaky Thoughts_Seq06.wav"
+dest_files=["res://.godot/imported/Sneaky Thoughts_Seq06.wav-c69df9cbdf1ebafeb7a4ae3ca31db85e.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

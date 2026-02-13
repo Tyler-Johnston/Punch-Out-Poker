@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://c2sc7r4grmwus"
+path="res://.godot/imported/Clear Headed_Motion Synth.wav-613d462ea15ea7b78b6a2a7707e56934.sample"
+
+[deps]
+
+source_file="res://Assets/Music/Mind Games/Clear Headed [180 BPM]/Stems/Clear Headed_Motion Synth.wav"
+dest_files=["res://.godot/imported/Clear Headed_Motion Synth.wav-613d462ea15ea7b78b6a2a7707e56934.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

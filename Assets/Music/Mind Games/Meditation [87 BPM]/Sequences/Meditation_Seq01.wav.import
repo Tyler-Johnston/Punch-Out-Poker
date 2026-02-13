@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://dqkvyvu73owe3"
+path="res://.godot/imported/Meditation_Seq01.wav-d3f617f7536b3e8b73eb6d7c104cd615.sample"
+
+[deps]
+
+source_file="res://Assets/Music/Mind Games/Meditation [87 BPM]/Sequences/Meditation_Seq01.wav"
+dest_files=["res://.godot/imported/Meditation_Seq01.wav-d3f617f7536b3e8b73eb6d7c104cd615.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

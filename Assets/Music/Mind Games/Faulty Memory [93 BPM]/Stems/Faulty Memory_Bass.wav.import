@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://dun80u77qbyl1"
+path="res://.godot/imported/Faulty Memory_Bass.wav-ee213e9ce221f3949815106dd9709614.sample"
+
+[deps]
+
+source_file="res://Assets/Music/Mind Games/Faulty Memory [93 BPM]/Stems/Faulty Memory_Bass.wav"
+dest_files=["res://.godot/imported/Faulty Memory_Bass.wav-ee213e9ce221f3949815106dd9709614.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://dd4tn2xpes35q"
+path="res://.godot/imported/Meditation_Drums.wav-23bf1b63392af0ea2b17c84575f66c85.sample"
+
+[deps]
+
+source_file="res://Assets/Music/Mind Games/Meditation [87 BPM]/Stems/Meditation_Drums.wav"
+dest_files=["res://.godot/imported/Meditation_Drums.wav-23bf1b63392af0ea2b17c84575f66c85.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

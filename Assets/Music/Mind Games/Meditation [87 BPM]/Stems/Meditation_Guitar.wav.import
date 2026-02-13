@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://bern7048o4i27"
+path="res://.godot/imported/Meditation_Guitar.wav-2bf91ec0e6c60595a6a67b6e730f9133.sample"
+
+[deps]
+
+source_file="res://Assets/Music/Mind Games/Meditation [87 BPM]/Stems/Meditation_Guitar.wav"
+dest_files=["res://.godot/imported/Meditation_Guitar.wav-2bf91ec0e6c60595a6a67b6e730f9133.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

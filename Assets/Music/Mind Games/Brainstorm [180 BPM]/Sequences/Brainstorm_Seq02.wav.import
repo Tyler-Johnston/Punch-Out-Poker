@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://bm6t4wd0y6rvt"
+path="res://.godot/imported/Brainstorm_Seq02.wav-a3c3497e4e6efefb44116307ebf6203a.sample"
+
+[deps]
+
+source_file="res://Assets/Music/Mind Games/Brainstorm [180 BPM]/Sequences/Brainstorm_Seq02.wav"
+dest_files=["res://.godot/imported/Brainstorm_Seq02.wav-a3c3497e4e6efefb44116307ebf6203a.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

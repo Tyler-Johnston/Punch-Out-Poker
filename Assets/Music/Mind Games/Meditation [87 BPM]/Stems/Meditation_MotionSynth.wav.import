@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://e878g17wujpn"
+path="res://.godot/imported/Meditation_MotionSynth.wav-6fbc0933244a401a908dc2c85001250f.sample"
+
+[deps]
+
+source_file="res://Assets/Music/Mind Games/Meditation [87 BPM]/Stems/Meditation_MotionSynth.wav"
+dest_files=["res://.godot/imported/Meditation_MotionSynth.wav-6fbc0933244a401a908dc2c85001250f.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

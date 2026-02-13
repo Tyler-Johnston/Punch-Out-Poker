@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://de705gahdih4v"
+path="res://.godot/imported/Puzzled Mind_Drums.wav-9585dc2c49b0a7a8b4c982fb31f197ed.sample"
+
+[deps]
+
+source_file="res://Assets/Music/Mind Games/Puzzled Mind [87 BPM]/Stems/Puzzled Mind_Drums.wav"
+dest_files=["res://.godot/imported/Puzzled Mind_Drums.wav-9585dc2c49b0a7a8b4c982fb31f197ed.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://dys4xbw18d648"
+path="res://.godot/imported/Funky Feeling_Drums.wav-25ec1aa239e356b08f78fea6ae0c7a7a.sample"
+
+[deps]
+
+source_file="res://Assets/Music/Mind Games/Funky Feeling [120 BPM]/Stems/Funky Feeling_Drums.wav"
+dest_files=["res://.godot/imported/Funky Feeling_Drums.wav-25ec1aa239e356b08f78fea6ae0c7a7a.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

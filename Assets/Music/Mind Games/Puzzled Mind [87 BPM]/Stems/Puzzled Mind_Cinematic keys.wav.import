@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://c1qdo60apnqtf"
+path="res://.godot/imported/Puzzled Mind_Cinematic keys.wav-aba5dde2f486fd601f0a51dffdcac66f.sample"
+
+[deps]
+
+source_file="res://Assets/Music/Mind Games/Puzzled Mind [87 BPM]/Stems/Puzzled Mind_Cinematic keys.wav"
+dest_files=["res://.godot/imported/Puzzled Mind_Cinematic keys.wav-aba5dde2f486fd601f0a51dffdcac66f.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

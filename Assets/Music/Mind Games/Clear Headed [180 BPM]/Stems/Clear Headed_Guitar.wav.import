@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://bu6ipsuvc2f15"
+path="res://.godot/imported/Clear Headed_Guitar.wav-1bf1b9475f56b42a641e14a67990161f.sample"
+
+[deps]
+
+source_file="res://Assets/Music/Mind Games/Clear Headed [180 BPM]/Stems/Clear Headed_Guitar.wav"
+dest_files=["res://.godot/imported/Clear Headed_Guitar.wav-1bf1b9475f56b42a641e14a67990161f.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2
