@@ -294,7 +294,7 @@ public partial class PokerGame
 	}
 	private void SetTableColor(Color baseColor, Color outlineColor)
 	{
-		if (MiniTableRect != null)
+		if (miniTableRect != null)
 		{
 			var enemyViewShader = GD.Load<Shader>("res://Assets/Shaders/EnemyView.gdshader");
 			
@@ -312,14 +312,14 @@ public partial class PokerGame
 			mat.SetShaderParameter("pixel_factor", 0.01f);
 		  	mat.SetShaderParameter("border_color", outlineColor); 
 			
-			MiniTableRect.Material = mat;
+			miniTableRect.Material = mat;
 		}
 
-		if (MainTableRect != null)
+		if (mainTableRect != null)
 		{
 			var pixelShader = GD.Load<Shader>("res://Assets/Shaders/Pixelate.gdshader");
 
-			var gradTex = MainTableRect.Texture as GradientTexture2D;
+			var gradTex = mainTableRect.Texture as GradientTexture2D;
 			if (gradTex != null)
 			{
 				gradTex.Gradient = (Gradient)gradTex.Gradient.Duplicate();
@@ -331,16 +331,16 @@ public partial class PokerGame
 
 			var mat = new ShaderMaterial();
 			mat.Shader = pixelShader;
-			MainTableRect.Material = mat;
+			mainTableRect.Material = mat;
 		}
 	}
 	
 	private void UpdateOppponentFrame(Color trimColor, Color outlineColor)
 	{
-		if (OpponentFrame != null)
+		if (opponentFrame != null)
 		{
 			titleBar.Color = outlineColor;
-			var currentStyle = OpponentFrame.GetThemeStylebox("panel");
+			var currentStyle = opponentFrame.GetThemeStylebox("panel");
 			if (currentStyle is StyleBoxFlat)
 			{
 				StyleBoxFlat style = (StyleBoxFlat)currentStyle.Duplicate();
@@ -352,7 +352,7 @@ public partial class PokerGame
 				style.BorderWidthLeft = 4;
 				style.BorderWidthRight = 4;
 
-				OpponentFrame.AddThemeStyleboxOverride("panel", style);
+				opponentFrame.AddThemeStyleboxOverride("panel", style);
 			}
 		}
 	}
@@ -399,7 +399,6 @@ public partial class PokerGame
 		
 		if (betSlider != null)
 		{
-			// 1. Define the Fill Style (Trim Color)
 			int radius = 10;
 			int borderWidth = 5;
 			
@@ -703,14 +702,14 @@ public partial class PokerGame
 		potLabel.Text = $"Pot: ${currentPot}";
 		
 		// Only animate if pot increased
-		bool potIncreased = (currentPot > _lastPotLabel && currentPot > 0);
+		bool potIncreased = (currentPot > lastPotLabel && currentPot > 0);
 		
 		if (potIncreased)
 		{
 			AnimatePotLabelPop();
 		}
 		
-		_lastPotLabel = currentPot;
+		lastPotLabel = currentPot;
 	}
 	
 	private void UpdatePotDisplay(int potAmount)
@@ -718,10 +717,10 @@ public partial class PokerGame
 		if (chipContainer == null) return;
 		
 		// Only update chip sprites if displayPot changed
-		if (potAmount == _lastDisplayedPot)
+		if (potAmount == lastDisplayedPot)
 			return;
 		
-		_lastDisplayedPot = potAmount;
+		lastDisplayedPot = potAmount;
 		
 		foreach (Node child in chipContainer.GetChildren())
 		{
@@ -780,11 +779,11 @@ public partial class PokerGame
 	/// </summary>
 	private void UpdatePlayerChipDisplay()
 	{
-		if (PlayerChipGridBox == null) return;
-		if (playerChipsInPot == _lastDisplayedPlayerChips) return;
-		_lastDisplayedPlayerChips = playerChipsInPot;
+		if (playerChipGridBox == null) return;
+		if (playerChipsInPot == lastDisplayedPlayerChips) return;
+		lastDisplayedPlayerChips = playerChipsInPot;
 		
-		foreach (Node child in PlayerChipGridBox.GetChildren())
+		foreach (Node child in playerChipGridBox.GetChildren())
 		{
 			child.QueueFree();
 		}
@@ -814,7 +813,7 @@ public partial class PokerGame
 			chipSprite.ExpandMode = TextureRect.ExpandModeEnum.KeepSize;
 			chipSprite.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
 			
-			PlayerChipGridBox.AddChild(chipSprite);
+			playerChipGridBox.AddChild(chipSprite);
 			
 			GetTree().CreateTimer(0.0f).Timeout += () =>
 			{
@@ -841,11 +840,11 @@ public partial class PokerGame
 	/// </summary>
 	private void UpdateOpponentChipDisplay()
 	{
-		if (OpponentChipGridBox == null) return;
-		if (opponentChipsInPot == _lastDisplayedOpponentChips) return;
-		_lastDisplayedOpponentChips = opponentChipsInPot;
+		if (opponentChipGridBox == null) return;
+		if (opponentChipsInPot == lastDisplayedOpponentChips) return;
+		lastDisplayedOpponentChips = opponentChipsInPot;
 		
-		foreach (Node child in OpponentChipGridBox.GetChildren())
+		foreach (Node child in opponentChipGridBox.GetChildren())
 		{
 			child.QueueFree();
 		}
@@ -875,7 +874,7 @@ public partial class PokerGame
 			chipSprite.ExpandMode = TextureRect.ExpandModeEnum.KeepSize;
 			chipSprite.StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered;
 			
-			OpponentChipGridBox.AddChild(chipSprite);
+			opponentChipGridBox.AddChild(chipSprite);
 			
 			GetTree().CreateTimer(0.0f).Timeout += () =>
 			{

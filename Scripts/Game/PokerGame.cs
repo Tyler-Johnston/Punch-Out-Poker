@@ -46,10 +46,10 @@ public partial class PokerGame : Node2D
 	private Label betRaiseLabel;
 	private Label handTypeLabel;
 	
+	private PanelContainer opponentFrame;
 	private PanelContainer gameStatePanel;
 	private PanelContainer dashboardTopPanel;
 	private PanelContainer dashboardBottomPanel;
-	private ColorRect titleBar;
 	
 	private Texture2D foldBtnImg;
 	private Texture2D checkBtnImg;
@@ -57,13 +57,14 @@ public partial class PokerGame : Node2D
 	private Texture2D betBtnImg;
 	private Texture2D raiseBtnImg;
 	
-	[Export] public PanelContainer OpponentFrame;
-	[Export] public TextureRect MainTableRect;
-	[Export] public TextureRect MiniTableRect;
+	private TextureRect mainTableRect;
+	private TextureRect miniTableRect;
 	
 	private Node2D opponentView;
 	private Node2D potArea;
 	private Node2D playerArea;
+	private Node2D opponentArea;
+	private Node2D communityCardsArea;
 	private Node2D betweenHandsUI;
 	private Node2D activePlayUI;
 	
@@ -71,11 +72,12 @@ public partial class PokerGame : Node2D
 	private Control actionButtons;
 	private Control sliderUI;
 	
-	// Chip display containers
-	private GridContainer PlayerChipGridBox;      // Player's chips in current betting round
-	private GridContainer OpponentChipGridBox;    // Opponent's chips in current betting round
-	private GridContainer chipContainer;          // Main pot display
+	// chip display containers
+	private GridContainer playerChipGridBox;
+	private GridContainer opponentChipGridBox;
+	private GridContainer chipContainer;
 	
+	private ColorRect titleBar;
 	private Sprite2D faceSprite;
 	private SpeechBubble speechBubble;
 
@@ -83,14 +85,14 @@ public partial class PokerGame : Node2D
 	private Street currentStreet = Street.Preflop;
 	private int playerChips = 100;
 	private int opponentChips = 100;
-	private int playerChipsInPot = 0;      // Amount player has in current betting round
-	private int opponentChipsInPot = 0;    // Amount opponent has in current betting round
-	private int pot = 0;                   // Total pot (all streets combined)
+	private int playerChipsInPot = 0;
+	private int opponentChipsInPot = 0;
+	private int pot = 0;
 	private int displayPot = 0; 
-	private int _lastDisplayedPot = -1;
-	private int _lastPotLabel = -1;
-	private int _lastDisplayedPlayerChips = -1;
-	private int _lastDisplayedOpponentChips = -1;
+	private int lastDisplayedPot = -1;
+	private int lastPotLabel = -1;
+	private int lastDisplayedPlayerChips = -1;
+	private int lastDisplayedOpponentChips = -1;
 	private int previousBet = 0;
 	private int betAmount = 20;
 	private int currentBet = 0;
@@ -98,14 +100,11 @@ public partial class PokerGame : Node2D
 	private int opponentBet = 0;
 	private int smallBlind = 5;
 	private int bigBlind = 10;
-
-	// tracking
-	public float aiStrengthAtAllIn = 0f; 
-
-	// side pot and contribution tracking
 	private int playerContributed = 0;
 	private int opponentContributed = 0;
 	private int playerTotalBetsThisHand = 0;
+	private int lastRaiseAmount = 0;
+	private float aiStrengthAtAllIn = 0f; 
 	
 	// game state flags
 	private bool isMatchComplete = false;
@@ -120,13 +119,9 @@ public partial class PokerGame : Node2D
 	private bool isShowdownInProgress = false;
 	private bool playerHasActedThisStreet = false;
 	private bool opponentHasActedThisStreet = false;
-	
-		// New fields to add:
-	private int lastRaiseAmount = 0;        // Size of the last *raise increment*
 	private bool playerCanReopenBetting = true;
 	private bool opponentCanReopenBetting = true;
 
-	
 	private Dictionary<Street, bool> playerBetOnStreet = new Dictionary<Street, bool>();
 	private Dictionary<Street, int> playerBetSizeOnStreet = new Dictionary<Street, int>();
 
@@ -150,24 +145,28 @@ public partial class PokerGame : Node2D
 		Control hudControl = GetNode<Control>("CanvasLayer/Control");
 		cardVisualScene = GD.Load<PackedScene>("res://Scenes/CardVisual.tscn");
 		
+		miniTableRect = GetNode<TextureRect>("%MiniTable");
+		mainTableRect = GetNode<TextureRect>("%MainTable");
+		
 		// ui areas
-		Node2D opponentArea = GetNode<Node2D>("%OpponentArea");
-		Node2D communityCardsArea = GetNode<Node2D>("%CommunityCardsArea");
+		opponentArea = GetNode<Node2D>("%OpponentArea");
+		communityCardsArea = GetNode<Node2D>("%CommunityCardsArea");
 		playerArea = GetNode<Node2D>("%PlayerArea");
 		opponentView = hudControl.GetNode<Node2D>("OpponentView");
 		potArea = hudControl.GetNode<Node2D>("PotArea");
 		betweenHandsUI = GetNode<Node2D>("%BetweenHandsUI");
 		activePlayUI = GetNode<Node2D>("%ActivePlayUI");
 		
-		// Get chip display containers
-		PlayerChipGridBox = playerArea.GetNode<GridContainer>("PlayerChipGridBox");
-		OpponentChipGridBox = GetNode<GridContainer>("%OpponentChipGridBox");
+		// chip display containers
+		playerChipGridBox = playerArea.GetNode<GridContainer>("PlayerChipGridBox");
+		opponentChipGridBox = GetNode<GridContainer>("%OpponentChipGridBox");
 		chipContainer = potArea.GetNode<GridContainer>("%PotGridBox");
+		
 		gameStatePanel = GetNode<PanelContainer>("%GameStatePanel");
 		dashboardTopPanel = GetNode<PanelContainer>("%TopPanel");
 		dashboardBottomPanel = GetNode<PanelContainer>("%BottomPanel");
-		titleBar = GetNode<ColorRect>("%TitleBar");
-
+		opponentFrame = GetNode<PanelContainer>("%OpponentFrame");
+	
 		// pocket cards
 		playerCard1 = playerArea.GetNode<CardVisual>("PlayerCard1");
 		playerCard2 = playerArea.GetNode<CardVisual>("PlayerCard2");
@@ -188,7 +187,7 @@ public partial class PokerGame : Node2D
 		betRaiseButton = actionButtons.GetNode<Button>("BetRaiseButton");
 		cashOutButton = GetNode<Button>("%CashOutButton");
 		nextHandButton = GetNode<Button>("%NextHandButton");
-		
+	
 		// labels
 		playerStackLabel = GetNode<Label>("%PlayerStackLabel");
 		playerStackLabel2 = GetNode<Label>("%PlayerStackLabel2");
@@ -217,6 +216,7 @@ public partial class PokerGame : Node2D
 		
 		// faceSprite
 		faceSprite = GetNode<Sprite2D>("%FaceSprite"); 
+		titleBar = GetNode<ColorRect>("%TitleBar");
 		
 		// set on-press handlers
 		foldButton.Pressed += OnFoldPressed;
@@ -231,7 +231,7 @@ public partial class PokerGame : Node2D
 		twoThirdsPot.Pressed += () => OnPotSizeButtonPressed(0.67f);
 		allInPot.Pressed += OnAllInButtonPressed;
 
-		// Initialize Tell Timer
+		// initialize Tell Timer
 		tellTimer = new Timer();
 		tellTimer.WaitTime = 4.0f;
 		tellTimer.OneShot = false;

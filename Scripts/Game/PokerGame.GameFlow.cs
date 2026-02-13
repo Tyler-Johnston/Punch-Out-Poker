@@ -53,15 +53,15 @@ public partial class PokerGame
 		foldButton.Disabled = true;
 		betRaiseButton.Visible = true;
 		betRaiseButton.Disabled = true;
-		aiStrengthAtAllIn = 0f;
+		aiStrengthAtAllIn = 0;
 
 		deck = new Deck();
 		deck.Shuffle();
 		
 		pot = 0;
 		displayPot = 0;
-		_lastDisplayedPot = -1;
-		_lastPotLabel = -1; 
+		lastDisplayedPot = -1;
+		lastPotLabel = -1; 
 		playerContributed = 0;
 		opponentContributed = 0;
 		playerTotalBetsThisHand = 0;
