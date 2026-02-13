@@ -42,6 +42,7 @@ public partial class PokerGame : Node2D
 	private Label opponentStackLabel;
 	private Label potLabel;
 	private Label gameStateLabel;
+	private Label gameStateLabel2;
 	private Label checkCallLabel;
 	private Label betRaiseLabel;
 	private Label handTypeLabel;
@@ -222,6 +223,7 @@ public partial class PokerGame : Node2D
 		handTypeLabel = GetNode<Label>("%HandTypeLabel");
 		potLabel = GetNode<Label>("%PotLabel");
 		gameStateLabel = GetNode<Label>("%GameStateLabel");
+		gameStateLabel2 = GetNode<Label>("%GameStateLabel2");
 	}
 
 	private void SetupAudio()

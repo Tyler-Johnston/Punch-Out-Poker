@@ -29,6 +29,9 @@ public partial class PokerGame
 		
 		gameStateLabel.Visible = !string.IsNullOrEmpty(text);
 		gameStateLabel.Text = text;
+		
+		gameStateLabel2.Visible = !string.IsNullOrEmpty(text);
+		gameStateLabel2.Text = text;
 	}
 
 	

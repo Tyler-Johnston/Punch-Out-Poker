@@ -821,6 +821,7 @@ public partial class PokerGame
 			SetExpression(Expression.Neutral);
 		}
 
+		GD.Print(message);
 		ShowMessage(message);
 	}
 
