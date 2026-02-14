@@ -397,6 +397,20 @@ public partial class PokerGame
 			}
 		}
 		
+		if (videoContainer != null)
+		{
+			var style = videoContainer.GetThemeStylebox("panel") as StyleBoxFlat;
+			if (style != null)
+			{
+				style = (StyleBoxFlat)style.Duplicate();
+				
+				style.BorderWidthTop = borderThick;
+				style.BorderColor = trimColor;
+				
+				videoContainer.AddThemeStyleboxOverride("panel", style);
+			}
+		}
+		
 		if (betSlider != null)
 		{
 			int radius = 10;
