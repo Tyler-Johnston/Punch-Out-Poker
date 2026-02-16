@@ -152,7 +152,7 @@ public partial class PokerGame
 	
 	public void ShowActionTell(PlayerAction action, bool isBluffing, float handStrength)
 	{
-		// Tilt override
+		// 1. TILT OVERRIDE (Always shows if angry)
 		if (aiOpponent.CurrentTiltState == TiltState.Steaming || aiOpponent.CurrentTiltState == TiltState.Monkey)
 		{
 			SetExpression(Expression.Angry);
@@ -160,24 +160,50 @@ public partial class PokerGame
 			return;
 		}
 
-		// Bluff tells
+		// 2. BLUFF TELLS (Fake Strong / Fake Weak)
 		if (isBluffing)
 		{
-			if (action == PlayerAction.Raise || action == PlayerAction.AllIn)
+			// Check if they are smart enough to hide it!
+			float reliability = aiOpponent.Personality.TellReliability;
+			
+			// Adjust reliability based on Tilt (Tilt makes them worse actors)
+			if (aiOpponent.CurrentTiltState != TiltState.Zen)
+				reliability -= 0.15f; 
+
+			// Roll the die: If roll > reliability, they "slip up" and show the fake tell.
+			// Example: Reliability 0.9 (Smart) -> 10% chance to slip up.
+			// Example: Reliability 0.4 (Dumb)  -> 60% chance to slip up.
+			bool slipsUp = (GD.Randf() > reliability);
+
+			if (slipsUp)
 			{
-				SetExpression(Expression.FakeStrong);
-				GD.Print($"[TELL] {currentOpponentName} shows FAKE STRENGTH (bluffing)");
-				return;
+				if (action == PlayerAction.Raise || action == PlayerAction.AllIn)
+				{
+					SetExpression(Expression.FakeStrong);
+					GD.Print($"[TELL] {currentOpponentName} SLIPPED UP! Shows FAKE STRENGTH (bluffing)");
+					return;
+				}
+				else if (action == PlayerAction.Check || action == PlayerAction.Call)
+				{
+					SetExpression(Expression.FakeWeak);
+					GD.Print($"[TELL] {currentOpponentName} SLIPPED UP! Shows FAKE WEAKNESS (trap)");
+					return;
+				}
 			}
-			else if (action == PlayerAction.Check || action == PlayerAction.Call)
+			else
 			{
-				SetExpression(Expression.FakeWeak);
-				GD.Print($"[TELL] {currentOpponentName} shows FAKE WEAKNESS (trap)");
+				// They successfully hid the bluff!
+				// Optional: Show "Confident" (Smirk) to really sell the lie?
+				// For now, let's just go Neutral (Poker Face)
+				SetExpression(Expression.Neutral);
+				GD.Print($"[TELL] {currentOpponentName} kept a Poker Face (Hidden Bluff)");
 				return;
 			}
 		}
 
-		// Action-based expressions
+		// 3. GENUINE TELLS (Value Betting / Weak Calls)
+		// These also need reliability! Good players don't look "Worried" when betting thin value.
+		
 		switch (action)
 		{
 			case PlayerAction.Fold:
@@ -192,8 +218,17 @@ public partial class PokerGame
 			case PlayerAction.Call:
 				if (handStrength < 0.5f)
 				{
-					SetExpression(Expression.Worried);
-					GD.Print($"[TELL] {currentOpponentName} is WORRIED (weak call)");
+					// Only show "Worried" if they are bad actors (Low Reliability)
+					if (GD.Randf() > aiOpponent.Personality.TellReliability)
+					{
+						SetExpression(Expression.Worried);
+						GD.Print($"[TELL] {currentOpponentName} is WORRIED (weak call)");
+					}
+					else
+					{
+						SetExpression(Expression.Neutral);
+						GD.Print($"[TELL] {currentOpponentName} poker face (hid weak call)");
+					}
 				}
 				else
 				{
@@ -202,28 +237,45 @@ public partial class PokerGame
 				break;
 				
 			case PlayerAction.Raise:
+			case PlayerAction.AllIn:
 				if (handStrength > 0.7f)
 				{
-					SetExpression(Expression.Smirk);
-					GD.Print($"[TELL] {currentOpponentName} is CONFIDENT (strong raise)");
+					// Strong hand! Do they smirk?
+					// Smart players might hide it (Neutral).
+					// Arrogant players (low reliability) might smirk.
+					if (GD.Randf() > aiOpponent.Personality.TellReliability)
+					{
+						SetExpression(Expression.Smirk);
+						GD.Print($"[TELL] {currentOpponentName} is CONFIDENT (strong raise)");
+					}
+					else
+					{
+						SetExpression(Expression.Neutral);
+						GD.Print($"[TELL] {currentOpponentName} poker face (hid strong hand)");
+					}
 				}
-				else if (handStrength < 0.5f)
+				else if (handStrength < 0.5f) // Thin Value / Semi-Bluff
 				{
-					SetExpression(Expression.Worried);
-					GD.Print($"[TELL] {currentOpponentName} is WORRIED (thin value)");
+					// They are betting with a mediocre hand. Do they look worried?
+					if (GD.Randf() > aiOpponent.Personality.TellReliability)
+					{
+						SetExpression(Expression.Worried);
+						GD.Print($"[TELL] {currentOpponentName} is WORRIED (thin value)");
+					}
+					else
+					{
+						SetExpression(Expression.Neutral);
+						GD.Print($"[TELL] {currentOpponentName} poker face (hid thin value)");
+					}
 				}
 				else
 				{
 					SetExpression(Expression.Neutral);
 				}
 				break;
-				
-			case PlayerAction.AllIn:
-				SetExpression(Expression.Smirk);
-				GD.Print($"[TELL] {currentOpponentName} is CONFIDENT (all-in)");
-				break;
 		}
 	}
+
 
 	// --- POST-HAND TELLS (Called from ShowDown/EndHand) ---
 	
