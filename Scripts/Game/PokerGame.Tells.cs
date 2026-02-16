@@ -130,7 +130,7 @@ public partial class PokerGame
 		// --- Strong Hand (Premium) ---
 		if (strength == HandStrength.Strong)
 		{
-			bool leaksExcitement = GD.Randf() > aiOpponent.Personality.TellReliability;
+			bool leaksExcitement = GD.Randf() > aiOpponent.Personality.Composure;
 			
 			if (leaksExcitement)
 			{
@@ -164,7 +164,7 @@ public partial class PokerGame
 		if (isBluffing)
 		{
 			// Check if they are smart enough to hide it!
-			float reliability = aiOpponent.Personality.TellReliability;
+			float reliability = aiOpponent.Personality.Composure;
 			
 			// Adjust reliability based on Tilt (Tilt makes them worse actors)
 			if (aiOpponent.CurrentTiltState != TiltState.Zen)
@@ -219,7 +219,7 @@ public partial class PokerGame
 				if (handStrength < 0.5f)
 				{
 					// Only show "Worried" if they are bad actors (Low Reliability)
-					if (GD.Randf() > aiOpponent.Personality.TellReliability)
+					if (GD.Randf() > aiOpponent.Personality.Composure)
 					{
 						SetExpression(Expression.Worried);
 						GD.Print($"[TELL] {currentOpponentName} is WORRIED (weak call)");
@@ -243,7 +243,7 @@ public partial class PokerGame
 					// Strong hand! Do they smirk?
 					// Smart players might hide it (Neutral).
 					// Arrogant players (low reliability) might smirk.
-					if (GD.Randf() > aiOpponent.Personality.TellReliability)
+					if (GD.Randf() > aiOpponent.Personality.Composure)
 					{
 						SetExpression(Expression.Smirk);
 						GD.Print($"[TELL] {currentOpponentName} is CONFIDENT (strong raise)");
@@ -257,7 +257,7 @@ public partial class PokerGame
 				else if (handStrength < 0.5f) // Thin Value / Semi-Bluff
 				{
 					// They are betting with a mediocre hand. Do they look worried?
-					if (GD.Randf() > aiOpponent.Personality.TellReliability)
+					if (GD.Randf() > aiOpponent.Personality.Composure)
 					{
 						SetExpression(Expression.Worried);
 						GD.Print($"[TELL] {currentOpponentName} is WORRIED (thin value)");

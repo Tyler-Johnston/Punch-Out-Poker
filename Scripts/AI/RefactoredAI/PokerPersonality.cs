@@ -12,7 +12,7 @@ public partial class PokerPersonality : Resource
 	[Export] public float TiltSensitivity { get; set; }
 	[Export] public float CallTendency { get; set; }
 	[Export] public float Chattiness { get; set; }
-	[Export] public float TellReliability { get; set; }
+	[Export] public float Composure { get; set; }
 	[Export] public float SurrenderChipPercent { get; set; } = 0.50f; 
 	[Export] public float RageQuitThreshold { get; set; } = 90.0f;
 	[Export] public float VoicePitch { get; set; }

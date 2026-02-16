@@ -80,7 +80,7 @@ public partial class DialogueManager : Node
 	
 	/// <summary>
 	/// Get a tell-based dialogue (behavioral cue)
-	/// May be misleading based on TellReliability
+	/// May be misleading based on Composure
 	/// </summary>
 	public string GetTellDialogue(HandStrength actualStrength, bool isBluffing)
 	{
@@ -90,7 +90,7 @@ public partial class DialogueManager : Node
 		if (isBluffing)
 		{
 			// When bluffing, show bluffing tells OR fake strong tells
-			if (rng.NextDouble() < personality.TellReliability)
+			if (rng.NextDouble() < personality.Composure)
 			{
 				tellContext = DialogueContext.Bluffing; // Honest tell
 			}
@@ -102,7 +102,7 @@ public partial class DialogueManager : Node
 		else if (actualStrength >= HandStrength.Strong)
 		{
 			// Strong hand: show strong tells OR reverse tell (act weak)
-			if (rng.NextDouble() < personality.TellReliability)
+			if (rng.NextDouble() < personality.Composure)
 			{
 				tellContext = DialogueContext.StrongHand;
 			}

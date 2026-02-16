@@ -262,50 +262,16 @@ public partial class AIPokerPlayer : Node
 	}
 
 	/// <summary>
-	/// Get an appropriate tell based on current hand strength (for animation / logs).
-	/// Returns empty string if no tell should be shown.
-	/// </summary>
-	public string GetTellForHandStrength(HandStrength strength)
-	{
-		string tellCategory = strength switch
-		{
-			HandStrength.Strong => "strong_hand",
-			HandStrength.Weak => "weak_hand",
-			HandStrength.Bluffing => "bluffing",
-			_ => ""
-		};
-
-		if (string.IsNullOrEmpty(tellCategory))
-			return "";
-
-		if (!Personality.Tells.TryGetValue(tellCategory, out var tells) || tells.Count == 0)
-			return "";
-
-		// 75% chance to show tell (makes them useful but not guaranteed)
-		if (GD.Randf() < 0.75f)
-		{
-			int idx = (int)GD.RandRange(0, tells.Count - 1);
-			string tellName = tells[idx].ToString();
-			EmitSignal(SignalName.TellDisplayed, tellName);
-			
-			// The tell system handles the "Boy Wizard looks Angry" log now
-			return tellName;
-		}
-
-		return "";
-	}
-
-	/// <summary>
 	/// Returns a spoken dialogue line based on action + hand strength + bluffing.
-	/// Uses TellReliability to decide whether we use Strong/Weak/Bluffing lines,
+	/// Uses Composure to decide whether we use Strong/Weak/Bluffing lines,
 	/// and falls back to the action categories (OnFold/OnCheck/OnCall/OnRaise/OnAllIn).
 	/// </summary>
 	public string GetDialogueForAction(PlayerAction action, HandStrength strength, bool isBluffing)
 	{
 		GodotDict dialog = Personality.Dialogue;
 
-		bool useTell = GD.Randf() < Personality.TellReliability;
-		if (useTell)
+		bool lacksComposure = GD.Randf() > Personality.Composure; 
+		if (lacksComposure)
 		{
 			if (isBluffing && TryGetRandom(dialog, "Bluffing", out string bluffLine))
 				return bluffLine;
@@ -364,10 +330,6 @@ public partial class AIPokerPlayer : Node
 	{
 		float strength = EvaluateCurrentHandStrength(gameState);
 
-		// Check if AI is bluffing (betting strong with weak hand)
-		if (strength < 0.35f && (GD.Randf() < Personality.CurrentBluffFrequency))
-			return HandStrength.Bluffing;
-
 		if (strength > 0.65f) return HandStrength.Strong;
 		if (strength > 0.35f) return HandStrength.Medium;
 		return HandStrength.Weak;
@@ -410,7 +372,7 @@ public partial class AIPokerPlayer : Node
 			TiltSensitivity = 0.4f,
 			CallTendency = 0.5f,
 			Chattiness = 0.5f,
-			TellReliability = 0.5f
+			Composure = 0.5f
 		};
 	}
 
