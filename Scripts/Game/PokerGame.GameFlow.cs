@@ -149,7 +149,6 @@ public partial class PokerGame
 		}
 
 		UpdateHud();
-		RefreshBetSlider();
 	}
 
 	private void HandleGameOver(bool opponentSurrendered = false)
@@ -275,8 +274,6 @@ public partial class PokerGame
 		GetTree().CreateTimer(waitTime).Timeout += () =>
 		{
 			UpdateHud();
-			UpdateButtonLabels();
-			RefreshBetSlider();
 
 			if (!isPlayerTurn)
 				CheckAndProcessAITurn();
@@ -866,8 +863,6 @@ public partial class PokerGame
 			isProcessingAIAction = false;
 			isPlayerTurn = true;
 			UpdateHud();
-			UpdateButtonLabels();
-			RefreshBetSlider();
 		}
 	}
 
