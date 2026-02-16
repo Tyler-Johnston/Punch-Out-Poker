@@ -85,7 +85,7 @@ public partial class PokerGame
 		playerCanReopenBetting = true;
 		opponentCanReopenBetting = true;
 		UpdateHud();
-		GD.Print($"[ResetBettingRound] New street - Total Pot: {pot}, Display Pot: {displayPot}");
+		GameManager.LogVerbose($"[ResetBettingRound] New street - Total Pot: {pot}, Display Pot: {displayPot}");
 	}
 
 	private (int minBet, int maxBet) GetLegalBetRange()

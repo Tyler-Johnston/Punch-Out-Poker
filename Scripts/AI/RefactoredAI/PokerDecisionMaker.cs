@@ -24,7 +24,7 @@ public partial class PokerDecisionMaker : Node
 		float potSize = Mathf.Max(gameState.PotSize, 1f);
 		float betRatio = toCall / potSize;
 
-		GD.Print(
+		GameManager.LogVerbose(
 			$"[AI STATE] {player.PlayerName} | Street: {gameState.Street} | Strength: {handStrength:F2} | " +
 			$"ToCall: {toCall} | BetRatio: {betRatio:F2} | Tilt: {player.CurrentTiltState} ({personality.TiltMeter:F0}) | " +
 			$"Pos: {(gameState.IsAIInPosition ? "IP" : "OOP")}"
@@ -35,7 +35,6 @@ public partial class PokerDecisionMaker : Node
 		{
 			Decision decision = DecideCheckOrBet(handStrength, gameState, personality, player, out float plannedBetRatio);
 			PlayerAction action = (decision == Decision.Bet) ? PlayerAction.Raise : PlayerAction.Check;
-			//GD.Print($"[AI ACTION] {player.PlayerName} {action} (plan: {plannedBetRatio:F2}x pot)");
 			return action;
 		}
 
@@ -45,16 +44,14 @@ public partial class PokerDecisionMaker : Node
 			// If all-in is small relative to pot, treat as normal call/fold decision.
 			if (betRatio < 0.50f)
 			{
-				GD.Print($"[AI] Small all-in ({betRatio:F2}x pot), using normal call logic");
+				GameManager.LogVerbose($"[AI] Small all-in ({betRatio:F2}x pot), using normal call logic");
 
 				Decision callFold = DecideCallOrFold(handStrength, betRatio, potSize, toCall, gameState.Street, personality, player);
 				PlayerAction action = (callFold == Decision.Fold) ? PlayerAction.Fold : PlayerAction.AllIn;
-				GD.Print($"[AI ACTION] {player.PlayerName} {action}");
 				return action;
 			}
 
 			PlayerAction allInAction = DecideAllIn(handStrength, betRatio, gameState.Street, personality, player, gameState);
-			GD.Print($"[AI ACTION] {player.PlayerName} {allInAction}");
 			return allInAction;
 		}
 
@@ -62,21 +59,18 @@ public partial class PokerDecisionMaker : Node
 		Decision callFoldDecision = DecideCallOrFold(handStrength, betRatio, potSize, toCall, gameState.Street, personality, player);
 		if (callFoldDecision == Decision.Fold)
 		{
-			GD.Print($"[AI ACTION] {player.PlayerName} Fold");
 			return PlayerAction.Fold;
 		}
 		
 		if (!gameState.CanAIReopenBetting)
 		{
-			GD.Print($"[AI] Cannot raise - betting not reopened (under-raise all-in rule). Forcing Call.");
-			GD.Print($"[AI ACTION] {player.PlayerName} Call");
+			GameManager.LogVerbose($"[AI] Cannot raise - betting not reopened (under-raise all-in rule). Forcing Call.");
 			return PlayerAction.Call;
 		}
 
 
 		// We're continuing - now decide call vs raise.
 		PlayerAction finalAction = DecideCallOrRaise(handStrength, betRatio, gameState.Street, personality, player, toCall);
-		GD.Print($"[AI ACTION] {player.PlayerName} {finalAction}");
 		return finalAction;
 	}
 
@@ -96,13 +90,11 @@ public partial class PokerDecisionMaker : Node
 		if (potOdds < PokerAIConfig.POT_ODDS_OVERRIDE_THRESHOLD &&
 			handStrength > potOdds * oddsMultiplier)
 		{
-			GD.Print($"[AI] Easy call - pot odds: {potOdds:F2}, equity: {handStrength:F2} (Sticky Mode: {betRatio < 0.40f})");
+			GameManager.LogVerbose($"[AI] Easy call - pot odds: {potOdds:F2}, equity: {handStrength:F2} (Sticky Mode: {betRatio < 0.40f})");
 			return Decision.Call;
 		}
 
 		// 2) Effective stats.
-		// IMPORTANT: CurrentAggression/CurrentBluffFrequency/CurrentRiskTolerance are already tilt-adjusted
-		// in PokerPersonality.UpdateStatsFromTilt(). Do not re-apply tilt scaling here.
 		float effCallTend = Mathf.Clamp(
 			personality.CallTendency * (1f + personality.TiltMeter / 200f),
 			0f,
@@ -148,7 +140,7 @@ public partial class PokerDecisionMaker : Node
 
 			if (handStrength < overbetThreshold)
 			{
-				GD.Print($"[AI] Folding to huge overbet ({betRatio:F1}x pot) - need {overbetThreshold:F2}, have {handStrength:F2}");
+				GameManager.LogVerbose($"[AI] Folding to huge overbet ({betRatio:F1}x pot) - need {overbetThreshold:F2}, have {handStrength:F2}");
 				return Decision.Fold;
 			}
 			return Decision.Call;
@@ -169,7 +161,7 @@ public partial class PokerDecisionMaker : Node
 			if (handStrength > 0.30f && heroSeed < heroCallChance)
 			{
 				heroCall = true;
-				GD.Print($"[AI] HERO CALL! (State: {player.CurrentTiltState}, Strength: {handStrength:F2}, Seed: {heroSeed:F2})");
+				GameManager.LogVerbose($"[AI] HERO CALL! (State: {player.CurrentTiltState}, Strength: {handStrength:F2}, Seed: {heroSeed:F2})");
 			}
 
 			if (!heroCall)
@@ -179,7 +171,7 @@ public partial class PokerDecisionMaker : Node
 
 				if (handStrength < callThreshold)
 				{
-					GD.Print($"[AI] Folding to large bet ({betRatio:F1}x pot) on {street} - need {callThreshold:F2}, have {handStrength:F2}");
+					GameManager.LogVerbose($"[AI] Folding to large bet ({betRatio:F1}x pot) on {street} - need {callThreshold:F2}, have {handStrength:F2}");
 					return Decision.Fold;
 				}
 			}
@@ -210,7 +202,7 @@ public partial class PokerDecisionMaker : Node
 			lightThreshold = Mathf.Clamp(lightThreshold, 0.15f, 1f);
 			if (handStrength < lightThreshold)
 			{
-				GD.Print($"[AI] Folding to small/mid bet ({betRatio:F1}x pot) - need {lightThreshold:F2}, have {handStrength:F2}");
+				GameManager.LogVerbose($"[AI] Folding to small/mid bet ({betRatio:F1}x pot) - need {lightThreshold:F2}, have {handStrength:F2}");
 				return Decision.Fold;
 			}
 		}
@@ -267,7 +259,7 @@ public partial class PokerDecisionMaker : Node
 			bool canTrap = player.CurrentTiltState < TiltState.Steaming;
 			if (canTrap && handStrength > 0.85f && player.TrapDecisionSeed < PokerAIConfig.TRAP_PROBABILITY)
 			{
-				GD.Print($"[AI] Trapping with {handStrength:F2} strength");
+				GameManager.LogVerbose($"[AI] Trapping with {handStrength:F2} strength");
 				plannedBetRatio = 0f;
 				return Decision.Check;
 			}
@@ -280,7 +272,7 @@ public partial class PokerDecisionMaker : Node
 				float valueSeed = GetDecisionSeedForStreet(player, street);
 				if (valueSeed > valueBetFreq)
 				{
-					GD.Print($"[AI] Checking value hand ({handStrength:F2}) for deception");
+					GameManager.LogVerbose($"[AI] Checking value hand ({handStrength:F2}) for deception");
 					plannedBetRatio = 0f;
 					return Decision.Check;
 				}
@@ -301,7 +293,7 @@ public partial class PokerDecisionMaker : Node
 			float bluffSeed = GetDecisionSeedForStreet(player, street);
 			if (bluffSeed < bluffProb)
 			{
-				GD.Print($"[AI] Bluffing on {street} (strength: {handStrength:F2}, size: {plannedBetRatio:F2}x)");
+				GameManager.LogVerbose($"[AI] Bluffing on {street} (strength: {handStrength:F2}, size: {plannedBetRatio:F2}x)");
 				return Decision.Bet;
 			}
 
@@ -321,7 +313,7 @@ public partial class PokerDecisionMaker : Node
 		float mediumSeed = GetDecisionSeedForStreet(player, street);
 		if (mediumSeed < mediumBetFreq)
 		{
-			GD.Print($"[AI] Betting medium hand ({handStrength:F2}) for protection/value");
+			GameManager.LogVerbose($"[AI] Betting medium hand ({handStrength:F2}) for protection/value");
 			return Decision.Bet;
 		}
 
@@ -406,7 +398,7 @@ public partial class PokerDecisionMaker : Node
 		{
 			if (player.CurrentTiltState < TiltState.Steaming && handStrength < 0.60f)
 			{
-				GD.Print($"[AI] Protecting stack (State: {player.CurrentTiltState}). Folding {handStrength:F2} to preflop shove.");
+				GameManager.LogVerbose($"[AI] Protecting stack (State: {player.CurrentTiltState}). Folding {handStrength:F2} to preflop shove.");
 				return PlayerAction.Fold;
 			}
 		}
@@ -422,7 +414,7 @@ public partial class PokerDecisionMaker : Node
 
 		if (handStrength >= allInThreshold)
 		{
-			GD.Print($"[AI] Calling all-in with {handStrength:F2} on {street} (threshold: {allInThreshold:F2})");
+			GameManager.LogVerbose($"[AI] Calling all-in with {handStrength:F2} on {street} (threshold: {allInThreshold:F2})");
 			return PlayerAction.AllIn;
 		}
 
@@ -439,11 +431,11 @@ public partial class PokerDecisionMaker : Node
 		float bluffSeed = GetDecisionSeedForStreet(player, street);
 		if (handStrength < 0.25f && bluffSeed < bluffShoveProb)
 		{
-			GD.Print($"[AI] Bluff shoving on {street}!");
+			GameManager.LogVerbose($"[AI] Bluff shoving on {street}!");
 			return PlayerAction.AllIn;
 		}
 
-		GD.Print($"[AI] Folding to all-in pressure on {street} ({handStrength:F2} < {allInThreshold:F2})");
+		GameManager.LogVerbose($"[AI] Folding to all-in pressure on {street} ({handStrength:F2} < {allInThreshold:F2})");
 		return PlayerAction.Fold;
 	}
 
@@ -474,7 +466,7 @@ public partial class PokerDecisionMaker : Node
 
 			if (raiseSeed < raiseProb)
 			{
-				GD.Print($"[AI] Value raising ({handStrength:F2})");
+				GameManager.LogVerbose($"[AI] Value raising ({handStrength:F2})");
 				return PlayerAction.Raise;
 			}
 		}
@@ -486,7 +478,7 @@ public partial class PokerDecisionMaker : Node
 		float bluffRaiseSeed = GetDecisionSeedForStreet(player, street);
 		if (handStrength < 0.32f && bluffRaiseSeed < bluffRaiseProb && player.ChipStack > toCall * 3f)
 		{
-			GD.Print($"[AI] Bluff raising on {street}");
+			GameManager.LogVerbose($"[AI] Bluff raising on {street}");
 			return PlayerAction.Raise;
 		}
 
@@ -503,7 +495,7 @@ public partial class PokerDecisionMaker : Node
 		// ✅ STEP 1: Early-out if raising is not allowed (under-raise all-in rule)
 		if (!gameState.CanAIReopenBetting)
 		{
-			GD.Print($"[{player.PlayerName}] Cannot raise - betting not reopened. Returning currentBet.");
+			GameManager.LogVerbose($"[{player.PlayerName}] Cannot raise - betting not reopened. Returning currentBet.");
 			return (int)currentBet;  // No raise available
 		}
 
@@ -514,7 +506,6 @@ public partial class PokerDecisionMaker : Node
 			targetTotal *= 1.15f;
 
 		// ✅ STEP 2: Calculate min-raise using PokerRules [INTEGRATION]
-		// We use the shared logic to ensure the AI calculates the exact same minimum as the Engine enforces.
 		int minTotalInt = PokerRules.CalculateMinRaiseTotal(
 			(int)currentBet,
 			(int)gameState.PreviousBet,
@@ -523,7 +514,7 @@ public partial class PokerDecisionMaker : Node
 		);
 		float minTotal = (float)minTotalInt;
 		
-		GD.Print($"[AI RAISE CALC] LastFullRaiseInc={gameState.LastFullRaiseIncrement}, MinTotal={minTotal}");
+		GameManager.LogVerbose($"[AI RAISE CALC] LastFullRaiseInc={gameState.LastFullRaiseIncrement}, MinTotal={minTotal}");
 
 		float maxTotal = gameState.GetPlayerCurrentBet(player) + player.ChipStack;
 
@@ -567,11 +558,9 @@ public partial class PokerDecisionMaker : Node
 		if (maxTotal >= minTotal)
 			finalTotal = Math.Max(finalTotal, (int)Mathf.Ceil(minTotal));
 
-		GD.Print($"[{player.PlayerName}] Raise-to total: {finalTotal} (effPot: {effectivePot}, strength: {handStrength:F2}, minTotal: {minTotal}, maxTotal: {maxTotal})");
+		GameManager.LogVerbose($"[{player.PlayerName}] Raise-to total: {finalTotal} (effPot: {effectivePot}, strength: {handStrength:F2}, minTotal: {minTotal}, maxTotal: {maxTotal})");
 		return finalTotal;
 	}
-
-
 
 	public float EvaluateHandStrength(List<Card> holeCards, List<Card> communityCards, Street street, float randomnessSeed)
 	{
@@ -603,7 +592,7 @@ public partial class PokerDecisionMaker : Node
 		// Case A: River counterfeit (exact-ish).
 		if (communityCards.Count >= 5 && myAbsStrength > 0.28f && (myAbsStrength - boardStrength < 0.03f))
 		{
-			GD.Print($"[AI] Counterfeit detected! Abs: {myAbsStrength:F2} vs Board: {boardStrength:F2}");
+			GameManager.LogVerbose($"[AI] Counterfeit detected! Abs: {myAbsStrength:F2} vs Board: {boardStrength:F2}");
 			adjustedStrength = 0.2f;
 			isCounterfeit = true;
 		}
@@ -642,11 +631,11 @@ public partial class PokerDecisionMaker : Node
 
 				if (haveQuads)
 				{
-					GD.Print($"[AI] We have QUADS on trip board! Keeping strength {myAbsStrength:F2}");
+					GameManager.LogVerbose($"[AI] We have QUADS on trip board! Keeping strength {myAbsStrength:F2}");
 				}
 				else if (haveFullHouse && havePocketPairBetterThanBoard)
 				{
-					GD.Print($"[AI] Full house on trip board with {holeCards[0].Rank} pocket pair");
+					GameManager.LogVerbose($"[AI] Full house on trip board with {holeCards[0].Rank} pocket pair");
 					adjustedStrength = Mathf.Max(adjustedStrength, 0.65f);
 				}
 				else if (haveKicker)
@@ -656,13 +645,13 @@ public partial class PokerDecisionMaker : Node
 
 					adjustedStrength = 0.25f + (kickerStrength * 0.25f);
 					isCounterfeit = true;
-					GD.Print($"[AI] Trip board kicker battle: {adjustedStrength:F2} (kicker: {kickerValue})");
+					GameManager.LogVerbose($"[AI] Trip board kicker battle: {adjustedStrength:F2} (kicker: {kickerValue})");
 				}
 				else
 				{
 					adjustedStrength = 0.15f;
 					isCounterfeit = true;
-					GD.Print($"[AI] EXTREME COUNTERFEIT! Trip/Quad board, no connection. Strength: {adjustedStrength:F2}");
+					GameManager.LogVerbose($"[AI] EXTREME COUNTERFEIT! Trip/Quad board, no connection. Strength: {adjustedStrength:F2}");
 				}
 			}
 			// Paired board + missed.
@@ -670,7 +659,7 @@ public partial class PokerDecisionMaker : Node
 			{
 				adjustedStrength *= 0.60f;
 				isCounterfeit = true;
-				GD.Print($"[AI] Early Counterfeit Heuristic: Board Paired & Missed. Downgrading {myAbsStrength:F2} -> {adjustedStrength:F2}");
+				GameManager.LogVerbose($"[AI] Early Counterfeit Heuristic: Board Paired & Missed. Downgrading {myAbsStrength:F2} -> {adjustedStrength:F2}");
 			}
 		}
 

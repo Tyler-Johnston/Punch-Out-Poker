@@ -70,7 +70,7 @@ public partial class PokerGame
 			{
 				SetExpression(Expression.Neutral);
 				string reason = hasHighCard ? "high card" : "suited";
-				GD.Print($"[TELL-PREFLOP] {currentOpponentName} is NEUTRAL (weak but {reason})");
+				GameManager.LogVerbose($"[TELL-PREFLOP] {currentOpponentName} is NEUTRAL (weak but {reason})");
 				return;
 			}
 
@@ -78,7 +78,7 @@ public partial class PokerGame
 			if (isSteaming || (isTilted && GD.Randf() < 0.7f))
 			{
 				ShowMomentaryExpression(Expression.Angry, duration);
-				GD.Print($"[TELL-PREFLOP] {currentOpponentName} is ANGRY (bad cards + tilt)");
+				GameManager.LogVerbose($"[TELL-PREFLOP] {currentOpponentName} is ANGRY (bad cards + tilt)");
 				return;
 			}
 
@@ -86,12 +86,12 @@ public partial class PokerGame
 			if (GD.Randf() < 0.6f)
 			{
 				ShowMomentaryExpression(Expression.Sad, duration);
-				GD.Print($"[TELL-PREFLOP] {currentOpponentName} is SAD (bad cards)");
+				GameManager.LogVerbose($"[TELL-PREFLOP] {currentOpponentName} is SAD (bad cards)");
 				return;
 			}
 			
 			SetExpression(Expression.Neutral);
-			GD.Print($"[TELL-PREFLOP] {currentOpponentName} maintained poker face (trash hand hidden)");
+			GameManager.LogVerbose($"[TELL-PREFLOP] {currentOpponentName} maintained poker face (trash hand hidden)");
 			return;
 		}
 		
@@ -106,12 +106,12 @@ public partial class PokerGame
 				if (GD.Randf() > 0.5f)
 				{
 					ShowMomentaryExpression(Expression.Happy, duration);
-					GD.Print($"[TELL-PREFLOP] {currentOpponentName} is ACTING HAPPY (Medium Hand)");
+					GameManager.LogVerbose($"[TELL-PREFLOP] {currentOpponentName} is ACTING HAPPY (Medium Hand)");
 				}
 				else
 				{
 					ShowMomentaryExpression(Expression.Sad, duration);
-					GD.Print($"[TELL-PREFLOP] {currentOpponentName} is ACTING SAD (Medium Hand)");
+					GameManager.LogVerbose($"[TELL-PREFLOP] {currentOpponentName} is ACTING SAD (Medium Hand)");
 				}
 				return;
 			}
@@ -120,12 +120,12 @@ public partial class PokerGame
 			if (GD.Randf() < 0.35f)
 			{
 				ShowMomentaryExpression(Expression.Worried, duration); 
-				GD.Print($"[TELL-PREFLOP] {currentOpponentName} is WORRIED (Medium Hand - genuine uncertainty)");
+				GameManager.LogVerbose($"[TELL-PREFLOP] {currentOpponentName} is WORRIED (Medium Hand - genuine uncertainty)");
 			}
 			else
 			{
 				SetExpression(Expression.Neutral);
-				GD.Print($"[TELL-PREFLOP] {currentOpponentName} is NEUTRAL (Medium Hand - stoic)");
+				GameManager.LogVerbose($"[TELL-PREFLOP] {currentOpponentName} is NEUTRAL (Medium Hand - stoic)");
 			}
 			return;
 		}
@@ -138,12 +138,12 @@ public partial class PokerGame
 			if (!attemptsPokerFace)
 			{
 				ShowMomentaryExpression(Expression.Happy, duration);
-				GD.Print($"[TELL-PREFLOP] {currentOpponentName} is HAPPY (premium hand leaked)");
+				GameManager.LogVerbose($"[TELL-PREFLOP] {currentOpponentName} is HAPPY (premium hand leaked)");
 				return;
 			}
 			else
 			{
-				GD.Print($"[TELL-PREFLOP] {currentOpponentName} maintained poker face (premium hand hidden)");
+				GameManager.LogVerbose($"[TELL-PREFLOP] {currentOpponentName} maintained poker face (premium hand hidden)");
 				SetExpression(Expression.Neutral);
 				return;
 			}
@@ -240,7 +240,12 @@ public partial class PokerGame
 				if (Enum.TryParse(tellString, true, out Expression expr))
 				{
 					ShowMomentaryExpression(expr, duration);
-					GD.Print($"[TELL] {currentOpponentName} shows {tellString} ({tellCategory}) Acting={isActing}");
+					// This is the ONE log we keep visible by default, 
+					// because it's interesting to see what the AI is "projecting" to the user.
+					GD.Print($"[TELL] {currentOpponentName} shows {tellString} ({tellCategory})");
+					
+					// Hidden details about whether they were acting
+					GameManager.LogVerbose($"[TELL DEBUG] Acting={isActing}");
 				}
 			}
 		}

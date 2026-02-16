@@ -8,6 +8,7 @@ public partial class GameManager : Node
 	public static GameManager Instance { get; private set; }
 
 	[Export] public bool DevTestMode = true;
+	[Export] public bool ShowDetailedLogs { get; set; } = false;
 	public int circuitType = 0; // 0 = Minor, 1 = Major, 2 = World
 
 	// Game Data
@@ -21,8 +22,6 @@ public partial class GameManager : Node
 	public string CurrentOpponentName { get; set; }
 	public int CurrentBuyIn { get; set; }
 
-	// === OPTIMIZATION: ASSET CACHE ===
-	// Stores textures in memory so we don't load from disk repeatedly
 	private System.Collections.Generic.Dictionary<(Rank, Suit), Texture2D> _cardTextureCache = new System.Collections.Generic.Dictionary<(Rank, Suit), Texture2D>();
 	private Texture2D _cardBackTexture;
 
@@ -30,7 +29,6 @@ public partial class GameManager : Node
 	{
 		Instance = this;
 
-		// 1. Load all textures immediately on startup
 		LoadCardAssets();
 
 		if (DevTestMode)
@@ -43,10 +41,6 @@ public partial class GameManager : Node
 			UnlockOpponent("Steve");
 		}
 	}
-
-	// ==========================================
-	// ASSET MANAGEMENT (NEW)
-	// ==========================================
 	
 	private void LoadCardAssets()
 	{
@@ -125,15 +119,11 @@ public partial class GameManager : Node
 		return $"{rankStr}_of_{suitStr}.png";
 	}
 
-	// ==========================================
-	// GAME LOGIC (EXISTING)
-	// ==========================================
-
 	public int GetCircuitType() => circuitType;
 	public void SetCircuitType(int newCircuitType)
 	{
 		circuitType = newCircuitType;
-		UpdateCardBackTexture(); // Update graphic when circuit changes
+		UpdateCardBackTexture();
 	}
 
 	private void InitializeDevMode()
@@ -152,6 +142,17 @@ public partial class GameManager : Node
 		UnlockOpponent("Akalite");
 
 		GD.Print($"Dev Mode: Unlocked {_unlockedOpponents.Count} opponents");
+	}
+	
+   /// <summary>
+	/// Use this for heavy technical logs (timers, math, state flags)
+	/// </summary>
+	public static void LogVerbose(string message)
+	{
+		if (Instance.ShowDetailedLogs)
+		{
+			GD.Print($"[VERBOSE] {message}");
+		}
 	}
 
 	public bool IsOpponentUnlocked(string opponentName)

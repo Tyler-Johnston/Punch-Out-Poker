@@ -95,7 +95,7 @@ public partial class AIPokerPlayer : Node
 		// Rage quit
 		if (Personality.TiltMeter >= Personality.RageQuitThreshold)
 		{
-			GD.Print($"[OPPONENT EXIT] {PlayerName} is RAGE QUITTING! Tilt: {Personality.TiltMeter}");
+			GD.Print($"\n!!! {PlayerName} RAGE QUITS (Tilt {Personality.TiltMeter:F1}) !!!");
 			return OpponentExitType.RageQuit;
 		}
 
@@ -106,7 +106,7 @@ public partial class AIPokerPlayer : Node
 
 		if (isLowChips && isCalm)
 		{
-			GD.Print($"[OPPONENT EXIT] {PlayerName} is Surrendering. Chips: {ChipStack} <= {surrenderThresholdAmount}, Tilt: {Personality.TiltMeter}");
+			GD.Print($"\n!!! {PlayerName} SURRENDERS (Chips {ChipStack} <= {surrenderThresholdAmount}) !!!");
 			return OpponentExitType.Surrender;
 		}
 
@@ -115,7 +115,7 @@ public partial class AIPokerPlayer : Node
 
 	public PlayerAction MakeDecision(GameState gameState)
 	{
-		GD.Print($"[{PlayerName}] MakeDecision - Folded: {IsFolded}, AllIn: {IsAllIn}, ChipStack: {ChipStack}");
+		GameManager.LogVerbose($"[{PlayerName}] MakeDecision - Folded: {IsFolded}, AllIn: {IsAllIn}, ChipStack: {ChipStack}");
 
 		// Defensive: if IsAllIn but we have chips, clear it (engine should sync it anyway)
 		if (IsAllIn && ChipStack > 0)
@@ -126,13 +126,13 @@ public partial class AIPokerPlayer : Node
 
 		if (IsFolded)
 		{
-			GD.Print($"[{PlayerName}] Folded - returning Check");
+			GameManager.LogVerbose($"[{PlayerName}] Folded - returning Check");
 			return PlayerAction.Check;
 		}
 
 		if (IsAllIn)
 		{
-			GD.Print($"[{PlayerName}] All-in with 0 chips - returning Check");
+			GameManager.LogVerbose($"[{PlayerName}] All-in with 0 chips - returning Check");
 			return PlayerAction.Check;
 		}
 
@@ -171,7 +171,7 @@ public partial class AIPokerPlayer : Node
 
 		if (tiltPenalty > 0)
 		{
-			GD.Print($"[TILT] Bullied. Ratio {betRatio:F2}. Tilt +{tiltPenalty}.");
+			GameManager.LogVerbose($"[TILT] Bullied. Ratio {betRatio:F2}. Tilt +{tiltPenalty}.");
 			Personality.AddTilt(tiltPenalty);
 		}
 	}
@@ -189,19 +189,19 @@ public partial class AIPokerPlayer : Node
 
 			case HandResult.BluffCaught:
 				AddTiltSafe(12f);
-				GD.Print($"{PlayerName}'s bluff was caught! Tilt: {Personality.TiltMeter}");
+				GameManager.LogVerbose($"{PlayerName}'s bluff was caught! Tilt: {Personality.TiltMeter}");
 				break;
 
 			case HandResult.Loss:
 				Personality.ConsecutiveLosses++;
 				AddTiltSafe(7f * Personality.ConsecutiveLosses);
-				GD.Print($"{PlayerName} lost (streak: {Personality.ConsecutiveLosses}). Tilt: {Personality.TiltMeter}");
+				GameManager.LogVerbose($"{PlayerName} lost (streak: {Personality.ConsecutiveLosses}). Tilt: {Personality.TiltMeter}");
 				break;
 
 			case HandResult.AllInLoss:
 				AddTiltSafe(26f);
 				Personality.ConsecutiveLosses++;
-				GD.Print($"{PlayerName} lost all-in! Tilt: {Personality.TiltMeter}");
+				GameManager.LogVerbose($"{PlayerName} lost all-in! Tilt: {Personality.TiltMeter}");
 				break;
 
 			case HandResult.Win:
@@ -214,7 +214,7 @@ public partial class AIPokerPlayer : Node
 				else if (bigBlindsWon > 10) reliefAmount = 8.0f;
 
 				Personality.ReduceTilt(reliefAmount);
-				GD.Print($"{PlayerName} won ({bigBlindsWon:F1} BB). Tilt reduced by {reliefAmount}");
+				GameManager.LogVerbose($"{PlayerName} won ({bigBlindsWon:F1} BB). Tilt reduced by {reliefAmount}");
 				break;
 
 			case HandResult.Neutral:
@@ -225,6 +225,8 @@ public partial class AIPokerPlayer : Node
 		if (Mathf.Abs(previousTilt - Personality.TiltMeter) > 0.5f)
 		{
 			EmitSignal(SignalName.TiltLevelChanged, Personality.TiltMeter);
+			// VISUAL IMPROVEMENT: Log meaningful Tilt changes at the end of the hand
+			GD.Print($"[RESULT] {PlayerName} Tilt {(Personality.TiltMeter > previousTilt ? "+" : "")}{(Personality.TiltMeter - previousTilt):F1} (Total: {Personality.TiltMeter:F1})");
 		}
 	}
 
@@ -285,6 +287,8 @@ public partial class AIPokerPlayer : Node
 			int idx = (int)GD.RandRange(0, tells.Count - 1);
 			string tellName = tells[idx].ToString();
 			EmitSignal(SignalName.TellDisplayed, tellName);
+			
+			// The tell system handles the "Boy Wizard looks Angry" log now
 			return tellName;
 		}
 
@@ -304,13 +308,13 @@ public partial class AIPokerPlayer : Node
 		if (useTell)
 		{
 			if (isBluffing && TryGetRandom(dialog, "Bluffing", out string bluffLine))
-				return LogTell(bluffLine);
+				return bluffLine;
 
 			if (strength == HandStrength.Strong && TryGetRandom(dialog, "StrongHand", out string strongLine))
-				return LogTell(strongLine);
+				return strongLine;
 
 			if (strength == HandStrength.Weak && TryGetRandom(dialog, "WeakHand", out string weakLine))
-				return LogTell(weakLine);
+				return weakLine;
 		}
 
 		string key = action switch
@@ -324,7 +328,7 @@ public partial class AIPokerPlayer : Node
 		};
 
 		if (key != null && TryGetRandom(dialog, key, out string actionLine))
-			return LogAction(actionLine);
+			return actionLine;
 
 		return "";
 	}
@@ -352,18 +356,6 @@ public partial class AIPokerPlayer : Node
 		int idx = (int)GD.RandRange(0, lines.Count - 1);
 		line = lines[idx].ToString();
 		return true;
-	}
-
-	private string LogTell(string line)
-	{
-		GD.Print($"[AI SPOKEN TELL] {line}");
-		return line;
-	}
-
-	private string LogAction(string line)
-	{
-		GD.Print($"[AI SPOKEN ACTION] {line}");
-		return line;
 	}
 
 	public void SetDecisionMaker(PokerDecisionMaker dm) => decisionMaker = dm;

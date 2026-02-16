@@ -1228,6 +1228,7 @@ public partial class PokerGame
 
 		if ((chatRoll <= aiOpponent.Personality.Chattiness || alwaysTalk))
 		{
+			GD.Print($"> {currentOpponentName} says '{dialogueLine}'");
 			return PlayDialogue(dialogueLine);
 		}
 

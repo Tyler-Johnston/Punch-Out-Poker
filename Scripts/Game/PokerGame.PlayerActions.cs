@@ -1,4 +1,3 @@
-// PokerGame.PlayerActions.cs
 using Godot;
 using System;
 
@@ -24,7 +23,7 @@ public partial class PokerGame
 			ClearPotTracking();
 			aiOpponent.ProcessHandResult(HandResult.Win, winAmount, bigBlind);
 			
-			GD.Print($"Stacks -> Player: {playerChips}, Opponent: {opponentChips}");
+			GameManager.LogVerbose($"Stacks -> Player: {playerChips}, Opponent: {opponentChips}");
 			EndHand();
 		}, advanceTurn: false);
 	}
@@ -41,8 +40,8 @@ public partial class PokerGame
 			{
 				ApplyAction(isPlayer: true, action: PlayerAction.Check);
 				ShowMessage("You check");
+				GD.Print("> Player checks");
 				sfxPlayer.PlaySound("check");
-				GD.Print($"Player checks on {currentStreet}");
 			}
 			else
 			{
@@ -82,7 +81,7 @@ public partial class PokerGame
 
 		int targetBet = CalculatePotSizeBet(potMultiplier);
 		UpdateBetSlider(targetBet);
-		GD.Print($"Set bet to {potMultiplier:P0} pot: {targetBet}");
+		GameManager.LogVerbose($"Set bet to {potMultiplier:P0} pot: {targetBet}");
 	}
 
 	private void OnAllInButtonPressed()
@@ -93,7 +92,7 @@ public partial class PokerGame
 		if (maxBet <= 0) return;
 
 		UpdateBetSlider(maxBet);
-		GD.Print($"Set bet to ALL-IN: {maxBet}");
+		GameManager.LogVerbose($"Set bet to ALL-IN: {maxBet}");
 	}
 
 	private void OnCashOutPressed()
@@ -117,7 +116,6 @@ public partial class PokerGame
 
 		isPlayerTurn = false;
 		UpdateHud();
-		RefreshBetSlider();
 
 		CheckBettingRoundComplete();
 	}
@@ -130,21 +128,21 @@ public partial class PokerGame
 		{
 			int refund = -result.AmountMoved;
 			ShowMessage($"You take back {refund} chips (Match All-In)");
-			GD.Print($"Player matched All-In. Refunded {refund}.");
+			GameManager.LogVerbose($"> Player matched All-In. Refunded ${refund}.");
 			sfxPlayer.PlayRandomChip();
 		}
 		else if (result.AmountMoved > 0)
 		{
 			string allInTag = (result.BecameAllIn || playerChips == 0) ? " (ALL-IN!)" : "";
 			ShowMessage($"You call ${result.AmountMoved}{allInTag}");
-			GD.Print($"Player calls {result.AmountMoved}{allInTag}");
+			GD.Print($"> Player calls ${result.AmountMoved}{allInTag}");
 			sfxPlayer.PlayRandomChip();
 		}
 		else
 		{
 			ShowMessage("You check");
 			sfxPlayer.PlaySound("check");
-			GD.Print($"Player checks (call moved 0 chips)");
+			GameManager.LogVerbose($"> Player checks (call moved 0 chips)");
 		}
 	}
 
@@ -153,17 +151,17 @@ public partial class PokerGame
 		if (result.BecameAllIn || playerChips == 0)
 		{
 			ShowMessage($"You raise to ${playerBet} (ALL-IN!)");
-			GD.Print($"Player raises to {playerBet} (ALL-IN)");
+			GD.Print($"> Player raises to ${playerBet} (ALL-IN)");
 		}
 		else if (!result.IsBet)
 		{
 			ShowMessage($"You raise to ${playerBet}");
-			GD.Print($"Player raises to {playerBet}");
+			GD.Print($"> Player raises to ${playerBet}");
 		}
 		else
 		{
 			ShowMessage($"You bet ${chipsAdded}");
-			GD.Print($"Player bets {chipsAdded}");
+			GD.Print($"> Player bets ${chipsAdded}");
 		}
 	}
 
@@ -176,7 +174,7 @@ public partial class PokerGame
 		bool playerCannotAct = playerIsAllIn || !playerCanReopenBetting;
 		bool opponentCannotAct = opponentIsAllIn || !opponentCanReopenBetting;
 		
-		GD.Print($"[Round Check] betsEqual={betsEqual}, bothActed={bothActed}");
+		GameManager.LogVerbose($"[Round Check] betsEqual={betsEqual}, bothActed={bothActed}");
 
 		bool isRoundComplete = false;
 
@@ -191,7 +189,7 @@ public partial class PokerGame
 
 		if (isRoundComplete)
 		{
-			GD.Print("Betting round complete.");
+			GameManager.LogVerbose("Betting round complete.");
 			GetTree().CreateTimer(0.8).Timeout += AdvanceStreet;
 		}
 		else

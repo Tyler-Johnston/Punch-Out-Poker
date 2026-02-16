@@ -141,28 +141,28 @@ public partial class PokerGame
 			
 			case PlayerAction.Raise:
 			{
-				GD.Print($"[APPLY RAISE] raiseToTotal={raiseToTotal}, currentBet={currentBet}, actorBet={actorBet}, actorChips={actorChips}");
+				GameManager.LogVerbose($"[APPLY RAISE] raiseToTotal={raiseToTotal}, currentBet={currentBet}, actorBet={actorBet}, actorChips={actorChips}");
 				
 				if (raiseToTotal < currentBet)
 				{
-					GD.Print($"[APPLY RAISE] ⚠️ raiseToTotal ({raiseToTotal}) < currentBet ({currentBet}), converting to CALL");
+					GameManager.LogVerbose($"[APPLY RAISE] raiseToTotal ({raiseToTotal}) < currentBet ({currentBet}), converting to CALL");
 					return ApplyAction(isPlayer, PlayerAction.Call);
 				}
 				
 				if (raiseToTotal <= actorBet)
 				{
-					GD.Print($"[APPLY RAISE] ⚠️ raiseToTotal ({raiseToTotal}) <= actorBet ({actorBet}), clamping to actorBet (no-op)");
+					GameManager.LogVerbose($"[APPLY RAISE] raiseToTotal ({raiseToTotal}) <= actorBet ({actorBet}), clamping to actorBet (no-op)");
 					raiseToTotal = actorBet;
 				}
 				
 				int toAdd = raiseToTotal - actorBet;
 				if (toAdd <= 0)
 				{
-					GD.Print($"[APPLY RAISE] ❌ toAdd = {toAdd}, returning 0 chips moved");
+					GameManager.LogVerbose($"[APPLY RAISE] toAdd = {toAdd}, returning 0 chips moved");
 					return new ActionApplyResult(0, false, false, actorBet);
 				}
 				
-				GD.Print($"[APPLY RAISE] ✅ Moving {toAdd} chips from stack to pot");
+				GameManager.LogVerbose($"[APPLY RAISE] Moving {toAdd} chips from stack to pot");
 				int add = Math.Min(toAdd, actorChips);
 				if (add <= 0)
 					return new ActionApplyResult(0, false, false, actorBet);
@@ -197,7 +197,7 @@ public partial class PokerGame
 					if (isPlayer) opponentHasActedThisStreet = false; 
 					else playerHasActedThisStreet = false;
 					
-					GD.Print($"[FULL RAISE] Increment={raiseIncrement}, reopening for opponent");
+					GameManager.LogVerbose($"[FULL RAISE] Increment={raiseIncrement}, reopening for opponent");
 				}
 				else
 				{
@@ -207,7 +207,7 @@ public partial class PokerGame
 					else
 						opponentCanReopenBetting = false;
 					
-					GD.Print($"[UNDER-RAISE] Increment={raiseIncrement} < min={minRaiseIncrement}, NOT reopening");
+					GameManager.LogVerbose($"[UNDER-RAISE] Increment={raiseIncrement} < min={minRaiseIncrement}, NOT reopening");
 				}
 				
 				previousBet = currentBet;
@@ -256,7 +256,7 @@ public partial class PokerGame
 					if (isPlayer) opponentHasActedThisStreet = false; 
 					else playerHasActedThisStreet = false;
 					
-					GD.Print($"[FULL ALL-IN] Increment={raiseIncrement}, reopening for opponent");
+					GameManager.LogVerbose($"[FULL ALL-IN] Increment={raiseIncrement}, reopening for opponent");
 				}
 				else
 				{
@@ -265,7 +265,7 @@ public partial class PokerGame
 					else
 						opponentCanReopenBetting = false;
 					
-					GD.Print($"[UNDER-RAISE ALL-IN] Increment={raiseIncrement} < min={minRaiseIncrement}, NOT reopening");
+					GameManager.LogVerbose($"[UNDER-RAISE ALL-IN] Increment={raiseIncrement} < min={minRaiseIncrement}, NOT reopening");
 				}
 				
 				previousBet = currentBet;

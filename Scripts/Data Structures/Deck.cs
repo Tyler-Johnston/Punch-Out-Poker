@@ -26,7 +26,7 @@ public class Deck
 			}
 		}
 		
-		GD.Print($"Deck created with {cards.Count} cards");
+		GameManager.LogVerbose($"Deck created with {cards.Count} cards");
 	}
 	
 	// Shuffle the deck
@@ -39,7 +39,7 @@ public class Deck
 			(cards[i], cards[j]) = (cards[j], cards[i]);
 		}
 		
-		GD.Print("Deck shuffled!");
+		GameManager.LogVerbose("Deck shuffled!");
 	}
 	
 	// Deal one card from the top
