@@ -2,21 +2,35 @@ using Godot;
 using System;
 
 public partial class PokerGame
-{
-	// --- TELL TIMER CALLBACK ---
+{	
+	// --- TELL TRACKING ---
 	
-	private void OnTellTimerTimeout()
+	public void UpdatePlayerWaitTracking(float delta)
 	{
-		if (!handInProgress || isShowdownInProgress || aiOpponent.IsFolded) return;
-		if (isProcessingAIAction) return; 
-		if (aiOpponent.IsAllIn || playerIsAllIn) return;
-		if (currentStreet == Street.Preflop) return;
-
-		if (isPlayerTurn)
+		if (!handInProgress || !isPlayerTurn || isProcessingAIAction) return;
+		
+		playerWaitTime += delta;
+		
+		if (playerWaitTime > BOREDOM_THRESHOLD && !hasShownBoredomTell)
 		{
-			ShowTell(false);
+			GD.Print($"[TELL] {currentOpponentName} is BORED (Player wait time > {BOREDOM_THRESHOLD}s)");
+			SetExpression(Expression.Bored);
+			hasShownBoredomTell = true;
 		}
 	}
+	
+	public void ResetPlayerWaitTime()
+	{
+		playerWaitTime = 0f;
+		hasShownBoredomTell = false;
+
+		// If they were bored, snap back to neutral immediately when player acts
+		if (faceSprite != null && faceSprite.Frame == (int)Expression.Bored)
+		{
+			SetExpression(Expression.Neutral);
+		}
+	}
+
 
 	// --- EXPRESSION ANIMATION ---
 	
@@ -32,35 +46,19 @@ public partial class PokerGame
 		}
 	}
 
-	// --- TELL SYSTEM ---
+	// --- PREFLOP TELLS ---
 	
-	private void ShowTell(bool forceTell = false)
+	public void ShowPreflopTell()
 	{
 		GameState gameState = CreateGameState();
 		HandStrength strength = aiOpponent.DetermineHandStrengthCategory(gameState);
-
-		// Preflop tells (when cards are dealt)
-		if (currentStreet == Street.Preflop && forceTell)
-		{
-			ShowPreflopTell(strength);
-			return;
-		}
-
-		// Idle tells (during gameplay)
-		ShowIdleTell(strength, forceTell);
-	}
-
-	// --- PREFLOP TELLS ---
-	
-	private void ShowPreflopTell(HandStrength strength)
-	{
-		float duration = 3.0f; 
-
+		
+		float duration = 3.0f;
 		bool isTilted = aiOpponent.CurrentTiltState != TiltState.Zen;
 		bool isSteaming = aiOpponent.CurrentTiltState == TiltState.Steaming || 
 						  aiOpponent.CurrentTiltState == TiltState.Monkey;
 
-		// --- Scenario A: Weak Hand ---
+		// --- Weak Hand (Trash) ---
 		if (strength == HandStrength.Weak)
 		{
 			bool hasHighCard = opponentHand.Exists(c => c.Rank >= Rank.King);
@@ -69,185 +67,191 @@ public partial class PokerGame
 			if (hasHighCard || isSuited)
 			{
 				SetExpression(Expression.Neutral);
-				string reason = hasHighCard ? "high card" : "suited";
-				GameManager.LogVerbose($"[TELL-PREFLOP] {currentOpponentName} is NEUTRAL (weak but {reason})");
+				GameManager.LogVerbose($"[TELL-PREFLOP] {currentOpponentName} is NEUTRAL (weak but playable)");
 				return;
 			}
 
 			// Tilted reaction to genuine trash
 			if (isSteaming || (isTilted && GD.Randf() < 0.7f))
 			{
-				ShowMomentaryExpression(Expression.Angry, duration);
-				GameManager.LogVerbose($"[TELL-PREFLOP] {currentOpponentName} is ANGRY (bad cards + tilt)");
+				ShowMomentaryExpression(Expression.Annoyed, duration);
+				GameManager.LogVerbose($"[TELL-PREFLOP] {currentOpponentName} is ANNOYED (bad cards + tilt)");
 				return;
 			}
 
-			// Normal disappointment for trash hands
+			// Normal disappointment
 			if (GD.Randf() < 0.6f)
 			{
 				ShowMomentaryExpression(Expression.Sad, duration);
-				GameManager.LogVerbose($"[TELL-PREFLOP] {currentOpponentName} is SAD (bad cards)");
+				GameManager.LogVerbose($"[TELL-PREFLOP] {currentOpponentName} is SAD (trash hand)");
 				return;
 			}
 			
 			SetExpression(Expression.Neutral);
-			GameManager.LogVerbose($"[TELL-PREFLOP] {currentOpponentName} maintained poker face (trash hand hidden)");
+			GameManager.LogVerbose($"[TELL-PREFLOP] {currentOpponentName} poker face (trash hidden)");
 			return;
 		}
 		
-		// --- Scenario B: Medium Hand ---
+		// --- Medium Hand (Speculative) ---
 		if (strength == HandStrength.Medium)
 		{
-			float bluffExpressionChance = aiOpponent.Personality.BaseBluffFrequency;
+			float actingChance = aiOpponent.Personality.BaseBluffFrequency;
 
-			// Path 1: ACTING (Bluffing / Deception)
-			if (GD.Randf() < bluffExpressionChance)
+			// Acting uncertain or confident
+			if (GD.Randf() < actingChance)
 			{
 				if (GD.Randf() > 0.5f)
 				{
-					ShowMomentaryExpression(Expression.Happy, duration);
-					GameManager.LogVerbose($"[TELL-PREFLOP] {currentOpponentName} is ACTING HAPPY (Medium Hand)");
+					ShowMomentaryExpression(Expression.Smirk, duration);  // Acting strong
+					GameManager.LogVerbose($"[TELL-PREFLOP] {currentOpponentName} ACTING STRONG (medium hand)");
 				}
 				else
 				{
-					ShowMomentaryExpression(Expression.Sad, duration);
-					GameManager.LogVerbose($"[TELL-PREFLOP] {currentOpponentName} is ACTING SAD (Medium Hand)");
+					ShowMomentaryExpression(Expression.Worried, duration);  // Acting weak
+					GameManager.LogVerbose($"[TELL-PREFLOP] {currentOpponentName} ACTING WEAK (medium hand)");
 				}
 				return;
 			}
 			
-			// Path 2: Genuine uncertainty
+			// Genuine uncertainty
 			if (GD.Randf() < 0.35f)
 			{
-				ShowMomentaryExpression(Expression.Worried, duration); 
-				GameManager.LogVerbose($"[TELL-PREFLOP] {currentOpponentName} is WORRIED (Medium Hand - genuine uncertainty)");
+				ShowMomentaryExpression(Expression.Worried, duration);
+				GameManager.LogVerbose($"[TELL-PREFLOP] {currentOpponentName} is WORRIED (medium hand - genuine)");
 			}
 			else
 			{
 				SetExpression(Expression.Neutral);
-				GameManager.LogVerbose($"[TELL-PREFLOP] {currentOpponentName} is NEUTRAL (Medium Hand - stoic)");
+				GameManager.LogVerbose($"[TELL-PREFLOP] {currentOpponentName} is NEUTRAL (medium hand)");
 			}
 			return;
 		}
 
-		// --- Scenario C: Strong Hand (Premium) ---
+		// --- Strong Hand (Premium) ---
 		if (strength == HandStrength.Strong)
 		{
-			bool attemptsPokerFace = GD.Randf() > aiOpponent.Personality.BaseBluffFrequency;
+			bool leaksExcitement = GD.Randf() > aiOpponent.Personality.TellReliability;
 			
-			if (!attemptsPokerFace)
+			if (leaksExcitement)
 			{
 				ShowMomentaryExpression(Expression.Happy, duration);
-				GameManager.LogVerbose($"[TELL-PREFLOP] {currentOpponentName} is HAPPY (premium hand leaked)");
-				return;
+				GameManager.LogVerbose($"[TELL-PREFLOP] {currentOpponentName} is HAPPY (premium leaked)");
 			}
 			else
 			{
-				GameManager.LogVerbose($"[TELL-PREFLOP] {currentOpponentName} maintained poker face (premium hand hidden)");
 				SetExpression(Expression.Neutral);
-				return;
+				GameManager.LogVerbose($"[TELL-PREFLOP] {currentOpponentName} poker face (premium hidden)");
 			}
+			return;
 		}
 		
 		SetExpression(Expression.Neutral);
 	}
 
-	// --- IDLE TELLS ---
+	// --- ACTION-BASED TELLS (Called from AI decision) ---
 	
-	private void ShowIdleTell(HandStrength strength, bool forceTell)
+	public void ShowActionTell(PlayerAction action, bool isBluffing, float handStrength)
 	{
-		float idleDuration = 1.5f; 
-		float baseTellChance = 0.20f;
-		float tiltModifier = (float)aiOpponent.CurrentTiltState * 0.15f; 
-		
-		// Random chance to show tell (increased when tilted)
-		if (!forceTell && GD.Randf() > (baseTellChance + tiltModifier))
+		// Tilt override
+		if (aiOpponent.CurrentTiltState == TiltState.Steaming || aiOpponent.CurrentTiltState == TiltState.Monkey)
 		{
+			SetExpression(Expression.Angry);
+			GD.Print($"[TELL] {currentOpponentName} is ANGRY (tilted)");
 			return;
 		}
 
-		// Determine base tell category from hand strength
-		string tellCategory = DetermineTellCategory(strength);
-
-		// Determine if opponent is acting (reverse psychology)
-		bool isActing = DetermineActingBehavior(strength);
-
-		// Apply acting logic (reverse the tell)
-		if (isActing)
+		// Bluff tells
+		if (isBluffing)
 		{
-			tellCategory = ReverseTellCategory(tellCategory);
+			if (action == PlayerAction.Raise || action == PlayerAction.AllIn)
+			{
+				SetExpression(Expression.FakeStrong);
+				GD.Print($"[TELL] {currentOpponentName} shows FAKE STRENGTH (bluffing)");
+				return;
+			}
+			else if (action == PlayerAction.Check || action == PlayerAction.Call)
+			{
+				SetExpression(Expression.FakeWeak);
+				GD.Print($"[TELL] {currentOpponentName} shows FAKE WEAKNESS (trap)");
+				return;
+			}
 		}
-		
-		// Display the expression
-		DisplayTellExpression(tellCategory, idleDuration, isActing);
+
+		// Action-based expressions
+		switch (action)
+		{
+			case PlayerAction.Fold:
+				SetExpression(Expression.Sad);
+				GD.Print($"[TELL] {currentOpponentName} is SAD (folded)");
+				break;
+				
+			case PlayerAction.Check:
+				SetExpression(Expression.Neutral);
+				break;
+				
+			case PlayerAction.Call:
+				if (handStrength < 0.5f)
+				{
+					SetExpression(Expression.Worried);
+					GD.Print($"[TELL] {currentOpponentName} is WORRIED (weak call)");
+				}
+				else
+				{
+					SetExpression(Expression.Neutral);
+				}
+				break;
+				
+			case PlayerAction.Raise:
+				if (handStrength > 0.7f)
+				{
+					SetExpression(Expression.Smirk);
+					GD.Print($"[TELL] {currentOpponentName} is CONFIDENT (strong raise)");
+				}
+				else if (handStrength < 0.5f)
+				{
+					SetExpression(Expression.Worried);
+					GD.Print($"[TELL] {currentOpponentName} is WORRIED (thin value)");
+				}
+				else
+				{
+					SetExpression(Expression.Neutral);
+				}
+				break;
+				
+			case PlayerAction.AllIn:
+				SetExpression(Expression.Smirk);
+				GD.Print($"[TELL] {currentOpponentName} is CONFIDENT (all-in)");
+				break;
+		}
 	}
 
-	// --- TELL HELPERS ---
+	// --- POST-HAND TELLS (Called from ShowDown/EndHand) ---
 	
-	private string DetermineTellCategory(HandStrength strength)
+	public void ShowResultTell(bool won, int tiltDelta)
 	{
-		if (strength == HandStrength.Strong)
+		if (won)
 		{
-			return "strong_hand";
-		}
-		else if (strength == HandStrength.Bluffing)
-		{
-			return "bluffing";
-		}
-		else if (strength == HandStrength.Medium)
-		{
-			return (GD.Randf() > 0.6f) ? "strong_hand" : "weak_hand";
+			SetExpression(Expression.Happy);
+			GD.Print($"[TELL] {currentOpponentName} is HAPPY (won pot)");
 		}
 		else
 		{
-			return "weak_hand";
-		}
-	}
-
-	private bool DetermineActingBehavior(HandStrength strength)
-	{
-		bool canAct = aiOpponent.CurrentTiltState < TiltState.Steaming;
-		float actingChance = 1.0f - aiOpponent.Personality.TellReliability;
-	
-		if (strength == HandStrength.Bluffing)
-			actingChance += 0.10f;
-		
-		return canAct && (GD.Randf() < actingChance);
-	}
-
-	private string ReverseTellCategory(string tellCategory)
-	{
-		// Acting logic: reverse the tell
-		if (tellCategory == "strong_hand")
-			return "weak_hand"; // Trapping
-		else if (tellCategory == "weak_hand")
-			return "strong_hand"; // Bluffing
-		else if (tellCategory == "bluffing")
-			return "strong_hand"; // Selling the bluff
-		
-		return tellCategory;
-	}
-
-	private void DisplayTellExpression(string tellCategory, float duration, bool isActing)
-	{
-		// Retrieve expression from personality map
-		if (aiOpponent.Personality.Tells.ContainsKey(tellCategory))
-		{
-			var possibleTells = aiOpponent.Personality.Tells[tellCategory];
-			if (possibleTells.Count > 0)
+			if (tiltDelta > 10)
 			{
-				string tellString = possibleTells[GD.RandRange(0, possibleTells.Count - 1)];
-				if (Enum.TryParse(tellString, true, out Expression expr))
-				{
-					ShowMomentaryExpression(expr, duration);
-					// This is the ONE log we keep visible by default, 
-					// because it's interesting to see what the AI is "projecting" to the user.
-					GD.Print($"[TELL] {currentOpponentName} shows {tellString} ({tellCategory})");
-					
-					// Hidden details about whether they were acting
-					GameManager.LogVerbose($"[TELL DEBUG] Acting={isActing}");
-				}
+				SetExpression(Expression.Sob);
+				GD.Print($"[TELL] {currentOpponentName} is SOBBING (bad beat!)");
+			}
+			else
+			{
+				SetExpression(Expression.Sad);
+				GD.Print($"[TELL] {currentOpponentName} is SAD (lost pot)");
 			}
 		}
+		
+		// Return to neutral after 3 seconds
+		//GetTree().CreateTimer(3.0f).Timeout += () => 
+		//{
+			//if (!handInProgress) SetExpression(Expression.Neutral);
+		//};
 	}
 }

@@ -292,6 +292,7 @@ public partial class PokerGame
 		UpdateDashboardColors(baseColor, trimColor, outlineColor);
 		UpdateOppponentFrame(trimColor, outlineColor);
 	}
+	
 	private void SetTableColor(Color baseColor, Color outlineColor)
 	{
 		if (miniTableRect != null)
@@ -601,6 +602,7 @@ public partial class PokerGame
 		if (faceSprite != null)
 		{
 			faceSprite.Frame = (int)expression;
+			GD.Print($"[TELL] Setting expression to {expression}");
 		}
 	}
 
@@ -636,7 +638,7 @@ public partial class PokerGame
 		faceSprite.Texture = loadedTexture;
 		faceSprite.Hframes = 12;
 		faceSprite.Vframes = 1;
-		faceSprite.Frame = 0;
+		faceSprite.Frame = (int)Expression.Neutral;
 	}
 	
 	// --- POT & CHIP DISPLAY ---

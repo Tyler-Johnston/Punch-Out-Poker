@@ -103,7 +103,10 @@ public partial class PokerGame : Node2D
 	private int opponentContributed = 0;
 	private int playerTotalBetsThisHand = 0;
 	private int lastRaiseAmount = 0;
+	
 	private float aiStrengthAtAllIn = 0f; 
+	private float playerWaitTime = 0f;
+	private const float BOREDOM_THRESHOLD = 8f;
 	
 	// game state flags
 	private bool isMatchComplete = false;
@@ -120,6 +123,8 @@ public partial class PokerGame : Node2D
 	private bool opponentHasActedThisStreet = false;
 	private bool playerCanReopenBetting = true;
 	private bool opponentCanReopenBetting = true;
+	private bool hasShownBoredomTell = false;
+
 
 	private Dictionary<Street, bool> playerBetOnStreet = new Dictionary<Street, bool>();
 	private Dictionary<Street, int> playerBetSizeOnStreet = new Dictionary<Street, int>();
@@ -269,12 +274,6 @@ public partial class PokerGame : Node2D
 		twoThirdsPot.Pressed += () => OnPotSizeButtonPressed(0.67f);
 		allInPot.Pressed += OnAllInButtonPressed;
 		
-		// Tell Timer
-		tellTimer = new Timer();
-		tellTimer.WaitTime = 4.0f;
-		tellTimer.OneShot = false;
-		tellTimer.Timeout += OnTellTimerTimeout;
-		AddChild(tellTimer);
 	}
 
 	private void SetupGameState()
@@ -334,6 +333,10 @@ public partial class PokerGame : Node2D
 		GD.Print($"  Tilt Sensitivity: {personality.TiltSensitivity:F2}");
 	}
 
+	public override void _Process(double delta)
+	{
+		UpdatePlayerWaitTracking((float)delta);
+	}
 
 	public override void _ExitTree()
 	{

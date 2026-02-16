@@ -117,6 +117,7 @@ public partial class PokerGame
 		isPlayerTurn = false;
 		UpdateHud();
 		CheckBettingRoundComplete();
+		ResetPlayerWaitTime();
 	}
 
 	private void HandleCallAction()

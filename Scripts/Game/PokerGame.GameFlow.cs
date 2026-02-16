@@ -15,6 +15,7 @@ public partial class PokerGame
 		waitingForNextGame = false;
 		isMatchComplete = false;
 		SetExpression(Expression.Neutral);
+		ResetPlayerWaitTime(); 
 
 		if (IsGameOver())
 		{
@@ -34,8 +35,6 @@ public partial class PokerGame
 		deck.Shuffle();
 
 		await DealInitialHands();
-
-		tellTimer.Start();
 
 		currentStreet = Street.Preflop;
 		handInProgress = true;
@@ -124,8 +123,6 @@ public partial class PokerGame
 
 	private async void EndHand()
 	{
-		tellTimer.Stop();
-
 		if (isShowdownInProgress) return;
 
 		pot = 0;
@@ -135,6 +132,7 @@ public partial class PokerGame
 		betAmount = 0;
 		handInProgress = false;
 		waitingForNextGame = true;
+		ResetPlayerWaitTime();
 
 		if (IsGameOver())
 		{
@@ -155,8 +153,6 @@ public partial class PokerGame
 
 	private void HandleGameOver(bool opponentSurrendered = false)
 	{
-		if (tellTimer != null) tellTimer.Stop();
-
 		isMatchComplete = true;
 		bool playerWon = opponentSurrendered || (opponentChips <= 0);
 
@@ -209,7 +205,7 @@ public partial class PokerGame
 		opponentCard2.ShowBack();
 
 		// Show reaction to hole cards
-		ShowTell(true);
+		ShowPreflopTell();
 	}
 	
 	private string CardListToString(List<Card> cards)
@@ -233,8 +229,6 @@ public partial class PokerGame
 				await DealRiver();
 				break;
 		}
-
-		ShowTell(true);
 	}
 
 	//  STREET PROGRESSION 
@@ -292,8 +286,6 @@ public partial class PokerGame
 
 	private async void ShowDown()
 	{
-		// Stop tells during showdown
-		if (tellTimer != null) tellTimer.Stop();
 		if (isShowdownInProgress) return;
 
 		isShowdownInProgress = true;
@@ -398,8 +390,13 @@ public partial class PokerGame
 
 	private async Task ExecuteAIAction(PlayerAction action)
 	{
-		UpdateOpponentExpression(action);
-		if (tellTimer != null) tellTimer.Start();
+		GameState gameState = CreateGameState();
+		bool isBluffing = aiBluffedThisHand;
+		float strength = aiOpponent.EvaluateCurrentHandStrength(gameState);
+
+		ShowActionTell(action, isBluffing, strength);
+
+		await ToSignal(GetTree().CreateTimer(0.3f), SceneTreeTimer.SignalName.Timeout);
 
 		switch (action)
 		{
@@ -779,28 +776,30 @@ public partial class PokerGame
 
 			bool isBadBeat = (aiStrengthAtAllIn > 0.70f);
 			bool isCooler = (opponentRank <= 1609);
+			int tiltDelta = 0;
 
 			if (isBadBeat)
 			{
 				aiHandResult = HandResult.BadBeat;
-				SetExpression(Expression.Angry);
+				tiltDelta = 15; 
 			}
 			else if (isCooler)
 			{
 				aiHandResult = HandResult.BadBeat;
-				SetExpression(Expression.Sad);
+				tiltDelta = 12;
 			}
 			else if (aiBluffedThisHand && opponentRank > 6185)
 			{
 				aiHandResult = HandResult.BluffCaught;
-				SetExpression(Expression.Surprised);
+				tiltDelta = 5;
 			}
 			else
 			{
 				aiHandResult = HandResult.Loss;
-				SetExpression(Expression.Sad);
+				tiltDelta = 3; 
 			}
 
+			ShowResultTell(false, tiltDelta);
 			AddPlayerChips(finalPot);
 			aiOpponent.ProcessHandResult(aiHandResult, finalPot, bigBlind);
 		}
@@ -808,7 +807,7 @@ public partial class PokerGame
 		{
 			message = $"{currentOpponentName} won the ${finalPot} pot!";
 			PlayReactionDialogue("OnWinPot");
-
+			ShowResultTell(true, 0);
 			AddOpponentChips(finalPot);
 			aiOpponent.ProcessHandResult(HandResult.Win, finalPot, bigBlind);
 		}
