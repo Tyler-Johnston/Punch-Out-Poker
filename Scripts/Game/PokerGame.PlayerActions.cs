@@ -116,7 +116,6 @@ public partial class PokerGame
 
 		isPlayerTurn = false;
 		UpdateHud();
-
 		CheckBettingRoundComplete();
 	}
 

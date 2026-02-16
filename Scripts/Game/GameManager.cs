@@ -1,7 +1,7 @@
 using Godot;
 using System;
 using System.Collections.Generic;
-using Godot.Collections; // Needed for Save/Load arrays
+using Godot.Collections;
 
 public partial class GameManager : Node
 {
@@ -33,7 +33,7 @@ public partial class GameManager : Node
 
 		if (DevTestMode)
 		{
-			GD.Print("=== DEV TEST MODE ENABLED ===");
+			GD.Print("\n=== DEV TEST MODE ENABLED ===");
 			InitializeDevMode();
 		}
 		else
@@ -44,8 +44,6 @@ public partial class GameManager : Node
 	
 	private void LoadCardAssets()
 	{
-		GD.Print("GameManager: Caching Card Textures...");
-
 		foreach (Suit suit in Enum.GetValues(typeof(Suit)))
 		{
 			foreach (Rank rank in Enum.GetValues(typeof(Rank)))
@@ -65,7 +63,6 @@ public partial class GameManager : Node
 			}
 		}
 
-		// Load the initial card back
 		UpdateCardBackTexture();
 		
 		GD.Print($"GameManager: Cached {_cardTextureCache.Count} card textures.");

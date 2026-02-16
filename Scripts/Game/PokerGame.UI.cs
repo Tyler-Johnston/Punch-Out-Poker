@@ -634,7 +634,7 @@ public partial class PokerGame
 		}
 
 		faceSprite.Texture = loadedTexture;
-		faceSprite.Hframes = 8;
+		faceSprite.Hframes = 12;
 		faceSprite.Vframes = 1;
 		faceSprite.Frame = 0;
 	}

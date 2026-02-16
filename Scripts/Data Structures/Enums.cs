@@ -111,6 +111,7 @@ public enum TiltState
 	Monkey
 }
 
+// 288x24 expression tilesheet to fit 12 emotions
 public enum Expression
 {
 	Smirk,
@@ -120,8 +121,13 @@ public enum Expression
 	Angry,
 	Sad,
 	Happy,
-	Neutral
+	Neutral,
+	FakeStrong,
+	FakeWeak,
+	Sob,
+	Bored
 }
+
 
 public enum OpponentExitType
 {

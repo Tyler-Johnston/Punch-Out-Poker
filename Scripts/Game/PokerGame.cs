@@ -290,7 +290,7 @@ public partial class PokerGame : Node2D
 			GD.PushWarning("No opponent selected, defaulting to Steve");
 		}
 		
-		GD.Print($"---------- Player VS {currentOpponentName} ----------");
+		GD.Print($"\n---------- Player VS {currentOpponentName} ----------");
 		
 		playerChips = buyInAmount;
 		opponentChips = buyInAmount;
