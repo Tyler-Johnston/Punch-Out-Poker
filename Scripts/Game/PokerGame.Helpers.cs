@@ -307,11 +307,6 @@ public partial class PokerGame
 
 	// -- AI HELPERS --
 	
-	private PlayerAction DecideAIAction(GameState gameState)
-	{
-		return aiOpponent.MakeDecision(gameState);
-	}
-	
 	private bool DetermineAIPosition()
 	{
 		if (currentStreet == Street.Preflop)

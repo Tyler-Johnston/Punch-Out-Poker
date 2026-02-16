@@ -370,6 +370,15 @@ public partial class PokerGame
 
 		GameState gameState = CreateGameState();
 		PlayerAction action = DecideAIAction(gameState);
+		
+		float strength = aiOpponent.EvaluateCurrentHandStrength(gameState);
+		bool isAggressive = (action == PlayerAction.Raise || action == PlayerAction.AllIn);
+		
+		if (isAggressive && strength < 0.5f)
+		{
+			aiBluffedThisHand = true;
+			GameManager.LogVerbose($"[TELL SYSTEM] Flagged as BLUFF (Action: {action}, Strength: {strength:F2})");
+		}
 
 		float waitTime = PlayActionDialogue(action, gameState);
 		if (waitTime > 0)
@@ -386,6 +395,11 @@ public partial class PokerGame
 		}
 
 		HandlePostAIActionBettingState();
+	}
+	
+	private PlayerAction DecideAIAction(GameState gameState)
+	{
+		return aiOpponent.MakeDecision(gameState);
 	}
 
 	private async Task ExecuteAIAction(PlayerAction action)
