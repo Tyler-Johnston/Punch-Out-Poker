@@ -143,6 +143,8 @@ public partial class PokerGame
 		if (amount > opponentChips) amount = opponentChips; // safety
 		SetOpponentChips(opponentChips - amount);
 	}
+	
+	// --- ASSERTION HELPERS ---
 
 	private void AssertOpponentChipsSynced(string context)
 	{
@@ -150,6 +152,48 @@ public partial class PokerGame
 		if (aiOpponent.ChipStack != opponentChips)
 			GD.PrintErr($"[SYNC] Opponent chips desync in {context}: opponentChips={opponentChips}, aiOpponent.ChipStack={aiOpponent.ChipStack}");
 	}
+
+	/// <summary>
+	/// CRITICAL: Ensures money is never created or destroyed.
+	/// Total chips in system must ALWAYS equal the total starting buy-ins.
+	/// </summary>
+	private void VerifyTotalChips(string context)
+	{
+		// 1. Calculate chips currently in stacks
+		int currentTotal = playerChips + opponentChips;
+		
+		// 2. Add chips currently in the pot (settled)
+		currentTotal += pot;
+		
+		// 3. Add chips currently "in front" of players (unsettled street bets)
+		currentTotal += playerBet + opponentBet;
+		
+		// 4. Add chips currently in the accumulation buffer (if any)
+		currentTotal += playerChipsInPot + opponentChipsInPot;
+
+		// Log for audit purposes
+		GameManager.LogVerbose($"[AUDIT] {context}: Total In Play = ${currentTotal}");
+		
+		 int expectedTotal = buyInAmount * 2; 
+		 if (currentTotal != expectedTotal) GD.PrintErr($"[CRITICAL] Money Leak in {context}!");
+	}
+
+	private void Assert(bool condition, string message)
+	{
+		if (!condition)
+		{
+			GD.PrintErr($"!!! CRITICAL LOGIC ERROR: {message} !!!");
+			// Check logic state
+			GD.Print($"State dump: P_Stack:{playerChips} O_Stack:{opponentChips} Pot:{pot} P_Bet:{playerBet} O_Bet:{opponentBet}");
+			
+			// Pause game to prevent further state corruption
+			GetTree().Paused = true; 
+			
+			// Throw exception to halt execution immediately
+			throw new Exception($"Poker Logic Assertion Failed: {message}");
+		}
+	}
+
 
 	public void CommitToStreetPot(bool isPlayer, int amount)
 	{

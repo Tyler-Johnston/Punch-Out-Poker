@@ -9,6 +9,8 @@ public partial class PokerGame
 	private async void StartNewHand()
 	{
 		if (!waitingForNextGame && handInProgress) return;
+		
+		VerifyTotalChips("StartNewHand");
 
 		waitingForNextGame = false;
 		isMatchComplete = false;
@@ -57,6 +59,7 @@ public partial class PokerGame
 	private async Task PostBlinds()
 	{
 		playerHasButton = !playerHasButton;
+		isPlayerTurn = playerHasButton;
 
 		bool wasProcessing = isProcessingAIAction;
 		isProcessingAIAction = true;
@@ -68,6 +71,7 @@ public partial class PokerGame
 		if (playerHasButton)
 		{
 			// Player SB → Opponent BB
+			Assert(isPlayerTurn == true, "Player is Button (SB) but isPlayerTurn is false!");
 			PostBlind(true, smallBlind, "small blind");
 			await ToSignal(GetTree().CreateTimer(2.0f), SceneTreeTimer.SignalName.Timeout);
 			PostBlind(false, bigBlind, "big blind");
@@ -75,6 +79,7 @@ public partial class PokerGame
 		else
 		{
 			// Opponent SB → Player BB
+			Assert(isPlayerTurn == false, "Opponent is Button (SB) but isPlayerTurn is true!");
 			PostBlind(false, smallBlind, "small blind");
 			await ToSignal(GetTree().CreateTimer(2.0f), SceneTreeTimer.SignalName.Timeout);
 			PostBlind(true, bigBlind, "big blind");
@@ -84,7 +89,6 @@ public partial class PokerGame
 		playerCanReopenBetting = true;
 		opponentCanReopenBetting = true;
 		lastRaiseAmount = bigBlind;
-		isPlayerTurn = playerHasButton; 
 
 		isProcessingAIAction = wasProcessing;
 		AssertOpponentChipsSynced("PostBlinds");
@@ -237,6 +241,12 @@ public partial class PokerGame
 	private async void AdvanceStreet()
 	{
 		await ToSignal(GetTree().CreateTimer(0.8f), SceneTreeTimer.SignalName.Timeout);
+
+		bool betsAreEqual = (playerBet == opponentBet);
+		bool someoneIsAllIn = (playerIsAllIn || opponentIsAllIn);
+		
+		// If bets aren't equal and nobody is all-in, we CANNOT advance. It means someone still has an action pending.
+		Assert(betsAreEqual || someoneIsAllIn, $"Attempting to advance street but bets are unequal! P: {playerBet} vs O: {opponentBet}");
 
 		bool shouldReset =
 			(playerBet != 0) || (opponentBet != 0) || (currentBet != 0) || (previousBet != 0) ||
@@ -590,6 +600,7 @@ public partial class PokerGame
 			betSlider.SetValueNoSignal(0);
 		}
 
+		ShowMessage("");
 		lastRaiseAmount = 0;
 		lastHandDescription = "";
 		handTypeLabel.Text = "";
@@ -716,7 +727,6 @@ public partial class PokerGame
 	private async Task DealRiver()
 	{
 		communityCards.Add(deck.Deal());
-		// VISUAL IMPROVEMENT 3: Contextual Street Header
 		GD.Print($"\n--- RIVER [{communityCards[4]}] (Pot: ${pot}) ---");
 		ShowMessage("River card");
 
@@ -756,6 +766,9 @@ public partial class PokerGame
 		string message;
 		HandResult aiHandResult;
 		int finalPot = pot;
+		
+		Assert(finalPot > 0, "Showdown triggered with Empty Pot!");
+		Assert(playerChipsInPot + opponentChipsInPot == 0, "Showdown triggered but chips are still in 'Street Bets' tracking vars!");
 		
 		int result = HandEvaluator.CompareHands(playerRank, opponentRank);
 
@@ -822,6 +835,12 @@ public partial class PokerGame
 		opponentChipsInPot = 0;
 		playerContributed = 0;
 		opponentContributed = 0;
+		
+		playerBet = 0;
+		opponentBet = 0;
+		currentBet = 0;
+		previousBet = 0;
+		lastRaiseAmount = 0;
 	}
 
 	private void HandlePostAIActionBettingState()
