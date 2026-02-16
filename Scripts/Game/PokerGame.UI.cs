@@ -952,11 +952,11 @@ public partial class PokerGame
 
 		int basePot = GetEffectivePot();
 
-		// All-in: always available (even if it matches another preset)
+		// 1. SETUP ALL-IN BUTTON (Always enabled if we have chips)
 		allInPot.Disabled = false;
-		allInPot.SetMeta("raise_to", maxBet); // store for click handler [web:10]
+		allInPot.SetMeta("raise_to", maxBet); 
 
-		// If pot is 0, disable pot-% presets (but keep All-in usable)
+		// If pot is 0, disable pot-% presets (but All-In remains active)
 		if (basePot <= 0)
 		{
 			thirdPot.Disabled = true;
@@ -966,6 +966,8 @@ public partial class PokerGame
 			return;
 		}
 
+		// 2. CALCULATE PRESETS
+		// We clamp them so they are valid numbers, but we haven't filtered duplicates yet
 		int thirdPotRaise     = Math.Clamp((int)Math.Round(basePot * 0.33f), minBet, maxBet);
 		int halfPotRaise      = Math.Clamp((int)Math.Round(basePot * 0.50f), minBet, maxBet);
 		int twoThirdsPotRaise = Math.Clamp((int)Math.Round(basePot * 0.67f), minBet, maxBet);
@@ -973,27 +975,38 @@ public partial class PokerGame
 
 		var seen = new HashSet<int>();
 
+		// 3. HELPER FUNCTION
 		bool EnablePreset(Button btn, int amount)
 		{
+			// Basic range check
 			if (amount < minBet || amount > maxBet) return false;
+			
+			// If this preset pushes us All-In, disable this specific button.
+			// The player should use the dedicated "All-In" button instead.
+			if (amount == maxBet) return false;
+
+			// Prevent duplicate buttons (e.g. if 1/3 and 1/2 calculate to the same integer)
 			if (seen.Contains(amount)) return false;
 
 			btn.Disabled = false;
-			btn.SetMeta("raise_to", amount); // store for click handler [web:10]
+			btn.SetMeta("raise_to", amount); 
 			seen.Add(amount);
 			return true;
 		}
 
+		// Reset all to disabled first
 		thirdPot.Disabled = true;
 		halfPot.Disabled = true;
 		twoThirdsPot.Disabled = true;
 		standardPot.Disabled = true;
 
+		// Try to enable them one by one
 		EnablePreset(thirdPot, thirdPotRaise);
 		EnablePreset(halfPot, halfPotRaise);
 		EnablePreset(twoThirdsPot, twoThirdsPotRaise);
 		EnablePreset(standardPot, fullPotRaise);
 	}
+
 
 	
 	private void UpdateButtonLabels()
