@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bww6vw6kk4245"
-path="res://.godot/imported/preview.jpg-c8ca1f8e640ca5458d963364d2845c51.ctex"
+uid="uid://cmvru1ctny3bn"
+path="res://.godot/imported/Elizabeth Large.png-8d0b28852c742c6d1b3d631dff607b45.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Assets/Textures/backgrounds/preview.jpg"
-dest_files=["res://.godot/imported/preview.jpg-c8ca1f8e640ca5458d963364d2845c51.ctex"]
+source_file="res://Assets/Textures/Portraits/Elizabeth Large.png"
+dest_files=["res://.godot/imported/Elizabeth Large.png-8d0b28852c742c6d1b3d631dff607b45.ctex"]
 
 [params]
 
