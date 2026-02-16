@@ -86,9 +86,16 @@ public partial class CharacterSelect : Control
 	private int _currentCircuit = 0;
 	private string _lastFacedOpponent = null;
 	
+	// === OPTIMIZATION: Threaded Loading Variables ===
+	private const string POKER_SCENE_PATH = "res://Scenes/PokerGame.tscn";
+	private bool _isLoading = false;
+	
 	public override void _Ready()
 	{
-		// Positioning code remains the same
+		// 1. Start loading the Poker Scene in the background immediately
+		StartBackgroundLoad();
+
+		// Positioning code
 		CenterPortrait.Position = new Vector2(440, 110);
 		CenterFrame.Position = new Vector2(420, 90);
 		
@@ -101,13 +108,13 @@ public partial class CharacterSelect : Control
 		playerMoney = GameManager.Instance.PlayerMoney;
 		BalanceLabel.Text = $"Balance: ${playerMoney}";
 		
-		// make the background image more pixelated
+		// Make the background image more pixelated
 		ShaderMaterial pixelMat = new ShaderMaterial();
 		pixelMat.Shader = GD.Load<Shader>("res://Assets/Shaders/PixelateTexture.gdshader");
 		pixelMat.SetShaderParameter("pixel_amount", 256.0f);
 		BackgroundImage.Material = pixelMat;
 
-		// check if we have a last faced opponent to resume selection
+		// Check if we have a last faced opponent to resume selection
 		_lastFacedOpponent = GameManager.Instance.CurrentOpponentName;
 		if (!string.IsNullOrEmpty(_lastFacedOpponent))
 		{
@@ -134,6 +141,29 @@ public partial class CharacterSelect : Control
 		}
 		
 		UpdateDisplay();
+	}
+	
+	// === OPTIMIZATION: Background Loading Logic ===
+	private void StartBackgroundLoad()
+	{
+		// Check if the scene file actually exists
+		if (!ResourceLoader.Exists(POKER_SCENE_PATH))
+		{
+			GD.PrintErr($"Scene not found: {POKER_SCENE_PATH}");
+			return;
+		}
+
+		// Request Godot to load this file on a separate thread
+		Error err = ResourceLoader.LoadThreadedRequest(POKER_SCENE_PATH);
+		if (err == Error.Ok)
+		{
+			_isLoading = true;
+			// GD.Print("CharacterSelect: Background loading started.");
+		}
+		else
+		{
+			GD.PrintErr("CharacterSelect: Failed to start background load.");
+		}
 	}
 	
 	private void LoadLastOpponent()
@@ -308,10 +338,34 @@ public partial class CharacterSelect : Control
 			return;
 		}
 		
+		// Update Game Data
 		GameManager.Instance.StartMatch(opponent.Name, opponent.BuyIn);
 		GameManager.Instance.SetCircuitType(_currentCircuit);
 		
-		GetTree().ChangeSceneToFile("res://Scenes/PokerGame.tscn");
+		// === OPTIMIZATION: Retrieve the preloaded scene ===
+		if (_isLoading)
+		{
+			var status = ResourceLoader.LoadThreadedGetStatus(POKER_SCENE_PATH);
+			
+			// If loaded or still in progress (blocks until finished), get the scene
+			if (status == ResourceLoader.ThreadLoadStatus.Loaded || status == ResourceLoader.ThreadLoadStatus.InProgress)
+			{
+				// GD.Print("Scene loaded via thread. Switching.");
+				PackedScene packedScene = (PackedScene)ResourceLoader.LoadThreadedGet(POKER_SCENE_PATH);
+				GetTree().ChangeSceneToPacked(packedScene);
+			}
+			else
+			{
+				// Fallback if threading failed
+				GD.PrintErr("Thread load failed/invalid. Fallback to synchronous.");
+				GetTree().ChangeSceneToFile(POKER_SCENE_PATH);
+			}
+		}
+		else
+		{
+			// Fallback if we never started loading
+			GetTree().ChangeSceneToFile(POKER_SCENE_PATH);
+		}
 	}
 	
 	public override void _Input(InputEvent @event)
