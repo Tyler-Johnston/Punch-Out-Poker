@@ -37,6 +37,10 @@ public partial class PokerGame
 		await DealInitialHands();
 
 		currentStreet = Street.Preflop;
+		if (dialogueManager != null)
+		{
+			dialogueManager.ResetForNewHand();
+		}
 		handInProgress = true;
 
 		RefreshAllInFlagsFromStacks();
@@ -258,10 +262,16 @@ public partial class PokerGame
 		isProcessingAIAction = false;
 
 		Street nextStreet = GetNextStreetOrShowdown();
+		
 		if (nextStreet == Street.River && currentStreet == Street.River)
 			return;
 
 		currentStreet = nextStreet;
+		if (dialogueManager != null)
+		{
+			dialogueManager.SetCurrentStreet(currentStreet);
+		}
+
 		await DealCommunityCards(nextStreet);
 
 		// All-in runout: just keep dealing streets; no betting round to reset/settle.
@@ -372,13 +382,23 @@ public partial class PokerGame
 		PlayerAction action = DecideAIAction(gameState);
 		
 		float strength = aiOpponent.EvaluateCurrentHandStrength(gameState);
+		HandStrength cat = aiOpponent.DetermineHandStrengthCategory(gameState);
+
 		bool isAggressive = (action == PlayerAction.Raise || action == PlayerAction.AllIn);
-		
-		if (isAggressive && strength < 0.5f)
+		bool bluffThisAction = false;
+
+		// Stricter: only call it a bluff when they’re truly weak
+		if (isAggressive && cat == HandStrength.Weak && strength < 0.35f)
 		{
-			aiBluffedThisHand = true;
-			GameManager.LogVerbose($"[TELL SYSTEM] Flagged as BLUFF (Action: {action}, Strength: {strength:F2})");
+			bluffThisAction = true;
+			GameManager.LogVerbose($"[TELL SYSTEM] Flagged BLUFF (Action:{action}, Str:{strength:F2}, Cat:{cat})");
 		}
+		else
+		{
+			GameManager.LogVerbose($"[TELL SYSTEM] Not a bluff (Action:{action}, Str:{strength:F2}, Cat:{cat})");
+		}
+
+		aiBluffedThisHand = bluffThisAction;
 
 		float waitTime = PlayActionDialogue(action, gameState);
 		if (waitTime > 0)

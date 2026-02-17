@@ -152,7 +152,7 @@ public partial class AIPokerPlayer : Node
 			action = PlayerAction.Fold;
 		}
 
-		// PokerGame executes/sizes actions; we emit action for UI/telemetry only
+		// PokerGame executes/sizes actions; we emit action for UI/teleme only
 		EmitSignal(SignalName.ActionTaken, (int)action, 0);
 		return action;
 	}
@@ -261,79 +261,24 @@ public partial class AIPokerPlayer : Node
 		IsAllIn = (ChipStack <= 0);
 	}
 
-	/// <summary>
-	/// Returns a spoken dialogue line based on action + hand strength + bluffing.
-	/// Uses Composure to decide whether we use Strong/Weak/Bluffing lines,
-	/// and falls back to the action categories (OnFold/OnCheck/OnCall/OnRaise/OnAllIn).
-	/// </summary>
-	public string GetDialogueForAction(PlayerAction action, HandStrength strength, bool isBluffing)
-	{
-		GodotDict dialog = Personality.Dialogue;
-
-		bool lacksComposure = GD.Randf() > Personality.Composure; 
-		if (lacksComposure)
-		{
-			if (isBluffing && TryGetRandom(dialog, "Bluffing", out string bluffLine))
-				return bluffLine;
-
-			if (strength == HandStrength.Strong && TryGetRandom(dialog, "StrongHand", out string strongLine))
-				return strongLine;
-
-			if (strength == HandStrength.Weak && TryGetRandom(dialog, "WeakHand", out string weakLine))
-				return weakLine;
-		}
-
-		string key = action switch
-		{
-			PlayerAction.Fold => "OnFold",
-			PlayerAction.Check => "OnCheck",
-			PlayerAction.Call => "OnCall",
-			PlayerAction.Raise => "OnRaise",
-			PlayerAction.AllIn => "OnAllIn",
-			_ => null
-		};
-
-		if (key != null && TryGetRandom(dialog, key, out string actionLine))
-			return actionLine;
-
-		return "";
-	}
-
-	// Compatibility helper used by existing UI code (PokerGame.UI.cs)
-	public string GetRandomDialogue(string category)
-	{
-		if (Personality == null) return "";
-		if (Personality.Dialogue == null) return "";
-
-		GodotDict dialog = Personality.Dialogue;
-		if (!dialog.TryGetValue(category, out var lines) || lines.Count == 0)
-			return "";
-
-		int idx = (int)GD.RandRange(0, lines.Count - 1);
-		return lines[idx].ToString();
-	}
-
-	private bool TryGetRandom(GodotDict dict, string key, out string line)
-	{
-		line = "";
-		if (!dict.TryGetValue(key, out var lines) || lines.Count == 0)
-			return false;
-
-		int idx = (int)GD.RandRange(0, lines.Count - 1);
-		line = lines[idx].ToString();
-		return true;
-	}
-
 	public void SetDecisionMaker(PokerDecisionMaker dm) => decisionMaker = dm;
 
 	public HandStrength DetermineHandStrengthCategory(GameState gameState)
 	{
 		float strength = EvaluateCurrentHandStrength(gameState);
-
-		if (strength > 0.65f) return HandStrength.Strong;
-		if (strength > 0.35f) return HandStrength.Medium;
-		return HandStrength.Weak;
+		
+		HandStrength category;
+		if (strength > 0.68f) category = HandStrength.Strong;
+		else if (strength > 0.32f) category = HandStrength.Medium;
+		else category = HandStrength.Weak;
+		
+		GD.Print($"[HAND-EVAL] {Personality.CharacterName}: {Hand[0]} {Hand[1]}");
+		GD.Print($"[HAND-EVAL] Board: {string.Join(" ", gameState.CommunityCards)}");
+		GD.Print($"[HAND-EVAL] Strength: {strength:F3} → Category: {category}");
+		
+		return category;
 	}
+
 
 	public float EvaluateCurrentHandStrength(GameState gameState)
 	{

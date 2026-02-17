@@ -20,10 +20,10 @@ public enum HandResult
 /// </summary>
 public enum HandStrength
 {
-	Strong,           // Premium hands (top pair or better)
-	Medium,           // Marginal hands (weak pair, draws)
-	Weak,             // Poor hands (high card, bottom pair)
-	Bluffing          // AI is betting with weak hand intentionally
+	Weak,             // = 0
+	Medium,           // = 1
+	Strong,           // = 2
+	Bluffing          // = 3
 }
 
 /// <summary>

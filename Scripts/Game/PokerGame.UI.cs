@@ -1222,41 +1222,38 @@ public partial class PokerGame
 
 	private float PlayActionDialogue(PlayerAction action, GameState state)
 	{
+		if (dialogueManager == null) return 0f;
+
 		HandStrength strength = aiOpponent.DetermineHandStrengthCategory(state);
-		string dialogueLine = aiOpponent.GetDialogueForAction(action, strength, aiBluffedThisHand);
+		string line = dialogueManager.GetTellDialogue(strength, aiBluffedThisHand);
 
-		float chatRoll = GD.Randf();
-		bool alwaysTalk = (aiOpponent.CurrentTiltState >= TiltState.Steaming);
+		if (string.IsNullOrEmpty(line))
+			return 0f;
 
-		if ((chatRoll <= aiOpponent.Personality.Chattiness || alwaysTalk))
-		{
-			GD.Print($"> {currentOpponentName} says '{dialogueLine}'");
-			return PlayDialogue(dialogueLine);
-		}
-
-		return PlayDialogue(null);
+		GD.Print($"> {currentOpponentName} says '{line}'");
+		return PlayDialogue(line);
 	}
 
+	
 	private void PlayReactionDialogue(string category)
 	{
-		string line = aiOpponent.GetRandomDialogue(category);
+		if (dialogueManager == null) return;
 
-		float chatRoll = GD.Randf();
-		bool alwaysTalk = (aiOpponent.CurrentTiltState >= TiltState.Steaming);
-
-		float threshold = aiOpponent.Personality.Chattiness;
-		if (category == "OnWinPot" || category == "OnLosePot") threshold += 0.4f;
-
-		if (chatRoll <= threshold || alwaysTalk)
+		DialogueContext ctx = category switch
 		{
+			"OnWinPot"  => DialogueContext.OnWinPot,
+			"OnLosePot" => DialogueContext.OnLosePot,
+			"OnBadBeat" => DialogueContext.OnBadBeat,
+			"BigPot"    => DialogueContext.BigPot,
+			_           => DialogueContext.GameStart
+		};
+
+		string line = dialogueManager.GetDialogue(ctx);
+
+		if (!string.IsNullOrEmpty(line))
 			PlayDialogue(line);
-		}
-		else
-		{
-			PlayDialogue(null);
-		}
 	}
-	
+
 	private void PlayWaitingDialogue()
 	{
 		if (dialogueManager == null) return;

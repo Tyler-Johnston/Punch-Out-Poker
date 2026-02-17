@@ -108,6 +108,14 @@ public static class PersonalityPresets
 			"Finally, something decent!",
 			"Mate, I'd fold if I were you."
 		};
+		
+		personality.Dialogue["MediumHand"] = new Godot.Collections.Array<string>
+		{
+			"Let's see what happens...",
+			"Could be something here.",
+			"Hmm, interesting spot.",
+			"We'll find out soon enough."
+		};
 
 		personality.Dialogue["WeakHand"] = new Godot.Collections.Array<string>
 		{
@@ -228,6 +236,14 @@ public static class PersonalityPresets
 			"Finally, some real cards!",
 			"Love love love these cards!"
 		};
+		
+		personality.Dialogue["MediumHand"] = new Godot.Collections.Array<string>
+		{
+			"Let's see what happens...",
+			"Could be something here.",
+			"Hmm, interesting spot.",
+			"We'll find out soon enough."
+		};
 
 		personality.Dialogue["WeakHand"] = new Godot.Collections.Array<string>
 		{
@@ -342,6 +358,14 @@ public static class PersonalityPresets
 		{
 			"Oh brilliant. Finally.",
 			"Oh, this is going to be good fun.",
+		};
+		
+		personality.Dialogue["MediumHand"] = new Godot.Collections.Array<string>
+		{
+			"Let's see what happens...",
+			"Could be something here.",
+			"Hmm, interesting spot.",
+			"We'll find out soon enough."
 		};
 
 		personality.Dialogue["WeakHand"] = new Godot.Collections.Array<string>
@@ -460,6 +484,14 @@ public static class PersonalityPresets
 			"Got me a real good one here.",
 			"This hand's ridin' high."
 		};
+		
+		personality.Dialogue["MediumHand"] = new Godot.Collections.Array<string>
+		{
+			"Let's see what happens...",
+			"Could be something here.",
+			"Hmm, interesting spot.",
+			"We'll find out soon enough."
+		};
 
 		personality.Dialogue["WeakHand"] = new Godot.Collections.Array<string>
 		{
@@ -576,6 +608,14 @@ public static class PersonalityPresets
 			"Ah sim, this hand has style.",
 			"Now we're talking, meu parceiro.",
 			"*smiles with quiet confidence*"
+		};
+		
+		personality.Dialogue["MediumHand"] = new Godot.Collections.Array<string>
+		{
+			"Let's see what happens...",
+			"Could be something here.",
+			"Hmm, interesting spot.",
+			"We'll find out soon enough."
 		};
 
 		personality.Dialogue["WeakHand"] = new Godot.Collections.Array<string>
@@ -694,6 +734,14 @@ public static class PersonalityPresets
 			"This hand feels aligned with fate.",
 			"The pattern here is beautiful.",
 			"*steady, focused gaze*"
+		};
+		
+		personality.Dialogue["MediumHand"] = new Godot.Collections.Array<string>
+		{
+			"Let's see what happens...",
+			"Could be something here.",
+			"Hmm, interesting spot.",
+			"We'll find out soon enough."
 		};
 
 		personality.Dialogue["WeakHand"] = new Godot.Collections.Array<string>
@@ -816,6 +864,14 @@ public static class PersonalityPresets
 			"Victory is assured.",
 			"*smiles with quiet superiority*"
 		};
+		
+		personality.Dialogue["MediumHand"] = new Godot.Collections.Array<string>
+		{
+			"Let's see what happens...",
+			"Could be something here.",
+			"Hmm, interesting spot.",
+			"We'll find out soon enough."
+		};
 
 		personality.Dialogue["WeakHand"] = new Godot.Collections.Array<string>
 		{
@@ -936,6 +992,14 @@ public static class PersonalityPresets
 			"These cards hum with potential.",
 			"*strokes beard knowingly*"
 		};
+		
+		personality.Dialogue["MediumHand"] = new Godot.Collections.Array<string>
+		{
+			"Let's see what happens...",
+			"Could be something here.",
+			"Hmm, interesting spot.",
+			"We'll find out soon enough."
+		};
 
 		personality.Dialogue["WeakHand"] = new Godot.Collections.Array<string>
 		{
@@ -1052,6 +1116,14 @@ public static class PersonalityPresets
 			"You should fold, darling.",
 			"Oh dear. This is unfortunate for you.",
 			"Might as well concede now."
+		};
+		
+		personality.Dialogue["MediumHand"] = new Godot.Collections.Array<string>
+		{
+			"Let's see what happens...",
+			"Could be something here.",
+			"Hmm, interesting spot.",
+			"We'll find out soon enough."
 		};
 
 		personality.Dialogue["WeakHand"] = new Godot.Collections.Array<string>
