@@ -51,6 +51,7 @@ public partial class PokerGame : Node2D
 	private PanelContainer dashboardBottomPanel;
 	private PanelContainer videoContainer;
 	private PanelContainer potLabelPanel;
+	private PanelContainer opponentMoneyPanel;
 	
 	private Texture2D foldBtnImg;
 	private Texture2D checkBtnImg;
@@ -174,6 +175,7 @@ public partial class PokerGame : Node2D
 		dashboardBottomPanel = GetNode<PanelContainer>("%BottomPanel");
 		videoContainer = GetNode<PanelContainer>("%VideoContainer");
 		potLabelPanel = GetNode<PanelContainer>("%PotLabelPanel");
+		opponentMoneyPanel = GetNode<PanelContainer>("%OpponentMoneyPanel");
 		
 		// === CARDS ===
 		SetupCards();

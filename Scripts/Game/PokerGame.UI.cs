@@ -413,6 +413,20 @@ public partial class PokerGame
 			}
 		}
 		
+		if (opponentMoneyPanel != null)
+		{
+			var style = opponentMoneyPanel.GetThemeStylebox("panel") as StyleBoxFlat;
+			if (style != null)
+			{
+				style = (StyleBoxFlat)style.Duplicate();
+				
+				style.BorderWidthTop = borderThick;
+				style.BorderColor = trimColor;
+				
+				opponentMoneyPanel.AddThemeStyleboxOverride("panel", style);
+			}
+		}
+		
 		if (potLabelPanel != null)
 		{
 			var style = dashboardBottomPanel.GetThemeStylebox("panel") as StyleBoxFlat;
@@ -1177,7 +1191,7 @@ public partial class PokerGame
 			UpdatePotSizeButtons(enableSlider); 
 		}
 
-		opponentStackLabel.Text = $"{currentOpponentName}: ${opponentChips}";
+		opponentStackLabel.Text = $"${opponentChips}";
 		
 		RefreshBetSlider();
 		UpdateButtonLabels();
