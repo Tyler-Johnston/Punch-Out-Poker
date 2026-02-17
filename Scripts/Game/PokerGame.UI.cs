@@ -632,6 +632,7 @@ public partial class PokerGame
 	private void LoadOpponentSprite()
 	{
 		string opponent = currentOpponentName.ToLower();
+		opponentNameLabel.Text = currentOpponentName;
 		
 		string folderPath = "res://Assets/Textures/expressions/";
 		string targetPath = $"{folderPath}{opponent}_expressions.png";
