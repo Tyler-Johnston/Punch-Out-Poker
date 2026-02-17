@@ -361,6 +361,7 @@ public partial class PokerGame
 	private void UpdateDashboardColors(Color baseFeltColor, Color trimColor, Color outlineColor)
 	{
 		int borderThick = 4;
+		int radius = 10;
 
 		if (dashboardTopPanel != null)
 		{
@@ -412,9 +413,31 @@ public partial class PokerGame
 			}
 		}
 		
+		if (potLabelPanel != null)
+		{
+			var style = dashboardBottomPanel.GetThemeStylebox("panel") as StyleBoxFlat;
+			if (style != null)
+			{
+				style = (StyleBoxFlat)style.Duplicate();
+				style.BgColor = trimColor; 
+				
+				style.BorderWidthTop = borderThick;
+				style.BorderWidthLeft = borderThick;
+				style.BorderWidthRight = borderThick;
+				style.BorderWidthBottom = borderThick;
+				style.BorderColor = outlineColor;
+				
+				style.CornerRadiusTopLeft = radius;
+				style.CornerRadiusTopRight = radius;
+				style.CornerRadiusBottomLeft = radius;
+				style.CornerRadiusBottomRight = radius;
+				
+				potLabelPanel.AddThemeStyleboxOverride("panel", style);
+			}
+		}
+		
 		if (betSlider != null)
 		{
-			int radius = 10;
 			int borderWidth = 5;
 			
 			var fillStyle = new StyleBoxFlat();
