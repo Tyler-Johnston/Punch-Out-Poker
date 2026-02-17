@@ -199,7 +199,7 @@ public partial class DialogueManager : Node
 				Log("[DIALOGUE] → Showing STRONG HAND tell (deceptive - selling the bluff!)");
 			}
 		}
-		else if (actualStrength == HandStrength.Strong) // FIXED: Explicit check, not >=
+		else if (actualStrength == HandStrength.Strong) 
 		{
 			// Strong hand: honest -> StrongHand, deceptive -> WeakHand (Hollywood/Trap)
 			if (honestThisStreet)
@@ -213,7 +213,7 @@ public partial class DialogueManager : Node
 				Log("[DIALOGUE] → Showing WEAK HAND tell (Hollywood/slowplay!)");
 			}
 		}
-		else if (actualStrength == HandStrength.Medium) // FIXED: Explicit check
+		else if (actualStrength == HandStrength.Medium)
 		{
 			// Medium hand: honest -> MediumHand, deceptive -> StrongHand (act confident/protection)
 			if (honestThisStreet)

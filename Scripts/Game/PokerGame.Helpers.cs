@@ -304,6 +304,17 @@ public partial class PokerGame
 		
 		return state;
 	}
+	
+	private bool TryGetRandom(Godot.Collections.Dictionary<string, Godot.Collections.Array<string>> dict, string key, out string line)
+	{
+		line = "";
+		if (!dict.TryGetValue(key, out var lines) || lines.Count == 0)
+			return false;
+
+		int idx = (int)GD.RandRange(0, lines.Count - 1);
+		line = lines[idx].ToString();
+		return true;
+	}
 
 	// -- AI HELPERS --
 	

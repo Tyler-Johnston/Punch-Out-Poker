@@ -400,7 +400,7 @@ public partial class PokerGame
 
 		aiBluffedThisHand = bluffThisAction;
 
-		float waitTime = PlayActionDialogue(action, gameState);
+		float waitTime = PlayActionDialogue(action, gameState); 
 		if (waitTime > 0)
 		{
 			await ToSignal(GetTree().CreateTimer(waitTime + 1.0f), SceneTreeTimer.SignalName.Timeout);

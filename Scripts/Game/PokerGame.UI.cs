@@ -1220,21 +1220,73 @@ public partial class PokerGame
 		return typingDuration; 
 	}
 
-	private float PlayActionDialogue(PlayerAction action, GameState state)
+	// 1. PURE TELL (triggered by emotion/idle/events)
+	private float PlayTellDialogue(GameState state)
 	{
 		if (dialogueManager == null) return 0f;
 
+		// Ask Manager for a Tell string (Manager handles cooldowns, logic, composure)
 		HandStrength strength = aiOpponent.DetermineHandStrengthCategory(state);
 		string line = dialogueManager.GetTellDialogue(strength, aiBluffedThisHand);
 
-		if (string.IsNullOrEmpty(line))
-			return 0f;
+		if (string.IsNullOrEmpty(line)) return 0f;
 
 		GD.Print($"> {currentOpponentName} says '{line}'");
 		return PlayDialogue(line);
 	}
 
-	
+	// 2. ACTION REACTION (triggered by moves like Raise/Call)
+	private float PlayActionDialogue(PlayerAction action, GameState state)
+	{
+		if (dialogueManager == null) return 0f;
+
+		HandStrength strength = aiOpponent.DetermineHandStrengthCategory(state);
+		DialogueContext actionCtx = GetContextForAction(action);
+
+		// LOGIC: Mix Action lines with Tell lines
+		// High Drama (AllIn/Raise/Bluff) -> Prioritize Tells
+		// Low Drama (Check/Call/Fold) -> Prioritize Action Lines
+		
+		bool isHighDrama = (action == PlayerAction.AllIn || action == PlayerAction.Raise || aiBluffedThisHand);
+		string line = null;
+
+		if (isHighDrama)
+		{
+			line = dialogueManager.GetTellDialogue(strength, aiBluffedThisHand);
+		}
+
+		// Fallback or low drama preference
+		if (string.IsNullOrEmpty(line))
+		{
+			// 60% chance to try Action Line ("I call") for normal moves
+			if (!isHighDrama || GD.Randf() < 0.6f)
+			{
+				line = dialogueManager.GetDialogue(actionCtx);
+			}
+		}
+
+		// Last resort for low drama (try Tell if Action failed)
+		if (string.IsNullOrEmpty(line) && !isHighDrama)
+		{
+			line = dialogueManager.GetTellDialogue(strength, aiBluffedThisHand);
+		}
+
+		if (string.IsNullOrEmpty(line)) return 0f;
+
+		GD.Print($"> {currentOpponentName} says '{line}'");
+		return PlayDialogue(line);
+	}
+
+	private DialogueContext GetContextForAction(PlayerAction action) => action switch
+	{
+		PlayerAction.Fold => DialogueContext.OnFold,
+		PlayerAction.Check => DialogueContext.OnCheck,
+		PlayerAction.Call => DialogueContext.OnCall,
+		PlayerAction.Raise => DialogueContext.OnRaise,
+		PlayerAction.AllIn => DialogueContext.OnAllIn,
+		_ => DialogueContext.OnCheck
+	};
+
 	private void PlayReactionDialogue(string category)
 	{
 		if (dialogueManager == null) return;
