@@ -22,7 +22,7 @@ public static class PersonalityPresets
 			Chattiness = 0.70f,        
 			Composure = 0.25f,
 
-			VoicePitch = 1.0f 
+			VoicePitch = 1.09f 
 		};
 
 		personality.Tells["strong_hand"] = new Godot.Collections.Array<string> { "Happy", "Smirk" };
