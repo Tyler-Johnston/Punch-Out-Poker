@@ -1256,4 +1256,13 @@ public partial class PokerGame
 			PlayDialogue(null);
 		}
 	}
+	
+	private void PlayWaitingDialogue()
+	{
+		if (dialogueManager == null) return;
+		string line = dialogueManager.GetDialogue(DialogueContext.WhileWaiting);
+		if (string.IsNullOrEmpty(line)) return;
+
+		PlayDialogue(line);
+	}
 }

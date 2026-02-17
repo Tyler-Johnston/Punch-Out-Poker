@@ -16,6 +16,7 @@ public partial class PokerGame
 			GD.Print($"[TELL] {currentOpponentName} is BORED (Player wait time > {BOREDOM_THRESHOLD}s)");
 			SetExpression(Expression.Bored);
 			hasShownBoredomTell = true;
+			PlayWaitingDialogue();
 		}
 	}
 	
