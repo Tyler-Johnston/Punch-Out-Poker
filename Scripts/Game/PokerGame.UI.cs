@@ -1173,7 +1173,10 @@ public partial class PokerGame
 			UpdatePotDisplay(0);
 			UpdatePlayerChipDisplay();
 			UpdateOpponentChipDisplay();
-			UpdateButtonState(nextHandButton, false);
+			UpdateButtonState(nextHandButton, true);
+			UpdateButtonState(foldButton, false);
+			UpdateButtonState(checkCallButton, false);
+			UpdateButtonState(betRaiseButton, false);
 		}
 		else
 		{

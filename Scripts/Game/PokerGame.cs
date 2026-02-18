@@ -128,7 +128,6 @@ public partial class PokerGame : Node2D
 	private bool opponentCanReopenBetting = true;
 	private bool hasShownBoredomTell = false;
 
-
 	private Dictionary<Street, bool> playerBetOnStreet = new Dictionary<Street, bool>();
 	private Dictionary<Street, int> playerBetSizeOnStreet = new Dictionary<Street, int>();
 
