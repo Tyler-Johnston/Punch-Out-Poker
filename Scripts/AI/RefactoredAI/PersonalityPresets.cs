@@ -13,16 +13,14 @@ public static class PersonalityPresets
 			BaseBluffFrequency = 0.20f,
 			BaseFoldThreshold = 0.55f,
 			BaseRiskTolerance = 0.60f,
-
 			TiltSensitivity = 0.94f,
 			RageQuitThreshold = 30.0f,
 			SurrenderChipPercent = 0.40f,
-
 			CallTendency = 0.50f,
 			Chattiness = 0.70f,        
 			Composure = 0.25f,
-
-			VoicePitch = 1.09f 
+			VoicePitch = 1.09f,
+			PatienceLevel = Patience.Low
 		};
 
 		personality.Tells["strong_hand"] = new Godot.Collections.Array<string> { "Happy", "Smirk" };
@@ -147,13 +145,11 @@ public static class PersonalityPresets
 			CallTendency = 0.75f, 
 			Chattiness = 0.80f,      
 			Composure = 0.30f, 
-
 			TiltSensitivity = 1.15f,
 			RageQuitThreshold = 35f,
 			SurrenderChipPercent = 0.24f,
-
-			// NEW: High pitch (young/energetic girl)
-			VoicePitch = 1.35f 
+			VoicePitch = 1.35f,
+			PatienceLevel = Patience.Average
 		};
 
 		personality.Tells["strong_hand"] = new Godot.Collections.Array<string> { "Happy", "Surprised" };
@@ -278,7 +274,8 @@ public static class PersonalityPresets
 			TiltSensitivity = 0.90f,
 			RageQuitThreshold = 28.0f,
 			SurrenderChipPercent = 0.10f,
-			VoicePitch = 1.15f
+			VoicePitch = 1.15f,
+			PatienceLevel = Patience.VeryLow
 		};
 
 		personality.Tells["strong_hand"] = new Godot.Collections.Array<string> { "Smirk", "Happy" };
@@ -403,7 +400,8 @@ public static class PersonalityPresets
 			TiltSensitivity = 0.65f,
 			RageQuitThreshold = 35.0f,
 			SurrenderChipPercent = 0.25f,
-			VoicePitch = 0.82f 
+			VoicePitch = 0.82f,
+			PatienceLevel = Patience.High
 		};
 
 		personality.Tells["strong_hand"] = new Godot.Collections.Array<string> { "Smirk", "Neutral" };
@@ -526,7 +524,8 @@ public static class PersonalityPresets
 			TiltSensitivity = 0.60f,
 			RageQuitThreshold = 33.0f,
 			SurrenderChipPercent = 0.45f,
-			VoicePitch = 0.92f 
+			VoicePitch = 0.92f,
+			PatienceLevel = Patience.High
 		};
 
 		personality.Tells["strong_hand"] = new Godot.Collections.Array<string> { "Happy", "Neutral" };
@@ -651,8 +650,8 @@ public static class PersonalityPresets
 			TiltSensitivity = 0.70f,
 			RageQuitThreshold = 40.0f,
 			SurrenderChipPercent = 0.30f,
-
-			VoicePitch = 1.20f
+			VoicePitch = 1.20f,
+			PatienceLevel = Patience.Low
 		};
 
 		personality.Tells["strong_hand"] = new Godot.Collections.Array<string> { "Happy", "Neutral" };
@@ -779,9 +778,8 @@ public static class PersonalityPresets
 			TiltSensitivity = 0.65f,
 			RageQuitThreshold = 32.0f,
 			SurrenderChipPercent = 0.175f,
-
-			// NEW: Deep/Commanding pitch
-			VoicePitch = 0.70f 
+			VoicePitch = 0.70f,
+			PatienceLevel = Patience.Average
 		};
 
 		personality.Tells["strong_hand"] = new Godot.Collections.Array<string> { "Smirk", "Angry" }; // Arrogant
@@ -903,13 +901,11 @@ public static class PersonalityPresets
 			CallTendency = 0.48f,          
 			Chattiness = 0.5f,       
 			Composure = 0.75f,  
-
 			TiltSensitivity = 0.50f,
 			RageQuitThreshold = 40.0f,
 			SurrenderChipPercent = 0.30f,
-
-			// NEW: Creaky/Old voice pitch
-			VoicePitch = 0.80f 
+			VoicePitch = 0.80f,
+			PatienceLevel = Patience.VeryHigh
 		};
 
 		personality.Tells["strong_hand"] = new Godot.Collections.Array<string> { "Happy", "Neutral" };
@@ -1034,7 +1030,8 @@ public static class PersonalityPresets
 			TiltSensitivity = 0.40f,
 			RageQuitThreshold = 50.0f,    
 			SurrenderChipPercent = 0.10f,
-			VoicePitch = 1.12f
+			VoicePitch = 1.12f,
+			PatienceLevel = Patience.VeryHigh
 		};
 
 		personality.Tells["strong_hand"] = new Godot.Collections.Array<string> { "Neutral", "Neutral" };

@@ -11,9 +11,11 @@ public partial class PokerGame
 		
 		playerWaitTime += delta;
 		
-		if (playerWaitTime > BOREDOM_THRESHOLD && !hasShownBoredomTell)
+		float threshold = BOREDOM_THRESHOLD * GetPatienceMultiplier(aiOpponent.Personality.PatienceLevel);
+		
+		if (playerWaitTime > threshold && !hasShownBoredomTell)
 		{
-			GD.Print($"[TELL] {currentOpponentName} is BORED (Player wait time > {BOREDOM_THRESHOLD}s)");
+			GD.Print($"[TELL] {currentOpponentName} is BORED (Player wait time > {threshold}s)");
 			SetExpression(Expression.Bored);
 			hasShownBoredomTell = true;
 			PlayWaitingDialogue();

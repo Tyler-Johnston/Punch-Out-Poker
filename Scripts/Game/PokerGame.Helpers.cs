@@ -329,5 +329,18 @@ public partial class PokerGame
 			return !playerHasButton;
 		}
 	}
+	
+	private float GetPatienceMultiplier(Patience patience)
+	{
+		return patience switch
+		{
+			Patience.VeryLow => 0.5f,
+			Patience.Low => 0.75f,
+			Patience.Average => 1.0f,
+			Patience.High => 1.5f,
+			Patience.VeryHigh => 2.0f,
+			_ => 1.0f
+		};
+}
 
 }

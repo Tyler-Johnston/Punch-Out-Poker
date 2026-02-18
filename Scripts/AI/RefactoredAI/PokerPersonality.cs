@@ -16,6 +16,7 @@ public partial class PokerPersonality : Resource
 	[Export] public float SurrenderChipPercent { get; set; } = 0.50f; 
 	[Export] public float RageQuitThreshold { get; set; } = 90.0f;
 	[Export] public float VoicePitch { get; set; }
+	public Patience PatienceLevel { get; set; }
 
 	// Current modified stats (affected by tilt)
 	public float CurrentAggression { get; private set; }

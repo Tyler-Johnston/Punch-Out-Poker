@@ -593,7 +593,6 @@ public partial class PokerDecisionMaker : Node
 
 		// 3) Counterfeit adjustments
 		float adjustedStrength = myAbsStrength;
-		bool isCounterfeit = false;
 
 		// Case A: River Chop/Counterfeit
 		// If our hand is barely better than the board (kicker problem), reduce strength.
@@ -601,11 +600,7 @@ public partial class PokerDecisionMaker : Node
 		{
 			// We are playing the board or have a bad kicker.
 			adjustedStrength = 0.25f; // Treat as weak/bluff-catcher
-			isCounterfeit = true;
 		}
-		
-		// [Keep your existing Case B logic for Trips/Quads here, it was decent]
-		// ... (Your heuristic code for Trips/Quads) ...
 
 		// 4) DRAW POTENTIAL (The Critical Fix)
 		if (street == Street.Flop || street == Street.Turn)

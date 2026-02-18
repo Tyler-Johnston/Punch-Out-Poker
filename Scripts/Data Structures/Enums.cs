@@ -26,6 +26,16 @@ public enum HandStrength
 	Bluffing          // = 3
 }
 
+// modifies the boredom / while waiting attribute
+public enum Patience
+{
+	VeryHigh,
+	High,
+	Average,
+	Low,
+	VeryLow
+}
+
 /// <summary>
 /// Available poker actions during a betting round
 /// </summary>
