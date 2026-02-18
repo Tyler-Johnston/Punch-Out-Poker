@@ -429,7 +429,7 @@ public partial class PokerGame
 		
 		if (potLabelPanel != null)
 		{
-			var style = dashboardBottomPanel.GetThemeStylebox("panel") as StyleBoxFlat;
+			var style = potLabelPanel.GetThemeStylebox("panel") as StyleBoxFlat;
 			if (style != null)
 			{
 				style = (StyleBoxFlat)style.Duplicate();
@@ -445,6 +445,10 @@ public partial class PokerGame
 				style.CornerRadiusTopRight = radius;
 				style.CornerRadiusBottomLeft = radius;
 				style.CornerRadiusBottomRight = radius;
+				
+				style.ShadowColor = new Color("00000099");
+				style.ShadowSize = 4;
+				style.ShadowOffset = new Vector2(2, 4);
 				
 				potLabelPanel.AddThemeStyleboxOverride("panel", style);
 			}

@@ -576,7 +576,6 @@ public partial class PokerDecisionMaker : Node
 		// 1) Absolute strength (Raw Rank 1-7461)
 		int myRank = HandEvaluator.EvaluateHand(holeCards, communityCards);
 		
-		// FIX: Use a curve, not a linear map.
 		// Rank 1 (Royal) -> 1.0
 		// Rank 1600 (Top Pair / Overpair) -> ~0.75
 		// Rank 6185 (One Pair) -> ~0.40
