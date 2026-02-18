@@ -99,7 +99,22 @@ public partial class PokerGame
 		StartIdleAnimation(betRaiseButton, ref betRaiseIdleTween, 0.66f);
 		StartIdleAnimation(nextHandButton, ref nextHandIdleTween, 0.5f);
 		StartIdleAnimation(cashOutButton, ref cashOutIdleTween, 0.5f);
+		
+		// Set font outline color for all buttons
+		foldButton.AddThemeColorOverride("font_outline_color", new Color(0, 0, 0, 1));
+		checkCallButton.AddThemeColorOverride("font_outline_color", new Color(0, 0, 0, 1));
+		betRaiseButton.AddThemeColorOverride("font_outline_color", new Color(0, 0, 0, 1));
+		nextHandButton.AddThemeColorOverride("font_outline_color", new Color(0, 0, 0, 1));
+		cashOutButton.AddThemeColorOverride("font_outline_color", new Color(0, 0, 0, 1));
+		
+		// Set initial outline size for all buttons
+		foldButton.AddThemeConstantOverride("outline_size", 1);
+		checkCallButton.AddThemeConstantOverride("outline_size", 1);
+		betRaiseButton.AddThemeConstantOverride("outline_size", 1);
+		nextHandButton.AddThemeConstantOverride("outline_size", 1);
+		cashOutButton.AddThemeConstantOverride("outline_size", 1);
 	}
+
 
 	/// <summary>
 	/// Sets button pivot to center for smooth scaling and prevents size drift
@@ -968,17 +983,16 @@ public partial class PokerGame
 	}
 
 	// --- HUD UPDATE METHODS ---
-
 	private void UpdatePotSizeButtons(bool enabled = true)
 	{
 		// Gate: only when the slider/betting UI is actually usable
 		if (!enabled || !handInProgress || !isPlayerTurn || playerIsAllIn)
 		{
-			thirdPot.Disabled = true;
-			halfPot.Disabled = true;
-			twoThirdsPot.Disabled = true;
-			standardPot.Disabled = true;
-			allInPot.Disabled = true;
+			UpdateButtonState(thirdPot, false);
+			UpdateButtonState(halfPot, false);
+			UpdateButtonState(twoThirdsPot, false);
+			UpdateButtonState(standardPot, false);
+			UpdateButtonState(allInPot, false);
 			return;
 		}
 
@@ -986,32 +1000,31 @@ public partial class PokerGame
 
 		if (maxBet <= 0)
 		{
-			thirdPot.Disabled = true;
-			halfPot.Disabled = true;
-			twoThirdsPot.Disabled = true;
-			standardPot.Disabled = true;
-			allInPot.Disabled = true;
+			UpdateButtonState(thirdPot, false);
+			UpdateButtonState(halfPot, false);
+			UpdateButtonState(twoThirdsPot, false);
+			UpdateButtonState(standardPot, false);
+			UpdateButtonState(allInPot, false);
 			return;
 		}
 
 		int basePot = GetEffectivePot();
 
 		// 1. SETUP ALL-IN BUTTON (Always enabled if we have chips)
-		allInPot.Disabled = false;
+		UpdateButtonState(allInPot, true);
 		allInPot.SetMeta("raise_to", maxBet); 
 
 		// If pot is 0, disable pot-% presets (but All-In remains active)
 		if (basePot <= 0)
 		{
-			thirdPot.Disabled = true;
-			halfPot.Disabled = true;
-			twoThirdsPot.Disabled = true;
-			standardPot.Disabled = true;
+			UpdateButtonState(thirdPot, false);
+			UpdateButtonState(halfPot, false);
+			UpdateButtonState(twoThirdsPot, false);
+			UpdateButtonState(standardPot, false);
 			return;
 		}
 
 		// 2. CALCULATE PRESETS
-		// We clamp them so they are valid numbers, but we haven't filtered duplicates yet
 		int thirdPotRaise     = Math.Clamp((int)Math.Round(basePot * 0.33f), minBet, maxBet);
 		int halfPotRaise      = Math.Clamp((int)Math.Round(basePot * 0.50f), minBet, maxBet);
 		int twoThirdsPotRaise = Math.Clamp((int)Math.Round(basePot * 0.67f), minBet, maxBet);
@@ -1022,27 +1035,21 @@ public partial class PokerGame
 		// 3. HELPER FUNCTION
 		bool EnablePreset(Button btn, int amount)
 		{
-			// Basic range check
 			if (amount < minBet || amount > maxBet) return false;
-			
-			// If this preset pushes us All-In, disable this specific button.
-			// The player should use the dedicated "All-In" button instead.
 			if (amount == maxBet) return false;
-
-			// Prevent duplicate buttons (e.g. if 1/3 and 1/2 calculate to the same integer)
 			if (seen.Contains(amount)) return false;
 
-			btn.Disabled = false;
+			UpdateButtonState(btn, true);
 			btn.SetMeta("raise_to", amount); 
 			seen.Add(amount);
 			return true;
 		}
 
 		// Reset all to disabled first
-		thirdPot.Disabled = true;
-		halfPot.Disabled = true;
-		twoThirdsPot.Disabled = true;
-		standardPot.Disabled = true;
+		UpdateButtonState(thirdPot, false);
+		UpdateButtonState(halfPot, false);
+		UpdateButtonState(twoThirdsPot, false);
+		UpdateButtonState(standardPot, false);
 
 		// Try to enable them one by one
 		EnablePreset(thirdPot, thirdPotRaise);
@@ -1052,7 +1059,27 @@ public partial class PokerGame
 	}
 
 
-	
+	/// <summary>
+	/// Updates button state with font outline (size 4 for enabled, 0 for disabled)
+	/// </summary>
+	private void UpdateButtonState(Button button, bool enabled)
+	{
+		if (button == null) return;
+		
+		if (enabled)
+		{
+			// Enable with outline
+			button.AddThemeConstantOverride("outline_size", 1);
+			button.Disabled = false;
+		}
+		else
+		{
+			// Disable with NO outline
+			button.AddThemeConstantOverride("outline_size", 0);
+			button.Disabled = true;
+		}
+	}
+
 	private void UpdateButtonLabels()
 	{
 		if (waitingForNextGame) return;
@@ -1125,7 +1152,7 @@ public partial class PokerGame
 			betweenHandsUI.Visible = true;
 			activePlayUI.Visible = false;
 			potArea.Visible = false;
-			nextHandButton.Disabled = true;
+			UpdateButtonState(nextHandButton, false);
 			handTypeLabel.Text = lastHandDescription;
 			handTypeLabel.Visible = true; 
 			UpdateSessionProfitLabel();
@@ -1146,6 +1173,7 @@ public partial class PokerGame
 			UpdatePotDisplay(0);
 			UpdatePlayerChipDisplay();
 			UpdateOpponentChipDisplay();
+			UpdateButtonState(nextHandButton, false);
 		}
 		else
 		{
@@ -1169,9 +1197,10 @@ public partial class PokerGame
 				canActuallyRaise = false;
 			}
 			
-			foldButton.Disabled = !enableButtons;
-			checkCallButton.Disabled = !enableButtons;
-			betRaiseButton.Disabled = !enableButtons || !canActuallyRaise;
+			// Use UpdateButtonState instead of direct Disabled assignment
+			UpdateButtonState(foldButton, enableButtons);
+			UpdateButtonState(checkCallButton, enableButtons);
+			UpdateButtonState(betRaiseButton, enableButtons && canActuallyRaise);
 			
 			bool enableSlider = enableButtons && canActuallyRaise;
 			
@@ -1205,6 +1234,7 @@ public partial class PokerGame
 		UpdatePlayerChipDisplay();
 		UpdateOpponentChipDisplay();
 	}
+
 
 	private void RefreshBetSlider()
 	{
