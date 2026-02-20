@@ -529,11 +529,10 @@ public partial class PokerDecisionMaker : Node
 		float effectivePot = Mathf.Max(gameState.PotSize, 1f);
 		float currentBet = gameState.CurrentBet;
 
-		// ✅ STEP 1: Early-out if raising is not allowed (under-raise all-in rule)
 		if (!gameState.CanAIReopenBetting)
 		{
 			GameManager.LogVerbose($"[{player.PlayerName}] Cannot raise - betting not reopened. Returning currentBet.");
-			return (int)currentBet;  // No raise available
+			return (int)currentBet;
 		}
 
 		float baseBetRatio = CalculatePlannedBetRatio(handStrength, personality, gameState.Street, player.BetSizeSeed, player);
@@ -542,7 +541,6 @@ public partial class PokerDecisionMaker : Node
 		if (player.CurrentTiltState >= TiltState.Steaming)
 			targetTotal *= 1.15f;
 
-		// ✅ STEP 2: Calculate min-raise using PokerRules [INTEGRATION]
 		int minTotalInt = PokerRules.CalculateMinRaiseTotal(
 			(int)currentBet,
 			(int)gameState.PreviousBet,
@@ -568,7 +566,11 @@ public partial class PokerDecisionMaker : Node
 				float committedFrac = (legalTotal - gameState.GetPlayerCurrentBet(player)) / Mathf.Max(player.ChipStack, 1f);
 				if (committedFrac >= 0.60f)
 				{
-					if (handStrength >= 0.70f || player.AllInCommitmentSeed < 0.70f)
+					// BUG 6 FIX: Prevent random over-shoving logic.
+					bool isStrongHand = handStrength >= 0.75f;
+					bool isMediumCommit = handStrength >= 0.62f && player.AllInCommitmentSeed < 0.45f;
+					
+					if (isStrongHand || isMediumCommit)
 						legalTotal = maxTotal;
 				}
 			}
@@ -599,6 +601,7 @@ public partial class PokerDecisionMaker : Node
 		return finalTotal;
 	}
 
+
 	public float EvaluateHandStrength(List<Card> holeCards, List<Card> communityCards, Street street, float randomnessSeed)
 	{
 		if (holeCards == null || holeCards.Count != 2)
@@ -613,11 +616,10 @@ public partial class PokerDecisionMaker : Node
 		// 1) Absolute strength (Raw Rank 1-7461)
 		int myRank = HandEvaluator.EvaluateHand(holeCards, communityCards);
 		
-		// Rank 1 (Royal) -> 1.0
-		// Rank 1600 (Top Pair / Overpair) -> ~0.75
-		// Rank 6185 (One Pair) -> ~0.40
 		float linearNorm = 1.0f - ((myRank - 1) / 7461.0f);
-		float myAbsStrength = (float)Math.Pow(linearNorm, 1.5); // Curves values down, making "good" hands stand out more.
+		
+		// BUG 2 FIX: Adjusted exponent from 1.5 to 0.8f to prevent compressing medium/weak hands
+		float myAbsStrength = (float)Math.Pow(linearNorm, 0.8f);
 
 		// 2) Board strength (Check if the board itself is strong/counterfeiting us)
 		float boardStrength = 0f;
@@ -625,47 +627,41 @@ public partial class PokerDecisionMaker : Node
 		{
 			int boardRank = HandEvaluator.EvaluateHand(new List<Card>(), communityCards);
 			float boardLinear = 1.0f - ((boardRank - 1) / 7461.0f);
-			boardStrength = (float)Math.Pow(boardLinear, 1.5);
+			boardStrength = (float)Math.Pow(boardLinear, 0.8f); // Applied same fix here
 		}
 
 		// 3) Counterfeit adjustments
 		float adjustedStrength = myAbsStrength;
 
 		// Case A: River Chop/Counterfeit
-		// If our hand is barely better than the board (kicker problem), reduce strength.
 		if (communityCards.Count >= 5 && (myAbsStrength - boardStrength < 0.05f))
 		{
-			// We are playing the board or have a bad kicker.
 			adjustedStrength = 0.25f; // Treat as weak/bluff-catcher
 		}
 
-		// 4) DRAW POTENTIAL (The Critical Fix)
+		// 4) DRAW POTENTIAL
 		if (street == Street.Flop || street == Street.Turn)
 		{
-			List<Card> allCards = new List<Card>(holeCards);
-			allCards.AddRange(communityCards);
-			
-			// Pass 'street' to method now
-			float drawStrength = EvaluateDrawPotential(allCards, street); 
+			// BUG 3 & 4 FIX: Pass holeCards and communityCards separately to verify hole card usage
+			float drawStrength = EvaluateDrawPotential(holeCards, communityCards, street); 
 
-			// CRITICAL CHANGE: Max, not Add.
-			// If I have high card (0.1 strength) but a Flush Draw (0.35), my hand is worth 0.35.
 			if (drawStrength > adjustedStrength)
 			{
 				adjustedStrength = drawStrength;
 			}
 			else
 			{
-				// Small bonus if we have a Made Hand + Draw (e.g., Top Pair + Flush Draw)
-				// But don't double count.
-				 adjustedStrength += (drawStrength * 0.20f); 
+				adjustedStrength += (drawStrength * 0.20f); 
 			}
 		}
 
 		// 5) Randomness
-		float randomness = randomnessSeed * 0.05f; // Reduced variance
-		return Mathf.Clamp(adjustedStrength + randomness, 0.10f, 1.0f);
+		float randomness = randomnessSeed * 0.05f; 
+		
+		// BUG 2 FIX: Lowered clamp floor from 0.10f to 0.05f
+		return Mathf.Clamp(adjustedStrength + randomness, 0.05f, 1.0f);
 	}
+
 
 
 	private float EvaluatePreflopHand(List<Card> holeCards)
@@ -685,38 +681,36 @@ public partial class PokerDecisionMaker : Node
 		bool isConnector = rankDiff == 1;
 		bool isGapper = rankDiff == 2;
 
+		// BUG 5 FIX: Detect Wheel Connectors (A-2, A-3)
+		bool isWheelConnector = (highCard == 12 && lowCard == 0); // A-2
+		bool isWheelGapper    = (highCard == 12 && lowCard == 1); // A-3
+
 		float strength = 0.2f; // Base trash level
 
 		if (isPair)
 		{
 			// Pairs are massive in Heads Up. 
-			// 22 starts at 0.50. AA is 0.95.
-			// Curve: 0.5 + (Rank/14)^2 * 0.45
-			float pairPower = (float)highCard / 14.0f;
+			// BUG 1 FIX: Divisor changed from 14.0f to 12.0f because Ace is 12 (0-indexed).
+			float pairPower = (float)highCard / 12.0f;
 			strength = 0.50f + (pairPower * pairPower * 0.45f);
 		}
 		else
 		{
 			// 1. High Card Strength (Heads up, high card wins often)
-			// A-high = 0.60 base. 7-high = 0.30 base.
 			strength = 0.30f + ((highCard) / 12.0f) * 0.35f;
 
 			// 2. Kicker Strength Adjustment
-			// A-K is better than A-2.
 			strength += ((lowCard) / 12.0f) * 0.10f;
 
 			// 3. Suited Bonus
-			// Suitedness is worth ~3-4% equity.
 			if (isSuited) strength += 0.04f;
 
 			// 4. Connector/Gapper Bonus
-			// Connectors play well post-flop.
-			if (isConnector) strength += 0.03f;
-			if (isGapper) strength += 0.015f;
+			if (isConnector || isWheelConnector) strength += 0.03f;
+			if (isGapper || isWheelGapper) strength += 0.015f;
 			
 			// 5. Penalty for "Trash" (Low uncoordinated cards)
-			// e.g. 9-2 offsuit.
-			if (highCard < 10 && !isSuited && !isConnector && !isGapper)
+			if (highCard < 10 && !isSuited && !isConnector && !isGapper && !isWheelConnector && !isWheelGapper)
 			{
 				strength -= 0.10f;
 			}
@@ -726,51 +720,82 @@ public partial class PokerDecisionMaker : Node
 	}
 
 
-	private float EvaluateDrawPotential(List<Card> cards, Street street)
+
+	private float EvaluateDrawPotential(List<Card> holeCards, List<Card> communityCards, Street street)
 	{
-		// If we are on the River, there are no more draws.
 		if (street == Street.River) return 0f;
 
-		// Check Flush Draws
-		var suitCounts = cards.GroupBy(c => c.Suit).Select(g => g.Count());
-		bool flushDraw = suitCounts.Any(count => count == 4);
-		bool backdoorFlush = suitCounts.Any(count => count == 3);
+		List<Card> allCards = new List<Card>(holeCards);
+		allCards.AddRange(communityCards);
 
-		// Check Straight Draws
-		var ranks = cards.Select(c => (int)c.Rank).OrderBy(r => r).Distinct().ToList();
+		var holeSuits = new HashSet<Suit>(holeCards.Select(c => c.Suit));
+		var holeRanks = new HashSet<int>(holeCards.Select(c => (int)c.Rank));
+
+		// Check Flush Draws (Player MUST hold the suit)
+		var suitGroups = allCards.GroupBy(c => c.Suit).Where(g => holeSuits.Contains(g.Key));
+		bool flushDraw = suitGroups.Any(g => g.Count() >= 4);
+		bool backdoorFlush = suitGroups.Any(g => g.Count() == 3);
+
+		var ranks = allCards.Select(c => (int)c.Rank).OrderBy(r => r).Distinct().ToList();
 		
-		// Check for OESD (4 consecutive ranks)
 		bool oesd = false;
-		for (int i = 0; i < ranks.Count - 3; i++)
+		bool gutshot = false;
+
+		// Check standard straights (Player MUST use a hole card)
+		for (int i = 0; i <= ranks.Count - 4; i++)
 		{
-			if (ranks[i + 3] - ranks[i] == 3) oesd = true;
+			if (ranks[i + 3] - ranks[i] == 3) // 4 consecutive cards
+			{
+				bool holeCardInvolved = Enumerable.Range(ranks[i], 4).Any(r => holeRanks.Contains(r));
+				if (holeCardInvolved)
+				{
+					// BROADWAY EDGE CASE FIX:
+					// If the run is J-Q-K-A (Ranks 9, 10, 11, 12), it is a gutshot, not an OESD.
+					// If it's a 0-indexed Ace-low wheel 2-3-4-5 (Ranks 0, 1, 2, 3), it's also a gutshot.
+					if (ranks[i + 3] == 12 || ranks[i] == 0) 
+					{
+						gutshot = true;
+					}
+					else 
+					{
+						oesd = true; 
+					}
+				}
+			}
+			else if (ranks[i + 3] - ranks[i] == 4) // Gutshot
+			{
+				bool holeCardInvolved = false;
+				for (int j = 0; j < 4; j++) 
+				{
+					if (holeRanks.Contains(ranks[i + j])) holeCardInvolved = true;
+				}
+				if (holeCardInvolved) gutshot = true;
+			}
 		}
 
-		// Check for Gutshot (gap of 1 inside a 4-card span, e.g., 4,5,7,8)
-		// Or simply 4 cards within a span of 5 values (e.g. 4,5,7,8 is span 4..8 = 4)
-		bool gutshot = false;
-		if (!oesd)
+		// WHEEL EDGE CASE FIX (A-2-3-4 with Ace as high card)
+		if (ranks.Contains(12)) 
 		{
-			// Simple heuristic for gutshot: 4 cards within a range of 5
-			for (int i = 0; i < ranks.Count - 3; i++)
+			var wheelRanks = ranks.Where(r => r <= 3).ToList();
+			if (wheelRanks.Count >= 3) 
 			{
-				 if (ranks[i + 3] - ranks[i] == 4) gutshot = true;
+				bool holeCardInvolved = holeRanks.Contains(12) || wheelRanks.Any(r => holeRanks.Contains(r));
+				if (holeCardInvolved) gutshot = true; // A-low draw missing one card is a gutshot
 			}
 		}
 
 		// --- SCORING ---
-		// Values represent approximate equity or "semi-bluffability"
+		if (flushDraw && oesd) return 0.55f; 
+		if (flushDraw && gutshot) return 0.45f; 
+		if (flushDraw) return 0.35f; 
+		if (oesd) return 0.30f; 
+		if (gutshot) return 0.15f; 
 		
-		if (flushDraw && oesd) return 0.55f; // Monster draw (Combo)
-		if (flushDraw && gutshot) return 0.45f; // Strong combo
-		if (flushDraw) return 0.35f; // Standard flush draw (~36% equity)
-		if (oesd) return 0.30f; // Standard straight draw (~32% equity)
-		if (gutshot) return 0.15f; // Weak draw (~16% equity)
-		
-		// Flop only: Backdoor equity
 		if (street == Street.Flop && backdoorFlush) return 0.05f;
 
 		return 0f;
 	}
+
+
 
 }

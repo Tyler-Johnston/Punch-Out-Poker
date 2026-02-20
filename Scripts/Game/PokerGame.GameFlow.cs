@@ -729,7 +729,6 @@ public partial class PokerGame
 		communityCards.Add(deck.Deal());
 		communityCards.Add(deck.Deal());
 
-		// VISUAL IMPROVEMENT 3: Contextual Street Header
 		GD.Print($"\n--- FLOP [{communityCards[0]} {communityCards[1]} {communityCards[2]}] (Pot: ${pot}) ---");
 		ShowMessage("Flop dealt");
 
@@ -748,7 +747,6 @@ public partial class PokerGame
 	private async Task DealTurn()
 	{
 		communityCards.Add(deck.Deal());
-		// VISUAL IMPROVEMENT 3: Contextual Street Header
 		GD.Print($"\n--- TURN [{communityCards[3]}] (Pot: ${pot}) ---");
 		ShowMessage("Turn card");
 

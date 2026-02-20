@@ -84,8 +84,6 @@ public partial class PokerGame
 
 				if (toCall < 0)
 				{
-					// [INTEGRATION] Use PokerRules to calculate refund
-					// This ensures the math matches your Unit Tests exactly
 					var refundResult = PokerRules.CalculateRefund(toCall, actorBet);
 					int refund = refundResult.RefundAmount;
 
@@ -235,8 +233,6 @@ public partial class PokerGame
 				int raiseIncrement = shove;
 				int minRaiseIncrement = (lastRaiseAmount > 0) ? lastRaiseAmount : bigBlind;
 				
-				// [INTEGRATION] Use PokerRules to validate Full Raise
-				// Note: We keep the (actorBet > currentBet) check here as it relies on specific Game State logic
 				bool isFullRaise = PokerRules.IsFullRaise(raiseIncrement, minRaiseIncrement) && (actorBet > currentBet);
 				
 				if (isFullRaise)
