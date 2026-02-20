@@ -20,10 +20,10 @@ public static class PokerUtilities
 
 public static class PokerAIConfig
 {
-	public const float FLOP_BASE_THRESHOLD = 0.38f;
-	public const float TURN_BASE_THRESHOLD = 0.48f;
-	public const float RIVER_BASE_THRESHOLD = 0.54f;
-	public const float PREFLOP_BASE_THRESHOLD = 0.42f;
+	public const float FLOP_BASE_THRESHOLD = 0.32f;    // Was 0.38
+	public const float TURN_BASE_THRESHOLD = 0.40f;    // Was 0.48
+	public const float RIVER_BASE_THRESHOLD = 0.46f;   // Was 0.54
+	public const float PREFLOP_BASE_THRESHOLD = 0.36f; // Was 0.42
 	
 	public const float FLOP_VALUE_THRESHOLD = 0.55f;
 	public const float TURN_VALUE_THRESHOLD = 0.58f;

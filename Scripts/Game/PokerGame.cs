@@ -127,7 +127,8 @@ public partial class PokerGame : Node2D
 	private bool playerCanReopenBetting = true;
 	private bool opponentCanReopenBetting = true;
 	private bool hasShownBoredomTell = false;
-
+	private bool vpipThisHand = false; // did player voluntarily put chips in preflop?
+	
 	private Dictionary<Street, bool> playerBetOnStreet = new Dictionary<Street, bool>();
 	private Dictionary<Street, int> playerBetSizeOnStreet = new Dictionary<Street, int>();
 
@@ -138,6 +139,8 @@ public partial class PokerGame : Node2D
 	private string currentOpponentName;
 	private int buyInAmount;
 	private string lastHandDescription = "";
+	private PlayerStats playerStats = new PlayerStats();
+
 	
 	// audio
 	private SFXPlayer sfxPlayer;

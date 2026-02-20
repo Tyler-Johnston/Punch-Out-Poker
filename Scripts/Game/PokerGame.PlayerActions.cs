@@ -10,6 +10,7 @@ public partial class PokerGame
 
 		PerformPlayerAction(() =>
 		{
+			playerStats.RecordAction("Fold");
 			ShowMessage("You fold");
 			GD.Print("Player folds");
 
@@ -39,6 +40,7 @@ public partial class PokerGame
 			if (toCall == 0)
 			{
 				ApplyAction(isPlayer: true, action: PlayerAction.Check);
+				playerStats.RecordAction("Check");
 				ShowMessage("You check");
 				GD.Print("> Player checks");
 				sfxPlayer.PlaySound("check");
@@ -60,6 +62,10 @@ public partial class PokerGame
 			betAmount = Math.Clamp(betAmount, minBet, maxBet);
 			
 			var result = ApplyAction(isPlayer: true, action: PlayerAction.Raise, raiseToTotal: betAmount);
+			
+			string actionString = result.IsBet ? "Bet" : "Raise";
+			playerStats.RecordAction(actionString, isAllIn: playerIsAllIn);
+			if (currentStreet == Street.Preflop) vpipThisHand = true;
 			
 			int chipsAdded = Math.Max(0, result.AmountMoved);
 			playerBetOnStreet[currentStreet] = true;
@@ -123,6 +129,8 @@ public partial class PokerGame
 	private void HandleCallAction()
 	{
 		var result = ApplyAction(isPlayer: true, action: PlayerAction.Call);
+		playerStats.RecordAction("Call", isAllIn: playerIsAllIn);
+		if (currentStreet == Street.Preflop) vpipThisHand = true;
 
 		if (result.AmountMoved < 0)
 		{

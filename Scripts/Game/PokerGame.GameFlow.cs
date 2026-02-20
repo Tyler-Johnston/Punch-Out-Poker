@@ -137,6 +137,8 @@ public partial class PokerGame
 		handInProgress = false;
 		waitingForNextGame = true;
 		ResetPlayerWaitTime();
+		playerStats.EndHand(playerVPIP: vpipThisHand);
+		vpipThisHand = false;
 
 		if (IsGameOver())
 		{

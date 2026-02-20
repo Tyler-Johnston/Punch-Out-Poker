@@ -12,6 +12,9 @@ public partial class GameState : RefCounted
 	public int OpponentChipStack { get; set; }
 	public bool IsAIInPosition { get; set; }
 	
+	// NEW: Tracks the human player's long-term tendencies
+	public PlayerStats CurrentPlayerStats { get; set; }
+	
 	// Controlled via setters for Engine, read-only for AI decisions
 	public bool CanAIReopenBetting { get; private set; }
 	public int LastFullRaiseIncrement { get; private set; }
@@ -62,7 +65,8 @@ public partial class GameState : RefCounted
 		Street street, 
 		int lastFullRaiseIncrement,
 		int bigBlind,
-		bool canAIReopen)
+		bool canAIReopen,
+		PlayerStats mockStats = null) // Added optional mock stats parameter
 	{
 		this.CurrentBet = currentBet;
 		this.PreviousBet = previousBet;
@@ -71,5 +75,8 @@ public partial class GameState : RefCounted
 		this.LastFullRaiseIncrement = lastFullRaiseIncrement;
 		this.BigBlind = bigBlind;
 		this.CanAIReopenBetting = canAIReopen;
+		
+		// If tests don't provide stats, create an empty (neutral) baseline
+		this.CurrentPlayerStats = mockStats ?? new PlayerStats(); 
 	}
 }

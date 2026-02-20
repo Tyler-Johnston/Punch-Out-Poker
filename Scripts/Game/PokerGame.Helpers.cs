@@ -295,7 +295,8 @@ public partial class PokerGame
 			Street = currentStreet,
 			BigBlind = bigBlind,
 			IsAIInPosition = DetermineAIPosition(),
-			OpponentChipStack = opponentChips
+			OpponentChipStack = opponentChips,
+			CurrentPlayerStats = this.playerStats
 		};
 		
 		state.SetPlayerBet(aiOpponent, opponentBet);

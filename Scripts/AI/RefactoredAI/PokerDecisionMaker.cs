@@ -11,6 +11,9 @@ public partial class PokerDecisionMaker : Node
 {
 	public PlayerAction DecideAction(AIPokerPlayer player, GameState gameState)
 	{
+
+		PlayerStats playerStats = gameState.CurrentPlayerStats ?? new PlayerStats(); 
+
 		float handStrength = EvaluateHandStrength(
 			player.Hand,
 			gameState.CommunityCards,
@@ -46,17 +49,18 @@ public partial class PokerDecisionMaker : Node
 			{
 				GameManager.LogVerbose($"[AI] Small all-in ({betRatio:F2}x pot), using normal call logic");
 
-				Decision callFold = DecideCallOrFold(handStrength, betRatio, potSize, toCall, gameState.Street, personality, player);
+				Decision callFold = DecideCallOrFold(handStrength, betRatio, potSize, toCall, gameState.Street, personality, player, playerStats);
 				PlayerAction action = (callFold == Decision.Fold) ? PlayerAction.Fold : PlayerAction.AllIn;
 				return action;
 			}
 
-			PlayerAction allInAction = DecideAllIn(handStrength, betRatio, gameState.Street, personality, player, gameState);
+			PlayerAction allInAction = DecideAllIn(handStrength, betRatio, gameState.Street, personality, player, gameState, playerStats);
 			return allInAction;
 		}
 
 		// Standard facing-bet decision.
-		Decision callFoldDecision = DecideCallOrFold(handStrength, betRatio, potSize, toCall, gameState.Street, personality, player);
+		// PASS playerStats down
+		Decision callFoldDecision = DecideCallOrFold(handStrength, betRatio, potSize, toCall, gameState.Street, personality, player, playerStats);
 		if (callFoldDecision == Decision.Fold)
 		{
 			return PlayerAction.Fold;
@@ -68,11 +72,11 @@ public partial class PokerDecisionMaker : Node
 			return PlayerAction.Call;
 		}
 
-
 		// We're continuing - now decide call vs raise.
 		PlayerAction finalAction = DecideCallOrRaise(handStrength, betRatio, gameState.Street, personality, player, toCall);
 		return finalAction;
 	}
+
 
 	private Decision DecideCallOrFold(
 		float handStrength,
@@ -81,7 +85,8 @@ public partial class PokerDecisionMaker : Node
 		float toCall,
 		Street street,
 		PokerPersonality personality,
-		AIPokerPlayer player)
+		AIPokerPlayer player,
+		PlayerStats playerStats)
 	{
 		// 1) Pot odds override.
 		float potOdds = toCall / (potSize + toCall);
@@ -103,6 +108,24 @@ public partial class PokerDecisionMaker : Node
 		float effRiskTol = Mathf.Clamp(personality.CurrentRiskTolerance, 0f, 1f);
 		float effBluffFreq = Mathf.Clamp(personality.CurrentBluffFrequency, 0f, 1f);
 
+		// --- ADAPT TO PLAYER AGGRESSION ---
+		float opponentAggressionModifier = 0f;
+		if (playerStats.HasEnoughData())
+		{
+			// If player raises >40% of the time or has high AggressionFactor (>2.0), they are a maniac.
+			if (playerStats.RaiseFrequency > 0.40f || playerStats.AggressionFactor > 2.0f)
+			{
+				opponentAggressionModifier = -0.12f; // Lower threshold = call wider
+				GameManager.LogVerbose($"[AI] Player is highly aggressive. Loosening defense by {opponentAggressionModifier:F2}");
+			}
+			// If player rarely raises (<15%) and mostly calls, they are passive/nitty. Respect their bets.
+			else if (playerStats.RaiseFrequency < 0.15f)
+			{
+				opponentAggressionModifier = +0.08f; // Raise threshold = fold more
+				GameManager.LogVerbose($"[AI] Player is very passive. Tightening defense by {opponentAggressionModifier:F2}");
+			}
+		}
+
 		// 3) Base call thresholds per street.
 		float baseThreshold = street switch
 		{
@@ -111,6 +134,9 @@ public partial class PokerDecisionMaker : Node
 			Street.River => PokerAIConfig.RIVER_BASE_THRESHOLD,
 			_ => PokerAIConfig.PREFLOP_BASE_THRESHOLD
 		};
+
+		// Apply the opponent model adjustment here:
+		baseThreshold += opponentAggressionModifier;
 
 		// 4) Personality shift: higher call tendency => looser defense.
 		float callShift = Mathf.Lerp(0.06f, -0.06f, effCallTend);
@@ -389,7 +415,8 @@ public partial class PokerDecisionMaker : Node
 		Street street,
 		PokerPersonality personality,
 		AIPokerPlayer player,
-		GameState gameState)
+		GameState gameState,
+		PlayerStats playerStats)
 	{
 		float effRiskTol = Mathf.Clamp(personality.CurrentRiskTolerance, 0f, 1f);
 		float effBluffFreq = Mathf.Clamp(personality.CurrentBluffFrequency, 0f, 1f);
@@ -411,6 +438,16 @@ public partial class PokerDecisionMaker : Node
 			Street.River => 0.72f - (effRiskTol * 0.20f),
 			_ => 0.62f - (effRiskTol * 0.20f)
 		};
+
+		// --- ADAPT TO PLAYER ALL-IN SPAM ---
+		if (playerStats.HasEnoughData())
+		{
+			float callAdjustment = playerStats.GetAllInCallAdjustment();
+			allInThreshold -= callAdjustment; // Lower threshold = easier call
+			GameManager.LogVerbose($"[AI] Adjusted All-In call threshold by {-callAdjustment:F2} due to player shove freq ({playerStats.AllInFrequency:P0})");
+		}
+
+		allInThreshold = Mathf.Clamp(allInThreshold, 0.20f, 0.95f); // Keep sane limits
 
 		if (handStrength >= allInThreshold)
 		{
