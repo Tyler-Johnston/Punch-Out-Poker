@@ -985,6 +985,24 @@ public partial class PokerGame
 	// --- HUD UPDATE METHODS ---
 	private void UpdatePotSizeButtons(bool enabled = true)
 	{
+		if (betSlider != null)
+		{
+			betSlider.Editable = enabled;
+			betSlider.Modulate = enabled ? Colors.White : new Color(0.7f, 0.7f, 0.7f, 0.5f);
+
+			var fillStyle = betSlider.GetThemeStylebox("grabber_area") as StyleBoxFlat;
+			if (fillStyle != null)
+			{
+				Color color = fillStyle.BgColor;
+				color.A = enabled ? 1.0f : 0.0f;
+				fillStyle.BgColor = color;
+
+				Color borderColor = fillStyle.BorderColor;
+				borderColor.A = enabled ? 1.0f : 0.0f;
+				fillStyle.BorderColor = borderColor;
+			}
+		}
+		
 		// Gate: only when the slider/betting UI is actually usable
 		if (!enabled || !handInProgress || !isPlayerTurn || playerIsAllIn)
 		{
@@ -1177,6 +1195,7 @@ public partial class PokerGame
 			UpdateButtonState(foldButton, false);
 			UpdateButtonState(checkCallButton, false);
 			UpdateButtonState(betRaiseButton, false);
+			UpdatePotSizeButtons(false);
 		}
 		else
 		{
@@ -1204,27 +1223,7 @@ public partial class PokerGame
 			UpdateButtonState(foldButton, enableButtons);
 			UpdateButtonState(checkCallButton, enableButtons);
 			UpdateButtonState(betRaiseButton, enableButtons && canActuallyRaise);
-			
-			bool enableSlider = enableButtons && canActuallyRaise;
-			
-			if (betSlider != null)
-			{
-				betSlider.Editable = enableSlider;
-				betSlider.Modulate = enableSlider ? Colors.White : new Color(0.7f, 0.7f, 0.7f, 0.5f);
-
-				var fillStyle = betSlider.GetThemeStylebox("grabber_area") as StyleBoxFlat;
-				if (fillStyle != null)
-				{
-					Color color = fillStyle.BgColor;
-					color.A = enableSlider ? 1.0f : 0.0f;
-					fillStyle.BgColor = color;
-
-					Color borderColor = fillStyle.BorderColor;
-					borderColor.A = enableSlider ? 1.0f : 0.0f;
-					fillStyle.BorderColor = borderColor;
-				}
-			}
-			UpdatePotSizeButtons(enableSlider); 
+			UpdatePotSizeButtons(enableButtons && canActuallyRaise); 
 		}
 
 		opponentStackLabel.Text = $"${opponentChips}";
