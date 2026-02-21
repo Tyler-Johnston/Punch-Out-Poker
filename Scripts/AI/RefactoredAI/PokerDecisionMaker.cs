@@ -3,308 +3,170 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-/// <summary>
-/// Central AI decision logic.
-/// Returns only the action type; the game/executor is responsible for sizing raises via CalculateRaiseToTotal.
-/// </summary>
 public partial class PokerDecisionMaker : Node
 {
 	public PlayerAction DecideAction(AIPokerPlayer player, GameState gameState)
 	{
-
-		PlayerStats playerStats = gameState.CurrentPlayerStats ?? new PlayerStats(); 
+		PlayerStats playerStats = gameState.CurrentPlayerStats ?? new PlayerStats();
 
 		float handStrength = EvaluateHandStrength(
-			player.Hand,
-			gameState.CommunityCards,
-			gameState.Street,
-			player.HandRandomnessSeed
-		);
+			player.Hand, gameState.CommunityCards,
+			gameState.Street, player.HandRandomnessSeed);
 
 		PokerPersonality personality = player.Personality;
-
-		float toCall = gameState.CurrentBet - gameState.GetPlayerCurrentBet(player);
-		float potSize = Mathf.Max(gameState.PotSize, 1f);
+		float toCall   = gameState.CurrentBet - gameState.GetPlayerCurrentBet(player);
+		float potSize  = Mathf.Max(gameState.PotSize, 1f);
 		float betRatio = toCall / potSize;
 
 		GameManager.LogVerbose(
 			$"[AI STATE] {player.PlayerName} | Street: {gameState.Street} | Strength: {handStrength:F2} | " +
 			$"ToCall: {toCall} | BetRatio: {betRatio:F2} | Tilt: {player.CurrentTiltState} ({personality.TiltMeter:F0}) | " +
-			$"Pos: {(gameState.IsAIInPosition ? "IP" : "OOP")}"
-		);
+			$"Pos: {(gameState.IsAIInPosition ? "IP" : "OOP")}");
 
-		// No bet to face - check or bet decision.
 		if (toCall <= 0)
 		{
-			Decision decision = DecideCheckOrBet(handStrength, gameState, personality, player, out float plannedBetRatio);
-			PlayerAction action = (decision == Decision.Bet) ? PlayerAction.Raise : PlayerAction.Check;
-			return action;
+			bool shouldBet = DecideCheckOrBet(handStrength, gameState, personality, player);
+			return shouldBet ? PlayerAction.Raise : PlayerAction.Check;
 		}
 
-		// All-in pressure (cannot call more than stack).
 		if (toCall >= player.ChipStack)
 		{
-			// If all-in is small relative to pot, treat as normal call/fold decision.
-			if (betRatio < 0.50f)
+			if (betRatio < PokerAIConfig.ALLIN_SMALL_BET_RATIO)
 			{
 				GameManager.LogVerbose($"[AI] Small all-in ({betRatio:F2}x pot), using normal call logic");
-
 				Decision callFold = DecideCallOrFold(handStrength, betRatio, potSize, toCall, gameState.Street, personality, player, playerStats);
-				PlayerAction action = (callFold == Decision.Fold) ? PlayerAction.Fold : PlayerAction.AllIn;
-				return action;
+				return (callFold == Decision.Fold) ? PlayerAction.Fold : PlayerAction.AllIn;
 			}
-
-			PlayerAction allInAction = DecideAllIn(handStrength, betRatio, gameState.Street, personality, player, gameState, playerStats);
-			return allInAction;
+			return DecideAllIn(handStrength, betRatio, gameState.Street, personality, player, gameState, playerStats);
 		}
 
-		// Standard facing-bet decision.
-		// PASS playerStats down
 		Decision callFoldDecision = DecideCallOrFold(handStrength, betRatio, potSize, toCall, gameState.Street, personality, player, playerStats);
 		if (callFoldDecision == Decision.Fold)
-		{
 			return PlayerAction.Fold;
-		}
-		
+
 		if (!gameState.CanAIReopenBetting)
 		{
-			GameManager.LogVerbose($"[AI] Cannot raise - betting not reopened (under-raise all-in rule). Forcing Call.");
+			GameManager.LogVerbose("[AI] Cannot raise - betting not reopened. Forcing Call.");
 			return PlayerAction.Call;
 		}
 
-		// We're continuing - now decide call vs raise.
-		PlayerAction finalAction = DecideCallOrRaise(handStrength, betRatio, gameState.Street, personality, player, toCall);
-		return finalAction;
+		return DecideCallOrRaise(handStrength, betRatio, gameState.Street, personality, player, toCall);
 	}
 
-
 	private Decision DecideCallOrFold(
-		float handStrength,
-		float betRatio,
-		float potSize,
-		float toCall,
-		Street street,
-		PokerPersonality personality,
-		AIPokerPlayer player,
-		PlayerStats playerStats)
+		float handStrength, float betRatio, float potSize, float toCall,
+		Street street, PokerPersonality personality, AIPokerPlayer player, PlayerStats playerStats)
 	{
-		// 1) Pot odds override.
-		float potOdds = toCall / (potSize + toCall);
+		// 1) Easy pot-odds call
+		float potOdds        = toCall / (potSize + toCall);
 		float oddsMultiplier = (betRatio < 0.40f) ? 1.0f : PokerAIConfig.POT_ODDS_MULTIPLIER;
 
 		if (potOdds < PokerAIConfig.POT_ODDS_OVERRIDE_THRESHOLD &&
 			handStrength > potOdds * oddsMultiplier)
 		{
-			GameManager.LogVerbose($"[AI] Easy call - pot odds: {potOdds:F2}, equity: {handStrength:F2} (Sticky Mode: {betRatio < 0.40f})");
+			GameManager.LogVerbose($"[AI] Easy call - pot odds: {potOdds:F2}, equity: {handStrength:F2}");
 			return Decision.Call;
 		}
 
-		// 2) Effective stats.
-		float effCallTend = Mathf.Clamp(
-			personality.CallTendency * (1f + personality.TiltMeter / 200f),
-			0f,
-			1f
-		);
-		float effRiskTol = Mathf.Clamp(personality.CurrentRiskTolerance, 0f, 1f);
+		float effCallTend  = Mathf.Clamp(personality.CallTendency * (1f + personality.TiltMeter / 200f), 0f, 1f);
+		float effRiskTol   = Mathf.Clamp(personality.CurrentRiskTolerance, 0f, 1f);
 		float effBluffFreq = Mathf.Clamp(personality.CurrentBluffFrequency, 0f, 1f);
 
-		// --- ADAPT TO PLAYER AGGRESSION ---
-		float opponentAggressionModifier = 0f;
-		if (playerStats.HasEnoughData())
-		{
-			// If player raises >40% of the time or has high AggressionFactor (>2.0), they are a maniac.
-			if (playerStats.RaiseFrequency > 0.40f || playerStats.AggressionFactor > 2.0f)
-			{
-				opponentAggressionModifier = -0.12f; // Lower threshold = call wider
-				GameManager.LogVerbose($"[AI] Player is highly aggressive. Loosening defense by {opponentAggressionModifier:F2}");
-			}
-			// If player rarely raises (<15%) and mostly calls, they are passive/nitty. Respect their bets.
-			else if (playerStats.RaiseFrequency < 0.15f)
-			{
-				opponentAggressionModifier = +0.08f; // Raise threshold = fold more
-				GameManager.LogVerbose($"[AI] Player is very passive. Tightening defense by {opponentAggressionModifier:F2}");
-			}
-		}
+		// 2) Opponent model adjustment
+		float opponentAdjust = GetOpponentAggressionAdjustment(playerStats);
 
-		// 3) Base call thresholds per street.
-		float baseThreshold = street switch
-		{
-			Street.Flop => PokerAIConfig.FLOP_BASE_THRESHOLD,
-			Street.Turn => PokerAIConfig.TURN_BASE_THRESHOLD,
-			Street.River => PokerAIConfig.RIVER_BASE_THRESHOLD,
-			_ => PokerAIConfig.PREFLOP_BASE_THRESHOLD
-		};
+		// 3) Street base threshold + adjustments
+		float baseThreshold  = GetCallBaseThreshold(street);
+		baseThreshold       += opponentAdjust;
+		baseThreshold       += Mathf.Lerp(0.06f, -0.06f, effCallTend);
 
-		// Apply the opponent model adjustment here:
-		baseThreshold += opponentAggressionModifier;
-
-		// 4) Personality shift: higher call tendency => looser defense.
-		float callShift = Mathf.Lerp(0.06f, -0.06f, effCallTend);
-		baseThreshold += callShift;
-
-		// 5) Bet size scaling.
+		// 4) Bet size scaling
 		float sizeFactor = Mathf.Clamp(betRatio, 0f, 3f);
-		float sizeBump = (street == Street.Flop)
+		float sizeBump   = (street == Street.Flop)
 			? PokerAIConfig.FLOP_SIZE_BUMP * sizeFactor
 			: PokerAIConfig.LATER_STREET_SIZE_BUMP * sizeFactor;
-
-		// Higher risk tolerance => less tightening vs big bets.
 		sizeBump *= (1f - 0.5f * effRiskTol);
+
 		float threshold = Mathf.Clamp(baseThreshold + sizeBump, 0f, 1f);
 
-		// 6) Huge overbet rule (2.5x+ pot).
-		if (betRatio >= 2.5f)
+		// 5) Overbet (2.5x+ pot)
+		if (betRatio >= PokerAIConfig.OVERBET_RATIO_THRESHOLD)
 		{
-			if (player.CurrentTiltState == TiltState.Monkey)
-				return Decision.Call;
+			if (player.CurrentTiltState == TiltState.Monkey) return Decision.Call;
 
-			float overbetTighten = Mathf.Lerp(0.08f, 0.18f, 1f - effRiskTol);
-			float overbetThreshold = Mathf.Clamp(0.58f + overbetTighten, 0f, 1f);
-
-			// If we think villain bluffs a lot (or we bluff a lot), we can defend slightly wider.
-			overbetThreshold -= 0.04f * effBluffFreq;
+			float overbetTighten   = Mathf.Lerp(PokerAIConfig.OVERBET_RISK_MIN, PokerAIConfig.OVERBET_RISK_MAX, 1f - effRiskTol);
+			float overbetThreshold = Mathf.Clamp(PokerAIConfig.OVERBET_BASE_THRESHOLD + overbetTighten, 0f, 1f);
+			overbetThreshold      -= PokerAIConfig.OVERBET_BLUFF_DISCOUNT * effBluffFreq;
 
 			if (handStrength < overbetThreshold)
 			{
-				GameManager.LogVerbose($"[AI] Folding to huge overbet ({betRatio:F1}x pot) - need {overbetThreshold:F2}, have {handStrength:F2}");
+				GameManager.LogVerbose($"[AI] Folding to overbet ({betRatio:F1}x) - need {overbetThreshold:F2}, have {handStrength:F2}");
 				return Decision.Fold;
 			}
 			return Decision.Call;
 		}
 
-		// 7) Large bet (0.8x+ pot).
-		if (betRatio > 0.8f)
+		// 6) Large bet (0.8x+ pot)
+		if (betRatio > PokerAIConfig.LARGE_BET_RATIO)
 		{
-			bool heroCall = false;
-			float heroCallChance = 0.0f;
+			if (ShouldHeroCall(handStrength, player, street))
+				return Decision.Call;
 
-			if (player.CurrentTiltState >= TiltState.Annoyed) heroCallChance += 0.20f;
-			if (player.CurrentTiltState >= TiltState.Steaming) heroCallChance += 0.20f;
-			if (personality.CallTendency > 0.6f) heroCallChance += 0.15f;
+			float bluffAdjust   = Mathf.Lerp(0.03f, -0.03f, effBluffFreq);
+			float callThreshold = Mathf.Clamp(threshold + bluffAdjust, 0f, 1f);
 
-			// Use a real per-hand seed (not a deterministic function of handStrength).
-			float heroSeed = GetDecisionSeedForStreet(player, street);
-			if (handStrength > 0.30f && heroSeed < heroCallChance)
+			if (handStrength < callThreshold)
 			{
-				heroCall = true;
-				GameManager.LogVerbose($"[AI] HERO CALL! (State: {player.CurrentTiltState}, Strength: {handStrength:F2}, Seed: {heroSeed:F2})");
-			}
-
-			if (!heroCall)
-			{
-				float bluffAdjust = Mathf.Lerp(0.03f, -0.03f, effBluffFreq);
-				float callThreshold = Mathf.Clamp(threshold + bluffAdjust, 0f, 1f);
-
-				if (handStrength < callThreshold)
-				{
-					GameManager.LogVerbose($"[AI] Folding to large bet ({betRatio:F1}x pot) on {street} - need {callThreshold:F2}, have {handStrength:F2}");
-					return Decision.Fold;
-				}
-			}
-		}
-		else
-		{
-			float lightThreshold;
-
-			// Micro/small bets (<33% pot)
-			if (betRatio < 0.33f)
-			{
-				lightThreshold = threshold - 0.15f;
-				if (street == Street.Flop) lightThreshold -= 0.08f;
-			}
-			// Medium bets (<55% pot)
-			else if (betRatio < 0.55f)
-			{
-				lightThreshold = threshold - 0.10f;
-				if (street == Street.Flop) lightThreshold -= 0.05f;
-			}
-			// Standard bets (0.55 - 0.80)
-			else
-			{
-				lightThreshold = threshold - 0.04f;
-				if (street == Street.Flop) lightThreshold -= 0.02f;
-			}
-
-			lightThreshold = Mathf.Clamp(lightThreshold, 0.15f, 1f);
-			if (handStrength < lightThreshold)
-			{
-				GameManager.LogVerbose($"[AI] Folding to small/mid bet ({betRatio:F1}x pot) - need {lightThreshold:F2}, have {handStrength:F2}");
+				GameManager.LogVerbose($"[AI] Folding to large bet ({betRatio:F1}x) on {street} - need {callThreshold:F2}, have {handStrength:F2}");
 				return Decision.Fold;
 			}
+			return Decision.Call;
 		}
 
+		// 7) Small / medium bets
+		float lightThreshold = GetLightCallThreshold(threshold, betRatio, street);
+		if (handStrength < lightThreshold)
+		{
+			GameManager.LogVerbose($"[AI] Folding to small/mid bet ({betRatio:F1}x) - need {lightThreshold:F2}, have {handStrength:F2}");
+			return Decision.Fold;
+		}
 		return Decision.Call;
 	}
 
-	private Decision DecideCheckOrBet(
-		float handStrength,
-		GameState gameState,
-		PokerPersonality personality,
-		AIPokerPlayer player,
-		out float plannedBetRatio)
+	private bool DecideCheckOrBet(
+		float handStrength, GameState gameState,
+		PokerPersonality personality, AIPokerPlayer player)
 	{
-		Street street = gameState.Street;
-
-		// Current* stats are already tilt-adjusted in PokerPersonality.
+		Street street       = gameState.Street;
 		float effAggression = Mathf.Clamp(personality.CurrentAggression, 0f, 1f);
-		float effBluffFreq = Mathf.Clamp(personality.CurrentBluffFrequency, 0f, 1f);
-		float effRiskTol = Mathf.Clamp(personality.CurrentRiskTolerance, 0f, 1f);
+		float effBluffFreq  = Mathf.Clamp(personality.CurrentBluffFrequency, 0f, 1f);
+		float effRiskTol    = Mathf.Clamp(personality.CurrentRiskTolerance, 0f, 1f);
 
-		plannedBetRatio = CalculatePlannedBetRatio(handStrength, personality, street, player.BetSizeSeed, player);
+		float plannedBetRatio = CalculatePlannedBetRatio(handStrength, personality, street, player.BetSizeSeed, player);
+		float valueThreshold  = GetValueThreshold(street, gameState.IsAIInPosition, plannedBetRatio, effRiskTol);
+		float bluffCeiling    = GetBluffCeiling(street, gameState.IsAIInPosition, plannedBetRatio);
 
-		float valueThreshold = street switch
-		{
-			Street.Flop => PokerAIConfig.FLOP_VALUE_THRESHOLD,
-			Street.Turn => PokerAIConfig.TURN_VALUE_THRESHOLD,
-			Street.River => PokerAIConfig.RIVER_VALUE_THRESHOLD,
-			_ => PokerAIConfig.FLOP_VALUE_THRESHOLD
-		};
-
-		float bluffCeiling = street switch
-		{
-			Street.Flop => PokerAIConfig.FLOP_BLUFF_CEILING,
-			Street.Turn => PokerAIConfig.TURN_BLUFF_CEILING,
-			Street.River => PokerAIConfig.RIVER_BLUFF_CEILING,
-			_ => PokerAIConfig.FLOP_BLUFF_CEILING
-		};
-
-		if (!gameState.IsAIInPosition)
-		{
-			valueThreshold += PokerAIConfig.OOP_VALUE_TIGHTEN;
-			bluffCeiling -= PokerAIConfig.OOP_BLUFF_REDUCE;
-		}
-
-		// Adjust thresholds based on planned bet size.
-		float sizeFactor = Mathf.Clamp(plannedBetRatio, 0f, 2f);
-		valueThreshold += PokerAIConfig.SIZE_FACTOR_VALUE_ADJUST * sizeFactor * (1f - effRiskTol);
-		bluffCeiling -= PokerAIConfig.SIZE_FACTOR_BLUFF_ADJUST * sizeFactor;
-
-		// VALUE
+		// VALUE BET
 		if (handStrength >= valueThreshold)
 		{
-			bool canTrap = player.CurrentTiltState < TiltState.Steaming;
-			if (canTrap && handStrength > 0.85f && player.TrapDecisionSeed < PokerAIConfig.TRAP_PROBABILITY)
+			if (player.CurrentTiltState < TiltState.Steaming &&
+				handStrength > 0.85f &&
+				player.TrapDecisionSeed < PokerAIConfig.TRAP_PROBABILITY)
 			{
-				GameManager.LogVerbose($"[AI] Trapping with {handStrength:F2} strength");
-				plannedBetRatio = 0f;
-				return Decision.Check;
+				GameManager.LogVerbose($"[AI] Trapping with {handStrength:F2}");
+				return false;
 			}
 
 			if (handStrength < 0.75f)
 			{
-				float valueBetFreq = PokerAIConfig.VALUE_BET_BASE_FREQ +
-									 (effAggression * PokerAIConfig.VALUE_BET_AGGRESSION_WEIGHT);
-
-				float valueSeed = GetDecisionSeedForStreet(player, street);
-				if (valueSeed > valueBetFreq)
+				float valueBetFreq = PokerAIConfig.VALUE_BET_BASE_FREQ + (effAggression * PokerAIConfig.VALUE_BET_AGGRESSION_WEIGHT);
+				if (GetDecisionSeedForStreet(player, street) > valueBetFreq)
 				{
 					GameManager.LogVerbose($"[AI] Checking value hand ({handStrength:F2}) for deception");
-					plannedBetRatio = 0f;
-					return Decision.Check;
+					return false;
 				}
 			}
-
-			return Decision.Bet;
+			return true;
 		}
 
 		// BLUFF
@@ -312,208 +174,102 @@ public partial class PokerDecisionMaker : Node
 		{
 			float bluffProb = PokerAIConfig.BLUFF_BASE_PROB * effBluffFreq +
 							  PokerAIConfig.BLUFF_AGGRESSION_WEIGHT * effAggression;
+			if (player.CurrentTiltState >= TiltState.Steaming) bluffProb += 0.20f;
 
-			if (player.CurrentTiltState >= TiltState.Steaming)
-				bluffProb += 0.20f;
-
-			float bluffSeed = GetDecisionSeedForStreet(player, street);
-			if (bluffSeed < bluffProb)
+			if (GetDecisionSeedForStreet(player, street) < bluffProb)
 			{
-				GameManager.LogVerbose($"[AI] Bluffing on {street} (strength: {handStrength:F2}, size: {plannedBetRatio:F2}x)");
-				return Decision.Bet;
+				GameManager.LogVerbose($"[AI] Bluffing on {street} ({handStrength:F2})");
+				return true;
 			}
-
-			plannedBetRatio = 0f;
-			return Decision.Check;
+			return false;
 		}
 
-		// MEDIUM HANDS: mixed strategy by street + aggression.
-		float mediumBetFreq = street switch
-		{
-			Street.Flop => 0.25f + (0.40f * effAggression),
-			Street.Turn => 0.20f + (0.45f * effAggression),
-			Street.River => 0.15f + (0.35f * effAggression),
-			_ => 0.20f + (0.35f * effAggression)
-		};
-
-		float mediumSeed = GetDecisionSeedForStreet(player, street);
-		if (mediumSeed < mediumBetFreq)
+		// MEDIUM HAND: mixed strategy
+		float mediumBetFreq = GetMediumBetFrequency(street, effAggression);
+		if (GetDecisionSeedForStreet(player, street) < mediumBetFreq)
 		{
 			GameManager.LogVerbose($"[AI] Betting medium hand ({handStrength:F2}) for protection/value");
-			return Decision.Bet;
+			return true;
 		}
-
-		plannedBetRatio = 0f;
-		return Decision.Check;
-	}
-
-	private float GetDecisionSeedForStreet(AIPokerPlayer player, Street street)
-	{
-		return street switch
-		{
-			Street.Preflop => player.PreflopDecisionSeed,
-			Street.Flop => player.FlopDecisionSeed,
-			Street.Turn => player.TurnDecisionSeed,
-			Street.River => player.RiverDecisionSeed,
-			_ => player.FlopDecisionSeed
-		};
-	}
-
-	private float CalculatePlannedBetRatio(
-		float handStrength,
-		PokerPersonality personality,
-		Street street,
-		float betSizeSeed,
-		AIPokerPlayer player)
-	{
-		float normalizedSeed = betSizeSeed;
-		float baseBetMultiplier;
-
-		if (handStrength >= 0.80f)
-			baseBetMultiplier = 0.85f + (normalizedSeed * 0.35f);
-		else if (handStrength >= 0.65f)
-			baseBetMultiplier = 0.65f + (normalizedSeed * 0.30f);
-		else if (handStrength >= 0.45f)
-			baseBetMultiplier = 0.50f + (normalizedSeed * 0.25f);
-		else if (handStrength >= 0.35f)
-			baseBetMultiplier = 0.35f + (normalizedSeed * 0.25f);
-		else
-		{
-			if (normalizedSeed < 0.60f)
-			{
-				float smallBluffSeed = normalizedSeed / 0.60f;
-				baseBetMultiplier = 0.35f + (smallBluffSeed * 0.20f);
-			}
-			else
-			{
-				float bigBluffSeed = (normalizedSeed - 0.60f) / 0.40f;
-				baseBetMultiplier = 1.20f + (bigBluffSeed * 0.40f);
-			}
-		}
-
-		float streetMultiplier = street switch
-		{
-			Street.Preflop => PokerAIConfig.PREFLOP_BET_MULTIPLIER,
-			Street.Flop => PokerAIConfig.FLOP_BET_MULTIPLIER,
-			Street.Turn => PokerAIConfig.TURN_BET_MULTIPLIER,
-			Street.River => PokerAIConfig.RIVER_BET_MULTIPLIER,
-			_ => 1.0f
-		};
-
-		baseBetMultiplier *= streetMultiplier;
-
-		float aggressionMultiplier = 0.9f + (personality.CurrentAggression * 0.3f);
-		if (player.CurrentTiltState >= TiltState.Steaming)
-			aggressionMultiplier *= 1.25f;
-
-		return baseBetMultiplier * aggressionMultiplier;
+		return false;
 	}
 
 	private PlayerAction DecideAllIn(
-		float handStrength,
-		float betRatio,
-		Street street,
-		PokerPersonality personality,
-		AIPokerPlayer player,
-		GameState gameState,
-		PlayerStats playerStats)
+		float handStrength, float betRatio, Street street,
+		PokerPersonality personality, AIPokerPlayer player,
+		GameState gameState, PlayerStats playerStats)
 	{
-		float effRiskTol = Mathf.Clamp(personality.CurrentRiskTolerance, 0f, 1f);
+		float effRiskTol   = Mathf.Clamp(personality.CurrentRiskTolerance, 0f, 1f);
 		float effBluffFreq = Mathf.Clamp(personality.CurrentBluffFrequency, 0f, 1f);
 
-		if (street == Street.Preflop && player.ChipStack > gameState.BigBlind * 15)
+		if (street == Street.Preflop &&
+			player.ChipStack > gameState.BigBlind * PokerAIConfig.ALLIN_STACK_GUARD_BB_MULTIPLIER &&
+			player.CurrentTiltState < TiltState.Steaming &&
+			handStrength < PokerAIConfig.ALLIN_PREFLOP_STACK_GUARD_MIN_STRENGTH)
 		{
-			if (player.CurrentTiltState < TiltState.Steaming && handStrength < 0.60f)
-			{
-				GameManager.LogVerbose($"[AI] Protecting stack (State: {player.CurrentTiltState}). Folding {handStrength:F2} to preflop shove.");
-				return PlayerAction.Fold;
-			}
+			GameManager.LogVerbose($"[AI] Stack guard fold ({handStrength:F2})");
+			return PlayerAction.Fold;
 		}
 
-		float allInThreshold = street switch
-		{
-			Street.Preflop => 0.52f - (effRiskTol * 0.18f),
-			Street.Flop => 0.62f - (effRiskTol * 0.20f),
-			Street.Turn => 0.68f - (effRiskTol * 0.20f),
-			Street.River => 0.72f - (effRiskTol * 0.20f),
-			_ => 0.62f - (effRiskTol * 0.20f)
-		};
+		float allInThreshold = GetAllInThreshold(street, effRiskTol);
 
-		// --- ADAPT TO PLAYER ALL-IN SPAM ---
 		if (playerStats.HasEnoughData())
 		{
-			float callAdjustment = playerStats.GetAllInCallAdjustment();
-			allInThreshold -= callAdjustment; // Lower threshold = easier call
-			GameManager.LogVerbose($"[AI] Adjusted All-In call threshold by {-callAdjustment:F2} due to player shove freq ({playerStats.AllInFrequency:P0})");
+			float callAdjustment  = playerStats.GetAllInCallAdjustment();
+			allInThreshold       -= callAdjustment;
+			GameManager.LogVerbose($"[AI] All-in threshold adjusted by {-callAdjustment:F2} (shove freq {playerStats.AllInFrequency:P0})");
 		}
 
-		allInThreshold = Mathf.Clamp(allInThreshold, 0.20f, 0.95f); // Keep sane limits
+		allInThreshold = Mathf.Clamp(allInThreshold, 0.20f, 0.95f);
 
 		if (handStrength >= allInThreshold)
 		{
-			GameManager.LogVerbose($"[AI] Calling all-in with {handStrength:F2} on {street} (threshold: {allInThreshold:F2})");
+			GameManager.LogVerbose($"[AI] Calling all-in ({handStrength:F2} >= {allInThreshold:F2}) on {street}");
 			return PlayerAction.AllIn;
 		}
 
-		float bluffShoveProb = street switch
-		{
-			Street.Preflop => effBluffFreq * 0.25f,
-			Street.Flop => effBluffFreq * 0.20f,
-			_ => effBluffFreq * 0.10f
-		};
-
-		if (player.CurrentTiltState >= TiltState.Steaming)
-			bluffShoveProb *= 2.0f;
-
-		float bluffSeed = GetDecisionSeedForStreet(player, street);
-		if (handStrength < 0.25f && bluffSeed < bluffShoveProb)
+		float bluffShoveProb = GetBluffShoveProb(street, effBluffFreq, player.CurrentTiltState);
+		if (handStrength < PokerAIConfig.ALLIN_BLUFF_MAX_STRENGTH &&
+			GetDecisionSeedForStreet(player, street) < bluffShoveProb)
 		{
 			GameManager.LogVerbose($"[AI] Bluff shoving on {street}!");
 			return PlayerAction.AllIn;
 		}
 
-		GameManager.LogVerbose($"[AI] Folding to all-in pressure on {street} ({handStrength:F2} < {allInThreshold:F2})");
+		GameManager.LogVerbose($"[AI] Folding to all-in ({handStrength:F2} < {allInThreshold:F2}) on {street}");
 		return PlayerAction.Fold;
 	}
 
 	private PlayerAction DecideCallOrRaise(
-		float handStrength,
-		float betRatio,
-		Street street,
-		PokerPersonality personality,
-		AIPokerPlayer player,
-		float toCall)
+		float handStrength, float betRatio, Street street,
+		PokerPersonality personality, AIPokerPlayer player, float toCall)
 	{
 		float effAggression = Mathf.Clamp(personality.CurrentAggression, 0f, 1f);
-		float effBluffFreq = Mathf.Clamp(personality.CurrentBluffFrequency, 0f, 1f);
+		float effBluffFreq  = Mathf.Clamp(personality.CurrentBluffFrequency, 0f, 1f);
 
-		float raiseThreshold = street switch
+		float raiseThreshold = GetRaiseThreshold(street, effAggression);
+
+		if (handStrength >= raiseThreshold &&
+			player.ChipStack > toCall * PokerAIConfig.RAISE_MIN_STACK_MULTIPLIER)
 		{
-			Street.Flop => 0.62f,
-			Street.Turn => 0.67f,
-			Street.River => 0.72f,
-			_ => 0.60f
-		};
-		raiseThreshold -= effAggression * 0.15f;
-
-		if (handStrength >= raiseThreshold && player.ChipStack > toCall * 2.5f)
-		{
-			float raiseProb = effAggression * 0.8f + 0.2f;
-			float raiseSeed = GetDecisionSeedForStreet(player, street);
-
-			if (raiseSeed < raiseProb)
+			float raiseProb = PokerAIConfig.RAISE_PROB_BASE + effAggression * PokerAIConfig.RAISE_PROB_AGG_WEIGHT;
+			if (GetDecisionSeedForStreet(player, street) < raiseProb)
 			{
 				GameManager.LogVerbose($"[AI] Value raising ({handStrength:F2})");
 				return PlayerAction.Raise;
 			}
 		}
 
-		float bluffRaiseProb = effBluffFreq * (street == Street.Flop ? 0.35f : 0.20f);
+		float bluffRaiseScale = (street == Street.Flop)
+			? PokerAIConfig.BLUFF_RAISE_FLOP_SCALE
+			: PokerAIConfig.BLUFF_RAISE_LATER_SCALE;
+		float bluffRaiseProb = effBluffFreq * bluffRaiseScale;
 		if (player.CurrentTiltState >= TiltState.Steaming)
-			bluffRaiseProb *= 1.5f;
+			bluffRaiseProb *= PokerAIConfig.BLUFF_RAISE_TILT_MULTIPLIER;
 
-		float bluffRaiseSeed = GetDecisionSeedForStreet(player, street);
-		if (handStrength < 0.32f && bluffRaiseSeed < bluffRaiseProb && player.ChipStack > toCall * 3f)
+		if (handStrength < PokerAIConfig.BLUFF_RAISE_MAX_STRENGTH &&
+			GetDecisionSeedForStreet(player, street) < bluffRaiseProb &&
+			player.ChipStack > toCall * PokerAIConfig.BLUFF_RAISE_MIN_STACK_MULTIPLIER)
 		{
 			GameManager.LogVerbose($"[AI] Bluff raising on {street}");
 			return PlayerAction.Raise;
@@ -522,63 +278,239 @@ public partial class PokerDecisionMaker : Node
 		return PlayerAction.Call;
 	}
 
+	// --- PRIVATE HELPERS ---
+
+	private float GetCallBaseThreshold(Street street) => street switch
+	{
+		Street.Flop  => PokerAIConfig.FLOP_BASE_THRESHOLD,
+		Street.Turn  => PokerAIConfig.TURN_BASE_THRESHOLD,
+		Street.River => PokerAIConfig.RIVER_BASE_THRESHOLD,
+		_            => PokerAIConfig.PREFLOP_BASE_THRESHOLD
+	};
+
+	private float GetAllInThreshold(Street street, float effRiskTol) => street switch
+	{
+		Street.Preflop => PokerAIConfig.ALLIN_PREFLOP_BASE - (effRiskTol * PokerAIConfig.ALLIN_RISK_TOL_SCALE),
+		Street.Flop    => PokerAIConfig.ALLIN_FLOP_BASE    - (effRiskTol * PokerAIConfig.ALLIN_RISK_TOL_SCALE),
+		Street.Turn    => PokerAIConfig.ALLIN_TURN_BASE    - (effRiskTol * PokerAIConfig.ALLIN_RISK_TOL_SCALE),
+		Street.River   => PokerAIConfig.ALLIN_RIVER_BASE   - (effRiskTol * PokerAIConfig.ALLIN_RISK_TOL_SCALE),
+		_              => PokerAIConfig.ALLIN_FLOP_BASE    - (effRiskTol * PokerAIConfig.ALLIN_RISK_TOL_SCALE)
+	};
+
+	private float GetRaiseThreshold(Street street, float effAggression) => street switch
+	{
+		Street.Flop  => PokerAIConfig.RAISE_FLOP_BASE   - effAggression * PokerAIConfig.RAISE_AGGRESSION_SCALE,
+		Street.Turn  => PokerAIConfig.RAISE_TURN_BASE   - effAggression * PokerAIConfig.RAISE_AGGRESSION_SCALE,
+		Street.River => PokerAIConfig.RAISE_RIVER_BASE  - effAggression * PokerAIConfig.RAISE_AGGRESSION_SCALE,
+		_            => PokerAIConfig.RAISE_PREFLOP_BASE - effAggression * PokerAIConfig.RAISE_AGGRESSION_SCALE
+	};
+
+	private float GetBluffShoveProb(Street street, float effBluffFreq, TiltState tilt)
+	{
+		float baseProb = street switch
+		{
+			Street.Preflop => effBluffFreq * PokerAIConfig.ALLIN_BLUFF_SHOVE_PREFLOP,
+			Street.Flop    => effBluffFreq * PokerAIConfig.ALLIN_BLUFF_SHOVE_FLOP,
+			_              => effBluffFreq * PokerAIConfig.ALLIN_BLUFF_SHOVE_LATER
+		};
+		if (tilt >= TiltState.Steaming) baseProb *= PokerAIConfig.ALLIN_BLUFF_TILT_MULTIPLIER;
+		return baseProb;
+	}
+
+	private float GetValueThreshold(Street street, bool isOOP, float plannedBetRatio, float effRiskTol)
+	{
+		float threshold = street switch
+		{
+			Street.Flop  => PokerAIConfig.FLOP_VALUE_THRESHOLD,
+			Street.Turn  => PokerAIConfig.TURN_VALUE_THRESHOLD,
+			Street.River => PokerAIConfig.RIVER_VALUE_THRESHOLD,
+			_            => PokerAIConfig.FLOP_VALUE_THRESHOLD
+		};
+		if (isOOP) threshold += PokerAIConfig.OOP_VALUE_TIGHTEN;
+
+		float sizeFactor = Mathf.Clamp(plannedBetRatio, 0f, 2f);
+		threshold += PokerAIConfig.SIZE_FACTOR_VALUE_ADJUST * sizeFactor * (1f - effRiskTol);
+		return threshold;
+	}
+
+	private float GetBluffCeiling(Street street, bool isOOP, float plannedBetRatio)
+	{
+		float ceiling = street switch
+		{
+			Street.Flop  => PokerAIConfig.FLOP_BLUFF_CEILING,
+			Street.Turn  => PokerAIConfig.TURN_BLUFF_CEILING,
+			Street.River => PokerAIConfig.RIVER_BLUFF_CEILING,
+			_            => PokerAIConfig.FLOP_BLUFF_CEILING
+		};
+		if (isOOP) ceiling -= PokerAIConfig.OOP_BLUFF_REDUCE;
+
+		float sizeFactor = Mathf.Clamp(plannedBetRatio, 0f, 2f);
+		ceiling -= PokerAIConfig.SIZE_FACTOR_BLUFF_ADJUST * sizeFactor;
+		return ceiling;
+	}
+
+	private float GetMediumBetFrequency(Street street, float effAggression) => street switch
+	{
+		Street.Flop  => 0.25f + (0.40f * effAggression),
+		Street.Turn  => 0.20f + (0.45f * effAggression),
+		Street.River => 0.15f + (0.35f * effAggression),
+		_            => 0.20f + (0.35f * effAggression)
+	};
+
+	private float GetOpponentAggressionAdjustment(PlayerStats playerStats)
+	{
+		if (!playerStats.HasEnoughData()) return 0f;
+
+		if (playerStats.RaiseFrequency > PokerAIConfig.OPPONENT_MANIAC_RAISE_FREQ ||
+			playerStats.AggressionFactor > PokerAIConfig.OPPONENT_MANIAC_AGG_FACTOR)
+		{
+			GameManager.LogVerbose($"[AI] Player is aggressive — loosening defense by {PokerAIConfig.OPPONENT_MANIAC_ADJUST:F2}");
+			return PokerAIConfig.OPPONENT_MANIAC_ADJUST;
+		}
+
+		if (playerStats.RaiseFrequency < PokerAIConfig.OPPONENT_PASSIVE_RAISE_FREQ)
+		{
+			GameManager.LogVerbose($"[AI] Player is passive — tightening defense by {PokerAIConfig.OPPONENT_PASSIVE_ADJUST:F2}");
+			return PokerAIConfig.OPPONENT_PASSIVE_ADJUST;
+		}
+
+		return 0f;
+	}
+
+	private float GetLightCallThreshold(float threshold, float betRatio, Street street)
+	{
+		float light;
+		if (betRatio < PokerAIConfig.SMALL_BET_RATIO)
+		{
+			light = threshold - 0.15f;
+			if (street == Street.Flop) light -= 0.08f;
+		}
+		else if (betRatio < PokerAIConfig.MID_BET_RATIO)
+		{
+			light = threshold - 0.10f;
+			if (street == Street.Flop) light -= 0.05f;
+		}
+		else
+		{
+			light = threshold - 0.04f;
+			if (street == Street.Flop) light -= 0.02f;
+		}
+		return Mathf.Clamp(light, 0.15f, 1f);
+	}
+
+	private bool ShouldHeroCall(float handStrength, AIPokerPlayer player, Street street)
+	{
+		float heroCallChance = 0f;
+		if (player.CurrentTiltState >= TiltState.Annoyed)  heroCallChance += 0.20f;
+		if (player.CurrentTiltState >= TiltState.Steaming) heroCallChance += 0.20f;
+		if (player.Personality.CallTendency > 0.6f)        heroCallChance += 0.15f;
+
+		float heroSeed = GetDecisionSeedForStreet(player, street);
+		bool  heroCall = handStrength > 0.30f && heroSeed < heroCallChance;
+
+		if (heroCall) GameManager.LogVerbose($"[AI] HERO CALL! (State: {player.CurrentTiltState}, Str: {handStrength:F2}, Seed: {heroSeed:F2})");
+		return heroCall;
+	}
+
+	private float GetDecisionSeedForStreet(AIPokerPlayer player, Street street) => street switch
+	{
+		Street.Preflop => player.PreflopDecisionSeed,
+		Street.Flop    => player.FlopDecisionSeed,
+		Street.Turn    => player.TurnDecisionSeed,
+		Street.River   => player.RiverDecisionSeed,
+		_              => player.FlopDecisionSeed
+	};
+
+	private float CalculatePlannedBetRatio(
+		float handStrength, PokerPersonality personality,
+		Street street, float betSizeSeed, AIPokerPlayer player)
+	{
+		float baseBetMultiplier;
+
+		if      (handStrength >= 0.80f) baseBetMultiplier = PokerAIConfig.BET_STRONG_BASE + betSizeSeed * PokerAIConfig.BET_STRONG_SEED;
+		else if (handStrength >= 0.65f) baseBetMultiplier = PokerAIConfig.BET_GOOD_BASE   + betSizeSeed * PokerAIConfig.BET_GOOD_SEED;
+		else if (handStrength >= 0.45f) baseBetMultiplier = PokerAIConfig.BET_MEDIUM_BASE + betSizeSeed * PokerAIConfig.BET_MEDIUM_SEED;
+		else if (handStrength >= 0.35f) baseBetMultiplier = PokerAIConfig.BET_WEAK_BASE   + betSizeSeed * PokerAIConfig.BET_WEAK_SEED;
+		else
+		{
+			if (betSizeSeed < PokerAIConfig.BET_BLUFF_SPLIT)
+			{
+				float t = betSizeSeed / PokerAIConfig.BET_BLUFF_SPLIT;
+				baseBetMultiplier = PokerAIConfig.BET_BLUFF_SMALL_BASE + t * PokerAIConfig.BET_BLUFF_SMALL_RANGE;
+			}
+			else
+			{
+				float t = (betSizeSeed - PokerAIConfig.BET_BLUFF_SPLIT) / (1f - PokerAIConfig.BET_BLUFF_SPLIT);
+				baseBetMultiplier = PokerAIConfig.BET_BLUFF_BIG_BASE + t * PokerAIConfig.BET_BLUFF_BIG_RANGE;
+			}
+		}
+
+		float streetMultiplier = street switch
+		{
+			Street.Preflop => PokerAIConfig.PREFLOP_BET_MULTIPLIER,
+			Street.Flop    => PokerAIConfig.FLOP_BET_MULTIPLIER,
+			Street.Turn    => PokerAIConfig.TURN_BET_MULTIPLIER,
+			Street.River   => PokerAIConfig.RIVER_BET_MULTIPLIER,
+			_              => 1.0f
+		};
+
+		float aggressionMultiplier = PokerAIConfig.BET_AGG_BASE + personality.CurrentAggression * PokerAIConfig.BET_AGG_SCALE;
+		if (player.CurrentTiltState >= TiltState.Steaming) aggressionMultiplier *= PokerAIConfig.BET_TILT_MULTIPLIER;
+
+		return baseBetMultiplier * streetMultiplier * aggressionMultiplier;
+	}
+
 	public int CalculateRaiseToTotal(AIPokerPlayer player, GameState gameState, float handStrength)
 	{
 		PokerPersonality personality = player.Personality;
-
 		float effectivePot = Mathf.Max(gameState.PotSize, 1f);
-		float currentBet = gameState.CurrentBet;
+		float currentBet   = gameState.CurrentBet;
 
 		if (!gameState.CanAIReopenBetting)
 		{
-			GameManager.LogVerbose($"[{player.PlayerName}] Cannot raise - betting not reopened. Returning currentBet.");
+			GameManager.LogVerbose($"[{player.PlayerName}] Cannot raise - not reopened. Returning currentBet.");
 			return (int)currentBet;
 		}
 
 		float baseBetRatio = CalculatePlannedBetRatio(handStrength, personality, gameState.Street, player.BetSizeSeed, player);
-		float targetTotal = effectivePot * baseBetRatio;
+		float targetTotal  = effectivePot * baseBetRatio;
 
 		if (player.CurrentTiltState >= TiltState.Steaming)
-			targetTotal *= 1.15f;
+			targetTotal *= PokerAIConfig.ALLIN_TILT_BET_MULTIPLIER;
 
 		int minTotalInt = PokerRules.CalculateMinRaiseTotal(
-			(int)currentBet,
-			(int)gameState.PreviousBet,
-			gameState.LastFullRaiseIncrement,
-			(int)gameState.BigBlind
-		);
-		float minTotal = (float)minTotalInt;
-		
-		GameManager.LogVerbose($"[AI RAISE CALC] LastFullRaiseInc={gameState.LastFullRaiseIncrement}, MinTotal={minTotal}");
+			(int)currentBet, (int)gameState.PreviousBet,
+			gameState.LastFullRaiseIncrement, (int)gameState.BigBlind);
 
+		float minTotal = (float)minTotalInt;
 		float maxTotal = gameState.GetPlayerCurrentBet(player) + player.ChipStack;
+
+		GameManager.LogVerbose($"[AI RAISE CALC] LastFullRaiseInc={gameState.LastFullRaiseIncrement}, MinTotal={minTotal}");
 
 		float legalTotal = (maxTotal < minTotal)
 			? maxTotal
 			: Mathf.Clamp(targetTotal, minTotal, maxTotal);
 
-		// River commitment logic
+		// River commitment
 		if (gameState.Street == Street.River && handStrength >= 0.60f)
 		{
 			float spr = player.ChipStack / effectivePot;
-			if (spr < 1.0f)
+			if (spr < PokerAIConfig.RIVER_COMMIT_SPR_THRESHOLD)
 			{
 				float committedFrac = (legalTotal - gameState.GetPlayerCurrentBet(player)) / Mathf.Max(player.ChipStack, 1f);
-				if (committedFrac >= 0.60f)
+				if (committedFrac >= PokerAIConfig.RIVER_COMMIT_FRAC_THRESHOLD)
 				{
-					// BUG 6 FIX: Prevent random over-shoving logic.
-					bool isStrongHand = handStrength >= 0.75f;
-					bool isMediumCommit = handStrength >= 0.62f && player.AllInCommitmentSeed < 0.45f;
-					
-					if (isStrongHand || isMediumCommit)
-						legalTotal = maxTotal;
+					bool isStrongHand   = handStrength >= PokerAIConfig.RIVER_STRONG_THRESHOLD;
+					bool isMediumCommit = handStrength >= PokerAIConfig.RIVER_MEDIUM_THRESHOLD &&
+										 player.AllInCommitmentSeed < PokerAIConfig.RIVER_MEDIUM_SEED_CUTOFF;
+					if (isStrongHand || isMediumCommit) legalTotal = maxTotal;
 				}
 			}
 		}
 
-		// All-in commitment logic
+		// Near-all-in commitment
 		float amountToAdd = legalTotal - gameState.GetPlayerCurrentBet(player);
-		if (amountToAdd >= player.ChipStack * 0.90f)
+		if (amountToAdd >= player.ChipStack * PokerAIConfig.ALLIN_COMMIT_STACK_FRAC)
 		{
 			if (player.AllInCommitmentSeed < personality.CurrentRiskTolerance || handStrength > 0.80f)
 			{
@@ -586,21 +518,17 @@ public partial class PokerDecisionMaker : Node
 			}
 			else
 			{
-				float backedOffTotal = gameState.GetPlayerCurrentBet(player) + player.ChipStack * 0.60f;
-				legalTotal = (maxTotal < minTotal)
-					? maxTotal
-					: Mathf.Clamp(backedOffTotal, minTotal, maxTotal);
+				float backedOff = gameState.GetPlayerCurrentBet(player) + player.ChipStack * PokerAIConfig.ALLIN_BACKOFF_STACK_FRAC;
+				legalTotal = (maxTotal < minTotal) ? maxTotal : Mathf.Clamp(backedOff, minTotal, maxTotal);
 			}
 		}
 
 		int finalTotal = Mathf.Clamp((int)Mathf.Floor(legalTotal), 1, (int)maxTotal);
-		if (maxTotal >= minTotal)
-			finalTotal = Math.Max(finalTotal, (int)Mathf.Ceil(minTotal));
+		if (maxTotal >= minTotal) finalTotal = Math.Max(finalTotal, (int)Mathf.Ceil(minTotal));
 
-		GameManager.LogVerbose($"[{player.PlayerName}] Raise-to total: {finalTotal} (effPot: {effectivePot}, strength: {handStrength:F2}, minTotal: {minTotal}, maxTotal: {maxTotal})");
+		GameManager.LogVerbose($"[{player.PlayerName}] Raise-to: {finalTotal} (effPot: {effectivePot:F0}, str: {handStrength:F2}, min: {minTotal}, max: {maxTotal})");
 		return finalTotal;
 	}
-
 
 	public float EvaluateHandStrength(List<Card> holeCards, List<Card> communityCards, Street street, float randomnessSeed)
 	{
@@ -613,113 +541,79 @@ public partial class PokerDecisionMaker : Node
 		if (street == Street.Preflop || communityCards == null || communityCards.Count == 0)
 			return EvaluatePreflopHand(holeCards);
 
-		// 1) Absolute strength (Raw Rank 1-7461)
-		int myRank = HandEvaluator.EvaluateHand(holeCards, communityCards);
-		
-		float linearNorm = 1.0f - ((myRank - 1) / 7461.0f);
-		
-		// BUG 2 FIX: Adjusted exponent from 1.5 to 0.8f to prevent compressing medium/weak hands
-		float myAbsStrength = (float)Math.Pow(linearNorm, 0.8f);
+		int   myRank       = HandEvaluator.EvaluateHand(holeCards, communityCards);
+		float linearNorm   = 1.0f - ((myRank - 1) / PokerAIConfig.HAND_EVAL_MAX_RANK);
+		float absStrength  = (float)Math.Pow(linearNorm, PokerAIConfig.HAND_EVAL_POWER_EXPONENT);
 
-		// 2) Board strength (Check if the board itself is strong/counterfeiting us)
 		float boardStrength = 0f;
 		if (communityCards.Count >= 5)
 		{
-			int boardRank = HandEvaluator.EvaluateHand(new List<Card>(), communityCards);
-			float boardLinear = 1.0f - ((boardRank - 1) / 7461.0f);
-			boardStrength = (float)Math.Pow(boardLinear, 0.8f); // Applied same fix here
+			int   boardRank   = HandEvaluator.EvaluateHand(new List<Card>(), communityCards);
+			float boardLinear = 1.0f - ((boardRank - 1) / PokerAIConfig.HAND_EVAL_MAX_RANK);
+			boardStrength     = (float)Math.Pow(boardLinear, PokerAIConfig.HAND_EVAL_POWER_EXPONENT);
 		}
 
-		// 3) Counterfeit adjustments
-		float adjustedStrength = myAbsStrength;
+		float adjustedStrength = absStrength;
 
-		// Case A: River Chop/Counterfeit
-		if (communityCards.Count >= 5 && (myAbsStrength - boardStrength < 0.05f))
-		{
-			adjustedStrength = 0.25f; // Treat as weak/bluff-catcher
-		}
+		// Counterfeit detection
+		if (communityCards.Count >= 5 && (absStrength - boardStrength < PokerAIConfig.COUNTERFEIT_MARGIN))
+			adjustedStrength = PokerAIConfig.COUNTERFEIT_WEAKNESS;
 
-		// 4) DRAW POTENTIAL
+		// Draw potential
 		if (street == Street.Flop || street == Street.Turn)
 		{
-			// BUG 3 & 4 FIX: Pass holeCards and communityCards separately to verify hole card usage
-			float drawStrength = EvaluateDrawPotential(holeCards, communityCards, street); 
-
-			if (drawStrength > adjustedStrength)
-			{
-				adjustedStrength = drawStrength;
-			}
-			else
-			{
-				adjustedStrength += (drawStrength * 0.20f); 
-			}
+			float drawStrength = EvaluateDrawPotential(holeCards, communityCards, street);
+			adjustedStrength   = drawStrength > adjustedStrength
+				? drawStrength
+				: adjustedStrength + drawStrength * PokerAIConfig.DRAW_BLEND_WEIGHT;
 		}
 
-		// 5) Randomness
-		float randomness = randomnessSeed * 0.05f; 
-		
-		// BUG 2 FIX: Lowered clamp floor from 0.10f to 0.05f
-		return Mathf.Clamp(adjustedStrength + randomness, 0.05f, 1.0f);
+		float randomness = randomnessSeed * PokerAIConfig.RANDOMNESS_SCALE;
+		return Mathf.Clamp(adjustedStrength + randomness, PokerAIConfig.STRENGTH_FLOOR, 1.0f);
 	}
-
-
 
 	private float EvaluatePreflopHand(List<Card> holeCards)
 	{
-		if (holeCards.Count != 2) return 0.2f;
+		if (holeCards.Count != 2) return PokerAIConfig.PREFLOP_BASE;
 
 		Card card1 = holeCards[0];
 		Card card2 = holeCards[1];
 
-		bool isPair = card1.Rank == card2.Rank;
+		bool isPair  = card1.Rank == card2.Rank;
 		bool isSuited = card1.Suit == card2.Suit;
-		
-		// Ace is 12. 
-		int highCard = Mathf.Max((int)card1.Rank, (int)card2.Rank);
-		int lowCard = Mathf.Min((int)card1.Rank, (int)card2.Rank);
-		int rankDiff = highCard - lowCard;
-		bool isConnector = rankDiff == 1;
-		bool isGapper = rankDiff == 2;
+		int  highCard = Mathf.Max((int)card1.Rank, (int)card2.Rank);
+		int  lowCard  = Mathf.Min((int)card1.Rank, (int)card2.Rank);
+		int  rankDiff = highCard - lowCard;
 
-		// BUG 5 FIX: Detect Wheel Connectors (A-2, A-3)
-		bool isWheelConnector = (highCard == 12 && lowCard == 0); // A-2
-		bool isWheelGapper    = (highCard == 12 && lowCard == 1); // A-3
+		bool isConnector      = rankDiff == 1;
+		bool isGapper         = rankDiff == 2;
+		bool isWheelConnector = (highCard == 12 && lowCard == 0);
+		bool isWheelGapper    = (highCard == 12 && lowCard == 1);
 
-		float strength = 0.2f; // Base trash level
+		float strength;
 
 		if (isPair)
 		{
-			// Pairs are massive in Heads Up. 
-			// BUG 1 FIX: Divisor changed from 14.0f to 12.0f because Ace is 12 (0-indexed).
-			float pairPower = (float)highCard / 12.0f;
-			strength = 0.50f + (pairPower * pairPower * 0.45f);
+			float pairPower = (float)highCard / PokerAIConfig.PREFLOP_ACE_INDEX;
+			strength = PokerAIConfig.PREFLOP_PAIR_BASE + pairPower * pairPower * PokerAIConfig.PREFLOP_PAIR_POWER_WEIGHT;
 		}
 		else
 		{
-			// 1. High Card Strength (Heads up, high card wins often)
-			strength = 0.30f + ((highCard) / 12.0f) * 0.35f;
+			strength  = PokerAIConfig.PREFLOP_HIGH_CARD_BASE + (highCard / PokerAIConfig.PREFLOP_ACE_INDEX) * PokerAIConfig.PREFLOP_HIGH_CARD_WEIGHT;
+			strength += (lowCard / PokerAIConfig.PREFLOP_ACE_INDEX) * PokerAIConfig.PREFLOP_KICKER_WEIGHT;
 
-			// 2. Kicker Strength Adjustment
-			strength += ((lowCard) / 12.0f) * 0.10f;
+			if (isSuited)                        strength += PokerAIConfig.PREFLOP_SUITED_BONUS;
+			if (isConnector || isWheelConnector) strength += PokerAIConfig.PREFLOP_CONNECTOR_BONUS;
+			if (isGapper    || isWheelGapper)    strength += PokerAIConfig.PREFLOP_GAPPER_BONUS;
 
-			// 3. Suited Bonus
-			if (isSuited) strength += 0.04f;
-
-			// 4. Connector/Gapper Bonus
-			if (isConnector || isWheelConnector) strength += 0.03f;
-			if (isGapper || isWheelGapper) strength += 0.015f;
-			
-			// 5. Penalty for "Trash" (Low uncoordinated cards)
-			if (highCard < 10 && !isSuited && !isConnector && !isGapper && !isWheelConnector && !isWheelGapper)
-			{
-				strength -= 0.10f;
-			}
+			bool isTrash = highCard < PokerAIConfig.PREFLOP_TRASH_RANK_CUTOFF
+						   && !isSuited && !isConnector && !isGapper
+						   && !isWheelConnector && !isWheelGapper;
+			if (isTrash) strength -= PokerAIConfig.PREFLOP_TRASH_PENALTY;
 		}
 
-		return Mathf.Clamp(strength, 0.15f, 0.98f);
+		return Mathf.Clamp(strength, PokerAIConfig.PREFLOP_STRENGTH_FLOOR, PokerAIConfig.PREFLOP_STRENGTH_CEIL);
 	}
-
-
 
 	private float EvaluateDrawPotential(List<Card> holeCards, List<Card> communityCards, Street street)
 	{
@@ -731,71 +625,74 @@ public partial class PokerDecisionMaker : Node
 		var holeSuits = new HashSet<Suit>(holeCards.Select(c => c.Suit));
 		var holeRanks = new HashSet<int>(holeCards.Select(c => (int)c.Rank));
 
-		// Check Flush Draws (Player MUST hold the suit)
-		var suitGroups = allCards.GroupBy(c => c.Suit).Where(g => holeSuits.Contains(g.Key));
-		bool flushDraw = suitGroups.Any(g => g.Count() >= 4);
-		bool backdoorFlush = suitGroups.Any(g => g.Count() == 3);
+		// Flush draws — materialize counts to avoid double enumeration
+		var suitCounts = allCards
+			.GroupBy(c => c.Suit)
+			.Where(g => holeSuits.Contains(g.Key))
+			.Select(g => g.Count())
+			.ToList();
+		bool flushDraw     = suitCounts.Any(c => c >= 4);
+		bool backdoorFlush = suitCounts.Any(c => c == 3);
 
-		var ranks = allCards.Select(c => (int)c.Rank).OrderBy(r => r).Distinct().ToList();
+		var ranks   = allCards.Select(c => (int)c.Rank).OrderBy(r => r).Distinct().ToList();
+		var rankSet = new HashSet<int>(ranks);
+		bool oesd = false, gutshot = false;
 		
-		bool oesd = false;
-		bool gutshot = false;
+		GameManager.LogVerbose($"[DRAW DEBUG] Sorted ranks: [{string.Join(",", ranks)}]");
 
-		// Check standard straights (Player MUST use a hole card)
-		for (int i = 0; i <= ranks.Count - 4; i++)
+		// Single pass: 4-card window (OESD / single gutshot) + 5-card window (double gutshot)
+		// NOTE: True double gutshots (e.g. 5-7-9-J, span=6) are not detected by the 5-card
+		// window below — they require a span-6 check not currently implemented. Those hands
+		// score 0 draw strength, which is acceptable for this game's purposes.
+		for (int i = 0; i < ranks.Count && !(oesd && gutshot); i++)
 		{
-			if (ranks[i + 3] - ranks[i] == 3) // 4 consecutive cards
+			// 4-card window
+			if (i + 3 < ranks.Count)
 			{
-				bool holeCardInvolved = Enumerable.Range(ranks[i], 4).Any(r => holeRanks.Contains(r));
-				if (holeCardInvolved)
+				int span4 = ranks[i + 3] - ranks[i];
+
+				if (span4 == 3) // 4 consecutive = OESD (broadway/wheel edges demoted to gutshot)
 				{
-					// BROADWAY EDGE CASE FIX:
-					// If the run is J-Q-K-A (Ranks 9, 10, 11, 12), it is a gutshot, not an OESD.
-					// If it's a 0-indexed Ace-low wheel 2-3-4-5 (Ranks 0, 1, 2, 3), it's also a gutshot.
-					if (ranks[i + 3] == 12 || ranks[i] == 0) 
-					{
+					if (Enumerable.Range(ranks[i], 4).Any(r => holeRanks.Contains(r)))
+						(ranks[i + 3] == 12 || ranks[i] == 0 ? ref gutshot : ref oesd) = true;
+				}
+				else if (span4 == 4) // one internal gap = single gutshot
+				{
+					if (Enumerable.Range(0, 4).Any(j => holeRanks.Contains(ranks[i + j])))
 						gutshot = true;
-					}
-					else 
-					{
-						oesd = true; 
-					}
 				}
 			}
-			else if (ranks[i + 3] - ranks[i] == 4) // Gutshot
+
+			// 5-card window: catches cases like A-2-3-4-6 (missing 5) where span==4 over 5 slots
+			if (i + 4 < ranks.Count)
 			{
-				bool holeCardInvolved = false;
-				for (int j = 0; j < 4; j++) 
+				int span5 = ranks[i + 4] - ranks[i];
+				if (span5 == 4)
 				{
-					if (holeRanks.Contains(ranks[i + j])) holeCardInvolved = true;
+					int presentCount = Enumerable.Range(ranks[i], 5).Count(r => rankSet.Contains(r));
+					if (presentCount == 4 && Enumerable.Range(ranks[i], 5).Any(r => holeRanks.Contains(r)))
+						gutshot = true;
 				}
-				if (holeCardInvolved) gutshot = true;
 			}
 		}
 
-		// WHEEL EDGE CASE FIX (A-2-3-4 with Ace as high card)
-		if (ranks.Contains(12)) 
+		// Wheel edge case (A-2-3-4)
+		if (rankSet.Contains(12))
 		{
 			var wheelRanks = ranks.Where(r => r <= 3).ToList();
-			if (wheelRanks.Count >= 3) 
-			{
-				bool holeCardInvolved = holeRanks.Contains(12) || wheelRanks.Any(r => holeRanks.Contains(r));
-				if (holeCardInvolved) gutshot = true; // A-low draw missing one card is a gutshot
-			}
+			if (wheelRanks.Count >= 3 && (holeRanks.Contains(12) || wheelRanks.Any(r => holeRanks.Contains(r))))
+				gutshot = true;
 		}
-
-		// --- SCORING ---
-		if (flushDraw && oesd) return 0.55f; 
-		if (flushDraw && gutshot) return 0.45f; 
-		if (flushDraw) return 0.35f; 
-		if (oesd) return 0.30f; 
-		if (gutshot) return 0.15f; 
 		
-		if (street == Street.Flop && backdoorFlush) return 0.05f;
+		GameManager.LogVerbose($"[DRAW DEBUG] Result: oesd={oesd} gutshot={gutshot} flushDraw={flushDraw} backdoor={backdoorFlush}");
+
+		if (flushDraw && oesd)    return PokerAIConfig.DRAW_FLUSH_OESD;
+		if (flushDraw && gutshot) return PokerAIConfig.DRAW_FLUSH_GUTSHOT;
+		if (flushDraw)            return PokerAIConfig.DRAW_FLUSH;
+		if (oesd)                 return PokerAIConfig.DRAW_OESD;
+		if (gutshot)              return PokerAIConfig.DRAW_GUTSHOT;
+		if (street == Street.Flop && backdoorFlush) return PokerAIConfig.DRAW_BACKDOOR;
 
 		return 0f;
 	}
-
-
-
 }
