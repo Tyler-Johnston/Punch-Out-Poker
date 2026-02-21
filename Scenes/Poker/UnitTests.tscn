@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://bp4fqhicf4h4s"]
+
+[ext_resource type="Script" uid="uid://delba2kbckk8" path="res://Scripts/Poker/PokerRaiseLogicTests.cs" id="1_pky3j"]
+
+[node name="UnitTests" type="Node2D"]
+
+[node name="Node" type="Node" parent="."]
+script = ExtResource("1_pky3j")

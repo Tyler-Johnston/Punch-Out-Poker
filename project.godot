@@ -17,7 +17,7 @@ config/icon="res://icon.svg"
 
 [autoload]
 
-GameManager="*res://Scripts/Game/GameManager.cs"
+GameManager="*res://Scripts/Poker/Game/GameManager.cs"
 
 [display]
 
@@ -29,6 +29,20 @@ window/stretch/scale_mode="integer"
 [dotnet]
 
 project/assembly_name="Punch Out Poker"
+
+[file_customization]
+
+folder_colors={
+"res://Assets/": "gray",
+"res://Assets/Textures/Poker/": "red",
+"res://Assets/Textures/RoomHub/": "purple",
+"res://Scenes/": "yellow",
+"res://Scenes/Poker/": "red",
+"res://Scenes/RoomHub/": "purple",
+"res://Scripts/": "blue",
+"res://Scripts/Poker/": "red",
+"res://Scripts/RoomHub/": "purple"
+}
 
 [gui]
 

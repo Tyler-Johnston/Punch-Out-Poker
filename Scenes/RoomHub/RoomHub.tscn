@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3 uid="uid://dovblmir2vul1"]
+
+[ext_resource type="PackedScene" uid="uid://b5ug8q7xujyse" path="res://Scenes/RoomHub/Character.tscn" id="1_tt23h"]
+
+[node name="RoomHub" type="Node2D"]
+
+[node name="Character" parent="." instance=ExtResource("1_tt23h")]
