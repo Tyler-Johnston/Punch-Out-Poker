@@ -84,28 +84,29 @@ public partial class PokerGame : Node2D
 	private SpeechBubble speechBubble;
 
 	// game flow
+	private PotManager potManager = new PotManager();
 	private Street currentStreet = Street.Preflop;
 	private int playerChips = 100;
 	private int opponentChips = 100;
-	private int playerChipsInPot = 0;
-	private int opponentChipsInPot = 0;
-	private int pot = 0;
+	//private int playerChipsInPot = 0;
+	//private int opponentChipsInPot = 0;
+	//private int pot = 0;
 	private int displayPot = 0; 
 	private int lastDisplayedPot = -1;
 	private int lastPotLabel = -1;
 	private int lastDisplayedPlayerChips = -1;
 	private int lastDisplayedOpponentChips = -1;
-	private int previousBet = 0;
+	//private int previousBet = 0;
 	private int betAmount = 20;
-	private int currentBet = 0;
-	private int playerBet = 0;
-	private int opponentBet = 0;
+	//private int currentBet = 0;
+	//private int playerBet = 0;
+	//private int opponentBet = 0;
 	private int smallBlind = 5;
 	private int bigBlind = 10;
-	private int playerContributed = 0;
-	private int opponentContributed = 0;
+	//private int playerContributed = 0;
+	//private int opponentContributed = 0;
 	private int playerTotalBetsThisHand = 0;
-	private int lastRaiseAmount = 0;
+	//private int lastRaiseAmount = 0;
 	
 	private float aiStrengthAtAllIn = 0f; 
 	private float playerWaitTime = 0f;

@@ -91,7 +91,7 @@ public partial class PokerGame
 		RefreshAllInFlagsFromStacks();
 		playerCanReopenBetting = true;
 		opponentCanReopenBetting = true;
-		lastRaiseAmount = bigBlind;
+		potManager.SetLastRaiseAmount(bigBlind);
 
 		isProcessingAIAction = wasProcessing;
 		AssertOpponentChipsSynced("PostBlinds");
@@ -104,35 +104,24 @@ public partial class PokerGame
 		if (isPlayer)
 		{
 			SpendPlayerChips(amount);
-			playerBet = amount;
+			potManager.AddBet(true, amount);
 			ShowMessage($"You post the ${amount} {blindType}");
-			GD.Print($"> Player posts {blindType}: ${amount}");
 		}
 		else
 		{
 			SpendOpponentChips(amount);
-			opponentBet = amount;
+			potManager.AddBet(false, amount);
 			ShowMessage($"{currentOpponentName} posts the ${amount} {blindType}");
-			GD.Print($"> {currentOpponentName} posts {blindType}: ${amount}");
 		}
-
-		CommitToStreetPot(isPlayer, amount);
-
-		currentBet = Math.Max(playerBet, opponentBet);
 		sfxPlayer.PlayRandomChip();
 		UpdateHud(true);
-
-		GameManager.LogVerbose($"Blind posted. EffectivePot: {GetEffectivePot()} (Settled pot: {pot})");
 	}
 
 	private async void EndHand()
 	{
 		if (isShowdownInProgress) return;
 
-		pot = 0;
 		displayPot = 0;
-		playerChipsInPot = 0;
-		opponentChipsInPot = 0;
 		betAmount = 0;
 		handInProgress = false;
 		waitingForNextGame = true;
@@ -242,20 +231,21 @@ public partial class PokerGame
 	{
 		await ToSignal(GetTree().CreateTimer(0.8f), SceneTreeTimer.SignalName.Timeout);
 
-		bool betsAreEqual = (playerBet == opponentBet);
+		bool betsAreEqual = (potManager.PlayerStreetBet == potManager.OpponentStreetBet);
 		bool someoneIsAllIn = (playerIsAllIn || opponentIsAllIn);
 		
 		// If bets aren't equal and nobody is all-in, we CANNOT advance. It means someone still has an action pending.
-		Assert(betsAreEqual || someoneIsAllIn, $"Attempting to advance street but bets are unequal! P: {playerBet} vs O: {opponentBet}");
+		Assert(betsAreEqual || someoneIsAllIn, $"Attempting to advance street but bets are unequal! P: {potManager.PlayerStreetBet} vs O: {potManager.OpponentStreetBet}");
 
 		bool shouldReset =
-			(playerBet != 0) || (opponentBet != 0) || (currentBet != 0) || (previousBet != 0) ||
-			(playerChipsInPot != 0) || (opponentChipsInPot != 0) ||
+			(potManager.PlayerStreetBet != 0) || (potManager.OpponentStreetBet != 0) || 
+			(potManager.CurrentBet != 0) || (potManager.PreviousBet != 0) ||
 			playerHasActedThisStreet || opponentHasActedThisStreet;
 
 		if (shouldReset)
 		{
-			ResetBettingRound();
+			// Make sure inside ResetBettingRound() you call potManager.SettleStreetIntoPot();
+			ResetBettingRound(); 
 		}
 
 		await ToSignal(GetTree().CreateTimer(1.2f), SceneTreeTimer.SignalName.Timeout);
@@ -304,19 +294,33 @@ public partial class PokerGame
 
 		GD.Print("\n=== SHOWDOWN ===");
 
-		bool refundOccurred = ReturnUncalledChips();
+		// 1. Process Refunds using PotManager
+		var refunds = potManager.CalculateAndProcessRefunds();
+		bool refundOccurred = (refunds.playerRefund > 0 || refunds.opponentRefund > 0);
+
 		if (refundOccurred)
 		{
-			displayPot = pot;
+			if (refunds.playerRefund > 0)
+			{
+				AddPlayerChips(refunds.playerRefund);
+				GD.Print($"[REFUND] Player gets ${refunds.playerRefund} back.");
+			}
+			if (refunds.opponentRefund > 0)
+			{
+				AddOpponentChips(refunds.opponentRefund);
+				GD.Print($"[REFUND] Opponent gets ${refunds.opponentRefund} back.");
+			}
+
 			UpdateHud();
 			ShowMessage("Returned Uncalled Chips");
 			await ToSignal(GetTree().CreateTimer(1.5f), SceneTreeTimer.SignalName.Timeout);
 		}
 
-		if (playerChipsInPot > 0 || opponentChipsInPot > 0)
+		// 2. Settle whatever remains on the current street into the main pot
+		if (potManager.PlayerStreetBet > 0 || potManager.OpponentStreetBet > 0)
 		{
-			SettleStreetIntoPot();
-			GameManager.LogVerbose($"[Showdown] Settled final street into pot: {pot}");
+			potManager.SettleStreetIntoPot();
+			GameManager.LogVerbose($"[Showdown] Settled final street into pot: {potManager.MainPot}");
 		}
 
 		await RevealOpponentHand();
@@ -334,8 +338,8 @@ public partial class PokerGame
 		
 		GD.Print($"[PLAYER] {string.Join(" ", playerHand)} -> {playerHandName}");
 		GD.Print($"[{currentOpponentName.ToUpper()}] {string.Join(" ", opponentHand)} -> {opponentHandName}");
+		
 		ResolveShowdownResult(playerRank, opponentRank);
-
 		RefreshAllInFlagsFromStacks();
 		ClearPotTracking();
 
@@ -344,17 +348,18 @@ public partial class PokerGame
 		EndHand();
 	}
 
+
 	//  AI TURN PROCESSING 
 
 	private void CheckAndProcessAITurn()
 	{
 		GameManager.LogVerbose($"[CheckAndProcessAITurn] isProcessing={isProcessingAIAction}, isPlayerTurn={isPlayerTurn}, handInProgress={handInProgress}");
 
-		if (IsAIDebugDisabled())
-		{
-			GameManager.LogVerbose("[DEBUG] AI turn skipped (AI manually disabled)");
-			return;
-		}
+		//if (IsAIDebugDisabled())
+		//{
+			//GameManager.LogVerbose("[DEBUG] AI turn skipped (AI manually disabled)");
+			//return;
+		//}
 
 		if (isProcessingAIAction)
 		{
@@ -532,21 +537,21 @@ public partial class PokerGame
 
 		int originalRaiseToTotal = raiseToTotal;
 		int minLegalRaiseTotal = PokerRules.CalculateMinRaiseTotal(
-			currentBet,
-			previousBet,
-			lastRaiseAmount,
+			potManager.CurrentBet,
+			potManager.PreviousBet,
+			potManager.LastRaiseAmount,
 			bigBlind
 		);
 
-		int maxPossible = opponentBet + opponentChips;
+		int maxPossible = potManager.OpponentStreetBet  + opponentChips;
 
 		if (raiseToTotal < minLegalRaiseTotal)
 		{
 			if (maxPossible < minLegalRaiseTotal)
 			{
-				if (maxPossible <= currentBet)
+				if (maxPossible <= potManager.CurrentBet)
 				{
-					GameManager.LogVerbose($"[RAISE SAFETY] AI short (max={maxPossible} <= current={currentBet}). Converting to Call/All-In.");
+					GameManager.LogVerbose($"[RAISE SAFETY] AI short (max={maxPossible} <= current={potManager.CurrentBet}). Converting to Call/All-In.");
 					await OnOpponentCall();
 					return;
 				}
@@ -564,9 +569,9 @@ public partial class PokerGame
 			}
 		}
 
-		if (raiseToTotal <= opponentBet)
+		if (raiseToTotal <= potManager.OpponentStreetBet )
 		{
-			GD.PrintErr($"[RAISE SAFETY] CRITICAL: raiseToTotal ({raiseToTotal}) <= opponentBet ({opponentBet}). Logic Error. Converting to Check.");
+			GD.PrintErr($"[RAISE SAFETY] CRITICAL: raiseToTotal ({raiseToTotal}) <= potManager.OpponentStreetBet  ({potManager.OpponentStreetBet }). Logic Error. Converting to Check.");
 			ShowMessage($"{currentOpponentName} checks");
 			return;
 		}
@@ -583,15 +588,15 @@ public partial class PokerGame
 		bool isBet = result.IsBet;
 		string actionWord = isBet ? "bets" : "raises to";
 
-		ShowMessage($"{currentOpponentName} {actionWord}: ${opponentBet}");
+		ShowMessage($"{currentOpponentName} {actionWord}: ${potManager.OpponentStreetBet }");
 		
 		if (result.BecameAllIn)
 		{
-			GD.Print($"> {currentOpponentName} {actionWord.ToUpper()} ${opponentBet} (ALL-IN)");
+			GD.Print($"> {currentOpponentName} {actionWord.ToUpper()} ${potManager.OpponentStreetBet } (ALL-IN)");
 		}
 		else
 		{
-			GD.Print($"> {currentOpponentName} {actionWord} ${opponentBet}");
+			GD.Print($"> {currentOpponentName} {actionWord} ${potManager.OpponentStreetBet }");
 		}
 
 		sfxPlayer.PlayRandomChip();
@@ -634,7 +639,7 @@ public partial class PokerGame
 		}
 
 		ShowMessage("");
-		lastRaiseAmount = 0;
+		//potManager.LastRaiseAmount = 0;
 		lastHandDescription = "";
 		handTypeLabel.Text = "";
 		handTypeLabel.Visible = false;
@@ -656,22 +661,10 @@ public partial class PokerGame
 
 	private void ResetHandState()
 	{
-		pot = 0;
+		potManager.ResetForNewHand();
 		displayPot = 0;
 		lastDisplayedPot = -1;
 		lastPotLabel = -1;
-
-		playerContributed = 0;
-		opponentContributed = 0;
-		playerTotalBetsThisHand = 0;
-
-		playerBet = 0;
-		opponentBet = 0;
-		currentBet = 0;
-		previousBet = 0;
-
-		playerChipsInPot = 0;
-		opponentChipsInPot = 0;
 
 		isPlayerTurn = false;
 		aiBluffedThisHand = false;
@@ -729,7 +722,7 @@ public partial class PokerGame
 		communityCards.Add(deck.Deal());
 		communityCards.Add(deck.Deal());
 
-		GD.Print($"\n--- FLOP [{communityCards[0]} {communityCards[1]} {communityCards[2]}] (Pot: ${pot}) ---");
+		GD.Print($"\n--- FLOP [{communityCards[0]} {communityCards[1]} {communityCards[2]}] (Pot: ${potManager.GetEffectivePot()}) ---");
 		ShowMessage("Flop dealt");
 
 		sfxPlayer.PlaySound("card_flip");
@@ -747,7 +740,7 @@ public partial class PokerGame
 	private async Task DealTurn()
 	{
 		communityCards.Add(deck.Deal());
-		GD.Print($"\n--- TURN [{communityCards[3]}] (Pot: ${pot}) ---");
+		GD.Print($"\n--- TURN [{communityCards[3]}] (Pot: ${potManager.GetEffectivePot()}) ---");
 		ShowMessage("Turn card");
 
 		sfxPlayer.PlaySound("card_flip");
@@ -758,7 +751,7 @@ public partial class PokerGame
 	private async Task DealRiver()
 	{
 		communityCards.Add(deck.Deal());
-		GD.Print($"\n--- RIVER [{communityCards[4]}] (Pot: ${pot}) ---");
+		GD.Print($"\n--- RIVER [{communityCards[4]}] (Pot: ${potManager.GetEffectivePot()}) ---");
 		ShowMessage("River card");
 
 		sfxPlayer.PlaySound("card_flip");
@@ -796,10 +789,14 @@ public partial class PokerGame
 	{
 		string message;
 		HandResult aiHandResult;
-		int finalPot = pot;
+		
+		// 1. Get the final pot from PotManager
+		int finalPot = potManager.MainPot; 
 		
 		Assert(finalPot > 0, "Showdown triggered with Empty Pot!");
-		Assert(playerChipsInPot + opponentChipsInPot == 0, "Showdown triggered but chips are still in 'Street Bets' tracking vars!");
+		
+		// 2. Ensure all street bets were properly settled into the main pot before this method was called
+		Assert(potManager.PlayerStreetBet + potManager.OpponentStreetBet == 0, "Showdown triggered but chips are still in 'Street Bets' tracking vars!");
 		
 		int result = HandEvaluator.CompareHands(playerRank, opponentRank);
 
@@ -862,23 +859,12 @@ public partial class PokerGame
 
 	private void ClearPotTracking()
 	{
-		pot = 0;
-		displayPot = 0;
-		playerChipsInPot = 0;
-		opponentChipsInPot = 0;
-		playerContributed = 0;
-		opponentContributed = 0;
-		
-		playerBet = 0;
-		opponentBet = 0;
-		currentBet = 0;
-		previousBet = 0;
-		lastRaiseAmount = 0;
+		potManager.ResetForNewHand();
 	}
 
 	private void HandlePostAIActionBettingState()
 	{
-		bool betsEqual = (playerBet == opponentBet);
+		bool betsEqual = (potManager.PlayerStreetBet == potManager.OpponentStreetBet );
 		bool bothActed = playerHasActedThisStreet && opponentHasActedThisStreet;
 		bool bothAllIn = playerIsAllIn && opponentIsAllIn;
 
@@ -932,10 +918,10 @@ public partial class PokerGame
 
 	private void HandleOpponentFoldWin()
 	{
-		int effectivePot = GetEffectivePot();
-		float betRatio = (effectivePot > 0) ? (float)currentBet / effectivePot : 0f;
+		int effectivePot = potManager.GetEffectivePot();
+		float betRatio = (effectivePot > 0) ? (float)potManager.CurrentBet / effectivePot : 0f;
 		
-		GameManager.LogVerbose($"[TILT] Bullied ratio={betRatio:F2}, currentBet={currentBet}, effectivePot={effectivePot}");
+		GameManager.LogVerbose($"[TILT] Bullied ratio={betRatio:F2}, potManager.CurrentBet={potManager.CurrentBet}, effectivePot={effectivePot}");
 		aiOpponent.OnFolded(betRatio);
 
 		int winAmount = effectivePot;

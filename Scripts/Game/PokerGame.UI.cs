@@ -853,17 +853,17 @@ public partial class PokerGame
 	private void UpdatePlayerChipDisplay()
 	{
 		if (playerChipGridBox == null) return;
-		if (playerChipsInPot == lastDisplayedPlayerChips) return;
-		lastDisplayedPlayerChips = playerChipsInPot;
+		if (potManager.PlayerStreetBet == lastDisplayedPlayerChips) return;
+		lastDisplayedPlayerChips = potManager.PlayerStreetBet;
 		
 		foreach (Node child in playerChipGridBox.GetChildren())
 		{
 			child.QueueFree();
 		}
 		
-		if (playerChipsInPot <= 0) return;
+		if (potManager.PlayerStreetBet <= 0) return;
 		
-		List<string> chipImages = GetChipImagesForPot(playerChipsInPot);
+		List<string> chipImages = GetChipImagesForPot(potManager.PlayerStreetBet);
 		
 		foreach (string chipFile in chipImages)
 		{
@@ -914,17 +914,17 @@ public partial class PokerGame
 	private void UpdateOpponentChipDisplay()
 	{
 		if (opponentChipGridBox == null) return;
-		if (opponentChipsInPot == lastDisplayedOpponentChips) return;
-		lastDisplayedOpponentChips = opponentChipsInPot;
+		if (potManager.OpponentStreetBet == lastDisplayedOpponentChips) return;
+		lastDisplayedOpponentChips = potManager.OpponentStreetBet;
 		
 		foreach (Node child in opponentChipGridBox.GetChildren())
 		{
 			child.QueueFree();
 		}
 		
-		if (opponentChipsInPot <= 0) return;
+		if (potManager.OpponentStreetBet <= 0) return;
 		
-		List<string> chipImages = GetChipImagesForPot(opponentChipsInPot);
+		List<string> chipImages = GetChipImagesForPot(potManager.OpponentStreetBet);
 		
 		foreach (string chipFile in chipImages)
 		{
@@ -1008,7 +1008,7 @@ public partial class PokerGame
 			return;
 		}
 
-		int basePot = GetEffectivePot();
+		int basePot = potManager.GetEffectivePot();
 
 		// 1. SETUP ALL-IN BUTTON (Always enabled if we have chips)
 		UpdateButtonState(allInPot, true);
@@ -1086,7 +1086,7 @@ public partial class PokerGame
 
 		if (!isPlayerTurn || !handInProgress) 
 		{
-			if (currentBet > playerBet)
+			if (potManager.CurrentBet > potManager.PlayerStreetBet)
 			{
 				checkCallButton.Text = "Call";
 				betRaiseButton.Text = "Raise";
@@ -1095,7 +1095,7 @@ public partial class PokerGame
 			{
 				checkCallButton.Text = "Check";
 				
-				if (currentBet > 0) 
+				if (potManager.CurrentBet > 0) 
 					betRaiseButton.Text = "Raise";
 				else
 					betRaiseButton.Text = "Bet";
@@ -1103,11 +1103,11 @@ public partial class PokerGame
 			return;
 		}
 
-		int toCall = Math.Max(0, currentBet - playerBet);
+		int toCall = Math.Max(0, potManager.CurrentBet - potManager.PlayerStreetBet);
 		
 		var (minBet, maxBet) = GetLegalBetRange();
 
-		bool isAllIn = (betAmount >= playerChips + playerBet);
+		bool isAllIn = (betAmount >= playerChips + potManager.PlayerStreetBet);
 
 		if (toCall == 0)
 		{
@@ -1117,7 +1117,7 @@ public partial class PokerGame
 			{
 				betRaiseButton.Text = $"ALL IN: ${betAmount}";
 			}
-			else if (currentBet > 0)
+			else if (potManager.CurrentBet > 0)
 			{
 				// Raising against an existing bet
 				betRaiseButton.Text = $"Raise to: ${betAmount}";
@@ -1192,7 +1192,7 @@ public partial class PokerGame
 			{
 				enableButtons = isPlayerTurn && handInProgress && !playerIsAllIn;
 				var (minBet, maxBet) = GetLegalBetRange();
-				canActuallyRaise = (maxBet > currentBet);
+				canActuallyRaise = (maxBet > potManager.CurrentBet);
 			}
 			else
 			{

@@ -4,7 +4,6 @@ using System.Collections.Generic;
 
 public partial class PokerGame
 {
-	
 	private PokerPersonality LoadOpponentPersonality(string opponentName)
 	{
 		return opponentName switch
@@ -21,27 +20,25 @@ public partial class PokerGame
 			_              => throw new ArgumentException($"Unknown opponent: {opponentName}")
 		};
 	}
-	
+
 	// --- LABEL HELPERS ---
-	
+
 	private void ShowMessage(string text)
 	{
-		
 		gameStateLabel.Visible = !string.IsNullOrEmpty(text);
 		gameStateLabel.Text = text;
 	}
 
 	private void UpdatePlayerStackLabels()
 	{
-		string text = $"Money In-Hand: ${playerChips}";
-		playerStackLabel.Text = text;
+		playerStackLabel.Text = $"Money In-Hand: ${playerChips}";
 	}
-	
+
 	private void UpdateSessionProfitLabel()
 	{
 		int buyIn = GameManager.Instance.CurrentBuyIn;
 		int profit = playerChips - buyIn;
-		
+
 		if (profit > 0)
 		{
 			playerEarningsLabel.Text = $"Net: +${profit}";
@@ -58,71 +55,81 @@ public partial class PokerGame
 			playerEarningsLabel.Modulate = Colors.White;
 		}
 	}
-	
+
 	// --- BETTING HELPERS ---
-	
-	private int GetEffectivePot()
-	{
-		return pot + playerChipsInPot + opponentChipsInPot;
-	}
 
 	private void ResetBettingRound()
 	{
-		SettleStreetIntoPot();
-		
-		// Reset betting amounts for new street
-		playerBet = 0;
-		opponentBet = 0;
-		currentBet = 0;
-		previousBet = 0; 
-		displayPot = pot;
-	 	lastRaiseAmount = 0; 
+		potManager.SettleStreetIntoPot();
+
+		// potManager now owns: CurrentBet, PreviousBet, LastRaiseAmount,
+		// PlayerStreetBet, OpponentStreetBet, TotalContributed
+
+		displayPot = potManager.MainPot;
 		betAmount = 0;
 
-		// Reset action flags
 		playerHasActedThisStreet = false;
 		opponentHasActedThisStreet = false;
 		playerCanReopenBetting = true;
 		opponentCanReopenBetting = true;
+
 		UpdateHud();
-		GameManager.LogVerbose($"[ResetBettingRound] New street - Total Pot: {pot}, Display Pot: {displayPot}");
+		GameManager.LogVerbose($"[ResetBettingRound] New street - Total Pot: {potManager.MainPot}, Display Pot: {displayPot}");
 	}
 
 	private (int minBet, int maxBet) GetLegalBetRange()
 	{
-		int maxBet = playerChips + playerBet;
-		
+		// Max is everything the player has plus what they've already put in this street
+		int maxBet = playerChips + potManager.PlayerStreetBet;
+
 		if (maxBet <= 0) return (0, 0);
-		
+
 		int minRaiseTotal = PokerRules.CalculateMinRaiseTotal(
-			currentBet, 
-			previousBet, 
-			lastRaiseAmount,
+			potManager.CurrentBet,
+			potManager.PreviousBet,
+			potManager.LastRaiseAmount,
 			bigBlind
 		);
-		
-		int minBet = minRaiseTotal;
 
-		if (minBet > maxBet)
-		{
-			minBet = maxBet;
-		}
-		
+		int minBet = Math.Min(minRaiseTotal, maxBet);
+
 		return (minBet, maxBet);
 	}
-
 
 	private int CalculatePotSizeBet(float potMultiplier)
 	{
 		var (minBet, maxBet) = GetLegalBetRange();
-		
 		if (maxBet <= 0) return 0;
-		
-		int targetRaiseAmount = (int)Math.Round(GetEffectivePot() * potMultiplier);
+
+		int targetRaiseAmount = (int)Math.Round(potManager.GetEffectivePot() * potMultiplier);
 		return Math.Clamp(targetRaiseAmount, minBet, maxBet);
 	}
-	
+
 	// --- POT HELPERS ---
+
+	private bool ReturnUncalledChips()
+	{
+		var (playerRefund, opponentRefund) = potManager.CalculateAndProcessRefunds();
+
+		if (playerRefund == 0 && opponentRefund == 0) return false;
+
+		if (playerRefund > 0)
+		{
+			AddPlayerChips(playerRefund);
+			RefreshAllInFlagsFromStacks();
+			GD.Print($"[REFUND] Player: ${playerRefund}");
+		}
+		else if (opponentRefund > 0)
+		{
+			AddOpponentChips(opponentRefund);
+			RefreshAllInFlagsFromStacks();
+			GD.Print($"[REFUND] Opponent: ${opponentRefund}");
+		}
+
+		return true;
+	}
+
+	// --- OPPONENT CHIP HELPERS ---
 
 	private void SetOpponentChips(int newAmount)
 	{
@@ -140,11 +147,11 @@ public partial class PokerGame
 	private void SpendOpponentChips(int amount)
 	{
 		if (amount <= 0) return;
-		if (amount > opponentChips) amount = opponentChips; // safety
+		if (amount > opponentChips) amount = opponentChips;
 		SetOpponentChips(opponentChips - amount);
 	}
-	
-	// --- ASSERTION HELPERS ---
+
+	// --- ASSERTION / AUDIT HELPERS ---
 
 	private void AssertOpponentChipsSynced(string context)
 	{
@@ -153,29 +160,18 @@ public partial class PokerGame
 			GD.PrintErr($"[SYNC] Opponent chips desync in {context}: opponentChips={opponentChips}, aiOpponent.ChipStack={aiOpponent.ChipStack}");
 	}
 
-	/// <summary>
-	/// CRITICAL: Ensures money is never created or destroyed.
-	/// Total chips in system must ALWAYS equal the total starting buy-ins.
-	/// </summary>
 	private void VerifyTotalChips(string context)
 	{
-		// 1. Calculate chips currently in stacks
-		int currentTotal = playerChips + opponentChips;
-		
-		// 2. Add chips currently in the pot (settled)
-		currentTotal += pot;
-		
-		// 3. Add chips currently "in front" of players (unsettled street bets)
-		currentTotal += playerBet + opponentBet;
-		
-		// 4. Add chips currently in the accumulation buffer (if any)
-		currentTotal += playerChipsInPot + opponentChipsInPot;
+		int currentTotal = playerChips + opponentChips
+			+ potManager.MainPot
+			+ potManager.PlayerStreetBet
+			+ potManager.OpponentStreetBet;
 
-		// Log for audit purposes
 		GameManager.LogVerbose($"[AUDIT] {context}: Total In Play = ${currentTotal}");
-		
-		 int expectedTotal = buyInAmount * 2; 
-		 if (currentTotal != expectedTotal) GD.PrintErr($"[CRITICAL] Money Leak in {context}!");
+
+		int expectedTotal = buyInAmount * 2;
+		if (currentTotal != expectedTotal)
+			GD.PrintErr($"[CRITICAL] Money Leak in {context}! Expected={expectedTotal}, Got={currentTotal}");
 	}
 
 	private void Assert(bool condition, string message)
@@ -183,96 +179,11 @@ public partial class PokerGame
 		if (!condition)
 		{
 			GD.PrintErr($"!!! CRITICAL LOGIC ERROR: {message} !!!");
-			// Check logic state
-			GD.Print($"State dump: P_Stack:{playerChips} O_Stack:{opponentChips} Pot:{pot} P_Bet:{playerBet} O_Bet:{opponentBet}");
-			
-			// Pause game to prevent further state corruption
-			GetTree().Paused = true; 
-			
-			// Throw exception to halt execution immediately
+			GD.Print($"State dump: P_Stack:{playerChips} O_Stack:{opponentChips} " +
+					 $"MainPot:{potManager.MainPot} " +
+					 $"P_StreetBet:{potManager.PlayerStreetBet} O_StreetBet:{potManager.OpponentStreetBet}");
+			GetTree().Paused = true;
 			throw new Exception($"Poker Logic Assertion Failed: {message}");
-		}
-	}
-
-
-	public void CommitToStreetPot(bool isPlayer, int amount)
-	{
-		if (amount <= 0) return;
-
-		if (isPlayer)
-		{
-			playerChipsInPot += amount;
-			playerContributed += amount;
-		}
-		else
-		{
-			opponentChipsInPot += amount;
-			opponentContributed += amount;
-		}
-	}
-	
-	private void SettleStreetIntoPot()
-	{
-		pot += playerChipsInPot + opponentChipsInPot;
-		playerChipsInPot = 0;
-		opponentChipsInPot = 0;
-	}
-	
-	private void UncommitFromStreetPot(bool isPlayer, int amount)
-	{
-		if (amount <= 0) return;
-
-		if (isPlayer)
-		{
-			playerChipsInPot = Math.Max(0, playerChipsInPot - amount);
-			playerContributed = Math.Max(0, playerContributed - amount);
-		}
-		else
-		{
-			opponentChipsInPot = Math.Max(0, opponentChipsInPot - amount);
-			opponentContributed = Math.Max(0, opponentContributed - amount);
-		}
-	}
-	
-	private bool ReturnUncalledChips()
-	{
-		// Determine who contributed more (Positive difference)
-		int diff = playerContributed - opponentContributed;
-
-		if (diff == 0) return false;
-
-		if (diff > 0)
-		{
-			// Player gets refund (diff is positive)
-			var result = PokerRules.CalculateRefund(diff, playerChipsInPot);
-			
-			// Apply Refund
-			playerChipsInPot -= result.FromStreet;
-			pot -= result.FromPot;
-			playerContributed -= result.RefundAmount;
-			
-			AddPlayerChips(result.RefundAmount);
-			RefreshAllInFlagsFromStacks();
-			
-			GD.Print($"[REFUND] Player: ${result.RefundAmount} total (${result.FromStreet} from street, ${result.FromPot} from settled pot)");
-			return true;
-		}
-		else
-		{
-			// Opponent gets refund (diff is negative, make positive)
-			int opponentDiff = Math.Abs(diff);
-			var result = PokerRules.CalculateRefund(opponentDiff, opponentChipsInPot);
-
-			// Apply Refund
-			opponentChipsInPot -= result.FromStreet;
-			pot -= result.FromPot;
-			opponentContributed -= result.RefundAmount;
-			
-			AddOpponentChips(result.RefundAmount);
-			RefreshAllInFlagsFromStacks();
-			
-			GD.Print($"[REFUND] Opponent: ${result.RefundAmount} total (${result.FromStreet} from street, ${result.FromPot} from settled pot)");
-			return true;
 		}
 	}
 
@@ -288,24 +199,24 @@ public partial class PokerGame
 	{
 		var state = new GameState
 		{
-			CommunityCards = new List<Card>(communityCards),
-			PotSize = GetEffectivePot(),
-			CurrentBet = currentBet,
-			PreviousBet = previousBet,
-			Street = currentStreet,
-			BigBlind = bigBlind,
-			IsAIInPosition = DetermineAIPosition(),
-			OpponentChipStack = opponentChips,
-			CurrentPlayerStats = this.playerStats
+			CommunityCards      = new List<Card>(communityCards),
+			PotSize             = potManager.GetEffectivePot(),
+			CurrentBet          = potManager.CurrentBet,
+			PreviousBet         = potManager.PreviousBet,
+			Street              = currentStreet,
+			BigBlind            = bigBlind,
+			IsAIInPosition      = DetermineAIPosition(),
+			OpponentChipStack   = opponentChips,
+			CurrentPlayerStats  = this.playerStats
 		};
-		
-		state.SetPlayerBet(aiOpponent, opponentBet);
+
+		state.SetPlayerBet(aiOpponent, potManager.OpponentStreetBet);
 		state.SetCanAIReopenBetting(opponentCanReopenBetting);
-		state.SetLastFullRaiseIncrement(lastRaiseAmount);
-		
+		state.SetLastFullRaiseIncrement(potManager.LastRaiseAmount);
+
 		return state;
 	}
-	
+
 	private bool TryGetRandom(Godot.Collections.Dictionary<string, Godot.Collections.Array<string>> dict, string key, out string line)
 	{
 		line = "";
@@ -317,31 +228,23 @@ public partial class PokerGame
 		return true;
 	}
 
-	// -- AI HELPERS --
-	
+	// --- AI HELPERS ---
+
 	private bool DetermineAIPosition()
 	{
-		if (currentStreet == Street.Preflop)
-		{
-			return playerHasButton;
-		}
-		else
-		{
-			return !playerHasButton;
-		}
+		return currentStreet == Street.Preflop ? playerHasButton : !playerHasButton;
 	}
-	
+
 	private float GetPatienceMultiplier(Patience patience)
 	{
 		return patience switch
 		{
-			Patience.VeryLow => 0.5f,
-			Patience.Low => 0.75f,
-			Patience.Average => 1.0f,
-			Patience.High => 1.5f,
-			Patience.VeryHigh => 2.0f,
-			_ => 1.0f
+			Patience.VeryLow   => 0.5f,
+			Patience.Low       => 0.75f,
+			Patience.Average   => 1.0f,
+			Patience.High      => 1.5f,
+			Patience.VeryHigh  => 2.0f,
+			_                  => 1.0f
 		};
-}
-
+	}
 }

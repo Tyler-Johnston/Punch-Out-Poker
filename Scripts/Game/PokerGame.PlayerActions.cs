@@ -14,7 +14,7 @@ public partial class PokerGame
 			ShowMessage("You fold");
 			GD.Print("Player folds");
 
-			int winAmount = GetEffectivePot();
+			int winAmount = potManager.GetEffectivePot();
 			AddOpponentChips(winAmount);
 			RefreshAllInFlagsFromStacks();
 
@@ -35,7 +35,7 @@ public partial class PokerGame
 
 		PerformPlayerAction(() =>
 		{
-			int toCall = currentBet - playerBet;
+			int toCall = potManager.CurrentBet - potManager.PlayerStreetBet;
 
 			if (toCall == 0)
 			{
@@ -158,13 +158,13 @@ public partial class PokerGame
 	{
 		if (result.BecameAllIn || playerChips == 0)
 		{
-			ShowMessage($"You raise to ${playerBet} (ALL-IN!)");
-			GD.Print($"> Player raises to ${playerBet} (ALL-IN)");
+			ShowMessage($"You raise to ${potManager.PlayerStreetBet} (ALL-IN!)");
+			GD.Print($"> Player raises to ${potManager.PlayerStreetBet} (ALL-IN)");
 		}
 		else if (!result.IsBet)
 		{
-			ShowMessage($"You raise to ${playerBet}");
-			GD.Print($"> Player raises to ${playerBet}");
+			ShowMessage($"You raise to ${potManager.PlayerStreetBet}");
+			GD.Print($"> Player raises to ${potManager.PlayerStreetBet}");
 		}
 		else
 		{
@@ -175,7 +175,7 @@ public partial class PokerGame
 
 	private void CheckBettingRoundComplete()
 	{
-		bool betsEqual = (playerBet == opponentBet);
+		bool betsEqual = (potManager.PlayerStreetBet == potManager.OpponentStreetBet);
 		bool bothActed = playerHasActedThisStreet && opponentHasActedThisStreet;
 		bool bothAllIn = playerIsAllIn && opponentIsAllIn;
 		
