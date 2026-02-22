@@ -543,40 +543,60 @@ public partial class PokerGame
 		}
 	}
 
-	//private async Task TossCard(CardVisual card, Card cardData, float maxAngleDegrees = 3.0f, float maxPixelOffset = 2.0f, bool revealCard=true)
-	//{
-		//Vector2 finalPosition = card.Position;
-		//float randomAngle = (float)GD.RandRange(-maxAngleDegrees, maxAngleDegrees);
-		//Vector2 randomOffset = new Vector2(
-			//(float)GD.RandRange(-maxPixelOffset, maxPixelOffset),
-			//(float)GD.RandRange(-maxPixelOffset, maxPixelOffset)
-		//);
-		//finalPosition += randomOffset;
-		//float finalRotation = Mathf.DegToRad(randomAngle);
-		//
-		//Vector2 startPosition = new Vector2(
-			//finalPosition.X + (float)GD.RandRange(-30.0, 30.0),
-			//finalPosition.Y - 600 
-		//);
-		//
-		//sfxPlayer.PlaySound("card_flip");
-		//if (revealCard) await card.RevealCard(cardData);
-		//
-		//card.Position = startPosition;
-		//card.Rotation = Mathf.DegToRad((float)GD.RandRange(-15.0, 15.0));
-		//card.Visible = true;
-		//
-		//Tween tween = CreateTween();
-		//tween.SetParallel(true);
-		//tween.TweenProperty(card, "position", finalPosition, 0.5f)
-			//.SetTrans(Tween.TransitionType.Cubic)
-			//.SetEase(Tween.EaseType.Out);
-		//tween.TweenProperty(card, "rotation", finalRotation, 0.5f)
-			//.SetTrans(Tween.TransitionType.Cubic)
-			//.SetEase(Tween.EaseType.Out);
-		//
-		//await ToSignal(tween, Tween.SignalName.Finished);
-	//}
+	private async Task PeekOpponentCards()
+	{
+		if (isShowdownInProgress) return;
+		
+		opponentArea.ZIndex = 0;
+
+		opponentCard1.ShowBack();
+		opponentCard2.ShowBack();
+
+		Vector2 card1Final = opponentCard1.Position;
+		Vector2 card2Final = opponentCard2.Position;
+
+		Vector2 card1Start = new Vector2(
+			card1Final.X,
+			card1Final.Y - 600f
+		);
+		Vector2 card2Start = new Vector2(
+			card2Final.X,
+			card2Final.Y - 600f
+		);
+
+		opponentCard1.Position = card1Start;
+		opponentCard2.Position = card2Start;
+		opponentCard1.Visible = true;
+		opponentCard2.Visible = true;
+
+		// Peek up
+		Tween peekTween = CreateTween();
+		peekTween.SetParallel(true);
+		peekTween.TweenProperty(opponentCard1, "position", card1Final, 0.5f)
+			.SetTrans(Tween.TransitionType.Cubic).SetEase(Tween.EaseType.Out);
+		peekTween.TweenProperty(opponentCard2, "position", card2Final, 0.5f)
+			.SetTrans(Tween.TransitionType.Cubic).SetEase(Tween.EaseType.Out);
+		await ToSignal(peekTween, Tween.SignalName.Finished);
+
+		// Hold for a moment
+		await ToSignal(GetTree().CreateTimer(1.0f), SceneTreeTimer.SignalName.Timeout);
+
+		// Slide back down
+		Tween hideTween = CreateTween();
+		hideTween.SetParallel(true);
+		hideTween.TweenProperty(opponentCard1, "position", card1Start, 0.4f)
+			.SetTrans(Tween.TransitionType.Cubic).SetEase(Tween.EaseType.In);
+		hideTween.TweenProperty(opponentCard2, "position", card2Start, 0.4f)
+			.SetTrans(Tween.TransitionType.Cubic).SetEase(Tween.EaseType.In);
+		await ToSignal(hideTween, Tween.SignalName.Finished);
+
+		opponentCard1.Visible = false;
+		opponentCard2.Visible = false;
+
+		opponentArea.ZIndex = 2;
+
+	}
+
 	
 	private async Task SlideCard(CardVisual card, Card cardData, bool revealCard = true)
 	{

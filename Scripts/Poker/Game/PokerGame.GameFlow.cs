@@ -200,7 +200,10 @@ public partial class PokerGame
 		opponentCard2.ShowBack();
 
 		// Show reaction to hole cards
+		await PeekOpponentCards(); 
+		await ToSignal(GetTree().CreateTimer(0.35f), SceneTreeTimer.SignalName.Timeout);
 		ShowPreflopTell();
+		await ToSignal(GetTree().CreateTimer(0.35f), SceneTreeTimer.SignalName.Timeout);
 	}
 	
 	private string CardListToString(List<Card> cards)
@@ -781,6 +784,10 @@ public partial class PokerGame
 
 	private async Task RevealOpponentHand()
 	{
+		opponentArea.ZIndex = 2;
+		opponentCard1.Position = opponentCard1OriginalPosition;
+		opponentCard2.Position = opponentCard2OriginalPosition;
+
 		await SlideCard(opponentCard1, opponentHand[0], revealCard: true);
 		await ToSignal(GetTree().CreateTimer(0.30f), SceneTreeTimer.SignalName.Timeout);
 		await SlideCard(opponentCard2, opponentHand[1], revealCard: true);
