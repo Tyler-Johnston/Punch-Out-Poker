@@ -102,6 +102,9 @@ public partial class PokerGame : Node2D
 	private float playerWaitTime = 0f;
 	private const float BOREDOM_THRESHOLD = 8f;
 	
+	private Vector2 opponentCard1OriginalPosition;
+	private Vector2 opponentCard2OriginalPosition;
+	
 	// game state flags
 	private bool isMatchComplete = false;
 	private bool isPlayerTurn = true;

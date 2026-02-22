@@ -195,9 +195,6 @@ public partial class PokerGame
 			}
 			else
 			{
-				// They successfully hid the bluff!
-				// Optional: Show "Confident" (Smirk) to really sell the lie?
-				// For now, let's just go Neutral (Poker Face)
 				SetExpression(Expression.Neutral);
 				GD.Print($"[TELL] {currentOpponentName} kept a Poker Face (Hidden Bluff)");
 				return;
@@ -243,9 +240,6 @@ public partial class PokerGame
 			case PlayerAction.AllIn:
 				if (handStrength > 0.7f)
 				{
-					// Strong hand! Do they smirk?
-					// Smart players might hide it (Neutral).
-					// Arrogant players (low reliability) might smirk.
 					if (GD.Randf() > aiOpponent.Personality.Composure)
 					{
 						SetExpression(Expression.Smirk);
@@ -302,11 +296,5 @@ public partial class PokerGame
 				GD.Print($"[TELL] {currentOpponentName} is SAD (lost pot)");
 			}
 		}
-		
-		// Return to neutral after 3 seconds
-		//GetTree().CreateTimer(3.0f).Timeout += () => 
-		//{
-			//if (!handInProgress) SetExpression(Expression.Neutral);
-		//};
 	}
 }

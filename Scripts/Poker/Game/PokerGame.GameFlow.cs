@@ -473,8 +473,8 @@ public partial class PokerGame
 		ShowMessage($"{currentOpponentName} folds");
 		GD.Print($"> {currentOpponentName} Folds");
 
-		Task card1Task = TossCard(opponentCard1, opponentHand[0], 2.5f, 1.5f, false);
-		Task card2Task = TossCard(opponentCard2, opponentHand[1], 1.5f, 1.5f, false);
+		Task card1Task = SlideCard(opponentCard1, opponentHand[0], revealCard: false);
+		Task card2Task = SlideCard(opponentCard2, opponentHand[1], revealCard: false);
 
 		await Task.WhenAll(card1Task, card2Task);
 		await ToSignal(GetTree().CreateTimer(1.0f), SceneTreeTimer.SignalName.Timeout);
@@ -699,6 +699,8 @@ public partial class PokerGame
 		turnCard.ShowBack();
 		riverCard.ShowBack();
 		
+		opponentCard1.Position = opponentCard1OriginalPosition;
+		opponentCard2.Position = opponentCard2OriginalPosition;
 		opponentCard1.Visible = false;
 		opponentCard2.Visible = false;
 	}
@@ -779,11 +781,12 @@ public partial class PokerGame
 
 	private async Task RevealOpponentHand()
 	{
-		await TossCard(opponentCard1, opponentHand[0]);
+		await SlideCard(opponentCard1, opponentHand[0], revealCard: true);
 		await ToSignal(GetTree().CreateTimer(0.30f), SceneTreeTimer.SignalName.Timeout);
-		await TossCard(opponentCard2, opponentHand[1]);
+		await SlideCard(opponentCard2, opponentHand[1], revealCard: true);
 		await ToSignal(GetTree().CreateTimer(1.0f), SceneTreeTimer.SignalName.Timeout);
 	}
+
 
 	private void ResolveShowdownResult(int playerRank, int opponentRank)
 	{
