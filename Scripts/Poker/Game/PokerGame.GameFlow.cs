@@ -473,6 +473,10 @@ public partial class PokerGame
 
 	private async Task OnOpponentFold()
 	{
+		opponentArea.ZIndex = 2;
+		opponentCard1.Position = opponentCard1OriginalPosition;
+		opponentCard2.Position = opponentCard2OriginalPosition;
+		
 		ShowMessage($"{currentOpponentName} folds");
 		GD.Print($"> {currentOpponentName} Folds");
 
