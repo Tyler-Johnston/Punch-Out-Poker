@@ -646,7 +646,6 @@ public partial class PokerGame
 		}
 
 		ShowMessage("");
-		//potManager.LastRaiseAmount = 0;
 		lastHandDescription = "";
 		handTypeLabel.Text = "";
 		handTypeLabel.Visible = false;
@@ -804,12 +803,9 @@ public partial class PokerGame
 		string message;
 		HandResult aiHandResult;
 		
-		// 1. Get the final pot from PotManager
 		int finalPot = potManager.MainPot; 
 		
 		Assert(finalPot > 0, "Showdown triggered with Empty Pot!");
-		
-		// 2. Ensure all street bets were properly settled into the main pot before this method was called
 		Assert(potManager.PlayerStreetBet + potManager.OpponentStreetBet == 0, "Showdown triggered but chips are still in 'Street Bets' tracking vars!");
 		
 		int result = HandEvaluator.CompareHands(playerRank, opponentRank);

@@ -577,6 +577,8 @@ public partial class PokerGame
 		peekTween.TweenProperty(opponentCard2, "position", card2Final, 0.5f)
 			.SetTrans(Tween.TransitionType.Cubic).SetEase(Tween.EaseType.Out);
 		await ToSignal(peekTween, Tween.SignalName.Finished);
+		
+		SetExpression(Expression.Glance);
 
 		// Hold for a moment
 		await ToSignal(GetTree().CreateTimer(1.0f), SceneTreeTimer.SignalName.Timeout);
@@ -590,11 +592,10 @@ public partial class PokerGame
 			.SetTrans(Tween.TransitionType.Cubic).SetEase(Tween.EaseType.In);
 		await ToSignal(hideTween, Tween.SignalName.Finished);
 
+		SetExpression(Expression.Neutral);
 		opponentCard1.Visible = false;
 		opponentCard2.Visible = false;
-
 		opponentArea.ZIndex = 2;
-
 	}
 
 	
@@ -736,7 +737,7 @@ public partial class PokerGame
 		}
 
 		faceSprite.Texture = loadedTexture;
-		faceSprite.Hframes = 12;
+		faceSprite.Hframes = 13;
 		faceSprite.Vframes = 1;
 		faceSprite.Frame = (int)Expression.Neutral;
 	}
